@@ -38,6 +38,7 @@ export interface SkyMovieOptions {
   hosts?: string[]
   pick?: ((hits: IndexRow[]) => IndexRow[]) | null
   fetchImpl?: typeof fetch | null
+  hits?: IndexRow[] | null
 }
 
 export interface SkyMovieResult {

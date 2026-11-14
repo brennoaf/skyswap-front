@@ -710,6 +710,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/index/at": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query: {
+                    ra: number;
+                    dec: number;
+                    band?: string;
+                    t1?: number;
+                    t2?: number;
+                    max?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            cell: number;
+                            total: number;
+                            sampled: boolean;
+                            rows: {
+                                [key: string]: unknown;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cutout": {
         parameters: {
             query?: never;
@@ -1479,6 +1527,7 @@ export interface paths {
                         "application/json": {
                             order: number;
                             cells: number[];
+                            bytes: number[];
                         };
                     };
                 };

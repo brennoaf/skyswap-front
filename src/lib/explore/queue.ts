@@ -2,8 +2,8 @@ import { api, unwrap, type DeckCard } from '@/lib/api/client'
 import { ang2pixNest, loadCells, pickCell, type SkyCell } from '@/lib/sky'
 import { isStrong, runFlashlight, type CardHint } from './flashlight'
 import { randomSpot, type Spot } from './sampler'
-import { buildSkyCard, INDEX_BASE, SKY_FOV_DEG, type SkyCardDraft } from './sky-card'
-import { loadTile, tileUrl } from './tiles'
+import { INDEX_BASE, warmSpot } from './lookup'
+import { buildSkyCard, SKY_FOV_DEG, type SkyCardDraft } from './sky-card'
 
 export const PREFETCH = 3
 const PARALLEL = 2
@@ -11,7 +11,7 @@ const TRIES_PER_CARD = 6
 
 export type SkyPlayCard = DeckCard & { kind: 'sky'; ra: number; dec: number; band: string; hints: CardHint[] }
 
-type Sky = { cells: SkyCell[] | null; indexed: Set<number>; looks: Record<number, number> }
+type Sky = { cells: SkyCell[] | null; indexed: Set<number>; bytes: Map<number, number>; looks: Record<number, number> }
 
 let sky: Sky | null = null
 let skyPromise: Promise<Sky> | null = null
@@ -29,13 +29,13 @@ async function loadSky(): Promise<Sky> {
       fetch(`${INDEX_BASE}cells.json`)
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
-      api.GET('/api/explore/cells').then((r) => new Set(unwrap(r).cells)),
+      api.GET('/api/explore/cells').then(unwrap),
       api
         .GET('/api/explore/map')
         .then((r) => unwrap(r).cells)
         .catch(() => []),
     ])
-    sky = { cells: cellsJson ? loadCells(cellsJson) : null, indexed, looks: Object.fromEntries(map.map((c) => [c.cell, c.looks])) }
+    sky = { cells: cellsJson ? loadCells(cellsJson) : null, indexed: new Set(indexed.cells), bytes: new Map(indexed.cells.map((c, i) => [c, indexed.bytes[i] ?? 0])), looks: Object.fromEntries(map.map((c) => [c.cell, c.looks])) }
     return sky
   })()
   skyPromise.catch(() => {
@@ -74,7 +74,7 @@ async function buildOne(): Promise<SkyPlayCard | null> {
     upcoming = null
     if (!spot) return null
     try {
-      const draft = await buildSkyCard(spot)
+      const draft = await buildSkyCard(spot, s.bytes.get(ang2pixNest(5, spot.ra, spot.dec)) ?? null)
       if (!draft) {
         failures++
         continue
@@ -101,7 +101,7 @@ async function buildOne(): Promise<SkyPlayCard | null> {
 function warmNext() {
   if (upcoming || !sky || !active) return
   upcoming = nextSpot(sky)
-  if (upcoming) loadTile(tileUrl(ang2pixNest(5, upcoming.ra, upcoming.dec))).catch(() => null)
+  if (upcoming) warmSpot(upcoming.ra, upcoming.dec, sky.bytes.get(ang2pixNest(5, upcoming.ra, upcoming.dec)) ?? null)
 }
 
 function pump() {

@@ -3375,6 +3375,107 @@
         }
       }
     },
+    "/api/index/at": {
+      "get": {
+        "tags": [
+          "sky"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 360
+            },
+            "in": "query",
+            "name": "ra",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "in": "query",
+            "name": "dec",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^D[1-6]$"
+            },
+            "in": "query",
+            "name": "band",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "number"
+            },
+            "in": "query",
+            "name": "t1",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "number"
+            },
+            "in": "query",
+            "name": "t2",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 2000
+            },
+            "in": "query",
+            "name": "max",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "cell",
+                    "total",
+                    "sampled",
+                    "rows"
+                  ],
+                  "properties": {
+                    "cell": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "sampled": {
+                      "type": "boolean"
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cutout": {
       "get": {
         "tags": [
@@ -4927,13 +5028,20 @@
                   "type": "object",
                   "required": [
                     "order",
-                    "cells"
+                    "cells",
+                    "bytes"
                   ],
                   "properties": {
                     "order": {
                       "type": "integer"
                     },
                     "cells": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "bytes": {
                       "type": "array",
                       "items": {
                         "type": "integer"

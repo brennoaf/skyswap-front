@@ -1,8 +1,7 @@
-import { epochsAtTile, percentile, skyMovie, type IndexRow } from '@/lib/sky'
+import { percentile, skyMovie, type IndexRow } from '@/lib/sky'
 import type { Spot } from './sampler'
-import { tileFetch } from './tiles'
+import { INDEX_BASE, pointHits } from './lookup'
 
-export const INDEX_BASE = '/kit/index/'
 export const SKY_HOSTS = ['/api/s3/']
 export const SKY_FOV_DEG = 0.105
 export const MAX_VISITS = 3
@@ -165,22 +164,8 @@ export function composeSprite(images: Float32Array[], n: number): { width: numbe
   return { width, height, data }
 }
 
-let wavePromise: Promise<unknown> | null = null
-
-function loadWave(): Promise<unknown> {
-  wavePromise ??= fetch(`${INDEX_BASE}wave.json`).then((r) => {
-    if (!r.ok) throw new Error(`wave ${r.status}`)
-    return r.json()
-  })
-  wavePromise.catch(() => {
-    wavePromise = null
-  })
-  return wavePromise
-}
-
-export async function buildSkyCard(spot: Spot): Promise<SkyCardDraft | null> {
-  const wave = await loadWave()
-  const q = await epochsAtTile(INDEX_BASE, wave, spot.ra, spot.dec, { order: 5, fetchImpl: tileFetch })
+export async function buildSkyCard(spot: Spot, tileBytes: number | null = null): Promise<SkyCardDraft | null> {
+  const q = await pointHits(spot.ra, spot.dec, tileBytes)
   const choice = chooseVisits(q.hits)
   if (!choice) return null
   const visitOf = new Map<string, number>()
@@ -194,9 +179,8 @@ export async function buildSkyCard(spot: Spot): Promise<SkyCardDraft | null> {
     mode: 'bilinear',
     bands: [choice.band],
     hosts: SKY_HOSTS,
-    fetchImpl: tileFetch,
     concurrency: 4,
-    pick: (hits) => hits.filter((h) => visitOf.has(`${h.key}|${h.mjd}`)),
+    hits: choice.visits.flat(),
     onFrame: (_i, f) => {
       const lam = Number.isFinite(f.h.lam) ? f.h.lam : (f.h.lam_min + f.h.lam_max) / 2
       got.push({ key: f.h.key, mjd: f.h.mjd, wl_um: Math.round(lam * 1000) / 1000, visit: visitOf.get(`${f.h.key}|${f.h.mjd}`) ?? 0, img: f.img, variance: f.variance })

@@ -5,6 +5,10 @@ export type TileProgress = (loaded: number, total: number | null) => void
 
 const mem = new Map<string, Promise<ArrayBuffer | null>>()
 
+export function hasTile(cell: number): boolean {
+  return mem.has(tileUrl(cell))
+}
+
 export function tileUrl(cell: number): string {
   return `${TILE_BASE}${cell}.parquet`
 }

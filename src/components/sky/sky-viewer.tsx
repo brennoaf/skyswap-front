@@ -11,8 +11,9 @@ import { QrWarning } from '@/components/charts/charts'
 import type { SkyResult } from '@/lib/api/client'
 import { useObject, useSky } from '@/lib/api/hooks'
 import { BAND_HUE, BANDS, cssColor, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
-import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch } from '@/lib/sky'
-import { loadTile, tileFetch, tileUrl } from '@/lib/explore/tiles'
+import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch, type IndexRow } from '@/lib/sky'
+import { pointHits, askServer } from '@/lib/explore/lookup'
+import { tileFetch } from '@/lib/explore/tiles'
 import { useUi } from '@/lib/state/ui'
 
 export const FOVS = [0.05, 0.1, 0.25, 0.5] as const
@@ -165,20 +166,24 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
       return
     }
     try {
+      let hits: IndexRow[] | null = null
       if (sky.cell !== null) {
         let last = 0
-        await loadTile(tileUrl(sky.cell), (loaded, size) => {
+        if (askServer(sky.cell, sky.tile_bytes)) setScanning(true)
+        const r = await pointHits(p.ra, p.dec, sky.tile_bytes, (loaded, size) => {
           const now = performance.now()
           if (now - last < 120 && loaded !== size) return
           last = now
           if (alive.current) setTile({ loaded, total: size ?? sky.tile_bytes })
         }).catch(() => null)
+        hits = r?.hits ?? null
         if (alive.current) {
           setTile(null)
           setScanning(true)
         }
       }
       const result = await skyMovie({
+        hits,
         fetchImpl: tileFetch,
         ra: p.ra,
         dec: p.dec,
