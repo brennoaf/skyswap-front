@@ -1873,15 +1873,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            card: {
-                                id: string;
-                                sprite: string;
-                                n_frames: number;
-                                offsets_s: number[];
-                            } | null;
-                            marks: {
-                                u: number;
-                                v: number;
+                            lessons: {
+                                lesson: "moves" | "still" | "glitch";
+                                card: {
+                                    id: string;
+                                    sprite: string;
+                                    n_frames: number;
+                                    offsets_s: number[];
+                                };
+                                marks: {
+                                    u: number;
+                                    v: number;
+                                }[];
                             }[];
                         };
                     };

@@ -96,6 +96,7 @@ export function PhotoViewer({
   hold = false,
   onTouchPhoto,
   compact = false,
+  onPlayingChange,
 }: {
   sprite: string
   img: HTMLImageElement | null
@@ -109,6 +110,7 @@ export function PhotoViewer({
   hold?: boolean
   onTouchPhoto?: () => void
   compact?: boolean
+  onPlayingChange?: (playing: boolean) => void
 }) {
   const t = useTranslations('classify')
   const reduce = useReducedMotion()
@@ -126,7 +128,9 @@ export function PhotoViewer({
   const tile = img ? Math.round(img.naturalHeight / 2) : 1
   const playback = usePlayback(n, { baseMs: FRAME_MS, autoplay: !reduce, frozen: frozen || hold })
   const panel = playback.index
-  const { running } = playback
+  const { running, playing } = playback
+
+  useEffect(() => onPlayingChange?.(playing), [playing, onPlayingChange])
   const outside = useMemo(() => (img ? offsets.map((_, i) => hasOutsideArea(img, i * tile, 0, tile)) : []), [img, offsets, tile])
 
   useEffect(() => {

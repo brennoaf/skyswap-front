@@ -19,6 +19,7 @@ interface PersistedUi {
   meIntroDone: boolean
   classifyGuideDone: boolean
   classifyPacingSeen: boolean
+  tipsSeen: string[]
   homeHintDismissed: boolean
   saved: string[]
   recentSearches: string[]
@@ -40,6 +41,7 @@ interface UiState extends PersistedUi {
   finishMeIntro: () => void
   showMeIntro: () => void
   finishClassifyGuide: () => void
+  markTip: (key: string) => void
   markPacingSeen: () => void
   dismissHomeHint: () => void
   toggleSaved: (postId: string) => void
@@ -67,6 +69,7 @@ export const useUi = create<UiState>()(
       meIntroDone: false,
       classifyGuideDone: false,
       classifyPacingSeen: false,
+      tipsSeen: [],
       homeHintDismissed: false,
       saved: [],
       recentSearches: [],
@@ -85,6 +88,7 @@ export const useUi = create<UiState>()(
       finishMeIntro: () => set({ meIntroDone: true }),
       showMeIntro: () => set({ meIntroDone: false }),
       finishClassifyGuide: () => set({ classifyGuideDone: true }),
+      markTip: (key) => set((s) => (s.tipsSeen.includes(key) ? s : { tipsSeen: [...s.tipsSeen, key] })),
       markPacingSeen: () => set({ classifyPacingSeen: true }),
       dismissHomeHint: () => set({ homeHintDismissed: true }),
       toggleSaved: (postId) => set((s) => ({ saved: s.saved.includes(postId) ? s.saved.filter((p) => p !== postId) : [postId, ...s.saved] })),
@@ -110,6 +114,7 @@ export const useUi = create<UiState>()(
         meIntroDone: s.meIntroDone,
         classifyGuideDone: s.classifyGuideDone,
         classifyPacingSeen: s.classifyPacingSeen,
+        tipsSeen: s.tipsSeen,
         homeHintDismissed: s.homeHintDismissed,
         saved: s.saved,
         recentSearches: s.recentSearches,

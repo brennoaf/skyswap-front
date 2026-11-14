@@ -6890,57 +6890,84 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "card",
-                    "marks"
+                    "lessons"
                   ],
                   "properties": {
-                    "card": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "required": [
-                            "id",
-                            "sprite",
-                            "n_frames",
-                            "offsets_s"
-                          ],
-                          "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "sprite": {
-                              "type": "string"
-                            },
-                            "n_frames": {
-                              "type": "integer"
-                            },
-                            "offsets_s": {
-                              "type": "array",
-                              "items": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "marks": {
+                    "lessons": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "required": [
-                          "u",
-                          "v"
+                          "lesson",
+                          "card",
+                          "marks"
                         ],
                         "properties": {
-                          "u": {
-                            "type": "number"
+                          "lesson": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "moves"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "still"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "glitch"
+                                ]
+                              }
+                            ]
                           },
-                          "v": {
-                            "type": "number"
+                          "card": {
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "sprite",
+                              "n_frames",
+                              "offsets_s"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "sprite": {
+                                "type": "string"
+                              },
+                              "n_frames": {
+                                "type": "integer"
+                              },
+                              "offsets_s": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          },
+                          "marks": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "u",
+                                "v"
+                              ],
+                              "properties": {
+                                "u": {
+                                  "type": "number"
+                                },
+                                "v": {
+                                  "type": "number"
+                                }
+                              }
+                            }
                           }
                         }
                       }

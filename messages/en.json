@@ -647,7 +647,10 @@
       "swipe": "Right: it moves. Left: it doesn't. Up: not sure."
     },
     "guide": {
-      "body": "See how it jumps between the photos? That's moving. Swipe right.",
+      "step": "Practice {n} of {total}.",
+      "moves": "See how it jumps between photos? That is movement. Swipe right.",
+      "still": "Here nothing changes place. Swipe left.",
+      "glitch": "A dot in one photo only is usually a camera glitch. Tap Camera glitch.",
       "skip": "Skip"
     },
     "yourVote": "Your vote: {choice}",
@@ -742,7 +745,9 @@
       "glitchTitle": "What is not real",
       "glitchBody": "Something real shows up in most of the photos. A dot in only one photo is usually a camera glitch.",
       "emptyTitle": "Most sets are empty",
-      "emptyBody": "Most photo sets have nothing new. That's normal, and every look still counts."
+      "emptyBody": "Most photo sets have nothing new. That's normal, and every look still counts.",
+      "gesturesBody": "Swipe right: it moves. Left: it does not. Up: not sure. Hold to freeze. Double tap or pinch to zoom. Hold Blink to jump between the first and last photo.",
+      "gesturesTitle": "The gestures"
     },
     "dipole": {
       "whole": "What changed, whole photo",
@@ -784,7 +789,12 @@
       "hide": "Hide"
     },
     "newBadge": "New badge: {name}.",
-    "changesShort": "Changes"
+    "changesShort": "Changes",
+    "tips": {
+      "swipeUp": "Not sure? Swipe up.",
+      "hold": "You can also hold the photo to freeze it, and let go to play again.",
+      "short": "Drag a little further to answer."
+    }
   },
   "reels": {
     "title": "Reels",

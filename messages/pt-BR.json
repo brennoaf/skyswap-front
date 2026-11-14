@@ -647,7 +647,10 @@
       "swipe": "Direita: se move. Esquerda: não. Cima: não sei."
     },
     "guide": {
-      "body": "Viu como ele pula entre as fotos? Isso é movimento. Deslize para a direita.",
+      "step": "Treino {n} de {total}.",
+      "moves": "Viu como ele pula entre as fotos? Isso é movimento. Deslize para a direita.",
+      "still": "Aqui nada muda de lugar. Deslize para a esquerda.",
+      "glitch": "Um ponto em uma foto só costuma ser falha da câmera. Toque em Falha da câmera.",
       "skip": "Pular"
     },
     "yourVote": "Seu voto: {choice}",
@@ -742,7 +745,9 @@
       "glitchTitle": "O que não é real",
       "glitchBody": "Algo real aparece na maioria das fotos. Um ponto em só uma foto normalmente é uma falha da câmera.",
       "emptyTitle": "A maioria dos conjuntos está vazia",
-      "emptyBody": "A maioria dos conjuntos de fotos não tem nada novo. Isso é normal, e cada olhada conta."
+      "emptyBody": "A maioria dos conjuntos de fotos não tem nada novo. Isso é normal, e cada olhada conta.",
+      "gesturesBody": "Deslize para a direita: se move. Para a esquerda: não se move. Para cima: não sei. Segure para congelar. Toque duplo ou pinça aproximam. Segure Piscar para alternar entre a primeira e a última foto.",
+      "gesturesTitle": "Os gestos"
     },
     "dipole": {
       "whole": "O que mudou, foto inteira",
@@ -784,7 +789,12 @@
       "hide": "Ocultar"
     },
     "newBadge": "Selo novo: {name}.",
-    "changesShort": "Mudanças"
+    "changesShort": "Mudanças",
+    "tips": {
+      "swipeUp": "Não sabe? Deslize para cima.",
+      "hold": "Você também pode segurar a foto para congelar, e soltar para voltar a rodar.",
+      "short": "Arraste um pouco mais para responder."
+    }
   },
   "reels": {
     "title": "Reels",
