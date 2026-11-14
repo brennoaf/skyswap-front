@@ -345,64 +345,66 @@ export function LabView({ id }: { id: string }) {
                 {t('tools.photoShow')}
               </button>
             )}
-            <div
-              className={cx('relative mx-auto overflow-hidden bg-media-bg motion-safe:transition-[width]', photo === 'hidden' && 'hidden')}
-              style={{ aspectRatio: ep ? `${ep.nx} / ${ep.ny}` : '1 / 1', width: ep ? `min(100%, calc(${PHOTO_HEIGHT[photo]} * ${ep.nx / ep.ny}))` : `min(100%, ${PHOTO_HEIGHT[photo]})` }}
-            >
-              <div className="absolute left-1 top-1 z-10 flex">
+            <div className={photo === 'hidden' ? 'hidden' : 'flex items-start'}>
+              <div className="flex w-11 shrink-0 flex-col">
                 <IconButton label={photo === 'large' ? t('tools.photoSmaller') : t('tools.photoBigger')} onClick={() => setPhoto(photo === 'large' ? 'small' : 'large')}>
-                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-media-scrim text-on-media">{photo === 'large' ? <IconShrink size={20} /> : <IconExpand size={20} />}</span>
+                  {photo === 'large' ? <IconShrink size={22} /> : <IconExpand size={22} />}
                 </IconButton>
                 <IconButton label={t('tools.photoHide')} onClick={() => setPhoto('hidden')}>
-                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-media-scrim text-on-media">
-                    <IconEyeOff size={20} />
-                  </span>
+                  <IconEyeOff size={22} />
                 </IconButton>
               </div>
-              <div className="absolute inset-0 origin-center transition-transform" style={{ transform: `scale(${zoom})` }}>
-                <canvas
-                  ref={canvas}
-                  className="pixelated size-full"
-                  onPointerMove={(e) => {
-                    if (!ep || e.pointerType !== 'mouse') return
-                    const r = e.currentTarget.getBoundingClientRect()
-                    setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
-                  }}
-                  onClick={(e) => {
-                    if (!ep) return
-                    if (tool !== 'notes') setTool('pixel')
-                    const r = e.currentTarget.getBoundingClientRect()
-                    setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
-                  }}
-                  onWheel={(e) => setZoom((z) => Math.min(8, Math.max(1, z * (e.deltaY < 0 ? 1.2 : 1 / 1.2))))}
-                  aria-label={t('pixelHint')}
-                />
-                {flagPixels.map((p, i) => (
-                  <span key={i} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ ...toPct(p.x, p.y), width: `${100 / (ep?.nx ?? 1)}%`, height: `${100 / (ep?.ny ?? 1)}%`, background: LAYER_COLOR[p.k] }} />
-                ))}
-                <svg className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${ep?.nx ?? 1} ${ep?.ny ?? 1}`} preserveAspectRatio="none" aria-hidden="true">
-                  {layers.gaia &&
-                    gaiaMarks.map((s) => (
-                      <g key={s.id} stroke={LAYER_COLOR.gaia} strokeWidth={0.18} fill="none">
-                        <circle cx={s.x + 0.5} cy={s.y + 0.5} r={Math.max(0.5, 2.2 - s.g / 10)} />
-                        <line x1={s.x + 0.5} y1={s.y + 0.5} x2={s.x2 + 0.5} y2={s.y2 + 0.5} />
-                      </g>
+              <div className="min-w-0 flex-1">
+                <div
+                  className="relative mx-auto overflow-hidden bg-media-bg motion-safe:transition-[width]"
+                  style={{ aspectRatio: ep ? `${ep.nx} / ${ep.ny}` : '1 / 1', width: ep ? `min(100%, calc(${PHOTO_HEIGHT[photo]} * ${ep.nx / ep.ny}))` : `min(100%, ${PHOTO_HEIGHT[photo]})` }}
+                >
+                  <div className="absolute inset-0 origin-center transition-transform" style={{ transform: `scale(${zoom})` }}>
+                    <canvas
+                      ref={canvas}
+                      className="pixelated size-full"
+                      onPointerMove={(e) => {
+                        if (!ep || e.pointerType !== 'mouse') return
+                        const r = e.currentTarget.getBoundingClientRect()
+                        setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
+                      }}
+                      onClick={(e) => {
+                        if (!ep) return
+                        if (tool !== 'notes') setTool('pixel')
+                        const r = e.currentTarget.getBoundingClientRect()
+                        setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
+                      }}
+                      onWheel={(e) => setZoom((z) => Math.min(8, Math.max(1, z * (e.deltaY < 0 ? 1.2 : 1 / 1.2))))}
+                      aria-label={t('pixelHint')}
+                    />
+                    {flagPixels.map((p, i) => (
+                      <span key={i} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ ...toPct(p.x, p.y), width: `${100 / (ep?.nx ?? 1)}%`, height: `${100 / (ep?.ny ?? 1)}%`, background: LAYER_COLOR[p.k] }} />
                     ))}
-                  {layers.wise &&
-                    wiseMarks.map((s) => (
-                      <path key={s.i} d={`M${s.xy[0]} ${s.xy[1]}l1 1M${s.xy[0] + 1} ${s.xy[1]}l-1 1`} stroke={LAYER_COLOR.wise} strokeWidth={0.18} />
-                    ))}
-                  {layers.target && ep && (
-                    <g stroke={LAYER_COLOR.target} strokeWidth={0.25} fill="none">
-                      <circle cx={ep.target_xy[0] + 0.5} cy={ep.target_xy[1] + 0.5} r={2} />
-                      <path d={`M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] - 3}v1.5M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] + 2.5}v1.5M${ep.target_xy[0] - 3} ${ep.target_xy[1] + 0.5}h1.5M${ep.target_xy[0] + 2.5} ${ep.target_xy[1] + 0.5}h1.5`} />
-                    </g>
-                  )}
-                  {pixel && <rect x={pixel.x} y={pixel.y} width={1} height={1} fill="none" stroke="var(--color-mark-outline)" strokeWidth={0.15} />}
-                </svg>
+                    <svg className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${ep?.nx ?? 1} ${ep?.ny ?? 1}`} preserveAspectRatio="none" aria-hidden="true">
+                      {layers.gaia &&
+                        gaiaMarks.map((s) => (
+                          <g key={s.id} stroke={LAYER_COLOR.gaia} strokeWidth={0.18} fill="none">
+                            <circle cx={s.x + 0.5} cy={s.y + 0.5} r={Math.max(0.5, 2.2 - s.g / 10)} />
+                            <line x1={s.x + 0.5} y1={s.y + 0.5} x2={s.x2 + 0.5} y2={s.y2 + 0.5} />
+                          </g>
+                        ))}
+                      {layers.wise &&
+                        wiseMarks.map((s) => (
+                          <path key={s.i} d={`M${s.xy[0]} ${s.xy[1]}l1 1M${s.xy[0] + 1} ${s.xy[1]}l-1 1`} stroke={LAYER_COLOR.wise} strokeWidth={0.18} />
+                        ))}
+                      {layers.target && ep && (
+                        <g stroke={LAYER_COLOR.target} strokeWidth={0.25} fill="none">
+                          <circle cx={ep.target_xy[0] + 0.5} cy={ep.target_xy[1] + 0.5} r={2} />
+                          <path d={`M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] - 3}v1.5M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] + 2.5}v1.5M${ep.target_xy[0] - 3} ${ep.target_xy[1] + 0.5}h1.5M${ep.target_xy[0] + 2.5} ${ep.target_xy[1] + 0.5}h1.5`} />
+                        </g>
+                      )}
+                      {pixel && <rect x={pixel.x} y={pixel.y} width={1} height={1} fill="none" stroke="var(--color-mark-outline)" strokeWidth={0.15} />}
+                    </svg>
+                  </div>
+                  {!decoded && <span className="absolute inset-0 flex items-center justify-center text-note text-on-media-muted">{t('loading')}</span>}
+                  <span className="absolute bottom-2 left-2 rounded bg-media-scrim px-2 py-0.5 text-meta text-on-media">{tcom('falseColour')}</span>
+                </div>
               </div>
-              {!decoded && <span className="absolute inset-0 flex items-center justify-center text-note text-on-media-muted">{t('loading')}</span>}
-              <span className="absolute bottom-2 left-2 rounded bg-media-scrim px-2 py-0.5 text-meta text-on-media">{tcom('falseColour')}</span>
             </div>
             {ep && (
               <div className="flex items-center gap-1 px-2 pt-1">
