@@ -627,7 +627,7 @@
     "question": "Algo se move?",
     "moves": "Se move",
     "still": "Não se move",
-    "unsure": "Não tenho certeza",
+    "unsure": "Não sei",
     "photos": "Fotos",
     "changes": "O que mudou",
     "view": "O que mostrar",
@@ -681,12 +681,7 @@
       "stationary": "algo que fica parado",
       "orphan": "um ponto sozinho, sem par"
     },
-    "glitch": {
-      "question": "Parece uma falha da câmera? Um risco, uma mancha ou um ponto que pisca uma vez.",
-      "yes": "Sim",
-      "skip": "Pular",
-      "thanks": "Obrigado, anotado."
-    },
+    "glitch": "Falha da câmera",
     "tooFast": "Foi rápido. Respostas em menos de um segundo não contam, então olhe com mais calma da próxima vez.",
     "next": "Próximo conjunto de fotos",
     "voteFailed": "Não foi possível salvar sua resposta. Tente de novo.",

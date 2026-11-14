@@ -7,12 +7,12 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { DipoleFigure } from '@/components/classify/dipole-figure'
 import { VoiceMark, VoiceSymbol, type Voice } from '@/components/classify/voices'
 import { PhotoViewer, useOffsetLabel } from '@/components/classify/photo-viewer'
-import { IconCards, IconFlashlight, IconMore, IconMoves, IconQuestion, IconStill } from '@/components/icons'
+import { IconCards, IconFlashlight, IconMore, IconMoves, IconQuestion, IconStill, IconWarning } from '@/components/icons'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { CatalogLinks } from '@/components/ui/catalog-links'
 import { Button, EmptyState, IconButton, Notice, Sheet, Skeleton, TopBar } from '@/components/ui/primitives'
 import { api, ApiError, unwrap, type DeckCard, type Reveal } from '@/lib/api/client'
-import { useGlitch, useGuideCard, useSession, useVote, type Choice, type VotePosition } from '@/lib/api/hooks'
+import { useGuideCard, useSession, useVote, type Choice, type VotePosition } from '@/lib/api/hooks'
 import type { CardHint } from '@/lib/explore/flashlight'
 import { exploreQueue, isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
 import { cx, formatWavelength } from '@/lib/format'
@@ -29,6 +29,7 @@ const IDLE_MS = 12_000
 const QUIET_RUN = 10
 
 type PlayCard = DeckCard | SkyPlayCard
+type Answer = Choice | 'glitch'
 
 function useSprite(src: string | undefined) {
   const [img, setImg] = useState<{ src: string; el: HTMLImageElement } | null>(null)
@@ -101,11 +102,11 @@ function ChoiceButton({ label, onClick, disabled, pressed, primary, children }: 
   )
 }
 
-function CardHeader({ title, sub, actions }: { title: ReactNode; sub?: ReactNode; actions?: ReactNode }) {
+function CardHeader({ title, sub, actions, answer }: { title: ReactNode; sub?: ReactNode; actions?: ReactNode; answer?: boolean }) {
   return (
-    <header className="flex min-h-[var(--height-topbar)] shrink-0 items-center gap-1 pl-4 pr-1">
+    <header className="flex min-h-[var(--height-topbar)] shrink-0 items-center gap-1 py-1 pl-4 pr-1">
       <div className="min-w-0 flex-1">
-        <h1 className="line-clamp-2 font-[family-name:var(--font-display)] text-handle font-bold leading-tight">{title}</h1>
+        <h1 className={cx('line-clamp-2 font-[family-name:var(--font-display)] font-bold leading-tight', answer ? 'text-title-sm' : 'text-handle')}>{title}</h1>
         {sub && <p className="truncate text-meta text-text-secondary">{sub}</p>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
@@ -241,7 +242,7 @@ function VoteCard({
   overlay?: (panel: number) => ReactNode
   caption?: (panel: number) => ReactNode
   showHints: boolean
-  onVoted: (choice: Choice, r: VoteResult, spot: VotePosition | null) => void
+  onVoted: (answer: Answer, r: VoteResult, spot: VotePosition | null) => void
   onStale: () => void
   onSkipGuide: () => void
 }) {
@@ -254,7 +255,7 @@ function VoteCard({
   const movesOpacity = useTransform(x, [24, SWIPE], [0, 1])
   const stillOpacity = useTransform(x, [-SWIPE, -24], [1, 0])
   const unsureOpacity = useTransform(y, [-SWIPE, -24], [1, 0])
-  const [held, setHeld] = useState<{ choice: Choice; at: number } | null>(null)
+  const [held, setHeld] = useState<{ answer: Answer; at: number } | null>(null)
   const [stage, setStage] = useState<'confirm' | 'marking' | 'sending' | 'failed'>('confirm')
   const [spot, setSpot] = useState<VotePosition | null>(null)
 
@@ -273,8 +274,8 @@ function VoteCard({
     if (!held) return
     setStage('sending')
     try {
-      const r = await vote.mutateAsync({ card_id: card.id, choice: held.choice, held_ms: Math.min(600000, Math.round(performance.now() - held.at)), ...(spot ? { position: spot } : {}) })
-      onVoted(held.choice, r, spot)
+      const r = await vote.mutateAsync({ card_id: card.id, choice: held.answer === 'glitch' ? 'still' : held.answer, ...(held.answer === 'glitch' ? { glitch: true } : {}), held_ms: Math.min(600000, Math.round(performance.now() - held.at)), ...(spot ? { position: spot } : {}) })
+      onVoted(held.answer, r, spot)
     } catch (err) {
       if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) {
         onStale()
@@ -300,10 +301,10 @@ function VoteCard({
   }, [held, stage, undo])
 
   const choose = useCallback(
-    (choice: Choice) => {
+    (answer: Answer) => {
       if (held || !img) return
       settle()
-      setHeld({ choice, at: performance.now() })
+      setHeld({ answer, at: performance.now() })
       setStage('confirm')
     },
     [held, img, settle],
@@ -317,7 +318,7 @@ function VoteCard({
     else settle()
   }
 
-  const canMark = held?.choice === 'moves' && (stage === 'confirm' || stage === 'marking')
+  const canMark = held?.answer === 'moves' && (stage === 'confirm' || stage === 'marking')
   const locate = (frame: number, u: number, v: number) => {
     setSpot({ frame, x: Math.round(u * 1e4) / 1e4, y: Math.round(v * 1e4) / 1e4 })
     setStage('marking')
@@ -358,7 +359,7 @@ function VoteCard({
       )}
 
       {held ? (
-        <ConfirmStrip choice={t(held.choice)} stage={stage} marked={!!spot} canMark={held.choice === 'moves'} onUndo={undo} onSend={() => void send()} />
+        <ConfirmStrip choice={t(held.answer)} stage={stage} marked={!!spot} canMark={held.answer === 'moves'} onUndo={undo} onSend={() => void send()} />
       ) : (
         <>
           {showHints && !guide && <p className="shrink-0 truncate px-3 pt-1 text-center text-meta text-text-secondary">{t('hints.swipe')}</p>}
@@ -371,7 +372,10 @@ function VoteCard({
                 <IconMoves size={24} />
               </ChoiceButton>
             </div>
-            <div className="mt-1 flex">
+            <div className="mt-1 flex gap-2">
+              <ChoiceButton label={t('glitch')} onClick={() => choose('glitch')} disabled={!img}>
+                <IconWarning size={20} />
+              </ChoiceButton>
               <ChoiceButton label={t('unsure')} onClick={() => choose('unsure')} disabled={!img}>
                 <IconQuestion size={20} />
               </ChoiceButton>
@@ -501,7 +505,7 @@ function ResultLine({ result }: { result: VoteResult }) {
   return <p className="pt-1 text-note font-semibold leading-snug text-accent">{parts.join(' ')}</p>
 }
 
-function Understand({ card, img, choice, result, spot, pacing, hints, help, onNext }: { card: PlayCard; img: HTMLImageElement | null; choice: Choice; result: VoteResult; spot: VotePosition | null; pacing: boolean; hints: CardHint[] | null; help: ReactNode; onNext: () => void }) {
+function Understand({ card, img, answer, result, spot, pacing, hints, help, onNext }: { card: PlayCard; img: HTMLImageElement | null; answer: Answer; result: VoteResult; spot: VotePosition | null; pacing: boolean; hints: CardHint[] | null; help: ReactNode; onNext: () => void }) {
   const t = useTranslations('classify')
   const reduce = useReducedMotion()
   const { reveal, guided, counted } = result
@@ -530,6 +534,7 @@ function Understand({ card, img, choice, result, spot, pacing, hints, help, onNe
   return (
     <motion.div initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} className="flex min-h-0 flex-1 flex-col">
       <CardHeader
+        answer
         title={<span id="reveal-title">{verdict}</span>}
         actions={
           <>
@@ -547,7 +552,7 @@ function Understand({ card, img, choice, result, spot, pacing, hints, help, onNe
       </div>
       <section aria-labelledby="reveal-title" className="max-h-[38%] shrink-0 overflow-y-auto px-4 pt-1.5">
         <VoiceRow voice="you" name={t('voices.youName')} on={spot ? shown.you : undefined} onToggle={spot ? () => setShown((v) => ({ ...v, you: !v.you })) : undefined}>
-          {t(choice)}
+          {t(answer)}
         </VoiceRow>
         {showProgram && (
           <VoiceRow voice="program" name={t('voices.programName')} on={hasMarks ? shown.marks : undefined} onToggle={hasMarks ? () => setShown((v) => ({ ...v, marks: !v.marks })) : undefined}>
@@ -703,7 +708,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   const [guideOver, setGuideOver] = useState(false)
   const guiding = guideActive && !guideOver && !!guideQuery.data?.card
   const flow = useDeckFlow(!guideActive || guideOver || (guideQuery.isFetched && !guideQuery.data?.card))
-  const [result, setResult] = useState<{ cardId: string; choice: Choice; data: VoteResult; pacing: boolean; spot: VotePosition | null } | null>(null)
+  const [result, setResult] = useState<{ cardId: string; answer: Answer; data: VoteResult; pacing: boolean; spot: VotePosition | null } | null>(null)
   const [pause, setPause] = useState(false)
   const [hintsOn, setHintsOn] = useState(false)
   const card: PlayCard | null = guiding ? (guideQuery.data?.card ?? null) : flow.card
@@ -727,16 +732,16 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   }, [finishGuide])
 
   const onVoted = useCallback(
-    (choice: Choice, data: VoteResult, spot: VotePosition | null) => {
+    (answer: Answer, data: VoteResult, spot: VotePosition | null) => {
       let pacing = false
       if (!guiding) {
-        quietRun = choice === 'moves' ? 0 : quietRun + 1
+        quietRun = answer === 'moves' ? 0 : quietRun + 1
         if (!pacingSeen) {
           pacing = true
           markPacingSeen()
         } else if (quietRun > 0 && quietRun % QUIET_RUN === 0) pacing = true
       }
-      if (card) setResult({ cardId: card.id, choice, data, pacing, spot })
+      if (card) setResult({ cardId: card.id, answer, data, pacing, spot })
       if (guiding) finishGuide()
       sessionLooks++
     },
@@ -797,7 +802,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   )
   const hints = sky && hintsOn ? card.hints : null
 
-  if (result && result.cardId === card.id) return <Understand key={card.id} card={card} img={img} choice={result.choice} result={result.data} spot={result.spot} pacing={result.pacing} hints={hints} help={help} onNext={loadNext} />
+  if (result && result.cardId === card.id) return <Understand key={card.id} card={card} img={img} answer={result.answer} result={result.data} spot={result.spot} pacing={result.pacing} hints={hints} help={help} onNext={loadNext} />
 
   return (
     <Fill>

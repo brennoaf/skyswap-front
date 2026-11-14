@@ -292,12 +292,6 @@ export function useVote() {
   })
 }
 
-export function useGlitch() {
-  return useMutation({
-    mutationFn: async ({ cardId, glitch }: { cardId: string; glitch: boolean | null }) => unwrap(await api.POST('/api/classify/votes/{id}/glitch', { params: { path: { id: cardId } }, body: { glitch } })),
-  })
-}
-
 export function useGuideCard(enabled: boolean) {
   return useQuery({ queryKey: ['classify-guide'], enabled, queryFn: async () => unwrap(await api.GET('/api/classify/guide')), staleTime: Infinity, gcTime: 0 })
 }

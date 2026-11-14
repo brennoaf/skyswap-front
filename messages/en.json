@@ -681,12 +681,7 @@
       "stationary": "something that stays put",
       "orphan": "a lone dot with no match"
     },
-    "glitch": {
-      "question": "Looks like a camera glitch? A streak, a smudge, or a dot that flashes once.",
-      "yes": "Yes",
-      "skip": "Skip",
-      "thanks": "Thanks, noted."
-    },
+    "glitch": "Camera glitch",
     "tooFast": "That was quick. Answers in under a second don't count, so take a closer look next time.",
     "next": "Next photo set",
     "voteFailed": "Couldn't save your answer. Try again.",
