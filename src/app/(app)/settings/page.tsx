@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState, type ReactNode } from 'react'
-import { IconCheck, IconChevronRight, IconLink, IconMap, IconNote, IconQuestion, IconSun } from '@/components/icons'
+import { IconCheck, IconChevronDownSmall, IconChevronRight, IconLink, IconMap, IconMore, IconNote, IconQuestion, IconSun } from '@/components/icons'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Skeleton, TopBar } from '@/components/ui/primitives'
@@ -142,10 +142,36 @@ function Notes() {
   )
 }
 
-export default function SettingsPage() {
+function Details() {
   const t = useTranslations('settings')
   const fmt = useFmt()
   const health = useHealth()
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button type="button" aria-expanded={open} aria-controls={open ? 's-details' : undefined} onClick={() => setOpen((v) => !v)} className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-pressed">
+        <RowHead icon={<IconMore size={24} />} title={t('details')} hint={t('detailsHint')} />
+        <IconChevronDownSmall size={20} className={cx('shrink-0 text-text-secondary motion-safe:transition-transform', open && 'rotate-180')} />
+      </button>
+      {open && (
+        <div id="s-details" className="space-y-3 px-4 pb-4 text-note leading-relaxed">
+          <section>
+            <h3 className="font-semibold">{t('data')}</h3>
+            <div className="mt-1 text-text-secondary">{health.data ? t('dataBody', { version: health.data.version, images: fmt.number(health.data.images_indexed) }) : <Skeleton className="h-10 w-full" />}</div>
+          </section>
+          <p className="text-text-secondary">{t('about')}</p>
+          <a href={API_DOCS_URL} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 font-semibold text-link">
+            <IconLink size={20} />
+            {t('api')}
+          </a>
+        </div>
+      )}
+    </>
+  )
+}
+
+export default function SettingsPage() {
+  const t = useTranslations('settings')
   const router = useRouter()
   const resetOnboarding = useUi((s) => s.resetOnboarding)
   return (
@@ -179,21 +205,10 @@ export default function SettingsPage() {
           <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
         </button>
         <div className="mx-4 border-t-[0.5px] border-divider" />
-        <a href={API_DOCS_URL} target="_blank" rel="noreferrer" className="flex min-h-14 w-full items-center gap-3 px-4 py-3 active:bg-surface-pressed">
-          <RowHead icon={<IconLink size={24} />} title={t('api')} />
-          <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
-        </a>
-      </Group>
-
-      <Group id="s-data" title={t('data')}>
-        <div className="px-4 py-3 text-note leading-relaxed">
-          {health.data ? t('dataBody', { version: health.data.version, images: fmt.number(health.data.images_indexed) }) : <Skeleton className="h-10 w-full" />}
-        </div>
+        <Details />
       </Group>
 
       <Logout />
-
-      <p className="mt-8 px-8 text-center text-meta leading-relaxed text-text-secondary">{t('about')}</p>
     </main>
   )
 }

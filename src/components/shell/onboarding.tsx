@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
-import { IconCards, IconCheck, IconColours, IconCompare, IconCrosshair, IconFlask, IconHome, IconMore, IconMoves, IconReel, IconSave, IconSearch, IconSpectrum, IconTag, IconTarget } from '@/components/icons'
+import { IconCards, IconCheck, IconColours, IconFlask, IconHome, IconLike, IconMore, IconReel, IconSave, IconSearch, IconTag, IconTarget } from '@/components/icons'
 import { Button } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { defaultLocale, isLocale, type Locale } from '@/i18n/locales'
@@ -16,14 +16,13 @@ import { useSwitchLocale } from '@/lib/use-switch-locale'
 export type LanguageOption = { locale: Locale; name: string; greeting: string; title: string; body: string; pick: string; action: string }
 
 type Item = { icon: ReactNode; key: string }
-type Step = { id: string; target?: string; items?: Item[]; art?: 'sky' | 'blink' | 'lab'; note?: boolean }
+type Step = { id: string; target?: string; items?: Item[]; art?: 'sky' | 'blink' }
 
 const STEPS: Step[] = [
   { id: 'language' },
   { id: 'welcome', art: 'sky' },
   { id: 'help', art: 'blink' },
   { id: 'stories', target: 'stories' },
-  { id: 'post', target: 'post-head' },
   { id: 'photo', target: 'post-media' },
   {
     id: 'actions',
@@ -41,21 +40,10 @@ const STEPS: Step[] = [
     items: [
       { icon: <IconFlask size={22} />, key: 'post' },
       { icon: <IconFlask size={22} />, key: 'top' },
+      { icon: <IconLike size={22} />, key: 'heart' },
       { icon: <IconMore size={22} />, key: 'dots' },
     ],
   },
-  {
-    id: 'lab',
-    art: 'lab',
-    note: true,
-    items: [
-      { icon: <IconCompare size={22} />, key: 'date' },
-      { icon: <IconCrosshair size={22} />, key: 'pixel' },
-      { icon: <IconMoves size={22} />, key: 'motion' },
-      { icon: <IconSpectrum size={22} />, key: 'spectrum' },
-    ],
-  },
-  { id: 'alerts', target: 'alerts' },
   {
     id: 'nav',
     target: 'nav',
@@ -106,42 +94,7 @@ function SkyField({ reduce }: { reduce: boolean }) {
   )
 }
 
-const LAB_TOOLS = [
-  { key: 'date', icon: <IconCompare size={20} /> },
-  { key: 'colour', icon: <IconColours size={20} /> },
-  { key: 'pixel', icon: <IconCrosshair size={20} /> },
-  { key: 'motion', icon: <IconMoves size={20} /> },
-  { key: 'spectrum', icon: <IconSpectrum size={20} /> },
-] as const
-
-function LabArt({ tick }: { tick: number }) {
-  const t = useTranslations('lab.tools')
-  const active = Math.floor(tick / 2) % LAB_TOOLS.length
-  const step = tick % 4
-  return (
-    <div className="overflow-hidden rounded-xl bg-bg ring-[0.5px] ring-divider" aria-hidden="true">
-      <svg viewBox="0 0 240 84" className="block w-full bg-media-bg">
-        {[[24, 18, 1.4], [60, 64, 1], [98, 30, 1.8], [150, 16, 1], [196, 58, 1.5], [222, 24, 1], [130, 72, 1.2]].map(([x, y, r]) => (
-          <circle key={`${x}-${y}`} cx={x} cy={y} r={r} fill="var(--color-spot-star)" opacity="0.7" />
-        ))}
-        <circle cx={104 + step * 10} cy={50 - step * 4} r="4" fill="var(--color-crosshair)" />
-        <path d="M92 32H86V38M136 32H142V38M92 66H86V60M136 66H142V60" stroke="var(--color-accent)" strokeWidth="2" fill="none" />
-      </svg>
-      <div className="flex">
-        {LAB_TOOLS.map((tool, i) => (
-          <span key={tool.key} className={cx('relative flex flex-1 flex-col items-center gap-0.5 py-2 transition-colors', i === active ? 'text-text' : 'text-icon-muted')}>
-            {tool.icon}
-            <span className="text-micro font-medium">{t(tool.key)}</span>
-            {i === active && <span className="absolute bottom-0 h-[2px] w-6 rounded-full bg-text" />}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function Art({ kind, tick }: { kind: 'sky' | 'blink' | 'lab'; tick: number }) {
-  if (kind === 'lab') return <LabArt tick={tick} />
+function Art({ kind, tick }: { kind: 'sky' | 'blink'; tick: number }) {
   const on = tick % 2 === 0
   if (kind === 'sky')
     return (
@@ -371,13 +324,7 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
                   <span>{t(`${step.id}.${it.key}`)}</span>
                 </li>
               ))}
-              {step.note && <li className="pt-1 text-note leading-relaxed text-text-secondary">{t(`${step.id}.note`)}</li>}
             </ul>
-          ) : step.id === 'finish' ? (
-            <div className="mt-2 flex flex-col gap-2 text-body leading-relaxed text-text-secondary">
-              <p>{t('finish.contribution')}</p>
-              <p>{t('finish.pro')}</p>
-            </div>
           ) : (
             <p className="mt-2 text-body leading-relaxed text-text-secondary">{t(`${step.id}.body`)}</p>
           )}

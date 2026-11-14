@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { KitChart } from '@/components/charts/charts'
+import { KitChart, QrWarning } from '@/components/charts/charts'
 import { PostHeader } from '@/components/feed/post-card'
 import { ActionRow } from '@/components/post/action-row'
 import { EraTimeline } from '@/components/post/era-timeline'
@@ -135,6 +135,7 @@ export function PostViewer({ id }: { id: string }) {
   const blink = (objectPosts ?? []).find((p) => p.type === 'pass_blink')
   const pairSource = blink && blink.frames.length > 1 ? blink.frames : post.frames
   const compareFrames: [Frame, Frame] | null = pairSource.length > 1 ? [pairSource[0] as Frame, pairSource[pairSource.length - 1] as Frame] : null
+  const mixedReleases = !!compareFrames && compareFrames[0].release !== compareFrames[1].release && compareFrames.every((f) => f.release.startsWith('qr'))
   const totalTags = data.tags.counts ? Object.values(data.tags.counts).reduce((a, b) => a + b, 0) : 0
   const markedCount = new Set([...draft, ...data.my_marks].map((m) => m.frame)).size
 
@@ -208,6 +209,12 @@ export function PostViewer({ id }: { id: string }) {
             if (player.index + 1 < frames.length) player.setIndex(player.index + 1)
           }}
         />
+      )}
+
+      {mode === 'compare' && mixedReleases && !isChart && (
+        <div className="px-3 pt-2">
+          <QrWarning />
+        </div>
       )}
 
       {longBaseline && !isChart && <EraTimeline frames={frames} index={player.index} onPick={(i) => player.setIndex(i)} path={path} onPath={setPath} />}

@@ -222,6 +222,15 @@ body {
   border-radius: 6px;
 }
 
+.field-focus:has(input:focus-visible) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.field-focus input:focus-visible {
+  outline: none;
+}
+
 .story-ring {
   background: var(--gradient-story);
 }

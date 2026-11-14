@@ -72,6 +72,7 @@ export function PhotoViewer({
   offsets,
   reveal,
   overlay,
+  caption,
   onPlayingChange,
   onLocate,
 }: {
@@ -80,6 +81,7 @@ export function PhotoViewer({
   offsets: number[]
   reveal?: Reveal
   overlay?: (panel: number) => ReactNode
+  caption?: (panel: number) => ReactNode
   onPlayingChange?: (playing: boolean) => void
   onLocate?: (frame: number, x: number, y: number) => void
 }) {
@@ -210,7 +212,6 @@ export function PhotoViewer({
             </span>
           </>
         )}
-        {!onLocate && <span className="pointer-events-none absolute left-2 top-2 rounded-full bg-media-scrim px-2.5 py-1 text-meta font-semibold text-on-media">{current}</span>}
       </div>
 
       <div className="px-3 pt-3">
@@ -227,8 +228,8 @@ export function PhotoViewer({
           }}
         />
         <div className="mt-1 flex items-center gap-2">
-          <p className="min-w-0 flex-1 text-note text-text-secondary" aria-live="off">
-            {t('photoOf', { n: panel + 1, total: n })}
+          <p className="min-w-0 flex-1 text-note font-medium text-text-secondary first-letter:uppercase" aria-live="off">
+            {current}
           </p>
           <Segmented
             label={t('view')}
@@ -253,6 +254,7 @@ export function PhotoViewer({
             </button>
           )}
         </div>
+        {caption?.(panel)}
         {frame && <p className="pb-2 text-meta text-text-muted">{t('frameWhen', { date: formatDateTime(frame.t, locale), wavelength: formatWavelength([frame.wl_min, frame.wl_max]) })}</p>}
       </div>
     </div>

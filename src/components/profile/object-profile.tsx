@@ -99,12 +99,13 @@ export function ObjectProfileView({ id }: { id: string }) {
   }
 
   const unmeasurable = profile.verdict === 'not_measurable' || profile.verdict === 'not_detected'
+  const verdictKey = isSaturated(profile.saturation) && (profile.verdict === 'clear' || profile.verdict === 'with_help') ? `${profile.verdict}_bright` : profile.verdict
   const tiles = band ? frameTiles(posts ?? [], band, locale) : tilesFromPosts(posts ?? [])
 
   return (
     <main>
       <TopBar
-        title={profile.handle}
+        title={profile.kind === 'candidate' ? t('candidateTitle', { id: profile.id }) : profile.name}
         actions={
           <>
             <Link href="/alerts" aria-label={t('notifications')} className="inline-flex size-11 items-center justify-center">
@@ -124,10 +125,10 @@ export function ObjectProfileView({ id }: { id: string }) {
             {profile.has_new_data && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded border-2 border-bg bg-danger px-1 text-micro font-bold uppercase text-white">{ts('new')}</span>}
           </button>
           <div className="min-w-0 flex-1">
-            <h2 className="flex items-center gap-1 text-account font-semibold">
-              <span className="truncate">{profile.kind === 'candidate' ? t('candidateTitle', { id: profile.id }) : profile.name}</span>
+            <p className="flex items-center gap-1 text-account font-semibold">
+              <span className="truncate">{tp(`kinds.${profile.kind}`)}</span>
               <ObjectBadges verified={isVerified(profile.verdict)} saturated={isSaturated(profile.saturation)} size={15} />
-            </h2>
+            </p>
             <dl className="mt-2 flex gap-[23px]">
               {[
                 [profile.stats.posts, t('posts')],
@@ -144,7 +145,6 @@ export function ObjectProfileView({ id }: { id: string }) {
         </div>
 
         <div className="mt-3 space-y-1 text-body">
-          <p className="text-text-secondary">{tp(`kinds.${profile.kind}`)}</p>
           <p className={cx(!bioOpen && 'line-clamp-2')}>{profile.kind === 'candidate' ? t('candidateBody') : profile.bio}</p>
           {bioOpen ? (
             <>
@@ -195,9 +195,9 @@ export function ObjectProfileView({ id }: { id: string }) {
 
       {(unmeasurable || profile.verdict === 'indicative' || isSaturated(profile.saturation)) && (
         <div className="mt-4 px-4">
-          <button type="button" onClick={() => setWhy(true)} className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-surface px-3 text-left text-note active:bg-surface-pressed">
+          <button type="button" onClick={() => setWhy(true)} className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-surface px-3 py-2 text-left text-note active:bg-surface-pressed">
             <IconWarning size={20} className="shrink-0 text-warning" />
-            <span className="min-w-0 flex-1 font-semibold">{unmeasurable ? t('whyTitle') : t(`verdicts.${profile.verdict}`)}</span>
+            <span className="min-w-0 flex-1 font-semibold">{unmeasurable ? t('whyTitle') : t(`verdicts.${verdictKey}`)}</span>
             <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
           </button>
         </div>
@@ -267,7 +267,7 @@ export function ObjectProfileView({ id }: { id: string }) {
 
       <Sheet open={why} onClose={() => setWhy(false)} title={t('why')}>
         <div className="space-y-3 px-4 py-4 text-body">
-          <p className="font-semibold">{t(`verdicts.${profile.verdict}`)}</p>
+          <p className="font-semibold">{t(`verdicts.${verdictKey}`)}</p>
           <ul className="list-disc space-y-2 pl-4 text-text-secondary">
             {profile.limits.map((l) => (
               <li key={l}>{l}</li>

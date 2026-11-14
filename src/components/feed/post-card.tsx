@@ -18,7 +18,7 @@ export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | '
   const seen = useUi((s) => s.seenStories.includes(item.object.id))
   const openStory = useUi((s) => s.openStory)
   return (
-    <div className="flex h-[54px] items-center gap-[6px] pl-[6px] pr-1" data-tour="post-head">
+    <div className="flex h-[54px] items-center gap-[6px] pl-[6px] pr-1">
       <button type="button" onClick={() => openStory(item.object.id)} aria-label={t('openStory', { name: item.object.name })} className="rounded-full">
         <ObjectAvatar src={item.object.avatar} alt="" size={40} ring={seen ? 'seen' : 'new'} />
       </button>

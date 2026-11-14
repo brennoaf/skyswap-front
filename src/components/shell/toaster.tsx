@@ -1,10 +1,12 @@
 'use client'
 
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect } from 'react'
 import { BadgeArt } from '@/components/ui/badge-art'
 import { IconStar } from '@/components/icons'
+import { cx } from '@/lib/format'
 import { useUi, type Toast } from '@/lib/state/ui'
 
 function ToastBody({ toast }: { toast: Toast }) {
@@ -51,8 +53,9 @@ function ToastItem({ toast }: { toast: Toast & { id: number } }) {
 
 export function Toaster() {
   const toasts = useUi((s) => s.toasts)
+  const path = usePathname()
   return (
-    <ol aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--height-bottomnav)+env(safe-area-inset-bottom)+8px)] z-[70] mx-auto flex w-full max-w-[var(--width-app)] flex-col items-center gap-2 px-4">
+    <ol aria-live="polite" className={cx('pointer-events-none fixed inset-x-0 z-[70] mx-auto flex w-full max-w-[var(--width-app)] flex-col items-center gap-2 px-4', path === '/classify' ? 'bottom-[calc(var(--height-bottomnav)+env(safe-area-inset-bottom)+68px)]' : 'bottom-[calc(var(--height-bottomnav)+env(safe-area-inset-bottom)+8px)]')}>
       <AnimatePresence initial={false}>
         {toasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} />

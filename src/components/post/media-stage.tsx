@@ -161,7 +161,7 @@ export function MediaStage({
               <Image src={compareFrames[0].src} alt={`${t('compareA')}: ${fmt.shortDate(compareFrames[0].t)}`} fill sizes="470px" className="pixelated object-contain" unoptimized />
             </div>
             <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-mark-outline" style={{ left: `${compare}%` }}>
-              <span className="absolute top-1/2 -ml-[15px] flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-mark-outline text-body font-bold text-mark-halo shadow">⇆</span>
+              <span className="absolute top-3/4 -ml-[15px] flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-mark-outline text-body font-bold text-[var(--color-mark-halo)] shadow">⇆</span>
             </div>
             <label className="absolute inset-0 cursor-ew-resize">
               <span className="sr-only">{t('compareHint')}</span>
@@ -214,7 +214,12 @@ export function MediaStage({
             ) : frame.t ? (
               <Pill>{fmt.shortDate(frame.t)}</Pill>
             ) : null}
-            {length > 1 && !player.playing && <Pill className="ml-auto">{`${player.index + 1}/${length}`}</Pill>}
+            {(saturated || (length > 1 && !player.playing)) && (
+              <span className="ml-auto flex items-center gap-1.5">
+                {saturated && <Pill className="bg-warning text-on-warning">{t('saturatedPill')}</Pill>}
+                {length > 1 && !player.playing && <Pill>{`${player.index + 1}/${length}`}</Pill>}
+              </span>
+            )}
           </>
         )}
       </div>
@@ -223,11 +228,6 @@ export function MediaStage({
 
       {mode !== 'compare' && (
         <div className={cx('pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-300', visible || mode === 'mark' ? 'opacity-100' : 'opacity-0')}>
-          {saturated && (
-            <div className={cx('flex justify-end px-2 pb-1', mode === 'mark' && 'invisible')}>
-              <Pill className="bg-warning text-on-warning">{t('saturatedPill')}</Pill>
-            </div>
-          )}
           {length > 1 && mode === 'play' && (
             <div className="pointer-events-auto flex items-center gap-0.5 bg-gradient-to-t from-media-scrim to-transparent px-1 pb-1 pt-4 text-on-media">
               <button type="button" aria-label={player.playing ? t('pause') : t('play')} onClick={() => player.setPlaying(!player.playing)} className="inline-flex size-11 items-center justify-center">

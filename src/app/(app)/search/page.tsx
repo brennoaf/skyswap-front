@@ -5,21 +5,15 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { skyHref } from '@/components/feed/spot-sheet'
-import { IconClose, IconLink, IconReel, IconSearch, IconTarget, IconWarning } from '@/components/icons'
-import { Button, EmptyState, Notice, ObjectAvatar, Skeleton } from '@/components/ui/primitives'
+import { IconChevronRight, IconClose, IconReel, IconSearch, IconTarget } from '@/components/icons'
+import { Button, Chip, EmptyState, ObjectAvatar, Skeleton } from '@/components/ui/primitives'
 import type { FeedItem, SearchResult } from '@/lib/api/client'
 import { useFeed, useObjects, useSearch } from '@/lib/api/hooks'
 import { formatDec, formatRa } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
 
-function IconCode() {
-  return (
-    <svg width={20} height={20} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M12 10L6 16L12 22M20 10L26 16L20 22" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
+const NAME_CHIPS = ['WISE 0855', 'Eros', "Barnard's Star", 'Proxima Centauri']
 
 type Spot = NonNullable<SearchResult['spot']>
 type Hit = SearchResult['objects'][number]
@@ -58,86 +52,31 @@ function ResultRow({ o, onOpen }: { o: Hit; onOpen: () => void }) {
   )
 }
 
-function SpotCard({ spot, onWatch, obj }: { spot: Spot; onWatch: () => void; obj: string | null }) {
-  const fmt = useFmt()
+function WatchRow({ spot, onWatch, obj }: { spot: Spot; onWatch: () => void; obj: string | null }) {
   const t = useTranslations('search')
-  const ts = useTranslations('sky')
-  const toast = useUi((s) => s.toast)
-  const [manual, setManual] = useState<string | null>(null)
-  const href = skyHref({ ra: spot.ra, dec: spot.dec, name: spot.name, obj })
-  const sourceKey = `sources.${spot.source}`
-  const source = t.has(sourceKey) ? t(sourceKey) : spot.source
-  const coords = t('coordinates', { ra: formatRa(spot.ra), dec: formatDec(spot.dec) })
-
-  const copy = async (kind: 'link' | 'embed') => {
-    const origin = window.location.origin
-    const text =
-      kind === 'link'
-        ? `${origin}${href}`
-        : `<iframe src="${origin}${href.replace('/sky?', '/embed?')}" width="360" height="640" style="border:0;border-radius:12px" loading="lazy" allow="fullscreen" title="${ts('embedTitle')}"></iframe>`
-    try {
-      await navigator.clipboard.writeText(text)
-      setManual(null)
-      toast({ kind: 'info', key: 'search.copied' })
-    } catch {
-      setManual(text)
-    }
-  }
-
   return (
-    <section className="mx-4 mb-2 mt-3 rounded-2xl border-[0.5px] border-divider bg-bg-elevated p-4" aria-labelledby="spot-title">
-      <div className="flex items-start gap-3">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-surface text-text">
-          <IconTarget size={26} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-meta font-semibold uppercase tracking-wide text-text-secondary">{t('watchTitle')}</p>
-          <h2 id="spot-title" className="truncate text-title-sm font-semibold">
-            {spot.name ?? coords}
-          </h2>
-          {spot.name && <p className="text-note text-text-secondary">{coords}</p>}
-          <p className="text-note text-text-secondary">{t('resolvedBy', { source })}</p>
-        </div>
-      </div>
-      {spot.stale && (
-        <div className="mt-3">
-          <Notice tone="warning" icon={<IconWarning size={20} />}>
-            {spot.moved_arcsec !== null && spot.epoch !== null ? t('stale', { epoch: spot.epoch, moved: fmt.fixed(spot.moved_arcsec, 1) }) : t('staleUnknown')}
-          </Notice>
-        </div>
-      )}
-      <p className="mt-3 text-body">{t('watchBody')}</p>
-      <Link
-        href={href}
-        onClick={onWatch}
-        className="mt-3 flex min-h-11 w-full items-center justify-center rounded-[var(--radius-button)] bg-accent px-3 text-ui font-semibold text-on-accent active:bg-accent-pressed"
-      >
-        {t('watchOpen')}
-      </Link>
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        <Button className="min-h-9 whitespace-nowrap" onClick={() => void copy('link')} aria-label={t('copyDeepLink')}>
-          <IconLink size={20} />
-          {t('deepLink')}
-        </Button>
-        <Button className="min-h-9 whitespace-nowrap" onClick={() => void copy('embed')} aria-label={t('copyEmbed')}>
-          <IconCode />
-          {t('embed')}
-        </Button>
-      </div>
-      {manual && (
-        <label className="mt-3 block text-note text-text-secondary">
-          {t('copyFailed')}
-          <textarea
-            readOnly
-            autoFocus
-            value={manual}
-            rows={3}
-            onFocus={(e) => e.currentTarget.select()}
-            className="mt-1 block w-full resize-none rounded-[var(--radius-input)] border-[0.5px] border-divider bg-surface p-2 font-mono text-meta text-text outline-none"
-          />
-        </label>
-      )}
-    </section>
+    <Link href={skyHref({ ra: spot.ra, dec: spot.dec, name: spot.name, obj })} onClick={onWatch} className="flex min-h-[60px] items-center gap-3 px-4 py-2 active:bg-surface">
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-full border-[0.5px] border-divider">
+        <IconTarget size={24} />
+      </span>
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block truncate text-body font-semibold">{t('watchTitle')}</span>
+        <span className="block truncate text-body text-text-secondary">{spot.name ?? t('coordinates', { ra: formatRa(spot.ra), dec: formatDec(spot.dec) })}</span>
+      </span>
+      <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
+    </Link>
+  )
+}
+
+function NameChips({ onPick }: { onPick: (name: string) => void }) {
+  return (
+    <div className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-3 pt-1">
+      {NAME_CHIPS.map((name) => (
+        <Chip key={name} onClick={() => onPick(name)}>
+          {name}
+        </Chip>
+      ))}
+    </div>
   )
 }
 
@@ -218,6 +157,11 @@ export default function SearchPage() {
     setSaveFor(null)
   }, [saveFor, data, addRecent])
   const nearbyMode = !!data?.objects.some((o) => o.separation_deg !== null)
+  const pick = (name: string) => {
+    setQuery(name)
+    setDebounced(name)
+    setSaveFor(name)
+  }
 
   return (
     <main>
@@ -235,7 +179,7 @@ export default function SearchPage() {
         <label htmlFor="search-q" className="sr-only">
           {t('label')}
         </label>
-        <div className="flex h-9 w-full items-center rounded-[var(--radius-input)] bg-surface focus-within:ring-1 focus-within:ring-divider">
+        <div className="field-focus flex h-9 w-full items-center rounded-[var(--radius-input)] bg-surface">
           <IconSearch size={20} className="ml-2.5 shrink-0 text-text-secondary" />
           <input
             id="search-q"
@@ -305,7 +249,7 @@ export default function SearchPage() {
               </ul>
             </section>
           )}
-          <p className="px-4 pb-3 pt-1 text-note text-text-secondary">{t('hint')}</p>
+          <NameChips onPick={pick} />
           <ExploreGrid />
         </>
       )}
@@ -321,10 +265,9 @@ export default function SearchPage() {
             </>
           )}
           {search.isError && !pending && <EmptyState title={t('failed')} action={<Button onClick={() => search.refetch()}>{tc('retry')}</Button>} />}
-          {data && !data.resolved && <EmptyState title={t('noResults', { q: data.query })} body={t('hint')} />}
+          {data && !data.resolved && <EmptyState title={t('noResults', { q: data.query })} action={<NameChips onPick={pick} />} />}
           {data?.resolved && (
             <>
-              {data.spot && <SpotCard spot={data.spot} onWatch={remember} obj={data.spot.source === 'kit' ? (data.objects[0]?.id ?? null) : null} />}
               {data.objects.length > 0 && (
                 <section aria-labelledby="results-title" className="pt-2">
                   <h2 id="results-title" className="px-4 pb-1 pt-2 text-title-sm font-semibold">
@@ -337,6 +280,7 @@ export default function SearchPage() {
                   </ul>
                 </section>
               )}
+              {data.spot && <WatchRow spot={data.spot} onWatch={remember} obj={data.spot.source === 'kit' ? (data.objects[0]?.id ?? null) : null} />}
               {!data.spot && !data.objects.length && <EmptyState title={t('noResults', { q: data.query })} />}
             </>
           )}

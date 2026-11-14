@@ -36,7 +36,7 @@
     "label": "Main",
     "home": "Home",
     "search": "Search",
-    "classify": "Classify",
+    "classify": "Spot what moves",
     "reels": "Reels",
     "me": "My profile"
   },
@@ -228,7 +228,7 @@
     "items": {
       "first_vote": {
         "name": "First look",
-        "how": "Answer \"Does it move?\" for one set of photos."
+        "how": "Answer \"Does anything move?\" for one set of photos."
       },
       "first_motion": {
         "name": "First motion marked",
@@ -266,8 +266,8 @@
   },
   "object": {
     "badges": {
-      "verified": "Reliably seen by SPHEREx",
-      "saturated": "Too bright: saturated in SPHEREx"
+      "verified": "This telescope sees it clearly",
+      "saturated": "Too bright for this telescope to measure well"
     }
   },
   "onboarding": {
@@ -277,19 +277,15 @@
     "step": "{n} of {total}",
     "welcome": {
       "title": "Welcome to SkySwap",
-      "body": "A social network where every account is a real object in the sky, with real photos from NASA's SPHEREx telescope. This quick tour shows what each part of the screen does."
+      "body": "A social network where every account is a real object in the sky, posting real photos from NASA's SPHEREx telescope. Tap a name to open its profile."
     },
     "help": {
       "title": "You help find what moves",
-      "body": "SPHEREx photographs the whole sky again and again. Flip between two dates: most stars stay put, but nearby stars, asteroids and comets shift a little. Spotting those shifts is the job, and anyone can do it."
+      "body": "Flip between photos of the same spot: most stars stay put, but asteroids, comets and nearby stars shift. Your answers add up with everyone else's. When enough careful answers say something moves, that patch of sky joins a list of candidates. Nobody reviews that list yet, and you can't break anything."
     },
     "stories": {
       "title": "Objects with new photos",
       "body": "Each circle is a star, asteroid or comet. A coloured ring means new photos arrived. Tap one to watch its photos like a story."
-    },
-    "post": {
-      "title": "Every account is a sky object",
-      "body": "Posts are published by the objects themselves. Tap the name to open its profile with every photo of it."
     },
     "photo": {
       "title": "Real telescope photos",
@@ -306,34 +302,22 @@
       "title": "Where the pro mode is",
       "post": "Lab on a post opens that object with the pro tools",
       "top": "Lab at the top of the home screen lets you pick any object",
-      "dots": "The three dots have the rest: compare dates, copy the link"
-    },
-    "lab": {
-      "title": "The Lab: look like a scientist",
-      "date": "Step through the dates while you watch the photo",
-      "pixel": "Tap a spot to read its brightness",
-      "motion": "Stack the photos along a motion to find faint movers",
-      "spectrum": "See the light split by colour",
-      "note": "Every object profile also has a Lab button. Nothing you do there changes the data."
-    },
-    "alerts": {
-      "title": "Alerts",
-      "body": "The heart shows news: new photos of objects you follow, badges you earned and what the community decided about the photos you answered."
+      "dots": "The three dots have the rest: compare dates, copy the link",
+      "heart": "The heart has news about objects you follow"
     },
     "nav": {
       "title": "The bar at the bottom",
       "home": "Home: posts from the sky",
       "search": "Search: objects and any place in the sky",
-      "classify": "Classify: answer \"does it move?\", the main way to help",
+      "classify": "Spot what moves: answer \"does anything move?\", the main way to help",
       "reels": "Reels: time-lapses on the full screen",
       "me": "Profile: your level, badges and notes"
     },
     "finish": {
-      "title": "Your part, and the pro tools",
-      "contribution": "Your answers add up with everyone else's. When enough careful answers say a patch of sky has something moving, it joins a list of candidates. You can't break anything.",
-      "pro": "Want more detail? Tap Lab on any post or at the top of the home screen for pixels, layers, colours and light curves.",
+      "title": "You're ready",
       "classify": "Try a first card",
-      "explore": "Explore on my own"
+      "explore": "Explore on my own",
+      "body": "Start with one card, or look around first. You can replay this tour in Settings."
     }
   },
   "languageSetup": {
@@ -365,15 +349,17 @@
     },
     "aliases": "Also known as {names}",
     "verdicts": {
-      "clear": "SPHEREx sees it clearly",
-      "with_help": "SPHEREx sees it with help (crosshair and difference images)",
-      "indicative": "SPHEREx gives indicative results only",
-      "not_measurable": "SPHEREx can't measure this one",
-      "not_detected": "SPHEREx doesn't detect it here"
+      "clear": "This telescope sees it clearly.",
+      "with_help": "Hard for this telescope to see on its own. The yellow cross and the What changed view help you find it.",
+      "indicative": "This telescope gives only rough numbers for this one. Use them as a guide.",
+      "not_measurable": "This telescope can't measure this one.",
+      "not_detected": "This telescope can't find it in these photos.",
+      "clear_bright": "This telescope sees it clearly, but its centre is too bright to measure well.",
+      "with_help_bright": "Too bright for this telescope to measure well. The yellow cross helps you find it."
     },
-    "whyTitle": "Why SPHEREx can't measure it",
+    "whyTitle": "Why this telescope can't measure it",
     "candidateTitle": "Candidate #{id}",
-    "candidateBody": "Nobody knows yet what this is. Help find out: blink it, mark it and tag it.",
+    "candidateBody": "Nobody knows yet what this is. Help find out: flip through its photos, mark it and tag it.",
     "facts": "Facts",
     "limits": "Honest limits",
     "bestBands": "Best colours: {bands}",
@@ -476,7 +462,7 @@
     },
     "flagFrac": "{pct}% of photos",
     "satelliteNote": "Satellite trails are not flagged by SPHEREx.",
-    "saturatedWarning": "This star is too bright for SPHEREx: its centre overflows the detector, so brightness here is indicative only.",
+    "saturatedWarning": "This star is too bright for SPHEREx: its centre overflows the detector, so brightness here is only a rough guide.",
     "frameInfo": "{band}, {wavelength}, {date}, {release}",
     "dataNotice": "Images: NASA SPHEREx public data (QR2/QR3, IRSA). Infrared, shown in grey; any colour you see is false colour.",
     "loading": "Loading post",
@@ -520,8 +506,6 @@
     "nearby": "Nearby objects in SkySwap",
     "noResults": "No objects in SkySwap match \"{q}\".",
     "watchTitle": "Watch this spot",
-    "watchBody": "See every SPHEREx image of this patch of sky as a time-lapse.",
-    "watchOpen": "Watch",
     "resolvedBy": "Position from {source}",
     "sources": {
       "coordinates": "your coordinates",
@@ -537,7 +521,6 @@
     "embed": "Embed code",
     "copied": "Copied",
     "searching": "Searching",
-    "hint": "Try \"WISE 0855\", \"Eros\" or \"269.45 4.74\".",
     "clearQuery": "Clear search",
     "copyDeepLink": "Copy the deep link",
     "copyEmbed": "Copy the embed code",
@@ -635,11 +618,12 @@
       "failedBody": "They come from an outside archive, so this may be temporary. SkySwap photos keep working.",
       "openExternal": "Open in a new tab",
       "photosHint": "Older visible-light photos, for context. Pinch or use the buttons to zoom, and drag to move. The yellow mark is the position above."
-    }
+    },
+    "share": "Share this spot"
   },
   "classify": {
-    "title": "Classify",
-    "question": "Does it move?",
+    "title": "Spot what moves",
+    "question": "Does anything move?",
     "moves": "It moves",
     "still": "It doesn't move",
     "unsure": "Not sure",
@@ -649,7 +633,6 @@
     "play": "Play",
     "timeline": "When each photo was taken",
     "photoAt": "Photo {n}, {when}",
-    "photoOf": "Photo {n} of {total}",
     "photoAlt": "Sky photo {n} of {total}, {when}",
     "time": {
       "first": "first photo",
@@ -668,28 +651,27 @@
       "skip": "Skip"
     },
     "yourVote": "Your vote: {choice}",
-    "whatWasIt": "What was it?",
     "known": "It's a known asteroid: {name}.",
     "checks": {
-      "same": "You saw it the same way our checks did.",
-      "different": "Our checks saw it differently.",
-      "unsure": "That's what our checks saw."
+      "same": "Same as the known answer",
+      "different": "Different from the known answer. It takes practice.",
+      "unsure": "That's the known answer."
     },
-    "nobodyKnows": "Nobody knows yet. You're one of the first to look.",
+    "nobodyKnows": "Nobody knows yet.",
     "guess": "Our program's guess: {guess}",
     "outcome": {
-      "open": "{n, plural, one {# person looked} other {# people looked}} so far. Still early.",
+      "open": "{n, plural, one {# person} other {# people}} looked so far. Still early, so your look matters.",
       "moves": "Most likely a moving object",
       "still": "Most likely not moving",
       "undecided": "People see this one differently"
     },
     "kinds": {
-      "mover": "A moving object: it shows up in a different spot in each photo, like an asteroid crossing the sky. A slow one doesn't jump: in What changed it shows as a dark spot touching a bright one.",
-      "residual": "A leftover around a bright star. When photos taken at different times are compared, bright stars leave rings and smudges that don't move.",
-      "single": "A dot that shows up in only one photo. Usually a tiny particle hitting the camera, not something in the sky.",
-      "trail": "A streak across the photo. Often a satellite or a camera glitch.",
-      "stationary": "Something that stays in the same place in every photo.",
-      "orphan": "A dot with no match in the other photos, so nothing shows it moving."
+      "mover": "It shows up in a different spot in each photo, like an asteroid crossing the sky.",
+      "residual": "When photos taken at different times are compared, bright stars leave rings and smudges that don't move.",
+      "single": "It shows up in only one photo. Usually a tiny particle hitting the camera, not something in the sky.",
+      "trail": "Often a satellite or a camera glitch.",
+      "stationary": "It stays in the same place in every photo.",
+      "orphan": "It has no match in the other photos, so nothing shows it moving."
     },
     "guesses": {
       "mover": "a moving object",
@@ -733,7 +715,7 @@
     },
     "sky": {
       "label": "Random patch of sky",
-      "reveal": "This patch was picked at random. If enough people see something move here, it goes on a list for a closer look."
+      "reveal": "This patch was picked at random. If enough people see something move here, it joins a list of candidates. Nobody reviews that list yet."
     },
     "searching": "Finding a fresh patch of sky",
     "pause": "Pause",
@@ -778,6 +760,16 @@
       "wholeAlt": "Difference between two SPHEREx photos a year apart, whole field",
       "zoomAlt": "Close-up: a dark spot where the object was, touching a bright spot where it is now",
       "source": "Real SPHEREx data: {name}, {last} minus {first}."
+    },
+    "practice": "Practice, doesn't count",
+    "whyLook": "Why does it look like that?",
+    "verdicts": {
+      "mover": "It's a moving object.",
+      "residual": "It's a leftover around a bright star.",
+      "single": "It's a dot that flashes once.",
+      "trail": "It's a streak across the photo.",
+      "stationary": "It's something that stays put.",
+      "orphan": "It's a lone dot."
     }
   },
   "reels": {
@@ -827,7 +819,7 @@
       "artifact": "it doesn't move",
       "unsure": "not sure"
     },
-    "noActivity": "Nothing yet. Classify, mark or tag to see your activity.",
+    "noActivity": "Nothing yet. Answer a photo set, mark or tag to see your activity.",
     "noNotes": "No private notes yet.",
     "noSaved": "Nothing saved yet. Tap the bookmark on a post.",
     "noFollowing": "You don't follow any object yet.",
@@ -911,7 +903,7 @@
     "longBaseline": "{n}-year flipbook: {title}",
     "stack": {
       "title": "Follow a motion",
-      "body": "Adds up all the photos in this colour, shifted along the motion you set. A faint object moving that way gets brighter.",
+      "body": "Adds up all the photos in this colour, shifted along a straight path you set. It is made for stars that drift slowly over months: a faint one moving that way gets brighter. Fast asteroids cross the photo in hours, so this tool can't follow them.",
       "pmra": "East",
       "pmdec": "North",
       "run": "Stack along this motion",
@@ -921,7 +913,7 @@
       "reference": "Starts from the photo above, {date}. {n} photos in this colour. Bad pixels are left out.",
       "along": "Along {pmra}, {pmdec}",
       "still": "No motion",
-      "snr": "Peak at the target: {v} times the noise. {n} photos used.",
+      "snr": "Peak at the target: {v} times the noise. That is a peak, not proof. {n} photos used.",
       "sameStretch": "Both stacks use the same brightness scale. The ring is the target at the reference date.",
       "failed": "Couldn't stack these photos.",
       "unit": "In milliarcseconds per year. Drag on the circle or type the numbers."
@@ -966,7 +958,7 @@
     "zoomField": "Showing {n} arcminutes of sky. The full Moon is about 30.",
     "layerHints": {
       "gaia": "Known stars, with a line for their motion in 10 years",
-      "wise": "What the WISE telescope saw here",
+      "wise": "Positions from about 2010 to 2015, not moved to this photo's date",
       "saturation": "Too bright to measure",
       "cosmic": "Hits by particles, not light",
       "persistence": "Afterglow of an earlier bright source",
@@ -992,7 +984,7 @@
         "zoom": "Get closer to the centre of the photo",
         "layers": "Show known stars and problem pixels on top",
         "pixel": "Tap the photo to read the brightness of a spot",
-        "motion": "Stack the photos to find faint moving objects",
+        "motion": "Stack the photos along a straight path to find faint stars that drift over months, not fast asteroids",
         "spectrum": "See brightness by colour and over time",
         "notes": "Write down what you saw",
         "more": "Download data and check catalogs"
@@ -1045,7 +1037,9 @@
     "preferences": "Preferences",
     "yourData": "Your data",
     "help": "Help",
-    "tutorialHint": "A quick tour of each part of the screen"
+    "tutorialHint": "A quick tour of each part of the screen",
+    "details": "Details",
+    "detailsHint": "Data, API docs and project info"
   },
   "catalogs": {
     "title": "Check catalogs",
@@ -1075,7 +1069,7 @@
     "othersBody": "The average of everyone who marked this post. You only see it after marking.",
     "whyTitle": "Why mark it yourself?",
     "whyBody": "Predictions can be off, and your eyes don't know what the prediction says. If what people see lands away from the cross, that is worth a closer look.",
-    "whyHonest": "For now, marks are compared and shown here, and they do not change any \"Does it move?\" result.",
+    "whyHonest": "For now, marks are compared and shown here, and they do not change any \"Does anything move?\" result.",
     "markNow": "Mark it myself",
     "resultTitle": "{n, plural, one {# photo marked} other {# photos marked}}",
     "result": {

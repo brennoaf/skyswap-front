@@ -36,7 +36,7 @@
     "label": "Principal",
     "home": "Início",
     "search": "Pesquisar",
-    "classify": "Classificar",
+    "classify": "Ache o que se move",
     "reels": "Reels",
     "me": "Meu perfil"
   },
@@ -228,7 +228,7 @@
     "items": {
       "first_vote": {
         "name": "Primeira olhada",
-        "how": "Responda \"Isso se move?\" para um conjunto de fotos."
+        "how": "Responda \"Algo se move?\" para um conjunto de fotos."
       },
       "first_motion": {
         "name": "Primeiro movimento marcado",
@@ -266,8 +266,8 @@
   },
   "object": {
     "badges": {
-      "verified": "Visto com segurança pelo SPHEREx",
-      "saturated": "Brilhante demais: saturado no SPHEREx"
+      "verified": "Este telescópio vê com clareza",
+      "saturated": "Brilhante demais para este telescópio medir bem"
     }
   },
   "onboarding": {
@@ -277,19 +277,15 @@
     "step": "{n} de {total}",
     "welcome": {
       "title": "Boas-vindas ao SkySwap",
-      "body": "Uma rede social em que cada conta é um objeto de verdade no céu, com fotos reais do telescópio SPHEREx, da NASA. Este tour rápido mostra para que serve cada parte da tela."
+      "body": "Uma rede social em que cada conta é um objeto de verdade no céu, postando fotos reais do telescópio SPHEREx, da NASA. Toque em um nome para abrir o perfil."
     },
     "help": {
       "title": "Você ajuda a achar o que se move",
-      "body": "O SPHEREx fotografa o céu inteiro várias e várias vezes. Alterne entre duas datas: a maioria das estrelas fica parada, mas estrelas próximas, asteroides e cometas mudam um pouco de lugar. Achar essas mudanças é a missão, e qualquer pessoa consegue."
+      "body": "Alterne entre fotos do mesmo ponto: a maioria das estrelas fica parada, mas asteroides, cometas e estrelas próximas mudam de lugar. Suas respostas se somam às de todo mundo. Quando respostas cuidadosas suficientes dizem que algo se move, aquele pedaço do céu entra numa lista de candidatos. Ninguém revisa essa lista ainda, e você não consegue estragar nada."
     },
     "stories": {
       "title": "Objetos com fotos novas",
       "body": "Cada círculo é uma estrela, um asteroide ou um cometa. Um anel colorido quer dizer que chegaram fotos novas. Toque em um para ver as fotos como um story."
-    },
-    "post": {
-      "title": "Cada conta é um objeto do céu",
-      "body": "Os posts são publicados pelos próprios objetos. Toque no nome para abrir o perfil com todas as fotos dele."
     },
     "photo": {
       "title": "Fotos reais de telescópio",
@@ -306,34 +302,22 @@
       "title": "Onde fica o modo pro",
       "post": "O Lab no post abre aquele objeto com as ferramentas pro",
       "top": "O Lab no topo da tela inicial deixa você escolher qualquer objeto",
-      "dots": "Os três pontinhos têm o resto: comparar datas, copiar o link"
-    },
-    "lab": {
-      "title": "O Lab: olhe como cientista",
-      "date": "Passe pelas datas enquanto olha a foto",
-      "pixel": "Toque num ponto para ler o brilho dele",
-      "motion": "Empilhe as fotos seguindo um movimento para achar objetos fracos",
-      "spectrum": "Veja a luz separada por cor",
-      "note": "O perfil de cada objeto também tem um botão Lab. Nada do que você faz lá muda os dados."
-    },
-    "alerts": {
-      "title": "Alertas",
-      "body": "O coração mostra as novidades: fotos novas de objetos que você segue, selos que você ganhou e o que a comunidade decidiu sobre as fotos que você respondeu."
+      "dots": "Os três pontinhos têm o resto: comparar datas, copiar o link",
+      "heart": "O coração traz novidades dos objetos que você segue"
     },
     "nav": {
       "title": "A barra de baixo",
       "home": "Início: posts do céu",
       "search": "Pesquisar: objetos e qualquer lugar do céu",
-      "classify": "Classificar: responder \"se move?\", o jeito principal de ajudar",
+      "classify": "Ache o que se move: responder \"algo se move?\", o jeito principal de ajudar",
       "reels": "Reels: time-lapses em tela cheia",
       "me": "Perfil: seu nível, selos e notas"
     },
     "finish": {
-      "title": "Sua parte, e as ferramentas pro",
-      "contribution": "Suas respostas se somam às de todo mundo. Quando respostas cuidadosas suficientes dizem que algo se move numa região do céu, ela entra numa lista de candidatos. Você não consegue estragar nada.",
-      "pro": "Quer mais detalhes? Toque em Lab em qualquer post ou no topo da tela inicial para ver pixels, camadas, cores e curvas de luz.",
+      "title": "Tudo pronto",
       "classify": "Tentar um primeiro cartão",
-      "explore": "Explorar por conta própria"
+      "explore": "Explorar por conta própria",
+      "body": "Comece com um cartão ou dê uma olhada antes. Você pode rever este tour em Configurações."
     }
   },
   "languageSetup": {
@@ -365,15 +349,17 @@
     },
     "aliases": "Também conhecido como {names}",
     "verdicts": {
-      "clear": "O SPHEREx vê com clareza",
-      "with_help": "O SPHEREx vê com ajuda (mira e imagens de diferença)",
-      "indicative": "O SPHEREx só dá resultados aproximados",
-      "not_measurable": "O SPHEREx não consegue medir este",
-      "not_detected": "O SPHEREx não detecta este aqui"
+      "clear": "Este telescópio vê com clareza.",
+      "with_help": "Difícil para este telescópio ver sozinho. A cruz amarela e a visão O que mudou ajudam você a achar.",
+      "indicative": "Este telescópio só dá números aproximados para este. Use como referência.",
+      "not_measurable": "Este telescópio não consegue medir este.",
+      "not_detected": "Este telescópio não consegue achar este nestas fotos.",
+      "clear_bright": "Este telescópio vê com clareza, mas o centro é brilhante demais para medir bem.",
+      "with_help_bright": "Brilhante demais para este telescópio medir bem. A cruz amarela ajuda você a achar."
     },
-    "whyTitle": "Por que o SPHEREx não consegue medir",
+    "whyTitle": "Por que este telescópio não consegue medir",
     "candidateTitle": "Candidato #{id}",
-    "candidateBody": "Ninguém sabe ainda o que é isto. Ajude a descobrir: pisque, marque e etiquete.",
+    "candidateBody": "Ninguém sabe ainda o que é isto. Ajude a descobrir: passe as fotos, marque e etiquete.",
     "facts": "Fatos",
     "limits": "Limites honestos",
     "bestBands": "Melhores cores: {bands}",
@@ -476,7 +462,7 @@
     },
     "flagFrac": "{pct}% das fotos",
     "satelliteNote": "O SPHEREx não sinaliza rastros de satélite.",
-    "saturatedWarning": "Esta estrela é brilhante demais para o SPHEREx: o centro dela estoura o detector, então o brilho aqui é só aproximado.",
+    "saturatedWarning": "Esta estrela é brilhante demais para o SPHEREx: o centro dela estoura o detector, então o brilho aqui é só uma referência aproximada.",
     "frameInfo": "{band}, {wavelength}, {date}, {release}",
     "dataNotice": "Imagens: dados públicos do SPHEREx, da NASA (QR2/QR3, IRSA). Infravermelho, mostrado em cinza; qualquer cor que você vê é cor falsa.",
     "loading": "Carregando post",
@@ -520,8 +506,6 @@
     "nearby": "Objetos próximos no SkySwap",
     "noResults": "Nenhum objeto do SkySwap corresponde a \"{q}\".",
     "watchTitle": "Ver este ponto",
-    "watchBody": "Veja todas as imagens do SPHEREx deste pedaço do céu como um time-lapse.",
-    "watchOpen": "Ver",
     "resolvedBy": "Posição de {source}",
     "sources": {
       "coordinates": "suas coordenadas",
@@ -537,7 +521,6 @@
     "embed": "Código para incorporar",
     "copied": "Copiado",
     "searching": "Pesquisando",
-    "hint": "Tente \"WISE 0855\", \"Eros\" ou \"269.45 4.74\".",
     "clearQuery": "Limpar pesquisa",
     "copyDeepLink": "Copiar o link direto",
     "copyEmbed": "Copiar o código para incorporar",
@@ -635,11 +618,12 @@
       "failedBody": "Elas vêm de um arquivo externo, então pode ser temporário. As fotos do SkySwap continuam funcionando.",
       "openExternal": "Abrir em nova aba",
       "photosHint": "Fotos mais antigas, em luz visível, para dar contexto. Faça pinça ou use os botões para o zoom e arraste para mover. A marca amarela é a posição indicada acima."
-    }
+    },
+    "share": "Compartilhar este ponto"
   },
   "classify": {
-    "title": "Classificar",
-    "question": "Isso se move?",
+    "title": "Ache o que se move",
+    "question": "Algo se move?",
     "moves": "Se move",
     "still": "Não se move",
     "unsure": "Não tenho certeza",
@@ -649,7 +633,6 @@
     "play": "Reproduzir",
     "timeline": "Quando cada foto foi feita",
     "photoAt": "Foto {n}, {when}",
-    "photoOf": "Foto {n} de {total}",
     "photoAlt": "Foto do céu {n} de {total}, {when}",
     "time": {
       "first": "primeira foto",
@@ -668,28 +651,27 @@
       "skip": "Pular"
     },
     "yourVote": "Seu voto: {choice}",
-    "whatWasIt": "O que era?",
     "known": "É um asteroide conhecido: {name}.",
     "checks": {
-      "same": "Você viu do mesmo jeito que nossas verificações.",
-      "different": "Nossas verificações viram de outro jeito.",
-      "unsure": "Foi isso que nossas verificações viram."
+      "same": "Igual à resposta conhecida",
+      "different": "Diferente da resposta conhecida. Isso pede prática.",
+      "unsure": "Essa é a resposta conhecida."
     },
-    "nobodyKnows": "Ninguém sabe ainda. Você é uma das primeiras pessoas a olhar.",
+    "nobodyKnows": "Ninguém sabe ainda.",
     "guess": "O palpite do nosso programa: {guess}",
     "outcome": {
-      "open": "{n, plural, one {# pessoa olhou} other {# pessoas olharam}} até agora. Ainda é cedo.",
+      "open": "{n, plural, one {# pessoa olhou} other {# pessoas olharam}} até agora. Ainda é cedo, então sua olhada importa.",
       "moves": "Provavelmente um objeto em movimento",
       "still": "Provavelmente não se move",
       "undecided": "As pessoas veem este de jeitos diferentes"
     },
     "kinds": {
-      "mover": "Um objeto em movimento: ele aparece num lugar diferente em cada foto, como um asteroide cruzando o céu. Um lento não pula: em O que mudou ele aparece como uma mancha escura encostada numa clara.",
-      "residual": "Uma sobra em volta de uma estrela brilhante. Quando fotos de momentos diferentes são comparadas, estrelas brilhantes deixam anéis e manchas que não se movem.",
-      "single": "Um ponto que aparece em só uma foto. Normalmente é uma partícula minúscula batendo na câmera, não algo no céu.",
-      "trail": "Um risco atravessando a foto. Muitas vezes é um satélite ou uma falha da câmera.",
-      "stationary": "Algo que fica no mesmo lugar em todas as fotos.",
-      "orphan": "Um ponto sem par nas outras fotos, então nada mostra ele se movendo."
+      "mover": "Ele aparece num lugar diferente em cada foto, como um asteroide cruzando o céu.",
+      "residual": "Quando fotos de momentos diferentes são comparadas, estrelas brilhantes deixam anéis e manchas que não se movem.",
+      "single": "Ele aparece em só uma foto. Normalmente é uma partícula minúscula batendo na câmera, não algo no céu.",
+      "trail": "Muitas vezes é um satélite ou uma falha da câmera.",
+      "stationary": "Ele fica no mesmo lugar em todas as fotos.",
+      "orphan": "Ele não tem par nas outras fotos, então nada mostra ele se movendo."
     },
     "guesses": {
       "mover": "um objeto em movimento",
@@ -733,7 +715,7 @@
     },
     "sky": {
       "label": "Pedaço do céu sorteado",
-      "reveal": "Este pedaço foi sorteado. Se pessoas suficientes virem algo se mover aqui, ele entra numa lista para ser olhado com mais atenção."
+      "reveal": "Este pedaço foi sorteado. Se pessoas suficientes virem algo se mover aqui, ele entra numa lista de candidatos. Ninguém revisa essa lista ainda."
     },
     "searching": "Procurando um pedaço novo do céu",
     "pause": "Pausar",
@@ -778,6 +760,16 @@
       "wholeAlt": "Diferença entre duas fotos do SPHEREx com um ano de intervalo, campo inteiro",
       "zoomAlt": "Detalhe: uma mancha escura onde o objeto estava, encostada numa mancha clara onde ele está agora",
       "source": "Dados reais do SPHEREx: {name}, {last} menos {first}."
+    },
+    "practice": "Treino, não conta",
+    "whyLook": "Por que fica assim?",
+    "verdicts": {
+      "mover": "É um objeto em movimento.",
+      "residual": "É uma sobra em volta de uma estrela brilhante.",
+      "single": "É um ponto que pisca uma vez.",
+      "trail": "É um risco atravessando a foto.",
+      "stationary": "É algo que fica parado.",
+      "orphan": "É um ponto sozinho."
     }
   },
   "reels": {
@@ -827,7 +819,7 @@
       "artifact": "não se move",
       "unsure": "não tenho certeza"
     },
-    "noActivity": "Nada ainda. Classifique, marque ou etiquete para ver sua atividade.",
+    "noActivity": "Nada ainda. Responda um conjunto de fotos, marque ou etiquete para ver sua atividade.",
     "noNotes": "Ainda não há notas privadas.",
     "noSaved": "Nada salvo ainda. Toque no marcador de um post.",
     "noFollowing": "Você ainda não segue nenhum objeto.",
@@ -911,7 +903,7 @@
     "longBaseline": "Animação de {n} anos: {title}",
     "stack": {
       "title": "Seguir um movimento",
-      "body": "Soma todas as fotos desta cor, deslocadas pelo movimento que você escolheu. Um objeto fraco que se move assim fica mais brilhante.",
+      "body": "Soma todas as fotos desta cor, deslocadas ao longo de um caminho reto que você escolhe. Serve para estrelas que andam devagar ao longo de meses: uma estrela fraca que se move assim fica mais brilhante. Asteroides rápidos cruzam a foto em horas, então esta ferramenta não os acompanha.",
       "pmra": "Leste",
       "pmdec": "Norte",
       "run": "Empilhar ao longo deste movimento",
@@ -921,7 +913,7 @@
       "reference": "Começa da foto acima, {date}. {n} fotos nesta cor. Pixels ruins ficam de fora.",
       "along": "Ao longo de {pmra}, {pmdec}",
       "still": "Sem movimento",
-      "snr": "Pico no alvo: {v} vezes o ruído. {n} fotos usadas.",
+      "snr": "Pico no alvo: {v} vezes o ruído. É um pico, não uma prova. {n} fotos usadas.",
       "sameStretch": "As duas pilhas usam a mesma escala de brilho. O anel é o alvo na data de referência.",
       "failed": "Não foi possível empilhar estas fotos.",
       "unit": "Em milissegundos de arco por ano. Arraste no círculo ou digite os números."
@@ -966,7 +958,7 @@
     "zoomField": "Mostrando {n} minutos de arco do céu. A Lua cheia tem cerca de 30.",
     "layerHints": {
       "gaia": "Estrelas conhecidas, com uma linha do movimento em 10 anos",
-      "wise": "O que o telescópio WISE viu aqui",
+      "wise": "Posições de cerca de 2010 a 2015, sem ajuste para a data desta foto",
       "saturation": "Brilhante demais para medir",
       "cosmic": "Batidas de partículas, não luz",
       "persistence": "Brilho que sobrou de uma fonte forte anterior",
@@ -992,7 +984,7 @@
         "zoom": "Chegue mais perto do centro da foto",
         "layers": "Mostre estrelas conhecidas e pixels com problema por cima",
         "pixel": "Toque na foto para ler o brilho de um ponto",
-        "motion": "Empilhe as fotos para achar objetos fracos em movimento",
+        "motion": "Empilhe as fotos num caminho reto para achar estrelas fracas que andam ao longo de meses, não asteroides rápidos",
         "spectrum": "Veja o brilho por cor e ao longo do tempo",
         "notes": "Anote o que você viu",
         "more": "Baixe dados e confira catálogos"
@@ -1045,7 +1037,9 @@
     "preferences": "Preferências",
     "yourData": "Seus dados",
     "help": "Ajuda",
-    "tutorialHint": "Um tour rápido por cada parte da tela"
+    "tutorialHint": "Um tour rápido por cada parte da tela",
+    "details": "Detalhes",
+    "detailsHint": "Dados, documentação da API e o projeto"
   },
   "catalogs": {
     "title": "Consultar catálogos",

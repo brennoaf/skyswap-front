@@ -213,7 +213,7 @@ export function LabView({ id }: { id: string }) {
   const [photo, setPhoto] = useState<PhotoSize>('large')
   const [decoded, setDecoded] = useState<Decoded | null>(null)
   const [zoom, setZoom] = useState(1)
-  const [layers, setLayers] = useState<Record<LayerKey, boolean>>({ target: true, gaia: true, wise: false, saturation: false, cosmic: false, persistence: false, satellite: false })
+  const [layers, setLayers] = useState<Record<LayerKey, boolean>>({ target: true, gaia: false, wise: false, saturation: false, cosmic: false, persistence: false, satellite: false })
   const [pixel, setPixel] = useState<{ x: number; y: number } | null>(null)
   const [live, setLive] = useState<{ done: number; total: number; points: { iso: string; lam: number; flux: number; err: number; release: string }[] } | null>(null)
   const [notes, setNotes] = useState<LabNote[]>([])
