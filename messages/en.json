@@ -737,11 +737,6 @@
     },
     "frameWhen": "{date}, {wavelength}",
     "pacing": "Most photo sets have nothing new. That's normal, and every look still counts.",
-    "locate": {
-      "prompt": "Where is it? Tap it",
-      "skip": "Skip",
-      "hint": "Tap the dot that moves, or skip."
-    },
     "help": {
       "open": "How to look",
       "title": "How to look",
@@ -770,6 +765,17 @@
       "trail": "It's a streak across the photo.",
       "stationary": "It's something that stays put.",
       "orphan": "It's a lone dot."
+    },
+    "confirm": {
+      "said": "You said: {choice}",
+      "undo": "Undo",
+      "see": "See the answer",
+      "tap": "Tap the photo where you saw it, if you like.",
+      "marked": "Spot marked. Tap again to change it.",
+      "nothingSent": "Nothing has been saved yet.",
+      "saving": "Saving",
+      "failed": "Couldn't save your answer.",
+      "retry": "Try again"
     }
   },
   "reels": {

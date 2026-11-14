@@ -737,11 +737,6 @@
     },
     "frameWhen": "{date}, {wavelength}",
     "pacing": "A maioria dos conjuntos de fotos não tem nada novo. Isso é normal, e cada olhada conta.",
-    "locate": {
-      "prompt": "Onde está? Toque nele",
-      "skip": "Pular",
-      "hint": "Toque no ponto que se move ou pule."
-    },
     "help": {
       "open": "Como olhar",
       "title": "Como olhar",
@@ -770,6 +765,17 @@
       "trail": "É um risco atravessando a foto.",
       "stationary": "É algo que fica parado.",
       "orphan": "É um ponto sozinho."
+    },
+    "confirm": {
+      "said": "Você disse: {choice}",
+      "undo": "Desfazer",
+      "see": "Ver resposta",
+      "tap": "Toque na foto onde viu, se quiser.",
+      "marked": "Ponto marcado. Toque de novo para mudar.",
+      "nothingSent": "Nada foi salvo ainda.",
+      "saving": "Salvando",
+      "failed": "Não foi possível salvar sua resposta.",
+      "retry": "Tentar de novo"
     }
   },
   "reels": {

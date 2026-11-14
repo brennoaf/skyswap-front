@@ -22,6 +22,7 @@ type VoteResult = NonNullable<ReturnType<typeof useVote>['data']>
 type Mark = { u: number; v: number }
 
 const SWIPE = 110
+const CONFIRM_MS = 3000
 const PAUSE_EVERY = 25
 const IDLE_MS = 12_000
 const QUIET_RUN = 10
@@ -217,6 +218,29 @@ function CardFrame({ children, x, y }: { children: ReactNode; x?: MotionValue<nu
   )
 }
 
+function ConfirmStrip({ choice, stage, marked, canMark, onUndo, onSend }: { choice: string; stage: 'confirm' | 'marking' | 'sending' | 'failed'; marked: boolean; canMark: boolean; onUndo: () => void; onSend: () => void }) {
+  const t = useTranslations('classify.confirm')
+  const reduce = useReducedMotion()
+  const failed = stage === 'failed'
+  const sending = stage === 'sending'
+  const note = failed ? t('failed') : sending ? t('saving') : marked ? t('marked') : canMark ? t('tap') : t('nothingSent')
+  return (
+    <section role="status" aria-live="polite" className="relative shrink-0 overflow-hidden px-3 pb-2 pt-2">
+      {stage === 'confirm' && !reduce && <motion.span aria-hidden="true" className="absolute inset-x-3 top-0 h-[3px] origin-left rounded-full bg-accent" initial={{ scaleX: 1 }} animate={{ scaleX: 0 }} transition={{ duration: CONFIRM_MS / 1000, ease: 'linear' }} />}
+      <p className="truncate text-ui font-semibold">{t('said', { choice })}</p>
+      <p className={cx('truncate text-note', failed ? 'font-medium text-danger' : 'text-text-secondary')}>{note}</p>
+      <div className="mt-1.5 flex gap-2">
+        <Button className="h-[52px] flex-[1.2] text-ui font-semibold" disabled={sending} onClick={onUndo}>
+          {t('undo')}
+        </Button>
+        <Button variant="primary" className="h-[52px] flex-1 text-ui font-semibold" disabled={sending} onClick={onSend}>
+          {failed ? t('retry') : t('see')}
+        </Button>
+      </div>
+    </section>
+  )
+}
+
 function VoteCard({
   card,
   header,
@@ -250,9 +274,8 @@ function VoteCard({
   const movesOpacity = useTransform(x, [24, SWIPE], [0, 1])
   const stillOpacity = useTransform(x, [-SWIPE, -24], [1, 0])
   const unsureOpacity = useTransform(y, [-SWIPE, -24], [1, 0])
-  const busy = useRef(false)
-  const [pending, setPending] = useState(false)
-  const [locating, setLocating] = useState(false)
+  const [held, setHeld] = useState<{ choice: Choice; at: number } | null>(null)
+  const [stage, setStage] = useState<'confirm' | 'marking' | 'sending' | 'failed'>('confirm')
   const [spot, setSpot] = useState<VotePosition | null>(null)
 
   const settle = useCallback(() => {
@@ -260,46 +283,50 @@ function VoteCard({
     animate(y, 0, { type: 'spring', stiffness: 500, damping: 32 })
   }, [x, y])
 
-  const commit = useCallback(
-    async (choice: Choice, position: VotePosition | null = null) => {
-      if (busy.current || !img) return
-      busy.current = true
-      setPending(true)
-      const target = choice === 'moves' ? { x: 520, y: 0 } : choice === 'still' ? { x: -520, y: 0 } : { x: 0, y: -720 }
-      const fly = reduce
-        ? Promise.resolve()
-        : Promise.race([
-            Promise.all([animate(x, target.x, { duration: 0.26, ease: 'easeIn' }), animate(y, target.y, { duration: 0.26, ease: 'easeIn' })]),
-            new Promise((resolve) => setTimeout(resolve, 400)),
-          ])
-      try {
-        const [r] = await Promise.all([vote.mutateAsync({ card_id: card.id, choice, ...(position ? { position } : {}) }), fly])
-        onVoted(choice, r)
-      } catch (err) {
-        if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) {
-          onStale()
-          return
-        }
-        toast({ kind: 'info', key: 'classify.voteFailed' })
-        settle()
-        busy.current = false
-        setPending(false)
+  const undo = useCallback(() => {
+    setHeld(null)
+    setSpot(null)
+    setStage('confirm')
+  }, [])
+
+  const send = useCallback(async () => {
+    if (!held) return
+    setStage('sending')
+    try {
+      const r = await vote.mutateAsync({ card_id: card.id, choice: held.choice, held_ms: Math.min(600000, Math.round(performance.now() - held.at)), ...(spot ? { position: spot } : {}) })
+      onVoted(held.choice, r)
+    } catch (err) {
+      if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) {
+        onStale()
+        return
       }
-    },
-    [card.id, img, onStale, onVoted, reduce, settle, toast, vote, x, y],
-  )
+      setStage('failed')
+    }
+  }, [card.id, held, onStale, onVoted, spot, vote])
+
+  useEffect(() => {
+    if (!held || stage !== 'confirm') return
+    const timer = setTimeout(() => void send(), CONFIRM_MS)
+    return () => clearTimeout(timer)
+  }, [held, send, stage])
+
+  useEffect(() => {
+    if (!held) return
+    const onHide = () => {
+      if (document.visibilityState === 'hidden' && (stage === 'confirm' || stage === 'marking')) undo()
+    }
+    document.addEventListener('visibilitychange', onHide)
+    return () => document.removeEventListener('visibilitychange', onHide)
+  }, [held, stage, undo])
 
   const choose = useCallback(
     (choice: Choice) => {
-      if (busy.current || !img) return
-      if (choice === 'moves' && !guide && !locating) {
-        settle()
-        setLocating(true)
-        return
-      }
-      void commit(choice)
+      if (held || !img) return
+      settle()
+      setHeld({ choice, at: performance.now() })
+      setStage('confirm')
     },
-    [commit, guide, img, locating, settle],
+    [held, img, settle],
   )
 
   const onRelease = (dx: number, dy: number, vx: number, vy: number) => {
@@ -310,10 +337,10 @@ function VoteCard({
     else settle()
   }
 
+  const canMark = held?.choice === 'moves' && (stage === 'confirm' || stage === 'marking')
   const locate = (frame: number, u: number, v: number) => {
-    const p = { frame, x: Math.round(u * 1e4) / 1e4, y: Math.round(v * 1e4) / 1e4 }
-    setSpot(p)
-    void commit('moves', p)
+    setSpot({ frame, x: Math.round(u * 1e4) / 1e4, y: Math.round(v * 1e4) / 1e4 })
+    setStage('marking')
   }
 
   const viewerOverlay = (panel: number) => (
@@ -325,20 +352,7 @@ function VoteCard({
 
   return (
     <>
-      {locating ? (
-        <div role="status" aria-live="polite" className="shrink-0">
-          <CardHeader
-            title={t('locate.prompt')}
-            actions={
-              <Button variant="ghost" className="h-11 text-link" onClick={() => void commit('moves')} disabled={pending}>
-                {t('locate.skip')}
-              </Button>
-            }
-          />
-        </div>
-      ) : (
-        header
-      )}
+      {header}
       <motion.div
         style={{ x, y, rotate }}
         initial={reduce ? false : { opacity: 0, scale: 0.96 }}
@@ -349,7 +363,7 @@ function VoteCard({
         <Stamp label={t('still')} tone="still" style={{ opacity: stillOpacity }} className="right-4 top-4" />
         <Stamp label={t('unsure')} tone="unsure" style={{ opacity: unsureOpacity }} className="left-1/2 top-4 -translate-x-1/2" />
         <CardFrame x={x} y={y}>
-          <PhotoViewer fit swipe={{ x, y, enabled: !pending && !locating && !!img, threshold: SWIPE, onRelease, onCancel: settle }} sprite={card.sprite} img={img} offsets={card.offsets_s} overlay={viewerOverlay} caption={caption} onLocate={locating && !pending ? locate : undefined} />
+          <PhotoViewer fit hold={stage === 'marking'} swipe={{ x, y, enabled: !held && !!img, threshold: SWIPE, onRelease, onCancel: settle }} sprite={card.sprite} img={img} offsets={card.offsets_s} overlay={viewerOverlay} caption={caption} onTouchPhoto={canMark ? () => setStage('marking') : undefined} onLocate={canMark ? locate : undefined} />
         </CardFrame>
       </motion.div>
 
@@ -363,22 +377,28 @@ function VoteCard({
         </div>
       )}
 
-      {((showHints && !guide) || locating) && <p className="shrink-0 truncate px-3 pt-1 text-center text-meta text-text-secondary">{locating ? t('locate.hint') : t('hints.swipe')}</p>}
-      <div className="shrink-0 px-3 pb-2 pt-2">
-        <div className="flex gap-2">
-          <ChoiceButton label={t('still')} onClick={() => choose('still')} disabled={pending || !img} primary>
-            <IconStill size={24} />
-          </ChoiceButton>
-          <ChoiceButton label={t('moves')} onClick={() => (locating ? void commit('moves') : choose('moves'))} disabled={pending || !img} pressed={locating} primary>
-            <IconMoves size={24} />
-          </ChoiceButton>
-        </div>
-        <div className="mt-1 flex">
-          <ChoiceButton label={t('unsure')} onClick={() => choose('unsure')} disabled={pending || !img}>
-            <IconQuestion size={20} />
-          </ChoiceButton>
-        </div>
-      </div>
+      {held ? (
+        <ConfirmStrip choice={t(held.choice)} stage={stage} marked={!!spot} canMark={held.choice === 'moves'} onUndo={undo} onSend={() => void send()} />
+      ) : (
+        <>
+          {showHints && !guide && <p className="shrink-0 truncate px-3 pt-1 text-center text-meta text-text-secondary">{t('hints.swipe')}</p>}
+          <div className="shrink-0 px-3 pb-2 pt-2">
+            <div className="flex gap-2">
+              <ChoiceButton label={t('still')} onClick={() => choose('still')} disabled={!img} primary>
+                <IconStill size={24} />
+              </ChoiceButton>
+              <ChoiceButton label={t('moves')} onClick={() => choose('moves')} disabled={!img} primary>
+                <IconMoves size={24} />
+              </ChoiceButton>
+            </div>
+            <div className="mt-1 flex">
+              <ChoiceButton label={t('unsure')} onClick={() => choose('unsure')} disabled={!img}>
+                <IconQuestion size={20} />
+              </ChoiceButton>
+            </div>
+          </div>
+        </>
+      )}
     </>
   )
 }

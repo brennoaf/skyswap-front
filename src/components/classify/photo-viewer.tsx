@@ -1,6 +1,6 @@
 'use client'
 
-import { useReducedMotion, type MotionValue } from 'framer-motion'
+import { useMotionValue, useReducedMotion, type MotionValue } from 'framer-motion'
 import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useCardGestures } from '@/components/classify/card-gestures'
@@ -89,6 +89,8 @@ export function PhotoViewer({
   onLocate,
   fit = false,
   swipe,
+  hold = false,
+  onTouchPhoto,
 }: {
   sprite: string
   img: HTMLImageElement | null
@@ -100,6 +102,8 @@ export function PhotoViewer({
   onLocate?: (frame: number, x: number, y: number) => void
   fit?: boolean
   swipe?: CardSwipe
+  hold?: boolean
+  onTouchPhoto?: () => void
 }) {
   const t = useTranslations('classify')
   const locale = useLocale()
@@ -112,11 +116,13 @@ export function PhotoViewer({
   const [chevrons, setChevrons] = useState(false)
   const [frozen, setFrozen] = useState(false)
   const inner = useRef<HTMLDivElement>(null)
+  const restX = useMotionValue(0)
+  const restY = useMotionValue(0)
   const drag = useRef<{ x: number; y: number } | null>(null)
   const hide = useRef<ReturnType<typeof setTimeout> | null>(null)
   const n = Math.max(1, offsets.length)
   const tile = img ? Math.round(img.naturalHeight / 2) : 1
-  const running = playing && n > 1 && !frozen
+  const running = playing && n > 1 && !frozen && !hold
   const paused = !playing
   const restart = useLoopRestart(panel, running)
 
@@ -174,11 +180,10 @@ export function PhotoViewer({
     return () => window.removeEventListener('keydown', onKey)
   }, [step, flash])
 
-  const fallback = useRef<MotionValue<number> | null>(null)
   const gestures = useCardGestures({
     box: inner,
-    x: swipe?.x ?? (fallback.current as unknown as MotionValue<number>),
-    y: swipe?.y ?? (fallback.current as unknown as MotionValue<number>),
+    x: swipe?.x ?? restX,
+    y: swipe?.y ?? restY,
     canSwipe: !!swipe?.enabled,
     threshold: swipe?.threshold ?? 0,
     onRelease: swipe?.onRelease ?? NO_SWIPE,
@@ -200,6 +205,7 @@ export function PhotoViewer({
         className={cx('relative select-none overflow-hidden', onLocate && 'cursor-crosshair', fit && 'mx-auto aspect-square', swipe && 'touch-none')}
         style={fit ? { width: 'min(100cqw, 100cqh)' } : undefined}
         {...(swipe ? gestures.bind : {})}
+        onPointerDownCapture={onTouchPhoto}
         onPointerDown={swipe ? gestures.bind.onPointerDown : (e) => {
           drag.current = { x: e.clientX, y: e.clientY }
         }}

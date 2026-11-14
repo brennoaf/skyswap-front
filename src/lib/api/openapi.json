@@ -6372,6 +6372,11 @@
                       }
                     },
                     "additionalProperties": false
+                  },
+                  "held_ms": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 600000
                   }
                 }
               }

@@ -1676,6 +1676,7 @@ export interface paths {
                             x: number;
                             y: number;
                         };
+                        held_ms?: number;
                     };
                 };
             };
