@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
 import { IconDownload, IconFlask, IconLayers, IconLock } from '@/components/icons'
@@ -16,7 +16,15 @@ import { decodeSxq, FLAG_LAYERS, flagNames, lambdaAt, makeWcs, measureStar, perc
 type LayerKey = 'target' | 'gaia' | 'wise' | 'saturation' | 'cosmic' | 'persistence' | 'satellite'
 
 const LAYER_TOOL: Record<LayerKey, Tool | null> = { target: null, gaia: 'gaia', wise: 'wise', saturation: 'flags', cosmic: 'flags', persistence: 'flags', satellite: 'flags' }
-const LAYER_COLOR: Record<LayerKey, string> = { target: '#ffc800', gaia: '#7fe0ff', wise: '#ff00d7', saturation: '#ff5a4f', cosmic: '#33d6a6', persistence: '#c6e04a', satellite: '#ffa63d' }
+const LAYER_COLOR: Record<LayerKey, string> = {
+  target: 'var(--color-crosshair)',
+  gaia: 'var(--color-layer-gaia)',
+  wise: 'var(--color-layer-wise)',
+  saturation: 'var(--color-layer-saturation)',
+  cosmic: 'var(--color-layer-cosmic)',
+  persistence: 'var(--color-layer-persistence)',
+  satellite: 'var(--color-layer-satellite)',
+}
 const HYPOTHESES = ['moving_object', 'variable', 'artifact', 'saturation', 'unknown'] as const
 
 interface GaiaStar {
@@ -42,14 +50,14 @@ function Locked({ tool, children }: { tool: Tool; children: ReactNode }) {
   const tt = useTranslations('tools')
   return (
     <section className="rounded-2xl bg-surface p-3">
-      <h3 className="flex items-center gap-2 text-[15px] font-semibold">
+      <h3 className="flex items-center gap-2 text-ui font-semibold">
         {children}
-        <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-bg px-2 py-0.5 text-[12px] text-text-secondary">
+        <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-bg px-2 py-0.5 text-meta text-text-secondary">
           <IconLock size={16} />
           {t('locked')}
         </span>
       </h3>
-      <p className="mt-1 text-[13px] text-text-secondary">
+      <p className="mt-1 text-note text-text-secondary">
         {tt(tool)} · {t('lockedHint', { n: UNLOCK[tool] })}
       </p>
     </section>
@@ -90,6 +98,7 @@ function draw(canvas: HTMLCanvasElement, d: Decoded, nx: number, ny: number) {
 }
 
 export function LabView({ id }: { id: string }) {
+  const locale = useLocale()
   const t = useTranslations('lab')
   const tl = useTranslations('lab.layerItems')
   const tcom = useTranslations('common')
@@ -240,9 +249,9 @@ export function LabView({ id }: { id: string }) {
         title={t('title')}
         actions={
           expert ? (
-            <span className="mr-3 rounded-full bg-accent/15 px-2 py-0.5 text-[12px] font-semibold text-accent">{t('expertOn')}</span>
+            <span className="mr-3 rounded-full bg-accent/15 px-2 py-0.5 text-meta font-semibold text-accent">{t('expertOn')}</span>
           ) : Object.values(UNLOCK).some((n) => n > level) ? (
-            <Link href="/settings" className="mr-3 text-[13px] font-semibold text-accent">
+            <Link href="/settings" className="mr-3 text-note font-semibold text-accent">
               {t('lockedCount', { n: Object.values(UNLOCK).filter((n) => n > level).length })}
             </Link>
           ) : null
@@ -252,7 +261,7 @@ export function LabView({ id }: { id: string }) {
         <ObjectAvatar src={profile.avatar} alt="" size={44} />
         <span className="min-w-0">
           <span className="block truncate font-semibold">{profile.name}</span>
-          <span className="block text-[13px] text-text-secondary">{t('subtitle', { name: profile.handle })}</span>
+          <span className="block text-note text-text-secondary">{t('subtitle', { name: profile.handle })}</span>
         </span>
         <IconFlask size={28} className="ml-auto text-text-secondary" />
       </Link>
@@ -319,43 +328,43 @@ export function LabView({ id }: { id: string }) {
                     <path d={`M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] - 3}v1.5M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] + 2.5}v1.5M${ep.target_xy[0] - 3} ${ep.target_xy[1] + 0.5}h1.5M${ep.target_xy[0] + 2.5} ${ep.target_xy[1] + 0.5}h1.5`} />
                   </g>
                 )}
-                {pixel && <rect x={pixel.x} y={pixel.y} width={1} height={1} fill="none" stroke="#fff" strokeWidth={0.15} />}
+                {pixel && <rect x={pixel.x} y={pixel.y} width={1} height={1} fill="none" stroke="var(--color-mark-outline)" strokeWidth={0.15} />}
               </svg>
             </div>
-            {!decoded && <span className="absolute inset-0 flex items-center justify-center text-[13px] text-white/70">{t('loading')}</span>}
-            <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-[12px] text-white">{tcom('falseColour')}</span>
+            {!decoded && <span className="absolute inset-0 flex items-center justify-center text-note text-white/70">{t('loading')}</span>}
+            <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-meta text-white">{tcom('falseColour')}</span>
           </div>
 
           {ep && (
             <div className="px-4">
-              <label className="block text-[13px] text-text-secondary">
-                {t('epoch')} · {t('epochInfo', { date: formatShortDate(ep.iso), release: ep.release.toUpperCase(), lam: ep.lam_um.toFixed(3) })}
+              <label className="block text-note text-text-secondary">
+                {t('epoch')} · {t('epochInfo', { date: formatShortDate(ep.iso, locale), release: ep.release.toUpperCase(), lam: ep.lam_um.toFixed(3) })}
                 <input type="range" min={0} max={Math.max(0, epochs.length - 1)} value={Math.min(epochIdx, epochs.length - 1)} onChange={(e) => setEpochIdx(Number(e.target.value))} className="mt-1 h-11 w-full" />
               </label>
-              <p className="text-[12px] text-text-secondary">{t('pack', { n: epochs.length, bytes: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
+              <p className="text-meta text-text-secondary">{t('pack', { n: epochs.length, bytes: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
             </div>
           )}
 
           <div className="space-y-3 px-4">
             {has('fov') ? (
               <section className="rounded-2xl bg-surface p-3">
-                <h3 className="text-[15px] font-semibold">{t('zoom')}</h3>
+                <h3 className="text-ui font-semibold">{t('zoom')}</h3>
                 <div className="mt-2 flex items-center gap-2">
                   {[1, 2, 4, 8].map((z) => (
                     <Chip key={z} active={Math.abs(zoom - z) < 0.01} onClick={() => setZoom(z)}>
                       {z}×
                     </Chip>
                   ))}
-                  <span className="ml-auto text-[12px] text-text-secondary">{(((pack.data.field.fov_deg ?? 0.1) * 60) / zoom).toFixed(1)}′</span>
+                  <span className="ml-auto text-meta text-text-secondary">{(((pack.data.field.fov_deg ?? 0.1) * 60) / zoom).toFixed(1)}′</span>
                 </div>
-                <p className="mt-2 text-[12px] text-text-secondary">{t('zoomHint', { size: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
+                <p className="mt-2 text-meta text-text-secondary">{t('zoomHint', { size: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
               </section>
             ) : (
               <Locked tool="fov">{t('zoom')}</Locked>
             )}
 
             <section className="rounded-2xl bg-surface p-3">
-              <h3 className="flex items-center gap-2 text-[15px] font-semibold">
+              <h3 className="flex items-center gap-2 text-ui font-semibold">
                 <IconLayers size={22} />
                 {t('layers')}
               </h3>
@@ -368,13 +377,13 @@ export function LabView({ id }: { id: string }) {
                       <label className={cx('flex min-h-11 items-center gap-3', !ok && 'opacity-45')}>
                         <input type="checkbox" checked={layers[k] && ok} disabled={!ok} onChange={(e) => setLayers((l) => ({ ...l, [k]: e.target.checked }))} className="size-5 accent-[var(--color-accent)]" />
                         <span className="size-3 rounded-full" style={{ background: LAYER_COLOR[k] }} />
-                        <span className="flex-1 text-[14px]">
+                        <span className="flex-1 text-body">
                           {tl(k)}
-                          {k === 'satellite' && <span className="block text-[12px] text-text-secondary">{t('satelliteNA')}</span>}
-                          {k === 'gaia' && gaia.data && <span className="text-[12px] text-text-secondary"> · {gaiaMarks.length}</span>}
-                          {k === 'wise' && wise.data && <span className="text-[12px] text-text-secondary"> · {wiseMarks.length}</span>}
+                          {k === 'satellite' && <span className="block text-meta text-text-secondary">{t('satelliteNA')}</span>}
+                          {k === 'gaia' && gaia.data && <span className="text-meta text-text-secondary"> · {gaiaMarks.length}</span>}
+                          {k === 'wise' && wise.data && <span className="text-meta text-text-secondary"> · {wiseMarks.length}</span>}
                         </span>
-                        {!ok && tool && <span className="text-[12px] text-text-secondary">{t('lockedHint', { n: UNLOCK[tool] })}</span>}
+                        {!ok && tool && <span className="text-meta text-text-secondary">{t('lockedHint', { n: UNLOCK[tool] })}</span>}
                       </label>
                     </li>
                   )
@@ -384,9 +393,9 @@ export function LabView({ id }: { id: string }) {
 
             {has('pixels') ? (
               <section className="rounded-2xl bg-surface p-3" aria-live="polite">
-                <h3 className="text-[15px] font-semibold">{t('pixel')}</h3>
+                <h3 className="text-ui font-semibold">{t('pixel')}</h3>
                 {readout ? (
-                  <dl className="mt-1 space-y-0.5 font-mono text-[13px]">
+                  <dl className="mt-1 space-y-0.5 font-mono text-note">
                     <dt className="sr-only">{t('pixel')}</dt>
                     <dd>
                       x {pixel?.x}, y {pixel?.y}
@@ -397,7 +406,7 @@ export function LabView({ id }: { id: string }) {
                     <dd>{t('pixelFlags', { flags: readout.flags.length ? readout.flags.join(', ') : t('noFlags') })}</dd>
                   </dl>
                 ) : (
-                  <p className="mt-1 text-[13px] text-text-secondary">{t('pixelHint')}</p>
+                  <p className="mt-1 text-note text-text-secondary">{t('pixelHint')}</p>
                 )}
               </section>
             ) : (
@@ -408,7 +417,7 @@ export function LabView({ id }: { id: string }) {
 
             {has('spectrum') ? (
               <section className="rounded-2xl bg-surface p-3">
-                <h3 className="text-[15px] font-semibold">{t('spectrum')}</h3>
+                <h3 className="text-ui font-semibold">{t('spectrum')}</h3>
                 {spectra.data && <SpectrumChart data={spectra.data} />}
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <Button onClick={() => void measureLive()} disabled={!!live && live.done < live.total}>
@@ -426,7 +435,7 @@ export function LabView({ id }: { id: string }) {
             {has('lightcurve') ? (
               profile.measurements.lightcurve && (
                 <section className="rounded-2xl bg-surface p-3">
-                  <h3 className="text-[15px] font-semibold">{t('lightcurve')}</h3>
+                  <h3 className="text-ui font-semibold">{t('lightcurve')}</h3>
                   <KitChart kind="lightcurve" url={profile.measurements.lightcurve} />
                 </section>
               )
@@ -436,16 +445,16 @@ export function LabView({ id }: { id: string }) {
 
             {has('notes') ? (
               <section className="rounded-2xl bg-surface p-3">
-                <h3 className="text-[15px] font-semibold">{t('notes')}</h3>
-                <p className="mt-1 text-[12px] text-text-secondary">
+                <h3 className="text-ui font-semibold">{t('notes')}</h3>
+                <p className="mt-1 text-meta text-text-secondary">
                   {t('noteFields', {
                     ra: readout ? formatRa(readout.ra) : '—',
                     dec: readout ? formatDec(readout.dec) : '—',
-                    date: ep ? formatShortDate(ep.iso) : '—',
+                    date: ep ? formatShortDate(ep.iso, locale) : '—',
                     band,
                   })}
                 </p>
-                <label className="mt-2 block text-[13px]">
+                <label className="mt-2 block text-note">
                   {t('noteHypothesis')}
                   <select value={hypothesis} onChange={(e) => setHypothesis(e.target.value as (typeof HYPOTHESES)[number])} className="mt-1 h-11 w-full rounded-[var(--radius-input)] border-[0.5px] border-divider bg-bg px-2">
                     {HYPOTHESES.map((h) => (
@@ -455,7 +464,7 @@ export function LabView({ id }: { id: string }) {
                     ))}
                   </select>
                 </label>
-                <label className="mt-2 block text-[13px]">
+                <label className="mt-2 block text-note">
                   {t('noteText')}
                   <textarea value={noteText} onChange={(e) => setNoteText(e.target.value)} rows={3} className="mt-1 w-full rounded-[var(--radius-input)] border-[0.5px] border-divider bg-bg px-3 py-2" />
                 </label>
@@ -484,13 +493,13 @@ export function LabView({ id }: { id: string }) {
                   {t('noteAdd')}
                 </Button>
                 <ul className="mt-3 space-y-2">
-                  {notes.length === 0 && <li className="text-[13px] text-text-secondary">{t('noNotes')}</li>}
+                  {notes.length === 0 && <li className="text-note text-text-secondary">{t('noNotes')}</li>}
                   {notes.map((n) => (
-                    <li key={n.id} className="rounded-lg bg-bg p-2 text-[13px]">
+                    <li key={n.id} className="rounded-lg bg-bg p-2 text-note">
                       <p className="font-semibold">{t(`hypotheses.${n.hypothesis}`)}</p>
                       <p>{n.text}</p>
-                      <p className="text-[12px] text-text-secondary">
-                        {n.band} · {n.date ? formatShortDate(n.date) : '—'} · {n.ra !== null && n.dec !== null ? `${n.ra.toFixed(5)}, ${n.dec.toFixed(5)}` : '—'}
+                      <p className="text-meta text-text-secondary">
+                        {n.band} · {n.date ? formatShortDate(n.date, locale) : '—'} · {n.ra !== null && n.dec !== null ? `${n.ra.toFixed(5)}, ${n.dec.toFixed(5)}` : '—'}
                       </p>
                     </li>
                   ))}
@@ -502,7 +511,7 @@ export function LabView({ id }: { id: string }) {
 
             {has('export') ? (
               <section className="rounded-2xl bg-surface p-3">
-                <h3 className="text-[15px] font-semibold">{t('export')}</h3>
+                <h3 className="text-ui font-semibold">{t('export')}</h3>
                 <div className="mt-2 flex gap-2">
                   <Button onClick={csv} disabled={!spectra.data && !live?.points.length}>
                     <IconDownload size={20} />

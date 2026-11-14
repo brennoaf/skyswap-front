@@ -67,7 +67,7 @@ export function useObjects() {
 }
 
 export function useObject(id: string) {
-  return useQuery({ queryKey: keys.object(id), queryFn: async () => unwrap(await api.GET('/api/objects/{id}', { params: { path: { id } } })) })
+  return useQuery({ queryKey: keys.object(id), enabled: !!id, queryFn: async () => unwrap(await api.GET('/api/objects/{id}', { params: { path: { id } } })) })
 }
 
 export function useObjectPosts(id: string | undefined) {

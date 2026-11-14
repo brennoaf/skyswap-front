@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { IconBack, IconSaturated, IconVerified } from '@/components/icons'
 import { cx } from '@/lib/format'
 
@@ -15,7 +15,7 @@ export function Button({ variant = 'secondary', className, full, ...rest }: Butt
     <button
       {...rest}
       className={cx(
-        'inline-flex min-h-8 items-center justify-center gap-1 rounded-[var(--radius-button)] px-3 text-[length:var(--text-button)] font-medium leading-none transition-colors disabled:opacity-50',
+        'inline-flex min-h-8 items-center justify-center gap-1 rounded-[var(--radius-button)] px-3 text-ui font-medium leading-none transition-colors disabled:opacity-50',
         variant === 'primary' && 'bg-accent text-on-accent active:bg-accent-pressed',
         variant === 'secondary' && 'bg-surface text-text active:bg-surface-pressed',
         variant === 'ghost' && 'text-text active:bg-surface',
@@ -45,14 +45,14 @@ export function TopBar({ title, back = true, actions, className, titleClassName 
           <IconBack />
         </IconButton>
       )}
-      <h1 className={cx('min-w-0 flex-1 truncate font-[family-name:var(--font-display)] text-[length:var(--text-handle)] font-bold', !back && 'pl-3', titleClassName)}>{title}</h1>
+      <h1 className={cx('min-w-0 flex-1 truncate font-[family-name:var(--font-display)] text-handle font-bold', !back && 'pl-3', titleClassName)}>{title}</h1>
       {actions && <div className="flex items-center">{actions}</div>}
     </header>
   )
 }
 
 export function Wordmark({ className }: { className?: string }) {
-  return <span className={cx('font-[family-name:var(--font-wordmark)] text-[32px] leading-none', className)}>SkySwap</span>
+  return <span className={cx('font-[family-name:var(--font-wordmark)] text-wordmark leading-none', className)}>SkySwap</span>
 }
 
 export type RingState = 'new' | 'seen' | 'none'
@@ -100,41 +100,102 @@ export function ObjectBadges({ verified, saturated, size = 14 }: { verified: boo
 export const isVerified = (verdict: string) => verdict === 'clear' || verdict === 'with_help'
 export const isSaturated = (saturation: string) => saturation === 'heavy'
 
-export function Sheet({ open, onClose, title, children, className, labelledBy }: { open: boolean; onClose: () => void; title?: ReactNode; children: ReactNode; className?: string; labelledBy?: string }) {
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+export function Sheet({
+  open,
+  onClose,
+  title,
+  children,
+  className,
+  labelledBy,
+  dim = true,
+}: {
+  open: boolean
+  onClose: () => void
+  title?: ReactNode
+  children: ReactNode
+  className?: string
+  labelledBy?: string
+  dim?: boolean
+}) {
   const id = useId()
   const ref = useRef<HTMLDivElement>(null)
+  const closeRef = useRef(onClose)
+  const dragStart = useRef<number | null>(null)
+  const [drag, setDrag] = useState(0)
   const t = useTranslations('common')
+  useEffect(() => {
+    closeRef.current = onClose
+  }, [onClose])
   useEffect(() => {
     if (!open) return
     const prev = document.activeElement as HTMLElement | null
     ref.current?.focus()
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        closeRef.current()
+        return
+      }
+      if (e.key !== 'Tab' || !ref.current) return
+      const items = Array.from(ref.current.querySelectorAll<HTMLElement>(FOCUSABLE))
+      if (!items.length) return
+      const first = items[0] as HTMLElement
+      const last = items[items.length - 1] as HTMLElement
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === ref.current)) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
+      setDrag(0)
       prev?.focus()
     }
-  }, [open, onClose])
+  }, [open])
   if (!open) return null
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" role="presentation">
-      <button type="button" aria-label={t('close')} className="absolute inset-0 bg-overlay" onClick={onClose} />
+      <button type="button" aria-label={t('close')} tabIndex={-1} className={cx('absolute inset-0', dim ? 'bg-overlay' : 'bg-transparent')} onClick={onClose} />
       <div
         ref={ref}
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy ?? (title ? id : undefined)}
         tabIndex={-1}
-        className={cx('relative max-h-[88dvh] w-full max-w-[var(--width-app)] overflow-y-auto rounded-t-[var(--radius-sheet)] bg-sheet pb-[max(16px,env(safe-area-inset-bottom))] outline-none', className)}
+        style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
+        className={cx(
+          'sheet-in relative max-h-[88dvh] w-full max-w-[var(--width-app)] overflow-y-auto rounded-t-[var(--radius-sheet)] bg-sheet pb-[max(var(--space-gutter),env(safe-area-inset-bottom))] shadow-[var(--shadow-sheet)] outline-none',
+          className,
+        )}
       >
-        <div className="sticky top-0 z-10 bg-sheet pt-2">
+        <div
+          className="sticky top-0 z-10 cursor-grab touch-none bg-sheet pt-2"
+          onPointerDown={(e) => {
+            dragStart.current = e.clientY
+            e.currentTarget.setPointerCapture(e.pointerId)
+          }}
+          onPointerMove={(e) => dragStart.current !== null && setDrag(Math.max(0, e.clientY - dragStart.current))}
+          onPointerUp={() => {
+            if (drag > 90) onClose()
+            else setDrag(0)
+            dragStart.current = null
+          }}
+        >
           <div className="mx-auto h-1 w-10 rounded-full bg-ring-seen" aria-hidden="true" />
-          {title && (
-            <h2 id={id} className="border-b-[0.5px] border-divider px-4 py-3 text-center text-[16px] font-semibold">
+          {title ? (
+            <h2 id={id} className="border-b-[0.5px] border-divider px-4 py-3 text-center text-title-sm font-semibold">
               {title}
             </h2>
+          ) : (
+            <div className="h-2" />
           )}
         </div>
         {children}
@@ -144,13 +205,13 @@ export function Sheet({ open, onClose, title, children, className, labelledBy }:
 }
 
 export function SheetRow({ icon, label, hint, onClick, href, danger }: { icon?: ReactNode; label: ReactNode; hint?: ReactNode; onClick?: () => void; href?: string; danger?: boolean }) {
-  const cls = cx('flex min-h-12 w-full items-center gap-3 px-4 py-2 text-left text-[15px] active:bg-surface', danger && 'text-danger')
+  const cls = cx('flex min-h-12 w-full items-center gap-3 px-4 py-2 text-left text-ui active:bg-surface', danger && 'text-danger')
   const body = (
     <>
       {icon && <span className="text-text">{icon}</span>}
       <span className="min-w-0 flex-1">
         <span className="block">{label}</span>
-        {hint && <span className="block text-[12px] text-text-secondary">{hint}</span>}
+        {hint && <span className="block text-meta text-text-secondary">{hint}</span>}
       </span>
     </>
   )
@@ -173,7 +234,7 @@ export function EmptyState({ art, title, body, action }: { art?: ReactNode; titl
   return (
     <div className="flex flex-col items-center px-8 py-12 text-center">
       {art && <div className="mb-4">{art}</div>}
-      <p className="text-[18px] font-semibold">{title}</p>
+      <p className="text-title-md font-semibold">{title}</p>
       {body && <p className="mt-2 max-w-[300px] text-text-secondary">{body}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
@@ -211,7 +272,7 @@ export function Chip({ active, children, onClick, className }: { active?: boolea
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={cx('inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-[var(--radius-button)] border-[0.5px] px-3 text-[14px] font-medium', active ? 'border-text bg-text text-bg' : 'border-divider bg-surface text-text', className)}
+      className={cx('inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-[var(--radius-button)] border-[0.5px] px-3 text-body font-medium', active ? 'border-text bg-text text-bg' : 'border-divider bg-surface text-text', className)}
     >
       {children}
     </button>
@@ -220,7 +281,7 @@ export function Chip({ active, children, onClick, className }: { active?: boolea
 
 export function Notice({ tone = 'info', icon, children }: { tone?: 'info' | 'warning'; icon?: ReactNode; children: ReactNode }) {
   return (
-    <div className={cx('flex gap-2 rounded-xl px-3 py-2.5 text-[13px] leading-snug', tone === 'warning' ? 'bg-warning/15 text-text' : 'bg-surface text-text')}>
+    <div className={cx('flex gap-2 rounded-xl px-3 py-2.5 text-note leading-snug', tone === 'warning' ? 'bg-warning/15 text-text' : 'bg-surface text-text')}>
       {icon && <span className={cx('mt-[1px] shrink-0', tone === 'warning' ? 'text-warning' : 'text-text-secondary')}>{icon}</span>}
       <div className="min-w-0">{children}</div>
     </div>
@@ -230,8 +291,8 @@ export function Notice({ tone = 'info', icon, children }: { tone?: 'info' | 'war
 export function Stat({ value, label }: { value: ReactNode; label: string }) {
   return (
     <div className="flex flex-col items-start leading-tight">
-      <span className="text-[length:var(--text-stat)] font-semibold">{value}</span>
-      <span className="text-[14px]">{label}</span>
+      <span className="text-title-sm font-semibold">{value}</span>
+      <span className="text-body">{label}</span>
     </div>
   )
 }

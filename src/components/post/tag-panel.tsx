@@ -31,7 +31,7 @@ export function TagPanel({ postId, tags, compact = false }: { postId: string; ta
               disabled={setTag.isPending}
               onClick={() => (user ? setTag.mutate({ tag, on: !mine }) : ask('tag'))}
               className={cx(
-                'relative inline-flex min-h-10 items-center gap-1.5 overflow-hidden rounded-full border-[0.5px] px-3 text-[14px] font-medium',
+                'relative inline-flex min-h-10 items-center gap-1.5 overflow-hidden rounded-full border-[0.5px] px-3 text-body font-medium',
                 mine ? 'border-accent bg-accent/15 text-text' : 'border-divider bg-surface text-text',
               )}
             >
@@ -40,12 +40,12 @@ export function TagPanel({ postId, tags, compact = false }: { postId: string; ta
                 {TAG_EMOJI[tag]}
               </span>
               <span className="relative">{t(`items.${tag}`)}</span>
-              {tags.counts && <span className="relative text-[12px] text-text-secondary">{count}</span>}
+              {tags.counts && <span className="relative text-meta text-text-secondary">{count}</span>}
             </button>
           )
         })}
       </div>
-      <p className="mt-2 text-[12px] text-text-secondary">{tags.counts ? t('consensus', { total }) : t('hidden')}</p>
+      <p className="mt-2 text-meta text-text-secondary">{tags.counts ? t('consensus', { total }) : t('hidden')}</p>
     </div>
   )
 }

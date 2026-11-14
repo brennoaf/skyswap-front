@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { IconCarousel, IconReel } from '@/components/icons'
 import type { Post } from '@/lib/api/client'
@@ -35,6 +35,7 @@ function useInView<T extends Element>(threshold = 0.6) {
 const MULTI = new Set(['band_compare', 'pass_blink'])
 
 export function PostMedia({ post, priority = false }: { post: Post; priority?: boolean }) {
+  const locale = useLocale()
   const t = useTranslations('post')
   const crosshair = useUi((s) => s.crosshair)
   const { ref, inView } = useInView<HTMLDivElement>()
@@ -68,14 +69,14 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
         >
           {post.frames.map((f, i) => (
             <div key={f.src} className="relative h-full w-full shrink-0 snap-center">
-              <Image src={f.src} alt={t('frameAlt', { band: f.band, date: formatShortDate(f.t) })} fill sizes="(max-width: 470px) 100vw, 470px" className="pixelated object-contain" priority={priority && i === 0} />
+              <Image src={f.src} alt={t('frameAlt', { band: f.band, date: formatShortDate(f.t, locale) })} fill sizes="(max-width: 470px) 100vw, 470px" className="pixelated object-contain" priority={priority && i === 0} />
             </div>
           ))}
         </div>
       ) : (
         <Image
           src={isTimelapse && shown ? shown.src : post.cover}
-          alt={isChart ? t('chartAlt', { title: post.title }) : t('frameAlt', { band: shown?.band ?? post.band ?? '', date: formatShortDate(shown?.t ?? post.date_range[0] ?? '') })}
+          alt={isChart ? t('chartAlt', { title: post.title }) : t('frameAlt', { band: shown?.band ?? post.band ?? '', date: formatShortDate(shown?.t ?? post.date_range[0] ?? '', locale) })}
           fill
           sizes="(max-width: 470px) 100vw, 470px"
           className={isChart ? 'object-contain' : 'pixelated object-contain'}
@@ -92,12 +93,12 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
         {isTimelapse ? <IconReel size={26} /> : isMulti ? <IconCarousel size={26} /> : null}
       </span>
       {isMulti && (
-        <span className="absolute right-3 top-11 rounded-full bg-black/60 px-2 py-0.5 text-[12px] font-medium text-white">
+        <span className="absolute right-3 top-11 rounded-full bg-black/60 px-2 py-0.5 text-meta font-medium text-white">
           {slide + 1}/{post.frames.length}
         </span>
       )}
       {caption && !isChart && (
-        <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-[12px] text-white">
+        <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-meta text-white">
           {caption} · {t('falseColour')}
         </span>
       )}

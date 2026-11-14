@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import type { ReactNode } from 'react'
 import { IconCheck, IconQuestion, IconSparkle } from '@/components/icons'
 import { BadgeArt, LevelArt } from '@/components/ui/badge-art'
@@ -30,6 +30,7 @@ function RoundIcon({ children, tone }: { children: ReactNode; tone: 'success' | 
 }
 
 export function AlertRow({ alert, unread, now }: { alert: Alert; unread: boolean; now: number }) {
+  const locale = useLocale()
   const t = useTranslations()
   const rel = relativeTime(alert.created_at, now)
   const time = rel.unit === 'now' ? t('common.time.now') : t(`common.time.${rel.unit}`, { value: rel.value })
@@ -41,7 +42,7 @@ export function AlertRow({ alert, unread, now }: { alert: Alert; unread: boolean
   if (alert.type === 'new_data') {
     if (!alert.object) return null
     art = <ObjectAvatar src={alert.object.avatar} alt="" size={44} ring={alert.object.has_new_data ? 'new' : 'none'} />
-    text = t('alerts.items.new_data', { name: alert.object.handle, date: formatShortDate(alert.detail) })
+    text = t('alerts.items.new_data', { name: alert.object.handle, date: formatShortDate(alert.detail, locale) })
     href = `/o/${alert.object.id}`
   } else if (alert.type === 'consensus') {
     const done = alert.detail === 'real' || alert.detail === 'artifact'
@@ -70,7 +71,7 @@ export function AlertRow({ alert, unread, now }: { alert: Alert; unread: boolean
   const body = (
     <>
       <span className="shrink-0">{art}</span>
-      <span className="min-w-0 flex-1 text-[14px] leading-snug">
+      <span className="min-w-0 flex-1 text-body leading-snug">
         {text} <span className="whitespace-nowrap text-text-secondary">{time}</span>
       </span>
       <span className={cx('size-2 shrink-0 rounded-full', unread ? 'bg-accent' : 'bg-transparent')} aria-hidden="true" />

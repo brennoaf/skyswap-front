@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useState } from 'react'
 import { Frame, Legend, linear, PLOT } from '@/components/charts/plot'
 import { Chip, Notice, Skeleton } from '@/components/ui/primitives'
@@ -23,7 +23,7 @@ export interface MotionData {
   note?: string
 }
 
-const PASS_COLORS = ['#0098fe', '#ff00d7', '#ffc800', '#33d6a6', '#ff5a4f', '#7fe0ff']
+const PASS_COLORS = [1, 2, 3, 4, 5, 6].map((i) => `var(--color-series-${i})`)
 
 export function useKitJson<T>(url: string | null | undefined) {
   return useQuery({
@@ -43,6 +43,7 @@ export function ChartSkeleton() {
 }
 
 export function SpectrumChart({ data }: { data: SpectraData }) {
+  const locale = useLocale()
   const t = useTranslations('charts')
   const pts = data.passes.flatMap((p) => p.points.filter((q) => Number.isFinite(q.flux_mjy) && q.flux_mjy > 0))
   if (!pts.length) return <p className="text-text-secondary">{t('noData')}</p>
@@ -76,8 +77,8 @@ export function SpectrumChart({ data }: { data: SpectraData }) {
           )
         })}
       </Frame>
-      <Legend items={[...data.passes.map((p, i) => ({ color: PASS_COLORS[i % PASS_COLORS.length] as string, label: `${t('pass', { n: i + 1 })} · ${formatShortDate(p.t)}` })), { color: 'var(--color-text-secondary)', label: t('saturated'), hollow: true }]} />
-      <figcaption className="mt-2 text-[12px] text-text-secondary">{t('spectrumHint')}</figcaption>
+      <Legend items={[...data.passes.map((p, i) => ({ color: PASS_COLORS[i % PASS_COLORS.length] as string, label: `${t('pass', { n: i + 1 })} · ${formatShortDate(p.t, locale)}` })), { color: 'var(--color-text-secondary)', label: t('saturated'), hollow: true }]} />
+      <figcaption className="mt-2 text-meta text-text-secondary">{t('spectrumHint')}</figcaption>
     </figure>
   )
 }
@@ -110,7 +111,7 @@ export function LightCurveChart({ data }: { data: LightcurveData }) {
       <Frame title={t('lightcurveTitle')} x={x} y={y} xLabel={t('date')} yLabel={t('magnitude')} xFormat={(v) => new Date(v).toISOString().slice(2, 7)} yFormat={(v) => v.toFixed(1)}>
         {shown.map((b) => {
           const list = data.bands[b] ?? []
-          const c = BAND_HUE[b] ?? '#fff'
+          const c = BAND_HUE[b] ?? 'var(--color-text)'
           return (
             <g key={b}>
               <polyline points={list.map((p) => `${x(Date.parse(p.t))},${y(p.mag_ab)}`).join(' ')} fill="none" stroke={c} strokeOpacity="0.5" strokeWidth="1" />
@@ -124,7 +125,7 @@ export function LightCurveChart({ data }: { data: LightcurveData }) {
           )
         })}
       </Frame>
-      <figcaption className="mt-2 space-y-2 text-[12px] text-text-secondary">
+      <figcaption className="mt-2 space-y-2 text-meta text-text-secondary">
         <p>{t('lightcurveHint')}</p>
         {data.zp_note && <p>{data.zp_note}</p>}
       </figcaption>
@@ -208,7 +209,7 @@ export function MotionChart({ data, pixelArcsec = 6.15 }: { data: MotionData; pi
         )}
       </Frame>
       <Legend items={[{ color: 'var(--color-warning)', label: t('predicted'), hollow: true }, { color: PASS_COLORS[0] as string, label: `${t('measured')} · ${t('points', { n: data.measured.length })}` }, { color: 'var(--color-warning)', label: `- - ${t('pixel')}`, hollow: true }]} />
-      <figcaption className="mt-2 space-y-2 text-[12px] text-text-secondary">
+      <figcaption className="mt-2 space-y-2 text-meta text-text-secondary">
         <p className="font-semibold text-text">{t.has(`verdict.${data.verdict}`) ? t(`verdict.${data.verdict}`) : data.verdict}</p>
         <p>{view === 'residuals' ? t('residualHint') : t('motionHint')}</p>
         {data.note && <p>{data.note}</p>}

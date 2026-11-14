@@ -63,10 +63,22 @@
       "no_new_this_week": "No new SPHEREx passes in the last 7 days. Here are the most recent ones."
     },
     "empty": {
-      "for_you": { "title": "Nothing here yet", "body": "The data kit has no posts." },
-      "following": { "title": "You don’t follow anything yet", "body": "Open an object’s profile and tap Follow. Its posts will show up here." },
-      "new": { "title": "Nothing new", "body": "No new SPHEREx data this week." },
-      "targets": { "title": "No targets", "body": "The challenge targets are missing from the data kit." }
+      "for_you": {
+        "title": "Nothing here yet",
+        "body": "The data kit has no posts."
+      },
+      "following": {
+        "title": "You don’t follow anything yet",
+        "body": "Open an object’s profile and tap Follow. Its posts will show up here."
+      },
+      "new": {
+        "title": "Nothing new",
+        "body": "No new SPHEREx data this week."
+      },
+      "targets": {
+        "title": "No targets",
+        "body": "The challenge targets are missing from the data kit."
+      }
     },
     "explore": "Explore objects",
     "errorTitle": "Couldn’t load the feed",
@@ -139,7 +151,11 @@
       "mark": "Mark the moving dot",
       "share": "Share link",
       "save": "Save",
-      "unsave": "Remove from saved"
+      "unsave": "Remove from saved",
+      "colours": "Colours",
+      "passes": "Passes",
+      "pass": "Pass {n} of {total}",
+      "compare": "Compare dates"
     },
     "menu": {
       "lab": "Open in Lab",
@@ -147,7 +163,12 @@
       "compare": "Compare dates",
       "mark": "Mark the moving dot",
       "copyLink": "Copy link",
-      "profile": "Go to profile"
+      "profile": "Go to profile",
+      "about": "About this image",
+      "aboutHint": "Quality flags, release, sources",
+      "notes": "Private notes",
+      "notesHint": "Only in this browser",
+      "share": "Share"
     }
   },
   "tags": {
@@ -194,13 +215,34 @@
     "earned": "New badge",
     "locked": "Not earned yet",
     "items": {
-      "first_vote": { "name": "First classification", "how": "Classify one candidate." },
-      "first_motion": { "name": "First motion marked", "how": "Mark a moving dot on a time-lapse." },
-      "all_colours": { "name": "Saw all 6 colours", "how": "Look at an object in every SPHEREx colour, D1 to D6." },
-      "first_spectrum": { "name": "First spectrum", "how": "Open an object’s spectrum." },
-      "infrared_only": { "name": "Infrared-only finder", "how": "Visit an object that shows up only in the longest colours." },
-      "too_bright": { "name": "Too bright to measure", "how": "Learn why very bright stars saturate SPHEREx." },
-      "week_streak": { "name": "7-day streak", "how": "Help on 7 days in a row." }
+      "first_vote": {
+        "name": "First classification",
+        "how": "Classify one candidate."
+      },
+      "first_motion": {
+        "name": "First motion marked",
+        "how": "Mark a moving dot on a time-lapse."
+      },
+      "all_colours": {
+        "name": "Saw all 6 colours",
+        "how": "Look at an object in every SPHEREx colour, D1 to D6."
+      },
+      "first_spectrum": {
+        "name": "First spectrum",
+        "how": "Open an object’s spectrum."
+      },
+      "infrared_only": {
+        "name": "Infrared-only finder",
+        "how": "Visit an object that shows up only in the longest colours."
+      },
+      "too_bright": {
+        "name": "Too bright to measure",
+        "how": "Learn why very bright stars saturate SPHEREx."
+      },
+      "week_streak": {
+        "name": "7-day streak",
+        "how": "Help on 7 days in a row."
+      }
     }
   },
   "levels": {
@@ -398,7 +440,22 @@
     "frameInfo": "{band} · {wavelength} · {date} · {release}",
     "dataNotice": "Images: NASA SPHEREx public data (QR2/QR3, IRSA). Colours are false colours.",
     "loading": "Loading post…",
-    "notFound": "Post not found"
+    "notFound": "Post not found",
+    "falseColourShort": "False colours",
+    "saturatedPill": "Too bright",
+    "markedBy": "{people, plural, one {# person} other {# people}} marked the motion",
+    "aboutBand": "Colour band",
+    "aboutDate": "Taken",
+    "aboutRelease": "Release",
+    "aboutKind": "Image type",
+    "aboutFov": "Field of view",
+    "notFlagged": "not flagged",
+    "sources": "Sources",
+    "kinds": {
+      "exposure": "Single exposure",
+      "coadd": "Stack of exposures",
+      "difference": "Difference image"
+    }
   },
   "search": {
     "title": "Search",
@@ -586,7 +643,11 @@
       "mark": "You marked {n} frames on {title}",
       "tag": "You tagged {title}: {tag}"
     },
-    "labels": { "real": "real", "artifact": "artifact", "unsure": "not sure" },
+    "labels": {
+      "real": "real",
+      "artifact": "artifact",
+      "unsure": "not sure"
+    },
     "noHistory": "Nothing yet. Classify, mark or tag to see your history.",
     "noNotes": "No private notes yet.",
     "noSaved": "Nothing saved yet. Tap the bookmark on a post.",

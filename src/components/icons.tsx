@@ -214,7 +214,7 @@ export const IconAddDot = ({ size = 20, ...p }: IconProps) => (
   <Svg size={size} viewBox="0 0 20 20" {...p}>
     <circle cx="10" cy="10" r="10" fill="var(--color-accent)" />
     <circle cx="10" cy="10" r="9" stroke="var(--color-bg)" strokeWidth="2" />
-    <path d="M10 5.9172V14.0828M13.8607 10H6.13935" stroke="#ffffff" strokeWidth={1.8} strokeLinecap="round" />
+    <path d="M10 5.9172V14.0828M13.8607 10H6.13935" stroke="var(--color-on-accent)" strokeWidth={1.8} strokeLinecap="round" />
   </Svg>
 )
 
@@ -346,15 +346,15 @@ export const IconVerified = ({ size = 16, ...p }: IconProps) => (
       d="M8 0.8L9.7 2.2L11.9 1.9L12.8 3.9L14.8 4.9L14.5 7.1L15.9 8.8L14.5 10.5L14.8 12.7L12.8 13.6L11.9 15.6L9.7 15.4L8 16.8L6.3 15.4L4.1 15.6L3.2 13.6L1.2 12.7L1.5 10.5L0.1 8.8L1.5 7.1L1.2 4.9L3.2 3.9L4.1 1.9L6.3 2.2L8 0.8Z"
       transform="translate(0 -0.8)"
     />
-    <path d="M5 8L7.2 10.1L11.2 5.9" stroke="#ffffff" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M5 8L7.2 10.1L11.2 5.9" stroke="var(--color-on-accent)" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
   </Svg>
 )
 
 export const IconSaturated = ({ size = 16, ...p }: IconProps) => (
   <Svg size={size} viewBox="0 0 16 16" {...p}>
     <circle cx="8" cy="8" r="7.5" fill="var(--color-warning)" />
-    <path d="M8 4.2V8.8" stroke="#0a1014" strokeWidth={1.8} strokeLinecap="round" />
-    <circle cx="8" cy="11.6" r="1.1" fill="#0a1014" />
+    <path d="M8 4.2V8.8" stroke="var(--color-on-warning)" strokeWidth={1.8} strokeLinecap="round" />
+    <circle cx="8" cy="11.6" r="1.1" fill="var(--color-on-warning)" />
   </Svg>
 )
 
@@ -411,5 +411,13 @@ export const IconCrosshair = (p: IconProps) => (
 export const IconStar = (p: IconProps) => (
   <Svg {...p}>
     <path d="M16 6L19 12.6L26 13.3L20.7 18.1L22.2 25L16 21.4L9.8 25L11.3 18.1L6 13.3L13 12.6L16 6Z" {...LINE} />
+  </Svg>
+)
+
+export const IconColours = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12.5" cy="12.5" r="6.5" {...LINE} />
+    <circle cx="19.5" cy="12.5" r="6.5" {...LINE} />
+    <circle cx="16" cy="19" r="6.5" {...LINE} />
   </Svg>
 )

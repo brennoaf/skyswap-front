@@ -19,7 +19,7 @@ function Section({ id, title, children }: { id: string; title?: string; children
   return (
     <section aria-labelledby={title ? id : undefined} className="border-b-[0.5px] border-divider py-4">
       {title && (
-        <h2 id={id} className="px-4 pb-2 text-[14px] font-semibold text-text-secondary">
+        <h2 id={id} className="px-4 pb-2 text-body font-semibold text-text-secondary">
           {title}
         </h2>
       )}
@@ -64,7 +64,7 @@ function ThemeControl() {
             role="radio"
             aria-checked={on}
             onClick={() => setTheme(k)}
-            className={cx('h-11 flex-1 rounded-[8px] text-[14px] font-semibold motion-safe:transition-colors', on ? 'bg-bg text-text shadow-[0_1px_4px_rgb(0_0_0/0.15)]' : 'text-text-secondary')}
+            className={cx('h-11 flex-1 rounded-[8px] text-body font-semibold motion-safe:transition-colors', on ? 'bg-bg text-text shadow-[0_1px_4px_rgb(0_0_0/0.15)]' : 'text-text-secondary')}
           >
             {t(`theme.${k}`)}
           </button>
@@ -82,7 +82,7 @@ function Account() {
   if (!user)
     return (
       <>
-        <p className="px-4 text-[14px] text-text-secondary">{t('loggedOut')}</p>
+        <p className="px-4 text-body text-text-secondary">{t('loggedOut')}</p>
         <div className="-mx-2">
           <LoginForm />
         </div>
@@ -91,7 +91,7 @@ function Account() {
   return (
     <div className="flex items-center gap-3 px-4">
       <UserAvatar nickname={user.nickname} size={44} />
-      <p className="min-w-0 flex-1 truncate text-[15px]">{t('nickname', { name: user.nickname })}</p>
+      <p className="min-w-0 flex-1 truncate text-ui">{t('nickname', { name: user.nickname })}</p>
       <Button variant="danger" disabled={logout.isPending} onClick={() => logout.mutate()}>
         {t('logout')}
       </Button>
@@ -109,10 +109,10 @@ function Expert() {
   return (
     <div className="flex items-center gap-3 px-4">
       <div className="min-w-0 flex-1">
-        <h2 id="expert-label" className="text-[15px] font-semibold">
+        <h2 id="expert-label" className="text-ui font-semibold">
           {t('expert')}
         </h2>
-        <p id="expert-hint" className="mt-0.5 text-[13px] text-text-secondary">
+        <p id="expert-hint" className="mt-0.5 text-note text-text-secondary">
           {t('expertHint')}
         </p>
       </div>
@@ -132,7 +132,7 @@ function Notes() {
   const { notes, reload } = usePrivateNotes()
   return (
     <div className="flex flex-col gap-3 px-4">
-      <p className="text-[13px] text-text-secondary">
+      <p className="text-note text-text-secondary">
         {t('notesHint')} {notes && t('notesCount', { n: notes.length })}
       </p>
       <NotesActions notes={notes} onImported={() => void reload()} />
@@ -158,12 +158,12 @@ export default function SettingsPage() {
 
       <Section id="s-language" title={t('language')}>
         <div className="flex min-h-11 items-center gap-3 px-4">
-          <span className="flex-1 text-[15px]" lang="en">
+          <span className="flex-1 text-ui" lang="en">
             {t('languageName')}
           </span>
           <IconCheck size={24} className="text-accent" />
         </div>
-        <p className="px-4 text-[13px] text-text-secondary">{t('languageHint')}</p>
+        <p className="px-4 text-note text-text-secondary">{t('languageHint')}</p>
       </Section>
 
       <Section id="s-expert">
@@ -175,18 +175,18 @@ export default function SettingsPage() {
       </Section>
 
       <Section id="s-help">
-        <button type="button" onClick={() => setTutorial(true)} className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-[15px] active:bg-surface">
+        <button type="button" onClick={() => setTutorial(true)} className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-ui active:bg-surface">
           <IconQuestion size={24} />
           <span className="flex-1">{t('tutorial')}</span>
         </button>
       </Section>
 
       <Section id="s-data" title={t('data')}>
-        <p className="px-4 text-[14px] leading-relaxed">
+        <p className="px-4 text-body leading-relaxed">
           {health.data ? t('dataBody', { version: health.data.version }) : <Skeleton className="h-10 w-full" />}
         </p>
-        <p className="mt-3 px-4 text-[13px] leading-relaxed text-text-secondary">{t('about')}</p>
-        <a href={API_DOCS_URL} target="_blank" rel="noreferrer" className="mt-2 flex min-h-12 items-center gap-3 px-4 text-[15px] text-link active:bg-surface">
+        <p className="mt-3 px-4 text-note leading-relaxed text-text-secondary">{t('about')}</p>
+        <a href={API_DOCS_URL} target="_blank" rel="noreferrer" className="mt-2 flex min-h-12 items-center gap-3 px-4 text-ui text-link active:bg-surface">
           <IconLink size={24} />
           <span className="flex-1">{t('api')}</span>
         </a>

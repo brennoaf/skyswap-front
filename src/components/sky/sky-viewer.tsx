@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
 import { skyHref } from '@/components/feed/spot-sheet'
@@ -9,7 +9,7 @@ import { IconCrosshair, IconPause, IconPlay, IconStepBack, IconStepForward, Icon
 import { Button, Chip, EmptyState, IconButton, Notice, ObjectAvatar, Skeleton } from '@/components/ui/primitives'
 import type { SkyResult } from '@/lib/api/client'
 import { useSky } from '@/lib/api/hooks'
-import { BAND_HUE, BANDS, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
+import { BAND_HUE, BANDS, cssColor, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { parseFitsImage, percentile, skyMovie, stretch } from '@/lib/sky'
 import { useUi } from '@/lib/state/ui'
 
@@ -61,7 +61,7 @@ function FrameCanvas({ frame, colormap, label }: { frame: ViewFrame; colormap: C
     if (!ctx) return
     const grey = stretch(frame.img, frame.lo, frame.hi)
     const out = ctx.createImageData(frame.w, frame.h)
-    const [r, g, b] = colormap === 'band' ? hexRgb(BAND_HUE[frame.band] ?? '#ffffff') : [255, 255, 255]
+    const [r, g, b] = colormap === 'band' ? hexRgb(cssColor(`--color-band-${frame.band.toLowerCase()}`)) : [255, 255, 255]
     for (let y = 0; y < frame.h; y++) {
       for (let x = 0; x < frame.w; x++) {
         const v = grey[(frame.h - 1 - y) * frame.w + x] ?? 0
@@ -174,6 +174,7 @@ function useBuilder(sky: SkyResult, p: SkyParams) {
 }
 
 function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; compact: boolean }) {
+  const locale = useLocale()
   const t = useTranslations('sky')
   const tc = useTranslations('common')
   const crosshair = useUi((s) => s.crosshair)
@@ -210,7 +211,7 @@ function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; c
     setCur((c) => (c + d + n) % n)
   }
   const ready = b.status === 'ready' && n > 0
-  const date = frame ? formatShortDate(mjdToMs(frame.mjd)) : ''
+  const date = frame ? formatShortDate(mjdToMs(frame.mjd), locale) : ''
   const frameLabel = frame ? t('frameDate', { date, band: frame.band }) : ''
   const canBuild = sky.source === 'fragment' || (sky.source === 'sia' && sky.images.length > 0)
 
@@ -236,11 +237,11 @@ function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; c
       {frame && crosshair && <Crosshair x={0.5} y={0.5} />}
       {frame && (
         <>
-          <span className="absolute left-2 top-2 rounded-md bg-black/60 px-2 py-1 text-[12px] font-medium">{date}</span>
-          <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-[12px]">
+          <span className="absolute left-2 top-2 rounded-md bg-black/60 px-2 py-1 text-meta font-medium">{date}</span>
+          <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-meta">
             {frame.band} · {frame.release.toUpperCase()} · {tc('falseColour')}
           </span>
-          {n > 1 && <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[12px] font-medium">{t('frameOf', { n: cur + 1, total: n })}</span>}
+          {n > 1 && <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-meta font-medium">{t('frameOf', { n: cur + 1, total: n })}</span>}
         </>
       )}
       {b.status === 'idle' && (
@@ -251,16 +252,16 @@ function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; c
                 <IconPlay size={22} />
                 {sky.source === 'sia' ? t('fetchCutouts', { n: b.total }) : t('start')}
               </Button>
-              {(sky.source === 'fragment' || compact) && <p className="max-w-[280px] text-[12px] text-white/70">{sky.source === 'sia' ? t('siaList') : t('liveNote')}</p>}
+              {(sky.source === 'fragment' || compact) && <p className="max-w-[280px] text-meta text-white/70">{sky.source === 'sia' ? t('siaList') : t('liveNote')}</p>}
             </>
           ) : (
-            <p className="text-[14px] text-white/80">{t('none')}</p>
+            <p className="text-body text-white/80">{t('none')}</p>
           )}
         </div>
       )}
       {b.status === 'building' && (
         <div className="absolute inset-x-0 bottom-0 bg-black/70 px-3 py-2" role="status" aria-live="polite">
-          <p className="text-[13px]">{sky.source === 'sia' ? t('fetchingCutouts', { done: b.done, total: b.total }) : t('building', { done: b.done, total: b.total })}</p>
+          <p className="text-note">{sky.source === 'sia' ? t('fetchingCutouts', { done: b.done, total: b.total }) : t('building', { done: b.done, total: b.total })}</p>
           <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/20">
             <div className="h-full bg-accent transition-[width]" style={{ width: `${b.total ? Math.min(100, (b.done / b.total) * 100) : 0}%` }} />
           </div>
@@ -268,7 +269,7 @@ function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; c
       )}
       {b.status === 'error' && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70 px-8 text-center" role="alert">
-          <p className="text-[14px]">{t(b.errorKey)}</p>
+          <p className="text-body">{t(b.errorKey)}</p>
           <Button variant="primary" onClick={() => void b.start()}>
             {tc('retry')}
           </Button>
@@ -289,10 +290,10 @@ function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; c
         {media}
         <div className="flex items-center gap-1 px-1 py-1">
           {playButton}
-          <p className="min-w-0 flex-1 truncate text-[13px]" aria-live="off">
+          <p className="min-w-0 flex-1 truncate text-note" aria-live="off">
             {frame ? frameLabel : t('images', { n: sky.total })}
           </p>
-          <a href={skyHref(params)} target="_blank" rel="noopener" className="inline-flex min-h-11 shrink-0 items-center px-2 text-[13px] font-semibold text-link">
+          <a href={skyHref(params)} target="_blank" rel="noopener" className="inline-flex min-h-11 shrink-0 items-center px-2 text-note font-semibold text-link">
             {t('openInSkySwap')}
           </a>
         </div>
@@ -312,8 +313,8 @@ function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; c
           <IconStepForward size={28} />
         </IconButton>
         <div className="min-w-0 flex-1 px-1 leading-tight">
-          <p className="truncate text-[14px] font-semibold">{frame ? frameLabel : t('player')}</p>
-          <p className="truncate text-[12px] text-text-secondary">
+          <p className="truncate text-body font-semibold">{frame ? frameLabel : t('player')}</p>
+          <p className="truncate text-meta text-text-secondary">
             {frame ? `${frame.release.toUpperCase()} · ${t('frameOf', { n: cur + 1, total: n })}` : b.status === 'ready' ? t('built', { n }) : ''}
           </p>
         </div>
@@ -323,7 +324,7 @@ function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; c
       </div>
       {n > 0 && (
         <div className="flex flex-wrap items-center gap-2 px-4 pb-1 pt-1">
-          <span className="text-[13px] text-text-secondary">{t('colormap')}</span>
+          <span className="text-note text-text-secondary">{t('colormap')}</span>
           <Chip active={colormap === 'grey'} onClick={() => setColormap('grey')}>
             {t('grey')}
           </Chip>
@@ -337,29 +338,30 @@ function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; c
           )}
         </div>
       )}
-      {crosshair && n > 0 && <p className="px-4 pt-1 text-[12px] text-text-secondary">{t('crosshairCentre')}</p>}
+      {crosshair && n > 0 && <p className="px-4 pt-1 text-meta text-text-secondary">{t('crosshairCentre')}</p>}
       {b.status === 'ready' && <p className="sr-only" role="status">{t('built', { n })}</p>}
     </div>
   )
 }
 
 function SiaList({ sky }: { sky: SkyResult }) {
+  const locale = useLocale()
   const t = useTranslations('sky')
   const shown = sky.images.slice(0, 12)
   return (
     <section className="px-4 pt-4">
-      <p className="text-[13px] text-text-secondary">{t('siaList')}</p>
+      <p className="text-note text-text-secondary">{t('siaList')}</p>
       <ul className="mt-2 divide-y-[0.5px] divide-divider">
         {shown.map((im) => (
-          <li key={im.key} className="flex min-h-10 items-center gap-2 text-[14px]">
+          <li key={im.key} className="flex min-h-10 items-center gap-2 text-body">
             <span className="size-2.5 shrink-0 rounded-full" style={{ background: BAND_HUE[im.band] }} aria-hidden="true" />
             <span className="w-8 font-medium">{im.band}</span>
-            <span className="flex-1">{formatShortDate(im.iso)}</span>
+            <span className="flex-1">{formatShortDate(im.iso, locale)}</span>
             <span className="text-text-secondary">{im.release.toUpperCase()}</span>
           </li>
         ))}
       </ul>
-      {sky.images.length > shown.length && <p className="pt-2 text-[13px] text-text-secondary">{t('moreImages', { n: sky.images.length - shown.length })}</p>}
+      {sky.images.length > shown.length && <p className="pt-2 text-note text-text-secondary">{t('moreImages', { n: sky.images.length - shown.length })}</p>}
     </section>
   )
 }
@@ -377,7 +379,7 @@ function DataSize({ sky, fov }: { sky: SkyResult; fov: number }) {
       </Notice>
     </div>
   ) : (
-    <p className="px-4 pt-2 text-[13px] text-text-secondary">{t('dataSize', { size })}</p>
+    <p className="px-4 pt-2 text-note text-text-secondary">{t('dataSize', { size })}</p>
   )
 }
 
@@ -393,7 +395,7 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
     return (
       <div aria-busy="true">
         <Skeleton className="aspect-square w-full rounded-none" />
-        <p className="px-4 py-3 text-[13px] text-text-secondary" role="status">
+        <p className="px-4 py-3 text-note text-text-secondary" role="status">
           {t('loadingIndex')}
         </p>
       </div>
@@ -412,16 +414,16 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
   return (
     <div className="pb-6">
       <section className="px-4 pb-3 pt-1">
-        <p className="text-[13px] text-text-secondary">
+        <p className="text-note text-text-secondary">
           {t('coordinates', { ra: formatRa(ra), dec: formatDec(dec) })}
         </p>
-        <p className="mt-0.5 text-[14px]">
+        <p className="mt-0.5 text-body">
           {d.source === 'none' ? t('none') : t('images', { n: d.total })} <span className="text-text-secondary">· {t(`source.${d.source === 'sia' || d.source === 'fragment' ? d.source : 'none'}`)}</span>
         </p>
         {d.releases.length > 0 && (
           <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-label={t('releases')}>
             {d.releases.map((r) => (
-              <span key={r} className="rounded-full border-[0.5px] border-divider bg-surface px-2.5 py-0.5 text-[12px] font-medium">
+              <span key={r} className="rounded-full border-[0.5px] border-divider bg-surface px-2.5 py-0.5 text-meta font-medium">
                 {r.toUpperCase()}
               </span>
             ))}
@@ -438,7 +440,7 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
       {d.source === 'none' ? <EmptyState title={t('none')} /> : <Player key={playerKey} sky={d} params={params} compact={false} />}
 
       <section className="pt-4">
-        <h2 className="px-4 text-[15px] font-semibold">{t('fov')}</h2>
+        <h2 className="px-4 text-ui font-semibold">{t('fov')}</h2>
         <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pt-2">
           {FOVS.map((f) => (
             <Chip key={f} active={f === fov} onClick={() => onChange?.({ fov: f })}>
@@ -450,7 +452,7 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
       </section>
 
       <section className="pt-4">
-        <h2 className="px-4 text-[15px] font-semibold">{t('band')}</h2>
+        <h2 className="px-4 text-ui font-semibold">{t('band')}</h2>
         <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pt-2">
           <Chip active={!band} onClick={() => onChange?.({ band: null })}>
             {t('allBands')} <span className="opacity-70">{allCount}</span>
@@ -468,13 +470,13 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
 
       {d.nearby.length > 0 && (
         <section className="pt-5">
-          <h2 className="px-4 text-[15px] font-semibold">{t('nearby')}</h2>
+          <h2 className="px-4 text-ui font-semibold">{t('nearby')}</h2>
           <ul className="no-scrollbar flex gap-4 overflow-x-auto px-4 pt-3">
             {d.nearby.map((o) => (
               <li key={o.id}>
                 <Link href={`/o/${o.id}`} className="flex w-[72px] flex-col items-center gap-1" aria-label={`${t('openProfile')}: ${o.name}`}>
                   <ObjectAvatar src={o.avatar} alt="" size={64} ring={o.has_new_data ? 'new' : 'none'} />
-                  <span className="w-full truncate text-center text-[12px]">{o.handle}</span>
+                  <span className="w-full truncate text-center text-meta">{o.handle}</span>
                 </Link>
               </li>
             ))}

@@ -46,10 +46,10 @@ function ResultRow({ o, onOpen }: { o: Hit; onOpen: () => void }) {
         <ObjectAvatar src={o.avatar} alt="" size={44} ring={o.has_new_data ? 'new' : 'none'} />
         <span className="min-w-0 flex-1 leading-tight">
           <span className="flex items-center gap-1">
-            <span className="truncate text-[14px] font-semibold">{o.handle}</span>
+            <span className="truncate text-body font-semibold">{o.handle}</span>
             <ObjectBadges verified={isVerified(o.verdict)} saturated={isSaturated(o.saturation)} />
           </span>
-          <span className="block truncate text-[14px] text-text-secondary">
+          <span className="block truncate text-body text-text-secondary">
             {o.name} · {kind}
             {o.separation_deg !== null && ` · ${t('separation', { deg: o.separation_deg.toFixed(2) })}`}
           </span>
@@ -91,12 +91,12 @@ function SpotCard({ spot, onWatch }: { spot: Spot; onWatch: () => void }) {
           <IconTarget size={26} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-text-secondary">{t('watchTitle')}</p>
-          <h2 id="spot-title" className="truncate text-[16px] font-semibold">
+          <p className="text-meta font-semibold uppercase tracking-wide text-text-secondary">{t('watchTitle')}</p>
+          <h2 id="spot-title" className="truncate text-title-sm font-semibold">
             {spot.name ?? coords}
           </h2>
-          {spot.name && <p className="text-[13px] text-text-secondary">{coords}</p>}
-          <p className="text-[13px] text-text-secondary">{t('resolvedBy', { source })}</p>
+          {spot.name && <p className="text-note text-text-secondary">{coords}</p>}
+          <p className="text-note text-text-secondary">{t('resolvedBy', { source })}</p>
         </div>
       </div>
       {spot.stale && (
@@ -106,11 +106,11 @@ function SpotCard({ spot, onWatch }: { spot: Spot; onWatch: () => void }) {
           </Notice>
         </div>
       )}
-      <p className="mt-3 text-[14px]">{t('watchBody')}</p>
+      <p className="mt-3 text-body">{t('watchBody')}</p>
       <Link
         href={href}
         onClick={onWatch}
-        className="mt-3 flex min-h-11 w-full items-center justify-center rounded-[var(--radius-button)] bg-accent px-3 text-[length:var(--text-button)] font-semibold text-on-accent active:bg-accent-pressed"
+        className="mt-3 flex min-h-11 w-full items-center justify-center rounded-[var(--radius-button)] bg-accent px-3 text-ui font-semibold text-on-accent active:bg-accent-pressed"
       >
         {t('watchOpen')}
       </Link>
@@ -125,7 +125,7 @@ function SpotCard({ spot, onWatch }: { spot: Spot; onWatch: () => void }) {
         </Button>
       </div>
       {manual && (
-        <label className="mt-3 block text-[13px] text-text-secondary">
+        <label className="mt-3 block text-note text-text-secondary">
           {t('copyFailed')}
           <textarea
             readOnly
@@ -133,7 +133,7 @@ function SpotCard({ spot, onWatch }: { spot: Spot; onWatch: () => void }) {
             value={manual}
             rows={3}
             onFocus={(e) => e.currentTarget.select()}
-            className="mt-1 block w-full resize-none rounded-[var(--radius-input)] border-[0.5px] border-divider bg-surface p-2 font-mono text-[12px] text-text outline-none"
+            className="mt-1 block w-full resize-none rounded-[var(--radius-input)] border-[0.5px] border-divider bg-surface p-2 font-mono text-meta text-text outline-none"
           />
         </label>
       )}
@@ -250,7 +250,7 @@ export default function SearchPage() {
             maxLength={120}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('placeholder')}
-            className="h-full min-w-0 flex-1 bg-transparent px-2 text-[16px] outline-none placeholder:text-text-secondary [&::-webkit-search-cancel-button]:hidden"
+            className="h-full min-w-0 flex-1 bg-transparent px-2 text-title-sm outline-none placeholder:text-text-secondary [&::-webkit-search-cancel-button]:hidden"
           />
           {query && (
             <button
@@ -276,10 +276,10 @@ export default function SearchPage() {
           {recent.length > 0 && (
             <section className="pb-2" aria-labelledby="recent-title">
               <div className="flex items-center justify-between px-4 pb-1 pt-2">
-                <h2 id="recent-title" className="text-[16px] font-semibold">
+                <h2 id="recent-title" className="text-title-sm font-semibold">
                   {t('recent')}
                 </h2>
-                <button type="button" onClick={clearRecent} className="min-h-11 px-1 text-[14px] font-semibold text-link">
+                <button type="button" onClick={clearRecent} className="min-h-11 px-1 text-body font-semibold text-link">
                   {t('clear')}
                 </button>
               </div>
@@ -298,14 +298,14 @@ export default function SearchPage() {
                       <span className="flex size-11 shrink-0 items-center justify-center rounded-full border-[0.5px] border-divider">
                         <IconSearch size={22} />
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">{r}</span>
+                      <span className="min-w-0 flex-1 truncate text-body font-semibold">{r}</span>
                     </button>
                   </li>
                 ))}
               </ul>
             </section>
           )}
-          <p className="px-4 pb-3 pt-1 text-[13px] text-text-secondary">{t('hint')}</p>
+          <p className="px-4 pb-3 pt-1 text-note text-text-secondary">{t('hint')}</p>
           <ExploreGrid />
         </>
       )}
@@ -327,7 +327,7 @@ export default function SearchPage() {
               {data.spot && <SpotCard spot={data.spot} onWatch={remember} />}
               {data.objects.length > 0 && (
                 <section aria-labelledby="results-title" className="pt-2">
-                  <h2 id="results-title" className="px-4 pb-1 pt-2 text-[16px] font-semibold">
+                  <h2 id="results-title" className="px-4 pb-1 pt-2 text-title-sm font-semibold">
                     {nearbyMode ? t('nearby') : t('results')}
                   </h2>
                   <ul>

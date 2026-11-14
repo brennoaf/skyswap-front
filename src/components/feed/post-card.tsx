@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useState } from 'react'
 import { PostMedia } from '@/components/feed/post-media'
-import { IconComment, IconCompare, IconDirect, IconFlask, IconLink, IconMore, IconSave, IconTarget } from '@/components/icons'
+import { IconCompare, IconFlask, IconLink, IconMore, IconTarget } from '@/components/icons'
+import { ActionRow } from '@/components/post/action-row'
 import { TagPanel } from '@/components/post/tag-panel'
 import { IconButton, isSaturated, isVerified, ObjectAvatar, ObjectBadges, Sheet, SheetRow } from '@/components/ui/primitives'
 import type { FeedItem } from '@/lib/api/client'
@@ -23,10 +24,10 @@ export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | '
       </button>
       <Link href={`/o/${item.object.id}`} className="min-w-0 flex-1">
         <span className="flex items-center gap-1">
-          <span className="truncate text-[length:var(--text-account)] font-medium">{item.object.handle}</span>
+          <span className="truncate text-account font-medium">{item.object.handle}</span>
           <ObjectBadges verified={isVerified(item.object.verdict)} saturated={isSaturated(item.object.saturation)} size={13} />
         </span>
-        <span className="block truncate text-[12px] text-text-secondary">{item.object.official_target ? t('officialTarget') : t(`kinds.${item.object.kind}`)}</span>
+        <span className="block truncate text-meta text-text-secondary">{item.object.official_target ? t('officialTarget') : t(`kinds.${item.object.kind}`)}</span>
       </Link>
       <IconButton label={t('more')} onClick={onMore}>
         <IconMore />
@@ -59,13 +60,13 @@ export function PostMoreSheet({ open, onClose, item }: { open: boolean; onClose:
 }
 
 export function PostCard({ item, priority = false }: { item: FeedItem; priority?: boolean }) {
+  const locale = useLocale()
   const t = useTranslations('post')
   const [more, setMore] = useState(false)
   const [tagsOpen, setTagsOpen] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const saved = useUi((s) => s.saved.includes(item.post.id))
   const toggleSaved = useUi((s) => s.toggleSaved)
-  const share = useShare()
   const total = item.tags.counts ? Object.values(item.tags.counts).reduce((a, b) => a + b, 0) : 0
   const { post, object } = item
   return (
@@ -74,38 +75,31 @@ export function PostCard({ item, priority = false }: { item: FeedItem; priority?
       <Link href={`/p/${post.id}`} aria-label={t('open', { title: post.title })}>
         <PostMedia post={post} priority={priority} />
       </Link>
-      <div className="flex items-center px-[5px] pt-1">
-        <IconButton label={t('actions.tag')} onClick={() => setTagsOpen(true)}>
-          <IconComment />
-        </IconButton>
-        {item.tags.counts && <span className="-ml-1 mr-1 text-[14px] font-semibold">{total}</span>}
-        <Link href={`/p/${post.id}?mark=1`} aria-label={t('actions.mark')} title={t('actions.mark')} className="inline-flex size-11 items-center justify-center rounded-full active:scale-90">
-          <IconTarget />
-        </Link>
-        <IconButton label={t('actions.share')} onClick={() => share({ title: post.title, path: `/p/${post.id}` })}>
-          <IconDirect />
-        </IconButton>
-        <IconButton label={saved ? t('actions.unsave') : t('actions.save')} aria-pressed={saved} className="ml-auto" onClick={() => toggleSaved(post.id)}>
-          <IconSave filled={saved} />
-        </IconButton>
-      </div>
+      <ActionRow
+        tag={{ onClick: () => setTagsOpen(true) }}
+        mark={{ href: `/p/${post.id}?mark=1` }}
+        colours={{ href: `/p/${post.id}?colours=1` }}
+        save={{ onClick: () => toggleSaved(post.id) }}
+        saved={saved}
+        tagCount={item.tags.counts ? total : null}
+      />
       <div className="px-3">
-        <p className="text-[14px]">
+        <p className="text-body">
           {item.tags.counts ? t('taggedBy', { total }) : <button type="button" onClick={() => setTagsOpen(true)} className="text-text-secondary">{t('tagPrompt')}</button>}
         </p>
-        <p id={`post-${post.id}`} className={expanded ? 'mt-1 text-[14px]' : 'mt-1 line-clamp-2 text-[14px]'}>
+        <p id={`post-${post.id}`} className={expanded ? 'mt-1 text-body' : 'mt-1 line-clamp-2 text-body'}>
           <Link href={`/o/${object.id}`} className="font-semibold">
             {object.handle}
           </Link>{' '}
           <span className="font-semibold">{post.title}.</span> {post.caption}
         </p>
         {!expanded && post.caption.length > 70 && (
-          <button type="button" className="text-[14px] text-text-muted" onClick={() => setExpanded(true)}>
+          <button type="button" className="text-body text-text-muted" onClick={() => setExpanded(true)}>
             {t('more')}
           </button>
         )}
-        <p className="mt-1 text-[12px] text-text-muted">
-          <time dateTime={post.date_range[1]}>{formatDate(post.date_range[1] ?? post.date_range[0] ?? '')}</time>
+        <p className="mt-1 text-meta text-text-muted">
+          <time dateTime={post.date_range[1]}>{formatDate(post.date_range[1] ?? post.date_range[0] ?? '', locale)}</time>
           {post.frames[0] && ` · ${[...new Set(post.frames.map((f) => f.release.toUpperCase()))].join(' + ')}`}
         </p>
       </div>
@@ -120,7 +114,7 @@ function SheetTags({ open, onClose, item }: { open: boolean; onClose: () => void
   return (
     <Sheet open={open} onClose={onClose} title={t('title')}>
       <div className="px-4 py-4">
-        <p className="mb-3 text-[13px] text-text-secondary">{t('explain')}</p>
+        <p className="mb-3 text-note text-text-secondary">{t('explain')}</p>
         <TagPanel postId={item.post.id} tags={item.tags} />
       </div>
     </Sheet>

@@ -21,7 +21,7 @@ export function LoginForm({ onDone }: { onDone?: () => void }) {
         if (valid) login.mutate(nick, { onSuccess: () => onDone?.() })
       }}
     >
-      <label htmlFor="nickname" className="text-[13px] text-text-secondary">
+      <label htmlFor="nickname" className="text-note text-text-secondary">
         {t('nicknameLabel')}
       </label>
       <input
@@ -35,15 +35,15 @@ export function LoginForm({ onDone }: { onDone?: () => void }) {
         placeholder={t('nicknamePlaceholder')}
         aria-invalid={!!error}
         aria-describedby="nickname-help"
-        className="h-11 rounded-[var(--radius-input)] border-[0.5px] border-divider bg-surface px-3 text-[15px] outline-none focus:border-text"
+        className="h-11 rounded-[var(--radius-input)] border-[0.5px] border-divider bg-surface px-3 text-ui outline-none focus:border-text"
       />
-      <p id="nickname-help" className={error ? 'text-[12px] text-danger' : 'text-[12px] text-text-secondary'}>
+      <p id="nickname-help" className={error ? 'text-meta text-danger' : 'text-meta text-text-secondary'}>
         {error ? t(`errors.${error === 'nickname_taken' ? 'taken' : error === 'invalid_request' || error === 'invalid_nickname' ? 'invalid' : 'generic'}`) : t('nicknameHelp')}
       </p>
       <Button type="submit" variant="primary" full disabled={!valid || login.isPending} className="h-11">
         {login.isPending ? t('joining') : t('join')}
       </Button>
-      <p className="text-center text-[12px] text-text-secondary">{t('privacy')}</p>
+      <p className="text-center text-meta text-text-secondary">{t('privacy')}</p>
     </form>
   )
 }
@@ -55,8 +55,8 @@ export function LoginSheet() {
   return (
     <Sheet open={reason !== null} onClose={close} labelledBy="login-title">
       <div className="flex flex-col items-center px-6 pt-4 text-center">
-        <Wordmark className="text-[40px]" />
-        <h2 id="login-title" className="mt-2 text-[17px] font-semibold">
+        <Wordmark className="text-wordmark-lg" />
+        <h2 id="login-title" className="mt-2 text-title-md font-semibold">
           {t('title')}
         </h2>
         <p className="mt-1 text-text-secondary">{reason ? t(`reasons.${reason}`) : ''}</p>

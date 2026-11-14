@@ -1,27 +1,26 @@
 export const BANDS = ['D1', 'D2', 'D3', 'D4', 'D5', 'D6'] as const
 export type Band = (typeof BANDS)[number]
 
-export const BAND_HUE: Record<string, string> = {
-  D1: '#5b8cff',
-  D2: '#3ec6ff',
-  D3: '#33d6a6',
-  D4: '#c6e04a',
-  D5: '#ffa63d',
-  D6: '#ff5a4f',
+export const BAND_HUE: Record<string, string> = Object.fromEntries(BANDS.map((b) => [b, `var(--color-band-${b.toLowerCase()})`]))
+
+export function cssColor(token: string, fallback = '#ffffff'): string {
+  if (typeof window === 'undefined') return fallback
+  const v = getComputedStyle(document.documentElement).getPropertyValue(token).trim()
+  return v || fallback
 }
 
-export function formatDate(iso: string | number, opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' }): string {
-  const d = typeof iso === 'number' ? new Date(iso) : new Date(iso)
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-GB', { timeZone: 'UTC', ...opts })
-}
-
-export function formatShortDate(iso: string | number): string {
-  return formatDate(iso, { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
-export function formatDateTime(iso: string): string {
+export function formatDate(iso: string | number, locale: string, opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' }): string {
   const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? '' : `${formatShortDate(iso)} ${d.toISOString().slice(11, 16)} UTC`
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString(locale, { timeZone: 'UTC', ...opts })
+}
+
+export function formatShortDate(iso: string | number, locale: string): string {
+  return formatDate(iso, locale, { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+export function formatDateTime(iso: string, locale: string): string {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : `${formatShortDate(iso, locale)} ${d.toISOString().slice(11, 16)} UTC`
 }
 
 export function relativeTime(ms: number, now = Date.now()): { unit: 'now' | 'm' | 'h' | 'd' | 'w'; value: number } {
@@ -33,12 +32,12 @@ export function relativeTime(ms: number, now = Date.now()): { unit: 'now' | 'm' 
   return { unit: 'w', value: Math.floor(s / (7 * 86400)) }
 }
 
-export function formatNumber(n: number, digits = 0): string {
-  return n.toLocaleString('en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits })
+export function formatNumber(n: number, locale: string, digits = 0): string {
+  return n.toLocaleString(locale, { maximumFractionDigits: digits, minimumFractionDigits: digits })
 }
 
-export function compactNumber(n: number): string {
-  return n.toLocaleString('en-US', { notation: 'compact', maximumFractionDigits: 1 })
+export function compactNumber(n: number, locale: string): string {
+  return n.toLocaleString(locale, { notation: 'compact', maximumFractionDigits: 1 })
 }
 
 export function formatWavelength(range: readonly number[] | null | undefined): string {

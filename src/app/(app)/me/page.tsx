@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { IconFollow, IconHighlight, IconNote, IconSave, IconSettings, IconSparkle, IconStar } from '@/components/icons'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
@@ -17,7 +17,7 @@ import { useUi } from '@/lib/state/ui'
 
 type Tab = 'history' | 'badges' | 'notes' | 'saved' | 'following'
 
-const SECONDARY_LINK = 'inline-flex h-8 flex-1 items-center justify-center rounded-[var(--radius-button)] bg-surface px-3 text-[14px] font-semibold active:bg-surface-pressed'
+const SECONDARY_LINK = 'inline-flex h-8 flex-1 items-center justify-center rounded-[var(--radius-button)] bg-surface px-3 text-body font-semibold active:bg-surface-pressed'
 
 function SettingsLink() {
   const t = useTranslations('me')
@@ -52,8 +52,8 @@ function Guest() {
       <TopBar back={false} title={t('title')} actions={<SettingsLink />} />
       <div className="flex flex-col items-center px-6 pb-2 pt-6 text-center">
         <UserAvatar nickname={null} size={90} />
-        <h2 className="mt-4 font-[family-name:var(--font-display)] text-[22px] font-bold leading-tight">{t('guestTitle')}</h2>
-        <p className="mt-2 max-w-[320px] text-[14px] text-text-secondary">{t('guestBody')}</p>
+        <h2 className="mt-4 font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">{t('guestTitle')}</h2>
+        <p className="mt-2 max-w-[320px] text-body text-text-secondary">{t('guestBody')}</p>
       </div>
       <LoginForm />
       <GoalsCard />
@@ -77,10 +77,10 @@ function NotesPanel() {
             <li key={n.postId}>
               <Link href={`/p/${n.postId}`} className="block px-4 py-3 active:bg-surface">
                 <span className="flex items-baseline justify-between gap-2">
-                  <span className="truncate text-[14px] font-semibold">{n.title || t('noteUntitled')}</span>
+                  <span className="truncate text-body font-semibold">{n.title || t('noteUntitled')}</span>
                   <NoteTime ms={n.updatedAt} />
                 </span>
-                <span className="mt-0.5 line-clamp-2 block whitespace-pre-line text-[14px] text-text-secondary">{n.text}</span>
+                <span className="mt-0.5 line-clamp-2 block whitespace-pre-line text-body text-text-secondary">{n.text}</span>
               </Link>
             </li>
           ))}
@@ -92,10 +92,11 @@ function NotesPanel() {
 
 function NoteTime({ ms }: { ms: number }) {
   const ago = useAgo()
-  return <span className="shrink-0 text-[12px] text-text-secondary">{ago(ms)}</span>
+  return <span className="shrink-0 text-meta text-text-secondary">{ago(ms)}</span>
 }
 
 function Profile({ me }: { me: Me }) {
+  const locale = useLocale()
   const t = useTranslations('me')
   const tl = useTranslations('levels')
   const tn = useTranslations('nav')
@@ -121,22 +122,22 @@ function Profile({ me }: { me: Me }) {
         <div className="flex items-center gap-5">
           <LevelRing nickname={me.user.nickname} level={me.level.level} progress={me.level.progress} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[length:var(--text-account)] font-semibold">{me.user.nickname}</p>
+            <p className="truncate text-account font-semibold">{me.user.nickname}</p>
             <div className="mt-1.5 flex justify-between gap-2 pr-2">
-              <Stat value={formatNumber(me.counts.votes)} label={t('classifications')} />
-              <Stat value={formatNumber(me.counts.marks)} label={t('marks')} />
-              <Stat value={formatNumber(me.counts.tags)} label={t('tags')} />
+              <Stat value={formatNumber(me.counts.votes, locale)} label={t('classifications')} />
+              <Stat value={formatNumber(me.counts.marks, locale)} label={t('marks')} />
+              <Stat value={formatNumber(me.counts.tags, locale)} label={t('tags')} />
             </div>
           </div>
         </div>
 
-        <div className="mt-3 text-[14px] leading-snug">
+        <div className="mt-3 text-body leading-snug">
           <p className="font-semibold">{t('level', { n: me.level.level, name: tl(me.level.key) })}</p>
           <ProgressBar value={me.level.progress} label={t('progress')} className="my-2" />
           <p className="text-text-secondary">
-            <span className="font-semibold text-text">{t('xp', { xp: formatNumber(me.xp) })}</span>
+            <span className="font-semibold text-text">{t('xp', { xp: formatNumber(me.xp, locale) })}</span>
             {' · '}
-            {next && me.level.next_min_xp !== null ? t('toNext', { xp: formatNumber(me.level.next_min_xp - me.xp), name: tl(next.key) }) : t('maxLevel')}
+            {next && me.level.next_min_xp !== null ? t('toNext', { xp: formatNumber(me.level.next_min_xp - me.xp, locale), name: tl(next.key) }) : t('maxLevel')}
           </p>
           {me.streak > 0 && <p className="mt-0.5">{t('streak', { n: me.streak })}</p>}
           <p className="mt-0.5 text-text-secondary">{t('today', { xp: me.xp_today, cap: DAILY_XP_CAP })}</p>

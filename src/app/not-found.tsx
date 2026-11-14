@@ -10,7 +10,7 @@ export default async function NotFound() {
         title={t('notFound')}
         body={t('notFoundBody')}
         action={
-          <Link href="/" className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 text-[15px] font-medium text-on-accent">
+          <Link href="/" className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 text-ui font-medium text-on-accent">
             {t('goHome')}
           </Link>
         }

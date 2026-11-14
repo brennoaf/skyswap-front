@@ -90,7 +90,7 @@ function AlertsList() {
         title={t('empty')}
         body={t('emptyBody')}
         action={
-          <Link href="/classify" className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 text-[15px] font-medium text-on-accent">
+          <Link href="/classify" className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 text-ui font-medium text-on-accent">
             {tn('classify')}
           </Link>
         }
@@ -103,7 +103,7 @@ function AlertsList() {
     <div className="pb-6">
       {grouped.map(({ g, items }, i) => (
         <section key={g} aria-labelledby={`alerts-${g}`} className={cx(i > 0 && 'mt-1 border-t-[0.5px] border-divider')}>
-          <h2 id={`alerts-${g}`} className="px-4 pb-1 pt-4 text-[16px] font-bold">
+          <h2 id={`alerts-${g}`} className="px-4 pb-1 pt-4 text-title-sm font-bold">
             {t(g)}
           </h2>
           <ul>

@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { IconCheck, IconChart, IconCrosshair, IconDownload, IconLayers, IconLock, IconNote, IconSearch, IconSpectrum, IconStar, IconWarning } from '@/components/icons'
 import { BadgeArt, LevelArt } from '@/components/ui/badge-art'
 import { EmptyState, ObjectAvatar, ObjectBadges, Skeleton, isSaturated, isVerified } from '@/components/ui/primitives'
@@ -68,6 +68,7 @@ export function ProgressBar({ value, label, className, track = 'bg-divider' }: {
 }
 
 export function BadgeHighlights({ badges, onOpen }: { badges: Me['badges']; onOpen: (key: string) => void }) {
+  const locale = useLocale()
   const t = useTranslations('badges')
   const tm = useTranslations('me')
   return (
@@ -78,12 +79,12 @@ export function BadgeHighlights({ badges, onOpen }: { badges: Me['badges']; onOp
             <button
               type="button"
               onClick={() => onOpen(b.key)}
-              aria-label={`${t(`items.${b.key}.name`)}. ${b.earned_at ? tm('earnedOn', { date: formatShortDate(b.earned_at) }) : t('locked')}`}
+              aria-label={`${t(`items.${b.key}.name`)}. ${b.earned_at ? tm('earnedOn', { date: formatShortDate(b.earned_at, locale) }) : t('locked')}`}
               className={cx('flex size-[64px] items-center justify-center rounded-full border-[0.5px] bg-surface', b.earned_at ? 'border-ring-seen' : 'border-divider')}
             >
               <BadgeArt badge={b.key} size={40} earned={!!b.earned_at} />
             </button>
-            <span className={cx('w-full truncate text-center text-[12px]', !b.earned_at && 'text-text-secondary')}>{t(`items.${b.key}.name`)}</span>
+            <span className={cx('w-full truncate text-center text-meta', !b.earned_at && 'text-text-secondary')}>{t(`items.${b.key}.name`)}</span>
           </li>
         ))}
       </ul>
@@ -92,15 +93,16 @@ export function BadgeHighlights({ badges, onOpen }: { badges: Me['badges']; onOp
 }
 
 export function BadgeDetail({ badge, earnedAt }: { badge: string; earnedAt: number | null }) {
+  const locale = useLocale()
   const t = useTranslations('badges')
   const tm = useTranslations('me')
   return (
     <div className="flex flex-col items-center px-6 pb-4 pt-6 text-center">
       <BadgeArt badge={badge} size={96} earned={!!earnedAt} />
-      <p className="mt-4 text-[17px] font-semibold">{t(`items.${badge}.name`)}</p>
-      <p className="mt-1 text-[14px] text-text-secondary">{t(`items.${badge}.how`)}</p>
-      <p className={cx('mt-4 inline-flex h-7 items-center rounded-full px-3 text-[12px] font-semibold', earnedAt ? 'bg-accent/15 text-link' : 'bg-surface text-text-secondary')}>
-        {earnedAt ? tm('earnedOn', { date: formatShortDate(earnedAt) }) : t('locked')}
+      <p className="mt-4 text-title-md font-semibold">{t(`items.${badge}.name`)}</p>
+      <p className="mt-1 text-body text-text-secondary">{t(`items.${badge}.how`)}</p>
+      <p className={cx('mt-4 inline-flex h-7 items-center rounded-full px-3 text-meta font-semibold', earnedAt ? 'bg-accent/15 text-link' : 'bg-surface text-text-secondary')}>
+        {earnedAt ? tm('earnedOn', { date: formatShortDate(earnedAt, locale) }) : t('locked')}
       </p>
     </div>
   )
@@ -111,7 +113,7 @@ export function LabToolsStrip({ tools, expert }: { tools: string[]; expert: bool
   const tm = useTranslations('me')
   return (
     <section aria-labelledby="me-tools" className="pt-5">
-      <h2 id="me-tools" className="px-4 pb-2 text-[14px] font-semibold">
+      <h2 id="me-tools" className="px-4 pb-2 text-body font-semibold">
         {tm('unlocks')}
       </h2>
       <ul className="no-scrollbar flex gap-2 overflow-x-auto px-4">
@@ -121,8 +123,8 @@ export function LabToolsStrip({ tools, expert }: { tools: string[]; expert: bool
           return (
             <li key={k} className="flex w-[124px] shrink-0 flex-col rounded-xl bg-surface p-3">
               <Icon size={24} className={on ? 'text-text' : 'text-icon-muted'} />
-              <p className={cx('mt-2 line-clamp-2 min-h-[2lh] text-[13px] font-semibold leading-tight', !on && 'text-text-secondary')}>{t(k)}</p>
-              <p className="mt-1.5 flex items-center gap-1 text-[12px] leading-tight text-text-secondary">
+              <p className={cx('mt-2 line-clamp-2 min-h-[2lh] text-note font-semibold leading-tight', !on && 'text-text-secondary')}>{t(k)}</p>
+              <p className="mt-1.5 flex items-center gap-1 text-meta leading-tight text-text-secondary">
                 {on ? <IconCheck size={14} className="shrink-0 text-success" /> : <IconLock size={14} className="shrink-0" />}
                 <span>{on ? tm('unlocked') : tm('unlockedAt', { n: TOOL_UNLOCKS[k] })}</span>
               </p>
@@ -135,26 +137,27 @@ export function LabToolsStrip({ tools, expert }: { tools: string[]; expert: bool
 }
 
 export function GoalsCard() {
+  const locale = useLocale()
   const t = useTranslations('me')
   const { data: goals, isLoading } = useGoals()
   return (
     <section aria-labelledby="me-goals" className="mx-4 mt-5 rounded-2xl bg-surface p-4">
-      <h2 id="me-goals" className="text-[14px] font-semibold">
+      <h2 id="me-goals" className="text-body font-semibold">
         {t('goals')}
       </h2>
       <ul className="mt-3 flex flex-col gap-3">
         {isLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-8 w-full" />)}
         {goals?.map((g) => (
           <li key={g.key}>
-            <div className="mb-1.5 flex items-baseline justify-between gap-2 text-[13px]">
+            <div className="mb-1.5 flex items-baseline justify-between gap-2 text-note">
               <span>{t(`goalItems.${g.key}`)}</span>
-              <span className="tabular-nums text-text-secondary">{t('goalProgress', { count: formatNumber(g.count), target: formatNumber(g.target) })}</span>
+              <span className="tabular-nums text-text-secondary">{t('goalProgress', { count: formatNumber(g.count, locale), target: formatNumber(g.target, locale) })}</span>
             </div>
             <ProgressBar value={g.target ? g.count / g.target : 0} label={t(`goalItems.${g.key}`)} track="bg-ring-seen/40" />
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[12px] text-text-secondary">{t('noLeaderboard')}</p>
+      <p className="mt-3 text-meta text-text-secondary">{t('noLeaderboard')}</p>
     </section>
   )
 }
@@ -175,11 +178,11 @@ export function HistoryList({ items }: { items: Me['history'] }) {
               <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-surface">
                 <IconCheck size={22} />
               </span>
-              <p className="min-w-0 flex-1 text-[14px] leading-snug">
+              <p className="min-w-0 flex-1 text-body leading-snug">
                 {t('historyItems.vote', { label: t(`labels.${item.detail}`) })}
                 {time}
               </p>
-              {status && <span className={cx('shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium', item.status === 'open' ? 'bg-surface text-text-secondary' : 'bg-accent/15 text-link')}>{t(status)}</span>}
+              {status && <span className={cx('shrink-0 rounded-full px-2.5 py-1 text-meta font-medium', item.status === 'open' ? 'bg-surface text-text-secondary' : 'bg-accent/15 text-link')}>{t(status)}</span>}
             </li>
           )
         }
@@ -188,7 +191,7 @@ export function HistoryList({ items }: { items: Me['history'] }) {
         const body = (
           <>
             <span className="relative h-[58px] w-11 shrink-0 overflow-hidden rounded-md bg-media-bg">{item.post && <Image src={item.post.cover} alt="" fill sizes="44px" className="pixelated object-contain" />}</span>
-            <p className="min-w-0 flex-1 text-[14px] leading-snug">
+            <p className="min-w-0 flex-1 text-body leading-snug">
               {text}
               {time}
             </p>
@@ -211,6 +214,7 @@ export function HistoryList({ items }: { items: Me['history'] }) {
 }
 
 export function BadgeGrid({ badges, onOpen }: { badges: Me['badges']; onOpen: (key: string) => void }) {
+  const locale = useLocale()
   const t = useTranslations('badges')
   const tm = useTranslations('me')
   return (
@@ -219,8 +223,8 @@ export function BadgeGrid({ badges, onOpen }: { badges: Me['badges']; onOpen: (k
         <li key={b.key}>
           <button type="button" onClick={() => onOpen(b.key)} className="flex w-full flex-col items-center gap-1.5 rounded-xl px-1 py-2 text-center active:bg-surface">
             <BadgeArt badge={b.key} size={60} earned={!!b.earned_at} />
-            <span className={cx('text-[13px] font-semibold leading-tight', !b.earned_at && 'text-text-secondary')}>{t(`items.${b.key}.name`)}</span>
-            <span className="text-[11.5px] leading-snug text-text-secondary">{b.earned_at ? tm('earnedOn', { date: formatShortDate(b.earned_at) }) : t(`items.${b.key}.how`)}</span>
+            <span className={cx('text-note font-semibold leading-tight', !b.earned_at && 'text-text-secondary')}>{t(`items.${b.key}.name`)}</span>
+            <span className="text-meta leading-snug text-text-secondary">{b.earned_at ? tm('earnedOn', { date: formatShortDate(b.earned_at, locale) }) : t(`items.${b.key}.how`)}</span>
           </button>
         </li>
       ))}
@@ -262,11 +266,11 @@ export function FollowingList({ objects }: { objects: Me['following'] }) {
           <Link href={`/o/${o.id}`} className="flex min-h-[60px] items-center gap-3 px-4 py-2 active:bg-surface">
             <ObjectAvatar src={o.avatar} alt="" size={44} ring={o.has_new_data ? 'new' : 'none'} />
             <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-1 text-[14px] font-semibold">
+              <span className="flex items-center gap-1 text-body font-semibold">
                 <span className="truncate">{o.handle}</span>
                 <ObjectBadges verified={isVerified(o.verdict)} saturated={isSaturated(o.saturation)} />
               </span>
-              <span className="block truncate text-[13px] text-text-secondary">{o.name}</span>
+              <span className="block truncate text-note text-text-secondary">{o.name}</span>
             </span>
           </Link>
         </li>

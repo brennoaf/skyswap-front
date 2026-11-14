@@ -14,7 +14,7 @@ function EmbedScreen() {
   if (!params) return <EmptyState title={t('embedTitle')} body={t('invalid')} />
   return (
     <main>
-      <h1 className="truncate px-3 pb-1.5 pt-2 text-[14px] font-semibold">
+      <h1 className="truncate px-3 pb-1.5 pt-2 text-body font-semibold">
         {params.name ?? `${formatRa(params.ra)} ${formatDec(params.dec)}`}
         {params.name && (
           <span className="ml-1.5 font-normal text-text-secondary">

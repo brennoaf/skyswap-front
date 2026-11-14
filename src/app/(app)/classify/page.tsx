@@ -1,7 +1,7 @@
 'use client'
 
 import { animate, motion, useMotionValue, useReducedMotion, useTransform, type PanInfo } from 'framer-motion'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { IconCheck, IconClose, IconPause, IconPlay, IconQuestion } from '@/components/icons'
 import { LoginForm } from '@/components/shell/login-sheet'
@@ -37,6 +37,7 @@ function isTyping(e: KeyboardEvent) {
 }
 
 function Viewer({ card, img, marks }: { card: DeckCard; img: HTMLImageElement | null; marks?: { u: number; v: number }[] }) {
+  const locale = useLocale()
   const t = useTranslations('classify')
   const reduce = useReducedMotion()
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -80,7 +81,7 @@ function Viewer({ card, img, marks }: { card: DeckCard; img: HTMLImageElement | 
         {mark && (
           <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden="true">
             <circle cx={mark.u * 100} cy={mark.v * 100} r="7" fill="none" stroke="var(--color-warning)" strokeWidth="0.9" />
-            <circle cx={mark.u * 100} cy={mark.v * 100} r="9.5" fill="none" stroke="#000" strokeOpacity="0.5" strokeWidth="0.6" />
+            <circle cx={mark.u * 100} cy={mark.v * 100} r="9.5" fill="none" stroke="var(--color-mark-halo)" strokeOpacity="0.5" strokeWidth="0.6" />
           </svg>
         )}
       </div>
@@ -93,13 +94,13 @@ function Viewer({ card, img, marks }: { card: DeckCard; img: HTMLImageElement | 
               role="radio"
               aria-checked={row === r}
               onClick={() => setRow(r)}
-              className={cx('min-h-9 rounded-[6px] px-3 text-[13px] font-semibold', row === r ? 'bg-bg text-text shadow-sm' : 'text-text-secondary')}
+              className={cx('min-h-9 rounded-[6px] px-3 text-note font-semibold', row === r ? 'bg-bg text-text shadow-sm' : 'text-text-secondary')}
             >
               {r === 0 ? t('blink') : t('difference')}
             </button>
           ))}
         </div>
-        <span className="min-w-0 flex-1 truncate text-right text-[13px] text-text-secondary" aria-live="off">
+        <span className="min-w-0 flex-1 truncate text-right text-note text-text-secondary" aria-live="off">
           {t('panel', { n: panel + 1, total: n })}
         </span>
         {n > 1 && !reduce && (
@@ -115,8 +116,8 @@ function Viewer({ card, img, marks }: { card: DeckCard; img: HTMLImageElement | 
         )}
       </div>
       {frame && (
-        <p className="px-3 pb-3 pt-1 text-[12px] text-text-muted">
-          {formatDateTime(frame.t)} · {formatWavelength([frame.wl_min, frame.wl_max])}
+        <p className="px-3 pb-3 pt-1 text-meta text-text-muted">
+          {formatDateTime(frame.t, locale)} · {formatWavelength([frame.wl_min, frame.wl_max])}
         </p>
       )}
     </div>
@@ -127,7 +128,7 @@ function CardFrame({ card, children }: { card: DeckCard; children: ReactNode }) 
   const t = useTranslations('classify')
   return (
     <div className="overflow-hidden rounded-2xl border-[0.5px] border-divider bg-bg-elevated shadow-[0_6px_24px_rgb(0_0_0/0.18)]">
-      <p className="px-3 py-2.5 text-[13px] font-semibold">{t('cardInfo', { band: card.band, size: card.size_arcmin, n: card.n_frames })}</p>
+      <p className="px-3 py-2.5 text-note font-semibold">{t('cardInfo', { band: card.band, size: card.size_arcmin, n: card.n_frames })}</p>
       {children}
     </div>
   )
@@ -139,7 +140,7 @@ function Stamp({ label, tone, className, style }: { label: string; tone: 'succes
       aria-hidden="true"
       style={style}
       className={cx(
-        'pointer-events-none absolute z-10 rounded-lg border-[3px] bg-black/40 px-3 py-1 font-[family-name:var(--font-display)] text-[22px] font-extrabold uppercase tracking-wide',
+        'pointer-events-none absolute z-10 rounded-lg border-[3px] bg-black/40 px-3 py-1 font-[family-name:var(--font-display)] text-title-lg font-extrabold uppercase tracking-wide',
         tone === 'success' && 'border-success text-success',
         tone === 'danger' && 'border-danger text-danger',
         tone === 'warning' && 'border-warning text-warning',
@@ -164,7 +165,7 @@ function VoteButton({ label, onClick, disabled, size, className, children }: { l
       >
         {children}
       </button>
-      <span className="text-[12px] font-medium text-text-secondary" aria-hidden="true">
+      <span className="text-meta font-medium text-text-secondary" aria-hidden="true">
         {label}
       </span>
     </div>
@@ -274,7 +275,7 @@ function VoteCard({ card, img, onVoted, onStale }: { card: DeckCard; img: HTMLIm
           <IconCheck size={36} />
         </VoteButton>
       </div>
-      <p className="mt-3 text-center text-[12px] text-text-muted">
+      <p className="mt-3 text-center text-meta text-text-muted">
         <span className="[@media(pointer:fine)]:hidden">{t('swipeHint')}</span>
         <span className="hidden [@media(pointer:fine)]:inline">{t('keys')}</span>
       </p>
@@ -303,12 +304,12 @@ function RevealPanel({ label, result, onNext }: { label: Label; result: VoteResu
   return (
     <section ref={panel} aria-labelledby="reveal-title" className="mt-4 scroll-mb-[calc(var(--height-bottomnav)+12px)] rounded-2xl bg-surface px-4 py-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 id="reveal-title" className="text-[16px] font-semibold">
+        <h2 id="reveal-title" className="text-title-sm font-semibold">
           {t('revealTitle')}
         </h2>
         <span
           className={cx(
-            'shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold',
+            'shrink-0 rounded-full px-2.5 py-1 text-meta font-semibold',
             label === 'real' && 'bg-success/15 text-success',
             label === 'artifact' && 'bg-danger/15 text-danger',
             label === 'unsure' && 'bg-warning/15 text-warning',
@@ -322,25 +323,25 @@ function RevealPanel({ label, result, onNext }: { label: Label; result: VoteResu
           <Notice tone="warning">{t('tooFast')}</Notice>
         </div>
       )}
-      <p className="mt-2 text-[14px] leading-snug">{t(`kinds.${reveal.kind}`)}</p>
+      <p className="mt-2 text-body leading-snug">{t(`kinds.${reveal.kind}`)}</p>
       {(reveal.known || rate !== null) && (
-        <ul className="mt-2 space-y-0.5 text-[13px] text-text-secondary">
+        <ul className="mt-2 space-y-0.5 text-note text-text-secondary">
           {reveal.known && <li>{reveal.known.V !== null ? t('knownV', { name: reveal.known.name, v: reveal.known.V }) : t('known', { name: reveal.known.name })}</li>}
           {rate !== null && <li>{t('rate', { rate })}</li>}
         </ul>
       )}
-      {reveal.marks.length > 0 && <p className="mt-2 text-[12px] text-text-muted">{t('marksHint')}</p>}
+      {reveal.marks.length > 0 && <p className="mt-2 text-meta text-text-muted">{t('marksHint')}</p>}
 
       {control ? (
         <div className="mt-3 rounded-xl bg-bg-elevated px-3 py-3">
-          <p className="text-[13px] text-text-secondary">{t('control')}</p>
+          <p className="text-note text-text-secondary">{t('control')}</p>
           {control.correct !== null && (
-            <p className="mt-1.5 flex items-center gap-1.5 text-[14px] font-semibold">
+            <p className="mt-1.5 flex items-center gap-1.5 text-body font-semibold">
               <span className={control.correct ? 'text-success' : 'text-danger'}>{control.correct ? <IconCheck size={20} /> : <IconClose size={20} />}</span>
               {control.correct ? t('correct') : t('wrong')}
             </p>
           )}
-          <p className="mt-1 text-[14px] font-medium">{t('truth', { label: t(control.truth === 'real' ? 'real' : 'artifact') })}</p>
+          <p className="mt-1 text-body font-medium">{t('truth', { label: t(control.truth === 'real' ? 'real' : 'artifact') })}</p>
         </div>
       ) : (
         <div className="mt-3 rounded-xl bg-bg-elevated px-3 py-3">
@@ -349,10 +350,10 @@ function RevealPanel({ label, result, onNext }: { label: Label; result: VoteResu
               <div className="h-2 overflow-hidden rounded-full bg-surface" aria-hidden="true">
                 <div className="h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
               </div>
-              <p className="mt-2 text-[13px]">{t('consensus', { pct, n: total })}</p>
+              <p className="mt-2 text-note">{t('consensus', { pct, n: total })}</p>
             </>
           )}
-          <p className="mt-1 text-[13px] font-semibold">{t(`status.${reveal.status}`)}</p>
+          <p className="mt-1 text-note font-semibold">{t(`status.${reveal.status}`)}</p>
         </div>
       )}
 
@@ -439,7 +440,7 @@ function LoginIntro() {
             <IconCheck size={28} />
           </span>
         </div>
-        <h2 className="font-[family-name:var(--font-display)] text-[22px] font-bold leading-tight">{t('loginTitle')}</h2>
+        <h2 className="font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">{t('loginTitle')}</h2>
         <p className="mt-2 max-w-[320px] text-text-secondary">{t('loginBody')}</p>
       </div>
       <div className="mx-auto mt-4 max-w-[380px]">
@@ -463,7 +464,7 @@ export default function ClassifyPage() {
         <LoginIntro />
       ) : (
         <div className="px-4 pb-6">
-          <p className="mb-3 text-[13px] leading-snug text-text-secondary">{t('intro')}</p>
+          <p className="mb-3 text-note leading-snug text-text-secondary">{t('intro')}</p>
           <Deck />
         </div>
       )}

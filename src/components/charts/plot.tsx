@@ -64,7 +64,7 @@ export function Frame({
           <line key={`y${v}`} x1={PLOT.l} x2={PLOT.w - PLOT.r} y1={y(v)} y2={y(v)} stroke="currentColor" strokeWidth="0.5" />
         ))}
       </g>
-      <g className="fill-text-secondary text-[9px]">
+      <g className="fill-text-secondary text-chart">
         {y.ticks.map((v) => (
           <text key={`yt${v}`} x={PLOT.l - 5} y={y(v) + 3} textAnchor="end">
             {yFormat(v)}
@@ -95,7 +95,7 @@ export function Frame({
 
 export function Legend({ items }: { items: { color: string; label: string; hollow?: boolean }[] }) {
   return (
-    <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-text-secondary">
+    <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-meta text-text-secondary">
       {items.map((i) => (
         <li key={i.label} className="flex items-center gap-1.5">
           <span className="inline-block size-2.5 rounded-full" style={i.hollow ? { border: `1.5px solid ${i.color}` } : { background: i.color }} />

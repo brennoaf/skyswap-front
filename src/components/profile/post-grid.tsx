@@ -40,7 +40,7 @@ export function PostGrid({ tiles }: { tiles: GridTile[] }) {
             {tile.badge && (
               <span className="absolute right-1 top-1 text-white drop-shadow">{tile.badge === 'reel' ? <IconReel size={24} /> : <IconCarousel size={24} />}</span>
             )}
-            {tile.label && <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 text-[10px] text-white">{tile.label}</span>}
+            {tile.label && <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 text-micro text-white">{tile.label}</span>}
           </Link>
         </li>
       ))}
@@ -48,14 +48,14 @@ export function PostGrid({ tiles }: { tiles: GridTile[] }) {
   )
 }
 
-export function frameTiles(posts: Post[], band: string): GridTile[] {
+export function frameTiles(posts: Post[], band: string, locale: string): GridTile[] {
   const seen = new Set<string>()
   const out: (GridTile & { mjd: number })[] = []
   for (const p of posts) {
     for (const f of p.frames) {
       if (f.band !== band || seen.has(f.src)) continue
       seen.add(f.src)
-      out.push({ key: f.src, href: `/p/${p.id}`, src: f.src, alt: `${p.title} · ${f.band} · ${formatShortDate(f.t)}`, label: formatShortDate(f.t), pixelated: true, mjd: f.mjd })
+      out.push({ key: f.src, href: `/p/${p.id}`, src: f.src, alt: `${p.title} · ${f.band} · ${formatShortDate(f.t, locale)}`, label: formatShortDate(f.t, locale), pixelated: true, mjd: f.mjd })
     }
   }
   return out.sort((a, b) => a.mjd - b.mjd)

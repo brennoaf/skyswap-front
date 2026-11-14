@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
 import { IconComment, IconDirect, IconMore, IconPlay, IconSave, IconTarget } from '@/components/icons'
@@ -15,7 +15,7 @@ import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
 
 const REEL_H = 'h-[calc(100dvh-var(--height-bottomnav))]'
-const ON_BLACK = '[--color-text:#f8f8f9] [--color-text-secondary:rgb(248_248_249/0.75)]'
+const ON_BLACK = '[--color-text:var(--color-on-media)] [--color-text-secondary:var(--color-on-media-muted)]'
 
 function useReducedMotionPref() {
   const [reduce, setReduce] = useState(false)
@@ -30,6 +30,7 @@ function useReducedMotionPref() {
 }
 
 function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; index: number; active: boolean; onVisible: (i: number) => void; onTags: (postId: string) => void }) {
+  const locale = useLocale()
   const t = useTranslations('reels')
   const tp = useTranslations('post')
   const ref = useRef<HTMLElement>(null)
@@ -75,12 +76,12 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
   const to = post.date_range[1] ?? from
 
   return (
-    <section ref={ref} aria-label={`${object.handle} · ${post.title}`} className={`relative w-full shrink-0 snap-start snap-always overflow-hidden bg-black ${REEL_H}`}>
+    <section ref={ref} aria-label={`${object.handle} · ${post.title}`} className={`relative w-full shrink-0 snap-start snap-always overflow-hidden bg-reels-bg ${REEL_H}`}>
       <button type="button" className="absolute inset-0 block size-full" aria-label={paused ? t('play') : t('pause')} aria-pressed={paused} onClick={() => setPaused((p) => !p)}>
         {shown && (
           <Image
             src={shown.src}
-            alt={tp('frameAlt', { band: shown.band, date: formatShortDate(shown.t) })}
+            alt={tp('frameAlt', { band: shown.band, date: formatShortDate(shown.t, locale) })}
             fill
             sizes="(max-width: 470px) 100vw, 470px"
             className="pixelated object-contain"
@@ -100,7 +101,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
           <span className="flex size-16 items-center justify-center rounded-full bg-black/50">
             <IconPlay size={36} />
           </span>
-          {paused && <span className="rounded-full bg-black/60 px-2.5 py-1 text-[12px] font-medium">{t('mute')}</span>}
+          {paused && <span className="rounded-full bg-black/60 px-2.5 py-1 text-meta font-medium">{t('mute')}</span>}
         </span>
       )}
 
@@ -110,17 +111,17 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
         <div className="flex items-center gap-2">
           <Link href={`/o/${object.id}`} className="flex min-w-0 items-center gap-2" aria-label={t('profile')}>
             <ObjectAvatar src={object.avatar} alt="" size={34} ring={seen ? 'seen' : 'new'} />
-            <span className="truncate text-[14px] font-semibold">{object.handle}</span>
+            <span className="truncate text-body font-semibold">{object.handle}</span>
           </Link>
           <ObjectBadges verified={isVerified(object.verdict)} saturated={isSaturated(object.saturation)} size={13} />
         </div>
-        <button type="button" onClick={() => setExpanded((e) => !e)} className={expanded ? 'mt-2 block text-left text-[14px]' : 'mt-2 line-clamp-2 text-left text-[14px]'}>
+        <button type="button" onClick={() => setExpanded((e) => !e)} className={expanded ? 'mt-2 block text-left text-body' : 'mt-2 line-clamp-2 text-left text-body'}>
           <span className="font-semibold">{post.title}.</span> {post.caption}
         </button>
-        <p className="mt-1.5 text-[12px] text-[color:var(--color-text-secondary)]">{t('frames', { n, from: formatShortDate(from), to: formatShortDate(to) })}</p>
+        <p className="mt-1.5 text-meta text-[color:var(--color-text-secondary)]">{t('frames', { n, from: formatShortDate(from, locale), to: formatShortDate(to, locale) })}</p>
         {shown && (
-          <p className="mt-0.5 text-[12px] tabular-nums text-[color:var(--color-text-secondary)]">
-            {shown.band} · {formatWavelength(shown.wavelength_um)} · {formatDateTime(shown.t)} · {tp('falseColour')}
+          <p className="mt-0.5 text-meta tabular-nums text-[color:var(--color-text-secondary)]">
+            {shown.band} · {formatWavelength(shown.wavelength_um)} · {formatDateTime(shown.t, locale)} · {tp('falseColour')}
           </p>
         )}
       </div>
@@ -130,7 +131,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
           <IconButton label={tp('actions.tag')} onClick={() => onTags(post.id)}>
             <IconComment />
           </IconButton>
-          <span className="-mt-1 text-[12px] font-semibold text-white">{item.tags.counts ? total : ''}</span>
+          <span className="-mt-1 text-meta font-semibold text-white">{item.tags.counts ? total : ''}</span>
         </div>
         <Link href={`/p/${post.id}?mark=1`} aria-label={tp('actions.mark')} title={tp('actions.mark')} className="inline-flex size-11 items-center justify-center rounded-full text-white active:scale-90">
           <IconTarget />
@@ -176,8 +177,8 @@ export default function ReelsPage() {
   const closeTags = useCallback(() => setTagsFor(null), [])
 
   return (
-    <main className={`relative bg-black text-white ${REEL_H}`}>
-      <h1 className="pointer-events-none absolute left-4 top-3 z-20 font-[family-name:var(--font-display)] text-[22px] font-bold text-white drop-shadow">{t('title')}</h1>
+    <main className={`relative bg-reels-bg text-on-media ${REEL_H}`}>
+      <h1 className="pointer-events-none absolute left-4 top-3 z-20 font-[family-name:var(--font-display)] text-title-lg font-bold text-white drop-shadow">{t('title')}</h1>
       <div className={`no-scrollbar snap-y snap-mandatory overflow-y-auto overscroll-contain ${REEL_H}`} aria-label={t('label')} role="feed" aria-busy={feed.isFetching}>
         {feed.isLoading && (
           <div className={`relative flex items-center justify-center ${REEL_H}`} aria-label={t('loading')}>
@@ -186,7 +187,7 @@ export default function ReelsPage() {
         )}
         {feed.isError && (
           <div className={`flex flex-col items-center justify-center gap-4 px-8 text-center ${REEL_H}`}>
-            <p className="text-[18px] font-semibold">{th('errorTitle')}</p>
+            <p className="text-title-md font-semibold">{th('errorTitle')}</p>
             <p className="text-white/70">{th('errorBody')}</p>
             <Button variant="primary" onClick={() => feed.refetch()}>
               {th('retry')}
@@ -195,7 +196,7 @@ export default function ReelsPage() {
         )}
         {!feed.isLoading && !feed.isError && !reels.length && !hasNextPage && (
           <div className={`flex flex-col items-center justify-center gap-2 px-8 text-center ${REEL_H}`}>
-            <p className="text-[18px] font-semibold">{t('empty')}</p>
+            <p className="text-title-md font-semibold">{t('empty')}</p>
             <p className="text-white/70">{t('emptyBody')}</p>
           </div>
         )}
@@ -204,7 +205,7 @@ export default function ReelsPage() {
         ))}
         {isFetchingNextPage && (
           <div className={`flex snap-start items-center justify-center ${REEL_H}`}>
-            <span className="text-[13px] text-white/60">{t('loading')}</span>
+            <span className="text-note text-white/60">{t('loading')}</span>
           </div>
         )}
       </div>
@@ -219,7 +220,7 @@ function TagsSheet({ item, onClose }: { item: FeedItem | null; onClose: () => vo
     <Sheet open={!!item} onClose={onClose} title={t('title')} className="text-text">
       {item && (
         <div className="px-4 py-4">
-          <p className="mb-3 text-[13px] text-text-secondary">{t('explain')}</p>
+          <p className="mb-3 text-note text-text-secondary">{t('explain')}</p>
           <TagPanel postId={item.post.id} tags={item.tags} />
         </div>
       )}

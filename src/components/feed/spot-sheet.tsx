@@ -56,7 +56,7 @@ export function SpotSheet({ open, onClose }: { open: boolean; onClose: () => voi
           if (query.trim()) void submit()
         }}
       >
-        <p className="text-[14px] text-text-secondary">{t('intro')}</p>
+        <p className="text-body text-text-secondary">{t('intro')}</p>
         <label className="sr-only" htmlFor="spot-query">
           {t('label')}
         </label>
@@ -66,16 +66,16 @@ export function SpotSheet({ open, onClose }: { open: boolean; onClose: () => voi
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('placeholder')}
-          className="h-11 rounded-[var(--radius-input)] border-[0.5px] border-divider bg-surface px-3 text-[15px] outline-none focus:border-text"
+          className="h-11 rounded-[var(--radius-input)] border-[0.5px] border-divider bg-surface px-3 text-ui outline-none focus:border-text"
         />
-        <div className="flex flex-wrap gap-2 text-[13px]">
+        <div className="flex flex-wrap gap-2 text-note">
           {['WISE 0855-0714', '269.4485 4.7395', '17 57 48.5 +04 41 36'].map((ex) => (
             <button key={ex} type="button" onClick={() => setQuery(ex)} className="rounded-full bg-surface px-3 py-1.5 text-text-secondary">
               {ex}
             </button>
           ))}
         </div>
-        {error && <p className="text-[13px] text-danger">{error}</p>}
+        {error && <p className="text-note text-danger">{error}</p>}
         {stale && (
           <Notice tone="warning" icon={<IconWarning size={20} />}>
             <p>{stale.moved !== null ? t('stale', { moved: stale.moved.toFixed(1) }) : t('staleUnknown')}</p>

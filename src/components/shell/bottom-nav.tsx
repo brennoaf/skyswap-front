@@ -22,7 +22,7 @@ export function BottomNav() {
       aria-label={t('label')}
       className={cx(
         'fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[var(--width-app)] border-t-[0.5px] safe-bottom',
-        overlay ? 'border-white/15 bg-black text-white [--color-text:#f8f8f9]' : 'border-border bg-bg',
+        overlay ? 'border-white/15 bg-reels-bg text-on-media [--color-text:var(--color-on-media)]' : 'border-border bg-bg',
       )}
     >
       <ul className="flex h-[var(--height-bottomnav)] items-center justify-around px-3">

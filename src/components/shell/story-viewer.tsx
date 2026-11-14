@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { IconClose, IconPause, IconPlay } from '@/components/icons'
 import { IconButton, ObjectAvatar } from '@/components/ui/primitives'
@@ -14,6 +14,7 @@ import { useUi } from '@/lib/state/ui'
 const FPS = 8
 
 export function StoryViewer() {
+  const locale = useLocale()
   const t = useTranslations('stories')
   const start = useUi((s) => s.storyStart)
   const open = useUi((s) => s.openStory)
@@ -116,9 +117,9 @@ export function StoryViewer() {
             <div className="mt-2 flex items-center gap-2 pl-1">
               <Link href={`/o/${story.object.id}`} onClick={close} className="flex min-w-0 items-center gap-2">
                 <ObjectAvatar src={story.object.avatar} alt="" size={32} />
-                <span className="truncate text-[14px] font-semibold">{story.object.handle}</span>
+                <span className="truncate text-body font-semibold">{story.object.handle}</span>
               </Link>
-              <span className="truncate text-[13px] text-white/70">{formatShortDate(current.t)}</span>
+              <span className="truncate text-note text-white/70">{formatShortDate(current.t, locale)}</span>
               <span className="ml-auto flex">
                 <IconButton label={paused ? t('play') : t('pause')} onClick={() => setPaused((p) => !p)} className="text-white">
                   {paused ? <IconPlay size={26} /> : <IconPause size={26} />}
@@ -146,20 +147,20 @@ export function StoryViewer() {
             }}
           >
             <div className="relative aspect-square w-full">
-              <Image src={current.src} alt={t('frameAlt', { name: story.object.name, band: current.band, date: formatShortDate(current.t) })} fill sizes="470px" className="pixelated object-contain" priority />
+              <Image src={current.src} alt={t('frameAlt', { name: story.object.name, band: current.band, date: formatShortDate(current.t, locale) })} fill sizes="470px" className="pixelated object-contain" priority />
             </div>
-            <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2 py-1 text-[12px]">
+            <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2 py-1 text-meta">
               {t('frameLabel', { band: current.band, n: frame + 1, total: story.frames.length })}
             </span>
-            <span className="absolute bottom-3 right-3 rounded-md bg-black/60 px-2 py-1 text-[12px]">{t('falseColour')}</span>
+            <span className="absolute bottom-3 right-3 rounded-md bg-black/60 px-2 py-1 text-meta">{t('falseColour')}</span>
           </div>
 
           <div className="flex items-center gap-2 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3">
-            <Link href={`/o/${story.object.id}`} onClick={close} className="flex h-11 flex-1 items-center justify-center rounded-full border border-white/40 text-[14px] font-semibold">
+            <Link href={`/o/${story.object.id}`} onClick={close} className="flex h-11 flex-1 items-center justify-center rounded-full border border-white/40 text-body font-semibold">
               {t('profile')}
             </Link>
             {story.post_id && (
-              <Link href={`/p/${story.post_id}`} onClick={close} className="flex h-11 flex-1 items-center justify-center rounded-full bg-white text-[14px] font-semibold text-black">
+              <Link href={`/p/${story.post_id}`} onClick={close} className="flex h-11 flex-1 items-center justify-center rounded-full bg-white text-body font-semibold text-black">
                 {t('openPost')}
               </Link>
             )}

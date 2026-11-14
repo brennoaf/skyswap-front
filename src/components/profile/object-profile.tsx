@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { KitChart, QrWarning } from '@/components/charts/charts'
 import { frameTiles, PostGrid, tilesFromPosts } from '@/components/profile/post-grid'
@@ -22,7 +22,7 @@ function HighlightBubble({ label, onClick, children }: { label: string; onClick:
       <button type="button" onClick={onClick} className="flex size-[64px] items-center justify-center rounded-full border-[1.5px] border-ring-seen bg-surface text-text" aria-label={label}>
         {children}
       </button>
-      <span className="w-full truncate text-center text-[12px]">{label}</span>
+      <span className="w-full truncate text-center text-meta">{label}</span>
     </li>
   )
 }
@@ -64,6 +64,7 @@ function FollowButton({ profile }: { profile: ObjectProfile }) {
 }
 
 export function ObjectProfileView({ id }: { id: string }) {
+  const locale = useLocale()
   const t = useTranslations('profile')
   const tp = useTranslations('post')
   const ts = useTranslations('stories')
@@ -109,7 +110,7 @@ export function ObjectProfileView({ id }: { id: string }) {
   }
 
   const unmeasurable = profile.verdict === 'not_measurable' || profile.verdict === 'not_detected'
-  const tiles = band ? frameTiles(posts ?? [], band) : tilesFromPosts(posts ?? [])
+  const tiles = band ? frameTiles(posts ?? [], band, locale) : tilesFromPosts(posts ?? [])
 
   return (
     <main>
@@ -131,10 +132,10 @@ export function ObjectProfileView({ id }: { id: string }) {
         <div className="flex items-center gap-[15px]">
           <button type="button" onClick={() => openStory(profile.id)} aria-label={tp('openStory', { name: profile.name })} className="relative shrink-0 rounded-full">
             <ObjectAvatar src={profile.avatar} alt="" size={91} ring={timelapse ? (seen ? 'seen' : 'new') : 'none'} />
-            {profile.has_new_data && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded border-2 border-bg bg-danger px-1 text-[10px] font-bold uppercase text-white">{ts('new')}</span>}
+            {profile.has_new_data && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded border-2 border-bg bg-danger px-1 text-micro font-bold uppercase text-white">{ts('new')}</span>}
           </button>
           <div className="min-w-0 flex-1">
-            <h2 className="flex items-center gap-1 text-[14.5px] font-semibold">
+            <h2 className="flex items-center gap-1 text-account font-semibold">
               <span className="truncate">{profile.kind === 'candidate' ? t('candidateTitle', { id: profile.id }) : profile.name}</span>
               <ObjectBadges verified={isVerified(profile.verdict)} saturated={isSaturated(profile.saturation)} size={15} />
             </h2>
@@ -145,15 +146,15 @@ export function ObjectProfileView({ id }: { id: string }) {
                 [profile.stats.followers, t('followers')],
               ].map(([v, l]) => (
                 <div key={String(l)} className="flex flex-col-reverse leading-tight">
-                  <dt className="text-[14px]">{l}</dt>
-                  <dd className="text-[16px] font-semibold">{compactNumber(Number(v))}</dd>
+                  <dt className="text-body">{l}</dt>
+                  <dd className="text-title-sm font-semibold">{compactNumber(Number(v), locale)}</dd>
                 </div>
               ))}
             </dl>
           </div>
         </div>
 
-        <div className="mt-3 space-y-1 text-[14px]">
+        <div className="mt-3 space-y-1 text-body">
           <p className="text-text-secondary">{profile.official_target ? tp('officialTarget') : tp(`kinds.${profile.kind}`)}</p>
           {profile.kind === 'candidate' ? <p>{t('candidateBody')}</p> : <p>{profile.bio}</p>}
           {profile.aliases.length > 0 && <p className="text-text-secondary">{t('aliases', { names: profile.aliases.slice(0, 4).join(' · ') })}</p>}
@@ -175,7 +176,7 @@ export function ObjectProfileView({ id }: { id: string }) {
         <Button className="h-8 flex-1" onClick={() => setMap(true)}>
           {t('skyMap')}
         </Button>
-        <Link href={`/lab/${profile.id}`} className="inline-flex h-8 flex-1 items-center justify-center rounded-[var(--radius-button)] bg-surface text-[15px] font-medium active:bg-surface-pressed">
+        <Link href={`/lab/${profile.id}`} className="inline-flex h-8 flex-1 items-center justify-center rounded-[var(--radius-button)] bg-surface text-ui font-medium active:bg-surface-pressed">
           {t('lab')}
         </Link>
         {blink && (
@@ -254,7 +255,7 @@ export function ObjectProfileView({ id }: { id: string }) {
         <section className="space-y-3 px-4 py-4">
           {profile.measurements.spectra ? (
             <>
-              <h3 className="text-[15px] font-semibold">{t('tabs.spectrum')}</h3>
+              <h3 className="text-ui font-semibold">{t('tabs.spectrum')}</h3>
               <KitChart kind="spectrum" url={profile.measurements.spectra} />
               <QrWarning />
             </>
@@ -271,7 +272,7 @@ export function ObjectProfileView({ id }: { id: string }) {
           {timelapse && (
             <Link href={`/p/${timelapse.id}?mark=1`} className="flex items-center gap-3 rounded-xl bg-surface p-3">
               <IconTarget size={28} />
-              <span className="flex-1 text-[14px]">{tp('menu.mark')}</span>
+              <span className="flex-1 text-body">{tp('menu.mark')}</span>
             </Link>
           )}
           {profile.measurements.lightcurve && <KitChart kind="lightcurve" url={profile.measurements.lightcurve} />}
@@ -280,7 +281,7 @@ export function ObjectProfileView({ id }: { id: string }) {
       )}
 
       <Sheet open={highlight !== null} onClose={() => setHighlight(null)} title={highlight ? t(`highlights.${highlight}`) : ''}>
-        <div className="space-y-3 px-4 py-4 text-[14px]">
+        <div className="space-y-3 px-4 py-4 text-body">
           {highlight === 'why' && (
             <>
               <p className="font-semibold">{t(`verdicts.${profile.verdict}`)}</p>
@@ -294,11 +295,11 @@ export function ObjectProfileView({ id }: { id: string }) {
           {highlight === 'colours' && (
             <>
               <p>{t('bestBands', { bands: profile.best_bands.join(', ') })}</p>
-              <p className="text-text-secondary">{t('seen', { n: profile.n_images, from: formatShortDate(profile.first_seen), to: formatShortDate(profile.last_seen) })}</p>
+              <p className="text-text-secondary">{t('seen', { n: profile.n_images, from: formatShortDate(profile.first_seen, locale), to: formatShortDate(profile.last_seen, locale) })}</p>
               <dl className="grid grid-cols-2 gap-2">
                 {profile.facts.map((f, i) => (
                   <div key={`${f.label}-${i}`} className="rounded-lg bg-surface px-3 py-2">
-                    <dt className="text-[12px] text-text-secondary">{f.label}</dt>
+                    <dt className="text-meta text-text-secondary">{f.label}</dt>
                     <dd className="font-semibold">
                       {typeof f.value === 'number' ? f.value.toLocaleString('en-US', { maximumFractionDigits: 3 }) : f.value} {f.unit ?? ''}
                     </dd>
@@ -310,10 +311,10 @@ export function ObjectProfileView({ id }: { id: string }) {
           {highlight === 'position' && (
             <>
               <p className="text-text-secondary">{t('coords', { epoch: profile.epoch })}</p>
-              <p className="font-mono text-[15px]">
+              <p className="font-mono text-ui">
                 {formatRa(profile.ra)} {formatDec(profile.dec)}
               </p>
-              <p className="font-mono text-[13px] text-text-secondary">
+              <p className="font-mono text-note text-text-secondary">
                 {profile.ra.toFixed(5)}°, {profile.dec.toFixed(5)}°
               </p>
               <Link href={`/sky?ra=${profile.ra.toFixed(5)}&dec=${profile.dec.toFixed(5)}&fov=0.1&name=${encodeURIComponent(profile.name)}`} className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 font-medium text-on-accent">
@@ -355,8 +356,8 @@ export function ObjectProfileView({ id }: { id: string }) {
               />
             )}
           </div>
-          <p className="mt-2 text-[12px] text-text-secondary">{t('skyMapHint')}</p>
-          <p className="text-[12px] text-text-secondary">{t('skyMapCredit')}</p>
+          <p className="mt-2 text-meta text-text-secondary">{t('skyMapHint')}</p>
+          <p className="text-meta text-text-secondary">{t('skyMapCredit')}</p>
         </div>
       </Sheet>
     </main>

@@ -18,15 +18,15 @@ function SpotBubble({ onClick }: { onClick: () => void }) {
           <svg viewBox="0 0 80 80" className="size-full">
             <defs>
               <radialGradient id="spot-sky" cx="40%" cy="35%" r="75%">
-                <stop offset="0%" stopColor="#1b3a5c" />
-                <stop offset="100%" stopColor="#05080b" />
+                <stop offset="0%" stopColor="var(--color-spot-sky-top)" />
+                <stop offset="100%" stopColor="var(--color-spot-sky-bottom)" />
               </radialGradient>
             </defs>
             <rect width="80" height="80" fill="url(#spot-sky)" />
             {[[14, 20, 1.2], [60, 14, 0.9], [66, 52, 1.4], [22, 62, 1], [48, 66, 0.8], [34, 30, 0.7]].map(([x, y, r]) => (
-              <circle key={`${x}-${y}`} cx={x} cy={y} r={r} fill="#fff" opacity="0.85" />
+              <circle key={`${x}-${y}`} cx={x} cy={y} r={r} fill="var(--color-spot-star)" opacity="0.85" />
             ))}
-            <g stroke="#7fe0ff" strokeWidth="2.2" strokeLinecap="round" fill="none">
+            <g stroke="var(--color-spot-reticle)" strokeWidth="2.2" strokeLinecap="round" fill="none">
               <circle cx="40" cy="40" r="11" />
               <path d="M40 22V29M40 51V58M22 40H29M51 40H58" />
             </g>
@@ -34,7 +34,7 @@ function SpotBubble({ onClick }: { onClick: () => void }) {
         </span>
         <IconAddDot className="absolute bottom-[8.79%] right-[8.79%]" size={20} />
       </button>
-      <span className="w-full truncate text-center text-[length:var(--text-story)] text-text-secondary">{t('spot')}</span>
+      <span className="w-full truncate text-center text-story text-text-secondary">{t('spot')}</span>
     </li>
   )
 }
@@ -64,9 +64,9 @@ export function StoriesRow() {
               <li key={s.object.id} className="flex w-[91px] shrink-0 flex-col items-center gap-1">
                 <button type="button" onClick={() => open(s.object.id)} aria-label={t('open', { name: s.object.name })} className="relative rounded-full">
                   <ObjectAvatar src={s.object.avatar} alt="" size={91} ring={isSeen ? 'seen' : 'new'} />
-                  {s.object.has_new_data && <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 rounded-[4px] border-2 border-bg bg-danger px-1 text-[10px] font-bold uppercase text-white">{t('new')}</span>}
+                  {s.object.has_new_data && <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 rounded-[4px] border-2 border-bg bg-danger px-1 text-micro font-bold uppercase text-white">{t('new')}</span>}
                 </button>
-                <span className={isSeen ? 'w-full truncate text-center text-[length:var(--text-story)] text-text-secondary' : 'w-full truncate text-center text-[length:var(--text-story)]'}>{s.object.handle}</span>
+                <span className={isSeen ? 'w-full truncate text-center text-story text-text-secondary' : 'w-full truncate text-center text-story'}>{s.object.handle}</span>
               </li>
             )
           })}

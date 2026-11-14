@@ -69,15 +69,15 @@ export default function HomePage() {
 
       {tab !== 'for_you' && (
         <div className="flex items-center justify-between px-4 pb-2 pt-1">
-          <p className="text-[15px] font-semibold">{t(`tabs.${tab}`)}</p>
-          <button type="button" className="text-[14px] font-semibold text-accent" onClick={() => setTab('for_you')}>
+          <p className="text-ui font-semibold">{t(`tabs.${tab}`)}</p>
+          <button type="button" className="text-body font-semibold text-accent" onClick={() => setTab('for_you')}>
             {t('backToForYou')}
           </button>
         </div>
       )}
 
       {notice && (
-        <p className="mx-4 mb-3 rounded-xl bg-surface px-3 py-2.5 text-[13px] text-text-secondary" role="status">
+        <p className="mx-4 mb-3 rounded-xl bg-surface px-3 py-2.5 text-note text-text-secondary" role="status">
           {t(`notices.${notice}`)}
         </p>
       )}
@@ -96,7 +96,7 @@ export default function HomePage() {
           title={t(`empty.${tab}.title`)}
           body={t(`empty.${tab}.body`)}
           action={
-            <Link href="/search" className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 text-[15px] font-medium text-on-accent">
+            <Link href="/search" className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 text-ui font-medium text-on-accent">
               {t('explore')}
             </Link>
           }
@@ -109,7 +109,7 @@ export default function HomePage() {
 
       <div ref={sentinel} />
       {feed.isFetchingNextPage && <FeedSkeleton />}
-      {!feed.hasNextPage && items.length > 0 && <p className="py-8 text-center text-[13px] text-text-secondary">{t('end')}</p>}
+      {!feed.hasNextPage && items.length > 0 && <p className="py-8 text-center text-note text-text-secondary">{t('end')}</p>}
 
       <Sheet open={picker} onClose={() => setPicker(false)} title={t('feeds')}>
         <ul className="py-2">
@@ -126,8 +126,8 @@ export default function HomePage() {
                 className="flex min-h-14 w-full items-center gap-3 px-4 text-left active:bg-surface"
               >
                 <span className="flex-1">
-                  <span className="block text-[15px] font-medium">{t(`tabs.${k}`)}</span>
-                  <span className="block text-[12px] text-text-secondary">{t(`tabHints.${k}`)}</span>
+                  <span className="block text-ui font-medium">{t(`tabs.${k}`)}</span>
+                  <span className="block text-meta text-text-secondary">{t(`tabHints.${k}`)}</span>
                 </span>
                 {k === tab && <IconCheck size={24} className="text-accent" />}
               </button>
