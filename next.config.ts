@@ -1,7 +1,19 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
+import createNextIntlPlugin from 'next-intl/plugin'
+
+const apiUrl = process.env.SKYSWAP_API_URL ?? 'http://127.0.0.1:4000'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  images: { unoptimized: true },
+  async rewrites() {
+    return [
+      { source: '/api/:path*', destination: `${apiUrl}/api/:path*` },
+      { source: '/kit/:path*', destination: `${apiUrl}/kit/:path*` },
+    ]
+  },
+  async headers() {
+    return [{ source: '/embed', headers: [{ key: 'Content-Security-Policy', value: 'frame-ancestors *' }] }]
+  },
+}
 
-export default nextConfig;
+export default createNextIntlPlugin('./src/i18n/request.ts')(nextConfig)
