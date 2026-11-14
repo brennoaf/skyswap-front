@@ -42,7 +42,7 @@ export function AlertRow({ alert, unread, now }: { alert: Alert; unread: boolean
   if (alert.type === 'new_data') {
     if (!alert.object) return null
     art = <ObjectAvatar src={alert.object.avatar} alt="" size={44} ring={alert.object.has_new_data ? 'new' : 'none'} />
-    text = t('alerts.items.new_data', { name: alert.object.handle, date: formatShortDate(alert.detail, locale) })
+    text = t('alerts.items.new_data', { name: alert.object.name, date: formatShortDate(alert.detail, locale) })
     href = `/o/${alert.object.id}`
   } else if (alert.type === 'consensus') {
     const done = alert.detail === 'real' || alert.detail === 'artifact'

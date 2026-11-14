@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
-import { IconComment, IconDirect, IconMore, IconPlay, IconSave, IconTarget } from '@/components/icons'
+import { IconDirect, IconMore, IconPlay, IconSave, IconTag, IconTarget } from '@/components/icons'
 import { TagPanel } from '@/components/post/tag-panel'
-import { Button, IconButton, isSaturated, isVerified, ObjectAvatar, ObjectBadges, Sheet, Skeleton } from '@/components/ui/primitives'
+import { Button, IconButton, ObjectAvatar, Sheet, Skeleton } from '@/components/ui/primitives'
 import type { FeedItem } from '@/lib/api/client'
 import { useFeed } from '@/lib/api/hooks'
-import { formatDateTime, formatShortDate, formatWavelength } from '@/lib/format'
+import { formatShortDate } from '@/lib/format'
 import { useShare } from '@/lib/share'
 import { frameYear, isLongBaseline, LONG_BASELINE_FPS, telescopeOf } from '@/lib/long-baseline'
 import { useUi } from '@/lib/state/ui'
@@ -74,11 +74,9 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
 
   const shown = post.frames[frame]
   const mark = post.marks.find((m) => m.frame === frame)
-  const from = post.date_range[0] ?? shown?.t ?? ''
-  const to = post.date_range[1] ?? from
 
   return (
-    <section ref={ref} aria-label={`${object.handle}, ${post.title}`} className={`relative w-full shrink-0 snap-start snap-always overflow-hidden bg-reels-bg ${REEL_H}`}>
+    <section ref={ref} aria-label={`${object.name}, ${post.title}`} className={`relative w-full shrink-0 snap-start snap-always overflow-hidden bg-reels-bg ${REEL_H}`}>
       {shown && isLongBaseline(post) && (
         <span className="pointer-events-none absolute left-3 top-14 z-10 rounded-full bg-media-scrim px-2.5 py-1 text-note font-semibold text-on-media">
           {tv('pill', { year: frameYear(shown), telescope: telescopeOf(shown) })}
@@ -116,25 +114,18 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
         <div className="flex items-center gap-2">
           <Link href={`/o/${object.id}`} className="flex min-w-0 items-center gap-2" aria-label={t('profile')}>
             <ObjectAvatar src={object.avatar} alt="" size={34} ring={seen ? 'seen' : 'new'} />
-            <span className="truncate text-body font-semibold">{object.handle}</span>
+            <span className="truncate text-body font-semibold">{object.name}</span>
           </Link>
-          <ObjectBadges verified={isVerified(object.verdict)} saturated={isSaturated(object.saturation)} size={13} />
         </div>
         <button type="button" onClick={() => setExpanded((e) => !e)} className={expanded ? 'mt-2 block text-left text-body' : 'mt-2 line-clamp-2 text-left text-body'}>
           <span className="font-semibold">{post.title}.</span> {post.caption}
         </button>
-        <p className="mt-1.5 text-meta text-[color:var(--color-text-secondary)]">{t('frames', { n, from: formatShortDate(from, locale), to: formatShortDate(to, locale) })}</p>
-        {shown && (
-          <p className="mt-0.5 text-meta tabular-nums text-[color:var(--color-text-secondary)]">
-            {isLongBaseline(post) ? telescopeOf(shown) : `${shown.band}, ${formatWavelength(shown.wavelength_um)}`}, {formatDateTime(shown.t, locale)}, {tp('falseColour')}
-          </p>
-        )}
       </div>
 
       <div className={`absolute bottom-3 right-1 flex flex-col items-center gap-1 drop-shadow ${ON_BLACK}`}>
         <div className="flex flex-col items-center">
           <IconButton label={tp('actions.tag')} onClick={() => onTags(post.id)}>
-            <IconComment />
+            <IconTag />
           </IconButton>
           <span className="-mt-1 text-meta font-semibold text-white">{item.tags.counts ? total : ''}</span>
         </div>

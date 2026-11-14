@@ -602,7 +602,7 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
               <li key={o.id}>
                 <Link href={`/o/${o.id}`} className="flex w-[72px] flex-col items-center gap-1" aria-label={`${t('openProfile')}: ${o.name}`}>
                   <ObjectAvatar src={o.avatar} alt="" size={64} ring={o.has_new_data ? 'new' : 'none'} />
-                  <span className="w-full truncate text-center text-meta">{o.handle}</span>
+                  <span className="w-full truncate text-center text-meta">{o.name}</span>
                 </Link>
               </li>
             ))}

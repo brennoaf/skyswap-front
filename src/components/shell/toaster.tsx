@@ -39,11 +39,10 @@ function ToastItem({ toast }: { toast: Toast & { id: number } }) {
   return (
     <motion.li
       layout={!reduce}
-      initial={{ opacity: 0, y: -16, scale: 0.96 }}
+      initial={{ opacity: 0, y: 16, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -12 }}
-      className="pointer-events-auto flex items-center gap-2.5 rounded-2xl bg-sheet px-4 py-2.5 text-body shadow-[0_8px_30px_rgb(0_0_0/0.35)] ring-1 ring-divider"
-      onClick={() => dismiss(toast.id)}
+      exit={{ opacity: 0, y: 12 }}
+      className="flex items-center gap-2.5 rounded-2xl bg-sheet px-4 py-2.5 text-body shadow-[0_8px_30px_rgb(0_0_0/0.35)] ring-1 ring-divider"
     >
       <ToastBody toast={toast} />
     </motion.li>
@@ -53,7 +52,7 @@ function ToastItem({ toast }: { toast: Toast & { id: number } }) {
 export function Toaster() {
   const toasts = useUi((s) => s.toasts)
   return (
-    <ol aria-live="polite" className="pointer-events-none fixed inset-x-0 top-3 z-[70] mx-auto flex w-full max-w-[var(--width-app)] flex-col items-center gap-2 px-4">
+    <ol aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--height-bottomnav)+env(safe-area-inset-bottom)+8px)] z-[70] mx-auto flex w-full max-w-[var(--width-app)] flex-col items-center gap-2 px-4">
       <AnimatePresence initial={false}>
         {toasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} />

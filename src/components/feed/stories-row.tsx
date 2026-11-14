@@ -66,7 +66,7 @@ export function StoriesRow() {
                   <ObjectAvatar src={s.object.avatar} alt="" size={91} ring={isSeen ? 'seen' : 'new'} />
                   {s.object.has_new_data && <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 rounded-[4px] border-2 border-bg bg-danger px-1 text-micro font-bold uppercase text-white">{t('new')}</span>}
                 </button>
-                <span className={isSeen ? 'w-full truncate text-center text-story text-text-secondary' : 'w-full truncate text-center text-story'}>{s.object.handle}</span>
+                <span className={isSeen ? 'w-full truncate text-center text-story text-text-secondary' : 'w-full truncate text-center text-story'}>{s.object.name}</span>
               </li>
             )
           })}

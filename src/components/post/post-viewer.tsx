@@ -37,6 +37,7 @@ function groupsOf(type: string, frames: Frame[]): number[] {
 export function PostViewer({ id }: { id: string }) {
   const t = useTranslations('viewer')
   const tp = useTranslations('post')
+  const tc = useTranslations('common')
   const fmt = useFmt()
   const params = useSearchParams()
   const { data, isLoading, isError } = usePost(id)
@@ -115,7 +116,7 @@ export function PostViewer({ id }: { id: string }) {
     if (userId && objectId && postType === 'spectrum') learnRef.current({ event: 'spectrum_opened', ref: objectId })
   }, [userId, objectId, postType])
 
-  if (isError) return <EmptyState title={t('notFound')} action={<Link href="/" className="text-link">{tp('menu.profile')}</Link>} />
+  if (isError) return <EmptyState title={t('notFound')} action={<Link href="/" className="text-link">{tc('goHome')}</Link>} />
   if (isLoading || !data || !sequences) {
     return (
       <main>
@@ -242,7 +243,7 @@ export function PostViewer({ id }: { id: string }) {
         </p>
         <p className={expanded ? 'mt-1 text-body' : 'mt-1 line-clamp-2 text-body'}>
           <Link href={`/o/${object.id}`} className="font-semibold">
-            {object.handle}
+            {object.name}
           </Link>{' '}
           <span className="font-semibold">{post.title}.</span> {post.caption}
         </p>

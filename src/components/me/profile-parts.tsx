@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { IconCheck } from '@/components/icons'
 import { BadgeArt, LevelArt } from '@/components/ui/badge-art'
-import { EmptyState, ObjectAvatar, ObjectBadges, Skeleton, isSaturated, isVerified } from '@/components/ui/primitives'
+import { EmptyState, ObjectAvatar, Skeleton } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import type { Me } from '@/lib/api/client'
 import { useGoals, usePost } from '@/lib/api/hooks'
@@ -58,11 +58,12 @@ export function BadgeHighlights({ badges, onOpen }: { badges: Me['badges']; onOp
   const locale = useLocale()
   const t = useTranslations('badges')
   const tm = useTranslations('me')
+  const ordered = [...badges].sort((a, b) => Number(!!b.earned_at) - Number(!!a.earned_at))
   return (
     <section aria-label={tm('badges')} className="pt-1">
-      <ul className="no-scrollbar flex gap-[14px] overflow-x-auto px-4 pb-1">
-        {badges.map((b) => (
-          <li key={b.key} className="flex w-[66px] shrink-0 flex-col items-center gap-1">
+      <ul className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-1">
+        {ordered.map((b) => (
+          <li key={b.key} className="flex w-[78px] shrink-0 flex-col items-center gap-1">
             <button
               type="button"
               onClick={() => onOpen(b.key)}
@@ -71,7 +72,7 @@ export function BadgeHighlights({ badges, onOpen }: { badges: Me['badges']; onOp
             >
               <BadgeArt badge={b.key} size={40} earned={!!b.earned_at} />
             </button>
-            <span className={cx('w-full truncate text-center text-meta', !b.earned_at && 'text-text-secondary')}>{t(`items.${b.key}.name`)}</span>
+            <span className={cx('w-full text-center text-meta leading-tight', !b.earned_at && 'text-text-secondary')}>{t(`items.${b.key}.name`)}</span>
           </li>
         ))}
       </ul>
@@ -125,7 +126,7 @@ export function HistoryList({ items }: { items: Me['history'] }) {
   const t = useTranslations('me')
   const tt = useTranslations('tags.items')
   const ago = useAgo()
-  if (!items.length) return <EmptyState title={t('history')} body={t('noHistory')} />
+  if (!items.length) return <EmptyState title={t('activity')} body={t('noActivity')} />
   return (
     <ul className="py-2">
       {items.map((item) => {
@@ -172,25 +173,6 @@ export function HistoryList({ items }: { items: Me['history'] }) {
   )
 }
 
-export function BadgeGrid({ badges, onOpen }: { badges: Me['badges']; onOpen: (key: string) => void }) {
-  const locale = useLocale()
-  const t = useTranslations('badges')
-  const tm = useTranslations('me')
-  return (
-    <ul className="grid grid-cols-3 gap-x-2 gap-y-5 px-3 py-5">
-      {badges.map((b) => (
-        <li key={b.key}>
-          <button type="button" onClick={() => onOpen(b.key)} className="flex w-full flex-col items-center gap-1.5 rounded-xl px-1 py-2 text-center active:bg-surface">
-            <BadgeArt badge={b.key} size={60} earned={!!b.earned_at} />
-            <span className={cx('text-note font-semibold leading-tight', !b.earned_at && 'text-text-secondary')}>{t(`items.${b.key}.name`)}</span>
-            <span className="text-meta leading-snug text-text-secondary">{b.earned_at ? tm('earnedOn', { date: formatShortDate(b.earned_at, locale) }) : t(`items.${b.key}.how`)}</span>
-          </button>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
 function SavedTile({ id }: { id: string }) {
   const { data, isError } = usePost(id)
   if (isError) return null
@@ -217,6 +199,7 @@ export function SavedGrid({ ids }: { ids: string[] }) {
 
 export function FollowingList({ objects }: { objects: Me['following'] }) {
   const t = useTranslations('me')
+  const tp = useTranslations('post')
   if (!objects.length) return <EmptyState title={t('following')} body={t('noFollowing')} />
   return (
     <ul className="py-2">
@@ -225,11 +208,8 @@ export function FollowingList({ objects }: { objects: Me['following'] }) {
           <Link href={`/o/${o.id}`} className="flex min-h-[60px] items-center gap-3 px-4 py-2 active:bg-surface">
             <ObjectAvatar src={o.avatar} alt="" size={44} ring={o.has_new_data ? 'new' : 'none'} />
             <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-1 text-body font-semibold">
-                <span className="truncate">{o.handle}</span>
-                <ObjectBadges verified={isVerified(o.verdict)} saturated={isSaturated(o.saturation)} />
-              </span>
-              <span className="block truncate text-note text-text-secondary">{o.name}</span>
+              <span className="block truncate text-body font-semibold">{o.name}</span>
+              <span className="block truncate text-note text-text-secondary">{tp(`kinds.${o.kind}`)}</span>
             </span>
           </Link>
         </li>

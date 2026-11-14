@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { skyHref } from '@/components/feed/spot-sheet'
 import { IconClose, IconLink, IconReel, IconSearch, IconTarget, IconWarning } from '@/components/icons'
-import { Button, EmptyState, isSaturated, isVerified, Notice, ObjectAvatar, ObjectBadges, Skeleton } from '@/components/ui/primitives'
+import { Button, EmptyState, Notice, ObjectAvatar, Skeleton } from '@/components/ui/primitives'
 import type { FeedItem, SearchResult } from '@/lib/api/client'
 import { useFeed, useObjects, useSearch } from '@/lib/api/hooks'
 import { formatDec, formatRa } from '@/lib/format'
@@ -47,12 +47,9 @@ function ResultRow({ o, onOpen }: { o: Hit; onOpen: () => void }) {
       <Link href={`/o/${o.id}`} onClick={onOpen} className="flex min-h-[60px] items-center gap-3 px-4 py-2 active:bg-surface">
         <ObjectAvatar src={o.avatar} alt="" size={44} ring={o.has_new_data ? 'new' : 'none'} />
         <span className="min-w-0 flex-1 leading-tight">
-          <span className="flex items-center gap-1">
-            <span className="truncate text-body font-semibold">{o.handle}</span>
-            <ObjectBadges verified={isVerified(o.verdict)} saturated={isSaturated(o.saturation)} />
-          </span>
+          <span className="block truncate text-body font-semibold">{o.name}</span>
           <span className="block truncate text-body text-text-secondary">
-            {o.name}, {kind}
+            {o.handle}, {kind}
             {o.separation_deg !== null && `, ${t('separation', { deg: fmt.fixed(o.separation_deg, 2) })}`}
           </span>
         </span>

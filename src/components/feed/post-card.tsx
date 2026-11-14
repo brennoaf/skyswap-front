@@ -4,10 +4,10 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { useState } from 'react'
 import { PostMedia } from '@/components/feed/post-media'
-import { IconCompare, IconFlask, IconLink, IconMore, IconTarget } from '@/components/icons'
+import { IconCompare, IconFlask, IconLink, IconMore } from '@/components/icons'
 import { ActionRow } from '@/components/post/action-row'
 import { TagPanel } from '@/components/post/tag-panel'
-import { IconButton, isSaturated, isVerified, LabChip, ObjectAvatar, ObjectBadges, Sheet, SheetRow } from '@/components/ui/primitives'
+import { IconButton, LabChip, ObjectAvatar, Sheet, SheetRow } from '@/components/ui/primitives'
 import type { FeedItem } from '@/lib/api/client'
 import { formatDate } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
@@ -23,11 +23,8 @@ export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | '
         <ObjectAvatar src={item.object.avatar} alt="" size={40} ring={seen ? 'seen' : 'new'} />
       </button>
       <Link href={`/o/${item.object.id}`} className="min-w-0 flex-1">
-        <span className="flex items-center gap-1">
-          <span className="truncate text-account font-medium">{item.object.handle}</span>
-          <ObjectBadges verified={isVerified(item.object.verdict)} saturated={isSaturated(item.object.saturation)} size={13} />
-        </span>
-        <span className="block truncate text-meta text-text-secondary">{item.object.official_target ? t('officialTarget') : t(`kinds.${item.object.kind}`)}</span>
+        <span className="block truncate text-account font-medium">{item.object.name}</span>
+        <span className="block truncate text-meta text-text-secondary">{t(`kinds.${item.object.kind}`)}</span>
       </Link>
       <LabChip href={`/lab/${item.object.id}`} label={t('lab')} description={t('labOpen', { name: item.object.name })} tour="post-lab" />
       <IconButton label={t('menuLabel')} onClick={onMore}>
@@ -45,7 +42,6 @@ export function PostMoreSheet({ open, onClose, item }: { open: boolean; onClose:
       <div className="py-2">
         <SheetRow icon={<IconFlask size={26} />} label={t('lab')} hint={t('labHint')} href={`/lab/${item.object.id}`} onClick={onClose} />
         <SheetRow icon={<IconCompare size={26} />} label={t('compare')} href={`/p/${item.post.id}?compare=1`} onClick={onClose} />
-        <SheetRow icon={<IconTarget size={26} />} label={t('mark')} href={`/p/${item.post.id}?mark=1`} onClick={onClose} />
         <SheetRow
           icon={<IconLink size={26} />}
           label={t('copyLink')}
@@ -54,7 +50,6 @@ export function PostMoreSheet({ open, onClose, item }: { open: boolean; onClose:
             onClose()
           }}
         />
-        <SheetRow label={t('profile')} href={`/o/${item.object.id}`} onClick={onClose} />
       </div>
     </Sheet>
   )
@@ -90,7 +85,7 @@ export function PostCard({ item, priority = false }: { item: FeedItem; priority?
         </p>
         <p id={`post-${post.id}`} className={expanded ? 'mt-1 text-body' : 'mt-1 line-clamp-2 text-body'}>
           <Link href={`/o/${object.id}`} className="font-semibold">
-            {object.handle}
+            {object.name}
           </Link>{' '}
           <span className="font-semibold">{post.title}.</span> {post.caption}
         </p>

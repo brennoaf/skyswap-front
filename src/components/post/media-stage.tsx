@@ -211,10 +211,10 @@ export function MediaStage({
           <>
             {frame.telescope || frame.release === 'wise' || frame.release === 'neowise' ? (
               <Pill className="text-note">{t('longBaseline.pill', { year: frameYear(frame), telescope: telescopeOf(frame) })}</Pill>
-            ) : (
-              <Pill>{frame.band ? `${frame.band}, ${formatWavelength(frame.wavelength_um)}` : t('falseColourShort')}</Pill>
-            )}
-            {length > 1 && <Pill>{`${player.index + 1}/${length}`}</Pill>}
+            ) : frame.t ? (
+              <Pill>{fmt.shortDate(frame.t)}</Pill>
+            ) : null}
+            {length > 1 && !player.playing && <Pill className="ml-auto">{`${player.index + 1}/${length}`}</Pill>}
           </>
         )}
       </div>
@@ -223,10 +223,11 @@ export function MediaStage({
 
       {mode !== 'compare' && (
         <div className={cx('pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-300', visible || mode === 'mark' ? 'opacity-100' : 'opacity-0')}>
-          <div className={cx('flex items-end justify-between px-2 pb-1', mode === 'mark' && 'invisible')}>
-            <Pill>{t('falseColourShort')}</Pill>
-            {saturated && <Pill className="bg-warning text-on-warning">{t('saturatedPill')}</Pill>}
-          </div>
+          {saturated && (
+            <div className={cx('flex justify-end px-2 pb-1', mode === 'mark' && 'invisible')}>
+              <Pill className="bg-warning text-on-warning">{t('saturatedPill')}</Pill>
+            </div>
+          )}
           {length > 1 && mode === 'play' && (
             <div className="pointer-events-auto flex items-center gap-0.5 bg-gradient-to-t from-media-scrim to-transparent px-1 pb-1 pt-4 text-on-media">
               <button type="button" aria-label={player.playing ? t('pause') : t('play')} onClick={() => player.setPlaying(!player.playing)} className="inline-flex size-11 items-center justify-center">

@@ -3,11 +3,11 @@
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { IconFollow, IconHighlight, IconMap, IconNote, IconQuestion, IconSave, IconSettings, IconStar } from '@/components/icons'
+import { IconFollow, IconHighlight, IconMap, IconNote, IconQuestion, IconSave, IconSettings } from '@/components/icons'
 import { MeIntro } from '@/components/me/me-intro'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { ExploredSkyCard } from '@/components/me/explored-sky'
-import { BadgeDetail, BadgeGrid, BadgeHighlights, FollowingList, GoalsCard, HistoryList, LevelRing, ProgressBar, SavedGrid, useAgo } from '@/components/me/profile-parts'
+import { BadgeDetail, BadgeHighlights, FollowingList, GoalsCard, HistoryList, LevelRing, ProgressBar, SavedGrid, useAgo } from '@/components/me/profile-parts'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Button, EmptyState, IconButton, IconTabs, Notice, Sheet, Skeleton, Stat, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
@@ -16,9 +16,7 @@ import { useMe, useSession } from '@/lib/api/hooks'
 import { formatNumber } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 
-type Tab = 'history' | 'badges' | 'community' | 'notes' | 'saved' | 'following'
-
-const SECONDARY_LINK = 'inline-flex h-8 flex-1 items-center justify-center rounded-[var(--radius-button)] bg-surface px-3 text-body font-semibold active:bg-surface-pressed'
+type Tab = 'activity' | 'community' | 'saved' | 'following'
 
 function SettingsLink() {
   const t = useTranslations('me')
@@ -67,11 +65,14 @@ function NotesPanel() {
   const tv = useTranslations('viewer')
   const { notes, reload } = usePrivateNotes()
   return (
-    <div className="flex flex-col gap-3 px-4 py-4">
+    <section aria-labelledby="me-notes" className="flex flex-col gap-3 px-4 py-4">
+      <h2 id="me-notes" className="text-ui font-semibold">
+        {t('notes')}
+      </h2>
       <Notice icon={<IconNote size={18} />}>{tv('notesHint')}</Notice>
       <NotesActions notes={notes} onImported={() => void reload()} />
       {notes === null && [0, 1].map((i) => <Skeleton key={i} className="h-16 w-full" />)}
-      {notes?.length === 0 && <EmptyState title={t('notes')} body={t('noNotes')} />}
+      {notes?.length === 0 && <p className="text-body text-text-secondary">{t('noNotes')}</p>}
       {!!notes?.length && (
         <ul className="-mx-4">
           {notes.map((n) => (
@@ -87,7 +88,7 @@ function NotesPanel() {
           ))}
         </ul>
       )}
-    </div>
+    </section>
   )
 }
 
@@ -103,16 +104,14 @@ function Profile({ me }: { me: Me }) {
   const tn = useTranslations('nav')
   const saved = useUi((s) => s.saved)
   const showIntro = useUi((s) => s.showMeIntro)
-  const [tab, setTab] = useState<Tab>('history')
+  const [tab, setTab] = useState<Tab>('activity')
   const [badge, setBadge] = useState<string | null>(null)
   const next = me.levels.find((l) => l.level === me.level.level + 1)
   const open = me.badges.find((b) => b.key === badge)
 
   const tabs: { key: Tab; icon: React.ReactNode; label: string }[] = [
-    { key: 'history', icon: <IconHighlight size={24} />, label: t('tabs.history') },
-    { key: 'badges', icon: <IconStar size={26} />, label: t('tabs.badges') },
+    { key: 'activity', icon: <IconHighlight size={24} />, label: t('tabs.activity') },
     { key: 'community', icon: <IconMap size={26} />, label: t('tabs.community') },
-    { key: 'notes', icon: <IconNote size={26} />, label: t('tabs.notes') },
     { key: 'saved', icon: <IconSave size={24} />, label: t('tabs.saved') },
     { key: 'following', icon: <IconFollow size={32} />, label: t('tabs.following') },
   ]
@@ -136,13 +135,10 @@ function Profile({ me }: { me: Me }) {
       <section className="px-4 pt-1" aria-label={tn('me')}>
         <div className="flex items-center gap-5">
           <LevelRing nickname={me.user.nickname} level={me.level.level} progress={me.level.progress} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-account font-semibold">{me.user.nickname}</p>
-            <div className="mt-1.5 flex justify-between gap-2 pr-2">
-              <Stat value={formatNumber(me.counts.votes, locale)} label={t('classifications')} />
-              <Stat value={formatNumber(me.counts.marks, locale)} label={t('marks')} />
-              <Stat value={formatNumber(me.counts.tags, locale)} label={t('tags')} />
-            </div>
+          <div className="flex min-w-0 flex-1 justify-between gap-2 pr-2">
+            <Stat value={formatNumber(me.counts.votes, locale)} label={t('answers', { n: me.counts.votes })} />
+            <Stat value={formatNumber(me.counts.marks, locale)} label={t('marks', { n: me.counts.marks })} />
+            <Stat value={formatNumber(me.counts.tags, locale)} label={t('tags', { n: me.counts.tags })} />
           </div>
         </div>
 
@@ -150,23 +146,17 @@ function Profile({ me }: { me: Me }) {
           <p className="font-semibold">{t('level', { n: me.level.level, name: tl(me.level.key) })}</p>
           <ProgressBar value={me.level.progress} label={t('progress')} className="my-2" />
           <p className="text-text-secondary">
-            <span className="font-semibold text-text">{t('xp', { xp: formatNumber(me.xp, locale) })}</span>
+            <span className="font-semibold text-text">{t('xp', { xp: me.xp })}</span>
             {', '}
-            {next && me.level.next_min_xp !== null ? t('toNext', { xp: formatNumber(me.level.next_min_xp - me.xp, locale), name: tl(next.key) }) : t('maxLevel')}
+            {next && me.level.next_min_xp !== null ? t('toNext', { xp: me.level.next_min_xp - me.xp, name: tl(next.key) }) : t('maxLevel')}
           </p>
           {me.streak > 1 && <p className="mt-0.5">{t('streak', { n: me.streak })}</p>}
           {me.xp_today >= me.daily_cap * 0.8 && <p className="mt-0.5 text-text-secondary">{t('today', { xp: me.xp_today, cap: me.daily_cap })}</p>}
         </div>
 
-        <div className="mt-3 flex gap-1.5">
-          <Link href="/settings" className={SECONDARY_LINK}>
-            {t('settings')}
-          </Link>
-          <Link href="/classify" className={SECONDARY_LINK}>
-            {t('classify')}
-          </Link>
-        </div>
-
+        <Link href="/classify" className="mt-3 flex h-11 w-full items-center justify-center rounded-[var(--radius-button)] bg-accent text-ui font-semibold text-on-accent active:bg-accent-pressed">
+          {t('answerMore')}
+        </Link>
       </section>
 
       <div className="pt-4">
@@ -177,16 +167,19 @@ function Profile({ me }: { me: Me }) {
         <IconTabs tabs={tabs} value={tab} onChange={setTab} label={t('tabs.label')} />
       </div>
       <div role="tabpanel" aria-label={tabs.find((x) => x.key === tab)?.label} className="min-h-[60dvh]">
-        {tab === 'history' && <HistoryList items={me.history} />}
-        {tab === 'badges' && <BadgeGrid badges={me.badges} onOpen={setBadge} />}
+        {tab === 'activity' && <HistoryList items={me.history} />}
         {tab === 'community' && (
           <div className="pb-6">
             <GoalsCard />
             <ExploredSkyCard />
           </div>
         )}
-        {tab === 'notes' && <NotesPanel />}
-        {tab === 'saved' && <SavedGrid ids={saved} />}
+        {tab === 'saved' && (
+          <>
+            <SavedGrid ids={saved} />
+            <NotesPanel />
+          </>
+        )}
         {tab === 'following' && <FollowingList objects={me.following} />}
       </div>
 

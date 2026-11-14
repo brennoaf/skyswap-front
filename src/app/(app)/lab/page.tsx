@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { IconChevronRight, IconFlask } from '@/components/icons'
-import { Button, EmptyState, isSaturated, isVerified, ObjectAvatar, ObjectBadges, Skeleton, TopBar } from '@/components/ui/primitives'
+import { Button, EmptyState, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
 import { useObjects } from '@/lib/api/hooks'
 
 export default function LabPickerPage() {
@@ -38,12 +38,9 @@ export default function LabPickerPage() {
               <Link href={`/lab/${o.id}`} className="flex min-h-[60px] items-center gap-3 px-4 py-2 active:bg-surface">
                 <ObjectAvatar src={o.avatar} alt="" size={44} />
                 <span className="min-w-0 flex-1 leading-tight">
-                  <span className="flex items-center gap-1">
-                    <span className="truncate text-body font-semibold">{o.handle}</span>
-                    <ObjectBadges verified={isVerified(o.verdict)} saturated={isSaturated(o.saturation)} />
-                  </span>
+                  <span className="block truncate text-body font-semibold">{o.name}</span>
                   <span className="block truncate text-body text-text-secondary">
-                    {o.name}, {tp.has(kindKey) ? tp(kindKey) : o.kind}
+                    {o.handle}, {tp.has(kindKey) ? tp(kindKey) : o.kind}
                   </span>
                 </span>
                 <IconChevronRight size={20} className="shrink-0 text-text-secondary" />

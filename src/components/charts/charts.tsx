@@ -97,12 +97,12 @@ export function LightCurveChart({ data }: { data: LightcurveData }) {
   const y = linear([Math.max(...mags), Math.min(...mags)], [PLOT.h - PLOT.b, PLOT.t], 5)
   return (
     <figure>
-      <div className="no-scrollbar mb-2 flex gap-1.5 overflow-x-auto">
-        <Chip active={!only} onClick={() => setOnly(null)}>
+      <div className="no-scrollbar -mt-1 mb-1 flex gap-1.5 overflow-x-auto py-1">
+        <Chip active={!only} onClick={() => setOnly(null)} className="hit-44">
           {tp('filterAll')}
         </Chip>
         {bands.map((b) => (
-          <Chip key={b} active={only === b} onClick={() => setOnly(b)}>
+          <Chip key={b} active={only === b} onClick={() => setOnly(b)} className="hit-44">
             <span className="size-2 rounded-full" style={{ background: BAND_HUE[b] }} />
             {b}
           </Chip>

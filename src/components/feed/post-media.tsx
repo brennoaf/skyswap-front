@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { IconCarousel, IconReel } from '@/components/icons'
 import type { Post } from '@/lib/api/client'
-import { cx, formatShortDate, formatWavelength } from '@/lib/format'
+import { cx, formatShortDate } from '@/lib/format'
 import { frameYear, isLongBaseline, LONG_BASELINE_FPS, PLAYABLE, telescopeOf, yearsSpanned } from '@/lib/long-baseline'
 import { useUi } from '@/lib/state/ui'
 
@@ -64,7 +64,7 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
 
   const shown = isTimelapse ? post.frames[frame] : isMulti ? post.frames[slide] : post.frames[0]
   const mark = post.marks.find((m) => m.frame === (isTimelapse ? frame : isMulti ? slide : 0))
-  const caption = shown && longBaseline ? `${frameYear(shown)}, ${telescopeOf(shown)}` : shown ? `${shown.band}, ${formatWavelength(shown.wavelength_um)}` : post.band ? `${post.band}, ${formatWavelength(post.wavelength_um)}` : null
+  const yearChip = shown && longBaseline ? `${frameYear(shown)}, ${telescopeOf(shown)}` : null
   const isChart = !post.frames.length
   const n = post.frames.length
   const swipeable = isTimelapse || isMulti
@@ -161,11 +161,7 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
           {(isMulti ? slide : frame) + 1}/{n}
         </span>
       )}
-      {caption && !isChart && (
-        <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-meta text-white">
-          {caption}, {t('falseColour')}
-        </span>
-      )}
+      {yearChip && <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-meta text-white">{yearChip}</span>}
       {isMulti && (
         <div className="absolute inset-x-0 bottom-2 flex justify-center gap-1" aria-hidden="true">
           {post.frames.map((f, i) => (

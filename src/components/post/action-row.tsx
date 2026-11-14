@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
-import { IconColours, IconComment, IconSave, IconTarget } from '@/components/icons'
+import { IconColours, IconSave, IconTag, IconTarget } from '@/components/icons'
 import { cx } from '@/lib/format'
 
 export type Action = { onClick?: () => void; href?: string; active?: boolean }
@@ -42,7 +42,7 @@ export function ActionRow({
   return (
     <div className="relative flex h-12 items-center px-[5px]" data-tour="post-actions">
       <ActionButton label={t('tag')} action={tag}>
-        <IconComment />
+        <IconTag />
       </ActionButton>
       {tagCount ? <span className="-ml-1.5 mr-0.5 text-body font-semibold">{tagCount}</span> : null}
       <ActionButton label={t('mark')} action={mark}>

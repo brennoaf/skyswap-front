@@ -118,7 +118,7 @@ export function StoryViewer() {
             <div className="mt-2 flex items-center gap-2 pl-1">
               <Link href={`/o/${story.object.id}`} onClick={close} className="flex min-w-0 items-center gap-2">
                 <ObjectAvatar src={story.object.avatar} alt="" size={32} />
-                <span className="truncate text-body font-semibold">{story.object.handle}</span>
+                <span className="truncate text-body font-semibold">{story.object.name}</span>
               </Link>
               <span className="truncate text-note text-white/70">{formatShortDate(current.t, locale)}</span>
               <span className="ml-auto flex">
@@ -155,7 +155,7 @@ export function StoryViewer() {
                 ? t('yearLabel', { year: frameYear(current), telescope: telescopeOf({ telescope: current.telescope, release: '' }), n: frame + 1, total: story.frames.length })
                 : t('frameLabel', { band: current.band, n: frame + 1, total: story.frames.length })}
             </span>
-            <span className="absolute bottom-3 right-3 rounded-md bg-black/60 px-2 py-1 text-meta">{t('falseColour')}</span>
+            <span className="absolute bottom-3 right-3 rounded-md bg-black/60 px-2 py-1 text-meta">{t('infrared')}</span>
           </div>
 
           <div className="flex items-center gap-2 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3">

@@ -87,7 +87,12 @@
     "retry": "Try again",
     "end": "You're all caught up",
     "lab": "Lab",
-    "labOpen": "Open the Lab"
+    "labOpen": "Open the Lab",
+    "hint": {
+      "text": "Help find what moves in the sky",
+      "action": "Try one",
+      "dismiss": "Hide this tip"
+    }
   },
   "stories": {
     "title": "Objects with stories",
@@ -102,8 +107,8 @@
     "profile": "View profile",
     "openPost": "Open post",
     "frameAlt": "{name} in band {band} on {date}",
-    "frameLabel": "{band}, frame {n} of {total}",
-    "falseColour": "False colours",
+    "frameLabel": "{band}, photo {n} of {total}",
+    "infrared": "Infrared",
     "yearLabel": "{year}, {telescope}, {n} of {total}"
   },
   "spot": {
@@ -120,7 +125,6 @@
     "watchAnyway": "Watch the corrected spot"
   },
   "post": {
-    "officialTarget": "Official challenge target",
     "kinds": {
       "star": "Star",
       "brown_dwarf": "Brown dwarf",
@@ -148,7 +152,6 @@
     "openStory": "Watch {name}'s story",
     "frameAlt": "SPHEREx image in band {band} taken {date}",
     "chartAlt": "Chart: {title}",
-    "falseColour": "false colours",
     "taggedBy": "Tagged by {total, plural, one {# person} other {# people}}",
     "tagPrompt": "Tag what you see",
     "actions": {
@@ -168,7 +171,6 @@
       "compare": "Compare dates",
       "mark": "Mark the moving dot",
       "copyLink": "Copy link",
-      "profile": "Go to profile",
       "about": "About this image",
       "aboutHint": "Quality flags, release, sources",
       "notes": "Private notes",
@@ -215,8 +217,8 @@
     }
   },
   "xp": {
-    "gained": "+{xp} XP",
-    "gainedStreak": "+{xp} XP, streak bonus",
+    "gained": "+{xp, plural, one {# point} other {# points}}",
+    "gainedStreak": "+{xp, plural, one {# point} other {# points}}, streak bonus",
     "tooFast": "That was very fast. Quick votes don't count, so take a closer look.",
     "limit": "No more points for this today. Your answers still count."
   },
@@ -304,7 +306,7 @@
       "title": "Where the pro mode is",
       "post": "Lab on a post opens that object with the pro tools",
       "top": "Lab at the top of the home screen lets you pick any object",
-      "dots": "The three dots have the rest: compare dates, mark the dot, copy the link"
+      "dots": "The three dots have the rest: compare dates, copy the link"
     },
     "lab": {
       "title": "The Lab: look like a scientist",
@@ -344,14 +346,13 @@
   },
   "profile": {
     "posts": "posts",
-    "passes": "passes",
+    "passes": "times seen",
     "followers": "followers",
     "follow": "Follow",
     "following": "Following",
     "unfollow": "Unfollow",
     "skyMap": "Sky map",
     "lab": "Lab",
-    "compare": "Compare dates",
     "notifications": "Alerts about this object",
     "more": "More options",
     "share": "Share profile",
@@ -384,13 +385,7 @@
     "noMeasurements": "No measurements for this object in the data kit.",
     "skyMapTitle": "Sky map",
     "skyMapCredit": "Aladin Lite (CDS), DSS2 colour survey served by ESA",
-    "coords": "Position ({epoch})",
-    "highlights": {
-      "why": "Why",
-      "colours": "Colours",
-      "sources": "Sources",
-      "position": "Where"
-    }
+    "why": "Why"
   },
   "charts": {
     "wavelength": "Wavelength (µm)",
@@ -400,7 +395,7 @@
     "pass": "Pass {n}",
     "saturated": "Saturated (indicative)",
     "predicted": "Predicted by the catalogue",
-    "measured": "Measured by SPHEREx",
+    "measured": "Measured by SkySwap from SPHEREx images",
     "community": "Community marks",
     "yours": "Your marks",
     "spectrumTitle": "Infrared spectrum",
@@ -408,7 +403,7 @@
     "lightcurveTitle": "Light curve",
     "lightcurveHint": "Brightness over time in each SPHEREx colour. Lower magnitude means brighter.",
     "motionTitle": "Motion across the sky",
-    "motionHint": "Where the catalogue predicts the object (open circles) and where SPHEREx measured it (dots with error bars). Offsets are in arcseconds from the first pass.",
+    "motionHint": "Where the catalogue predicts the object (open circles) and where SkySwap measured it from SPHEREx images (dots with error bars). Offsets are in arcseconds from the first pass.",
     "verdict": {
       "consistent": "SPHEREx agrees with the catalogue",
       "inconsistent": "SPHEREx disagrees with the catalogue",
@@ -430,12 +425,12 @@
     "title": "Post",
     "play": "Play",
     "pause": "Pause",
-    "prev": "Previous frame",
-    "next": "Next frame",
+    "prev": "Previous photo",
+    "next": "Next photo",
     "speed": "Speed",
-    "frame": "Frame {n} of {total}",
+    "frame": "Photo {n} of {total}",
     "crosshair": "Crosshair",
-    "crosshairHint": "Shows where the catalogue predicts the object on each frame",
+    "crosshairHint": "Shows where the catalogue predicts the object on each photo",
     "filters": "Colour filters",
     "wavelength": "Wavelength",
     "wavelengthValue": "{value} µm",
@@ -443,7 +438,7 @@
       "original": "Original",
       "warm": "Warm",
       "rainbow": "Rainbow",
-      "water": "Water & ice",
+      "water": "Near 3 µm",
       "changed": "What changed"
     },
     "filterHints": {
@@ -479,14 +474,13 @@
       "satellite": "Satellite trails",
       "persistence": "Persistence"
     },
-    "flagFrac": "{pct}% of frames",
+    "flagFrac": "{pct}% of photos",
     "satelliteNote": "Satellite trails are not flagged by SPHEREx.",
     "saturatedWarning": "This star is too bright for SPHEREx: its centre overflows the detector, so brightness here is indicative only.",
     "frameInfo": "{band}, {wavelength}, {date}, {release}",
-    "dataNotice": "Images: NASA SPHEREx public data (QR2/QR3, IRSA). Colours are false colours.",
+    "dataNotice": "Images: NASA SPHEREx public data (QR2/QR3, IRSA). Infrared, shown in grey; any colour you see is false colour.",
     "loading": "Loading post",
     "notFound": "Post not found",
-    "falseColourShort": "False colours",
     "saturatedPill": "Too bright",
     "markedBy": "{people, plural, one {# person} other {# people}} marked the motion",
     "aboutBand": "Colour band",
@@ -497,8 +491,8 @@
     "notFlagged": "not flagged",
     "sources": "Sources",
     "kinds": {
-      "exposure": "Single exposure",
-      "coadd": "Stack of exposures",
+      "exposure": "Single photo",
+      "coadd": "Stack of photos",
       "difference": "Difference image"
     },
     "longBaseline": {
@@ -509,8 +503,8 @@
       "now": "{year}, {telescope}, photo {n} of {total}",
       "path": "Show path",
       "telescope": "Telescope",
-      "exposures": "Exposures combined",
-      "honest": "WISE pixels are 2.75 arcsec and SPHEREx pixels 6.15 arcsec, so SPHEREx frames look blurrier. Brightness is scaled per telescope: compare positions, not brightness. Empty corners on SPHEREx frames mean no data there.",
+      "exposures": "Photos combined",
+      "honest": "WISE pixels are 2.75 arcsec and SPHEREx pixels 6.15 arcsec, so SPHEREx photos look blurrier. Brightness is scaled per telescope: compare positions, not brightness. Empty corners on SPHEREx photos mean no data there.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
     },
     "predictionRow": "Yellow cross: the prediction. Why mark it?"
@@ -569,7 +563,7 @@
     "allBands": "All",
     "start": "Build the time-lapse",
     "building": "Reading images from NASA: {done} of {total}",
-    "built": "{n, plural, one {# frame} other {# frames}} ready",
+    "built": "{n, plural, one {# photo} other {# photos}} ready",
     "failed": "Couldn't read the images from NASA's archive. Check your connection.",
     "liveNote": "Images are read live from NASA's public SPHEREx archive, straight into your browser.",
     "staleTyped": "Typed coordinates are fixed in time. If your star moves fast, use its name instead so we can move it to each date.",
@@ -589,9 +583,9 @@
     "bandHue": "Band colour",
     "play": "Play",
     "pause": "Pause",
-    "prev": "Previous frame",
-    "next": "Next frame",
-    "frameOf": "Frame {n} of {total}",
+    "prev": "Previous photo",
+    "next": "Next photo",
+    "frameOf": "Photo {n} of {total}",
     "crosshair": "Crosshair",
     "player": "Time-lapse of this spot",
     "frameAlt": "SPHEREx image of this spot in band {band} taken {date}",
@@ -618,7 +612,7 @@
     "changesEnds": "Oldest and newest photo only, each minus the other.",
     "changesAlt": "What changed on {date}",
     "frameTags": "{band}, {release}, {colours}",
-    "releaseFrame": "{release}, frame {n} of {total}",
+    "releaseFrame": "{release}, photo {n} of {total}",
     "fovHint": "How much sky fits in the photo. The full Moon is about 30 arcmin wide.",
     "bandHint": "The numbers are how many photos each colour has here.",
     "thisSpot": "This spot",
@@ -724,7 +718,7 @@
       "chance": "Estimated chance it moves: {pct}%",
       "chanceHint": "Our program's running estimate, which updates as more people answer. It starts low because most dots turn out not to move.",
       "photos": "When and in which colour each photo was taken",
-      "field": "Each photo shows {size} arcmin of sky, in colour band {band} (false colours).",
+      "field": "Each photo shows {size} arcmin of sky, in colour band {band} (infrared, shown in grey).",
       "where": "Where in the sky",
       "whereBody": "Right ascension {ra}°, declination {dec}°.",
       "whereSky": "Right ascension {ra}°, declination {dec}°. Picked at random among the parts of the sky SkySwap can read."
@@ -789,7 +783,6 @@
   "reels": {
     "title": "Reels",
     "label": "Time-lapses",
-    "frames": "{n} frames, {from} to {to}",
     "openPost": "Open post",
     "profile": "Profile",
     "mute": "Motion paused",
@@ -803,32 +796,30 @@
     "title": "My profile",
     "guestTitle": "Your citizen-science profile",
     "guestBody": "Pick a nickname to keep your classifications, marks, tags, level and badges.",
-    "classifications": "photo sets",
-    "marks": "marks",
-    "tags": "tags",
+    "answers": "{n, plural, one {answer} other {answers}}",
+    "marks": "{n, plural, one {mark} other {marks}}",
+    "tags": "{n, plural, one {tag} other {tags}}",
     "level": "Level {n}: {name}",
-    "xp": "{xp} XP",
-    "toNext": "{xp} XP to {name}",
+    "xp": "{xp, plural, one {# point} other {# points}}",
+    "toNext": "{xp, plural, one {# point} other {# points}} to {name}",
     "maxLevel": "Top level reached",
     "streak": "{n, plural, one {# day} other {# days}} in a row",
-    "today": "{xp} XP today (daily limit {cap})",
+    "today": "{xp, plural, one {# point} other {# points}} today (daily limit {cap})",
     "badges": "Badges",
-    "history": "History",
+    "activity": "Activity",
     "notes": "Notes",
     "following": "Following",
     "saved": "Saved",
     "tabs": {
       "label": "My profile sections",
-      "history": "History",
-      "badges": "Badges",
+      "activity": "Activity",
       "community": "Community",
-      "notes": "Notes",
       "saved": "Saved",
       "following": "Following"
     },
     "historyItems": {
       "vote": "You looked at a set of photos: \"{label}\"",
-      "mark": "You marked {n} frames on {title}",
+      "mark": "You marked {n, plural, one {# photo} other {# photos}} on {title}",
       "tag": "You tagged {title}: {tag}"
     },
     "labels": {
@@ -836,7 +827,7 @@
       "artifact": "it doesn't move",
       "unsure": "not sure"
     },
-    "noHistory": "Nothing yet. Classify, mark or tag to see your history.",
+    "noActivity": "Nothing yet. Classify, mark or tag to see your activity.",
     "noNotes": "No private notes yet.",
     "noSaved": "Nothing saved yet. Tap the bookmark on a post.",
     "noFollowing": "You don't follow any object yet.",
@@ -856,7 +847,7 @@
     "progress": "Progress to the next level",
     "levelBadge": "Level {n}",
     "earnedOn": "Earned on {date}",
-    "classify": "Classify",
+    "answerMore": "Answer more photos",
     "noteUntitled": "Untitled post",
     "errorTitle": "Couldn't load your profile",
     "statusCandidate": "candidate",
@@ -1041,7 +1032,7 @@
     "notes": "Private notes",
     "notesHint": "Your notes live only in this browser.",
     "data": "About the data",
-    "dataBody": "SkySwap shows real NASA SPHEREx images from public releases QR2 and QR3 (IRSA). Colours are false colours. The sky index lists {images} published images, so any spot can be opened. The first look at a deep-field spot, where SPHEREx returns again and again near the ecliptic poles, can take a few seconds while that part of the index downloads; after that it is kept in the browser. Data kit {version}.",
+    "dataBody": "SkySwap shows real NASA SPHEREx images from public releases QR2 and QR3 (IRSA). Infrared light is shown in grey, and any colour you see is false colour. The sky index lists {images} published images, so any spot can be opened. The first look at a deep-field spot, where SPHEREx returns again and again near the ecliptic poles, can take a few seconds while that part of the index downloads; after that it is kept in the browser. Data kit {version}.",
     "about": "SkySwap is a non-commercial study prototype for the NASA Space Apps 2026 challenge \"Planet X and SPHEREx\". It is not affiliated with NASA or Instagram.",
     "api": "API docs",
     "notesCount": "{n, plural, =0 {No notes saved} one {# note saved} other {# notes saved}}",
@@ -1100,7 +1091,7 @@
     "lead": "Points, levels and badges only mark your path. What helps is your answers.",
     "helpTitle": "What your answers do",
     "helpBody": "Practice sets with a known answer show how far to trust your eyes. After that, your answers change the chance that something moves.",
-    "pointsTitle": "Points (XP)",
+    "pointsTitle": "Points",
     "pointsBody": "Answer: 2. Mark a post: 5. Tag or follow: 1. Right, wrong and \"Not sure\" earn the same, so never guess.",
     "levelsTitle": "Levels",
     "levelsBody": "{ladder}. They never go down and unlock nothing.",

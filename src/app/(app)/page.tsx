@@ -5,10 +5,11 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { PostCard } from '@/components/feed/post-card'
 import { StoriesRow } from '@/components/feed/stories-row'
-import { IconCheck, IconChevronDown, IconDirect, IconLike } from '@/components/icons'
-import { Button, EmptyState, LabChip, Sheet, Skeleton, Wordmark } from '@/components/ui/primitives'
-import { useAlerts, useFeed, useSession, type FeedTab } from '@/lib/api/hooks'
+import { IconCheck, IconChevronDown, IconClose, IconDirect, IconLike } from '@/components/icons'
+import { Button, EmptyState, IconButton, LabChip, Sheet, Skeleton, Wordmark } from '@/components/ui/primitives'
+import { useAlerts, useFeed, useMe, useSession, type FeedTab } from '@/lib/api/hooks'
 import { useShare } from '@/lib/share'
+import { useUi } from '@/lib/state/ui'
 
 const TABS: FeedTab[] = ['for_you', 'following', 'new', 'targets']
 
@@ -20,6 +21,28 @@ function FeedSkeleton() {
         <Skeleton className="h-3 w-32" />
       </div>
       <Skeleton className="aspect-[4/5] w-full rounded-none" />
+    </div>
+  )
+}
+
+function HomeHint() {
+  const t = useTranslations('home.hint')
+  const dismissed = useUi((s) => s.homeHintDismissed)
+  const dismiss = useUi((s) => s.dismissHomeHint)
+  const { data: user, isLoading } = useSession()
+  const me = useMe(!!user)
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(() => setHydrated(true), [])
+  if (!hydrated || dismissed || isLoading || (user && (me.data?.counts.votes ?? 1) > 0)) return null
+  return (
+    <div className="mx-4 mb-2 flex min-h-11 items-center gap-2 rounded-xl bg-surface pl-3 text-note">
+      <p className="min-w-0 flex-1 py-1.5 text-text-secondary">{t('text')}</p>
+      <Link href="/classify" className="inline-flex h-11 shrink-0 items-center font-semibold text-link">
+        {t('action')}
+      </Link>
+      <IconButton label={t('dismiss')} onClick={dismiss}>
+        <IconClose size={20} />
+      </IconButton>
     </div>
   )
 }
@@ -67,6 +90,7 @@ export default function HomePage() {
       </header>
 
       <StoriesRow />
+      <HomeHint />
 
       {tab !== 'for_you' && (
         <div className="flex items-center justify-between px-4 pb-2 pt-1">

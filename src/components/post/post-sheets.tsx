@@ -47,7 +47,7 @@ export function ColoursSheet({
           return (
             <li key={k} className="shrink-0">
               <button type="button" aria-pressed={on} disabled={!thumb} onClick={() => onPick(k)} title={t(`filterHints.${k}`)} className="flex w-[76px] flex-col items-center gap-1.5 disabled:opacity-35">
-                <span className={cx('text-meta', on ? 'font-semibold text-text' : 'text-text-secondary')}>{t(`filterNames.${k}`)}</span>
+                <span className={cx('whitespace-nowrap text-meta', on ? 'font-semibold text-text' : 'text-text-secondary')}>{t(`filterNames.${k}`)}</span>
                 <span className={cx('relative block size-[76px] overflow-hidden rounded-[4px] bg-media-bg', on && 'ring-2 ring-text ring-offset-2 ring-offset-sheet')}>
                   {thumb && <Image src={thumb.src} alt="" fill sizes="76px" className="pixelated object-contain" unoptimized />}
                 </span>

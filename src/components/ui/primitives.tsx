@@ -108,7 +108,7 @@ export function ObjectBadges({ verified, saturated, size = 14 }: { verified: boo
   )
 }
 
-export const isVerified = (verdict: string) => verdict === 'clear' || verdict === 'with_help'
+export const isVerified = (verdict: string) => verdict === 'clear'
 export const isSaturated = (saturation: string) => saturation === 'heavy'
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'

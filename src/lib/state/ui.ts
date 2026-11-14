@@ -19,6 +19,7 @@ interface PersistedUi {
   meIntroDone: boolean
   classifyGuideDone: boolean
   classifyPacingSeen: boolean
+  homeHintDismissed: boolean
   saved: string[]
   recentSearches: string[]
   crosshair: boolean
@@ -40,6 +41,7 @@ interface UiState extends PersistedUi {
   showMeIntro: () => void
   finishClassifyGuide: () => void
   markPacingSeen: () => void
+  dismissHomeHint: () => void
   toggleSaved: (postId: string) => void
   addRecentSearch: (q: string) => void
   clearRecentSearches: () => void
@@ -65,6 +67,7 @@ export const useUi = create<UiState>()(
       meIntroDone: false,
       classifyGuideDone: false,
       classifyPacingSeen: false,
+      homeHintDismissed: false,
       saved: [],
       recentSearches: [],
       crosshair: true,
@@ -83,6 +86,7 @@ export const useUi = create<UiState>()(
       showMeIntro: () => set({ meIntroDone: false }),
       finishClassifyGuide: () => set({ classifyGuideDone: true }),
       markPacingSeen: () => set({ classifyPacingSeen: true }),
+      dismissHomeHint: () => set({ homeHintDismissed: true }),
       toggleSaved: (postId) => set((s) => ({ saved: s.saved.includes(postId) ? s.saved.filter((p) => p !== postId) : [postId, ...s.saved] })),
       addRecentSearch: (q) => set((s) => ({ recentSearches: [q, ...s.recentSearches.filter((x) => x !== q)].slice(0, 8) })),
       clearRecentSearches: () => set({ recentSearches: [] }),
@@ -106,6 +110,7 @@ export const useUi = create<UiState>()(
         meIntroDone: s.meIntroDone,
         classifyGuideDone: s.classifyGuideDone,
         classifyPacingSeen: s.classifyPacingSeen,
+        homeHintDismissed: s.homeHintDismissed,
         saved: s.saved,
         recentSearches: s.recentSearches,
         crosshair: s.crosshair,

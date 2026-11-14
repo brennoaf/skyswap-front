@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
-import { IconCards, IconCheck, IconColours, IconComment, IconCompare, IconCrosshair, IconFlask, IconHome, IconMore, IconMoves, IconReel, IconSave, IconSearch, IconSpectrum, IconTarget } from '@/components/icons'
+import { IconCards, IconCheck, IconColours, IconCompare, IconCrosshair, IconFlask, IconHome, IconMore, IconMoves, IconReel, IconSave, IconSearch, IconSpectrum, IconTag, IconTarget } from '@/components/icons'
 import { Button } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { defaultLocale, isLocale, type Locale } from '@/i18n/locales'
@@ -29,7 +29,7 @@ const STEPS: Step[] = [
     id: 'actions',
     target: 'post-actions',
     items: [
-      { icon: <IconComment size={22} />, key: 'tag' },
+      { icon: <IconTag size={22} />, key: 'tag' },
       { icon: <IconTarget size={22} />, key: 'mark' },
       { icon: <IconColours size={22} />, key: 'colours' },
       { icon: <IconSave size={22} />, key: 'save' },

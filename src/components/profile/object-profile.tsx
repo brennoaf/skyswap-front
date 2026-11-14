@@ -2,31 +2,19 @@
 
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { KitChart, QrWarning } from '@/components/charts/charts'
 import { frameTiles, PostGrid, tilesFromPosts } from '@/components/profile/post-grid'
-import { IconBell, IconChart, IconChevronDownSmall, IconCompare, IconFlask, IconGrid, IconLink, IconMap, IconMore, IconReel, IconSpectrum, IconTarget, IconWarning, IconChevronRight } from '@/components/icons'
+import { IconBell, IconChart, IconChevronDownSmall, IconFlask, IconGrid, IconLink, IconMap, IconMore, IconReel, IconSpectrum, IconTarget, IconWarning, IconChevronRight } from '@/components/icons'
 import { Button, Chip, EmptyState, IconButton, IconTabs, isSaturated, isVerified, ObjectAvatar, ObjectBadges, Sheet, SheetRow, Skeleton, TopBar } from '@/components/ui/primitives'
 import type { ObjectProfile } from '@/lib/api/client'
 import { useFollow, useLearn, useObject, useObjectPosts, useSession } from '@/lib/api/hooks'
-import { BAND_HUE, BANDS, compactNumber, cx, formatDec, formatRa, formatShortDate } from '@/lib/format'
+import { BAND_HUE, BANDS, compactNumber, cx, formatShortDate } from '@/lib/format'
 import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
 import { SkyMapSheet } from '@/components/sky/sky-map-sheet'
 
 type Tab = 'photos' | 'spectrum' | 'timelapses' | 'measurements'
-type Highlight = 'why' | 'colours' | 'sources' | 'position'
-
-function HighlightBubble({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
-  return (
-    <li className="flex w-[72px] shrink-0 flex-col items-center gap-1">
-      <button type="button" onClick={onClick} className="flex size-[64px] items-center justify-center rounded-full border-[1.5px] border-ring-seen bg-surface text-text" aria-label={label}>
-        {children}
-      </button>
-      <span className="w-full truncate text-center text-meta">{label}</span>
-    </li>
-  )
-}
 
 function ProfileSkeleton() {
   return (
@@ -53,7 +41,7 @@ function FollowButton({ profile }: { profile: ObjectProfile }) {
   return (
     <Button
       variant={on ? 'secondary' : 'primary'}
-      className="h-8 flex-1"
+      className="hit-44 h-8 flex-1"
       aria-pressed={on}
       disabled={follow.isPending}
       onClick={() => (user ? follow.mutate(!on) : ask('follow'))}
@@ -78,10 +66,9 @@ export function ObjectProfileView({ id }: { id: string }) {
   const openStory = useUi((s) => s.openStory)
   const [tab, setTab] = useState<Tab>('photos')
   const [band, setBand] = useState<string | null>(null)
-  const [highlight, setHighlight] = useState<Highlight | null>(null)
+  const [why, setWhy] = useState(false)
   const [more, setMore] = useState(false)
   const [map, setMap] = useState(false)
-  const tsky = useTranslations('sky.map')
   const [bioOpen, setBioOpen] = useState(false)
 
   const learnRef = useRef(learn.mutate)
@@ -100,7 +87,6 @@ export function ObjectProfileView({ id }: { id: string }) {
 
   const bandsPresent = useMemo(() => BANDS.filter((b) => posts?.some((p) => p.frames.some((f) => f.band === b))), [posts])
   const timelapse = posts?.find((p) => p.type === 'timelapse')
-  const blink = posts?.find((p) => p.type === 'pass_blink') ?? timelapse
 
   if (isError) return <EmptyState title={t('noPosts')} />
   if (isLoading || !profile) {
@@ -158,13 +144,27 @@ export function ObjectProfileView({ id }: { id: string }) {
         </div>
 
         <div className="mt-3 space-y-1 text-body">
-          <p className="text-text-secondary">{profile.official_target ? tp('officialTarget') : tp(`kinds.${profile.kind}`)}</p>
+          <p className="text-text-secondary">{tp(`kinds.${profile.kind}`)}</p>
           <p className={cx(!bioOpen && 'line-clamp-2')}>{profile.kind === 'candidate' ? t('candidateBody') : profile.bio}</p>
           {bioOpen ? (
             <>
               {profile.aliases.length > 0 && <p className="text-text-secondary">{t('aliases', { names: profile.aliases.slice(0, 4).join(', ') })}</p>}
+              <p className="text-text-secondary">{t('seen', { n: profile.n_images, from: formatShortDate(profile.first_seen, locale), to: formatShortDate(profile.last_seen, locale) })}</p>
+              {profile.best_bands.length > 0 && <p className="text-text-secondary">{t('bestBands', { bands: profile.best_bands.join(', ') })}</p>}
+              {profile.facts.length > 0 && (
+                <dl className="grid grid-cols-2 gap-2 py-1">
+                  {profile.facts.map((f, i) => (
+                    <div key={`${f.label}-${i}`} className="rounded-lg bg-surface px-3 py-2">
+                      <dt className="text-meta text-text-secondary">{f.label}</dt>
+                      <dd className="font-semibold">
+                        {typeof f.value === 'number' ? f.value.toLocaleString(locale, { maximumFractionDigits: 3 }) : f.value} {f.unit ?? ''}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
               <p>
-                {profile.sources.slice(0, 3).map((s, i) => (
+                {profile.sources.map((s, i) => (
                   <span key={s.id}>
                     {i > 0 && ', '}
                     <a href={s.url} target="_blank" rel="noreferrer" className="text-link">
@@ -184,42 +184,18 @@ export function ObjectProfileView({ id }: { id: string }) {
 
       <div className="mt-3 flex gap-[6px] px-4">
         <FollowButton profile={profile} />
-        <Button className="h-8 flex-1 whitespace-nowrap px-2 text-body" onClick={() => setMap(true)}>
+        <Button className="hit-44 h-8 flex-1 whitespace-nowrap px-2 text-body" onClick={() => setMap(true)}>
           {t('skyMap')}
         </Button>
-        <Link href={`/lab/${profile.id}`} className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-[var(--radius-button)] bg-surface text-ui font-medium active:bg-surface-pressed">
+        <Link href={`/lab/${profile.id}`} className="hit-44 inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-[var(--radius-button)] bg-surface text-ui font-medium active:bg-surface-pressed">
           <IconFlask size={18} />
           {t('lab')}
         </Link>
-        {blink && (
-          <Link href={`/p/${blink.id}?compare=1`} aria-label={t('compare')} title={t('compare')} className="inline-flex size-8 items-center justify-center rounded-[var(--radius-button)] bg-surface">
-            <IconCompare size={24} />
-          </Link>
-        )}
       </div>
-
-      <ul className="no-scrollbar mt-4 flex gap-3 overflow-x-auto px-4">
-        <HighlightBubble label={t('highlights.why')} onClick={() => setHighlight('why')}>
-          <IconWarning size={28} />
-        </HighlightBubble>
-        <HighlightBubble label={t('highlights.colours')} onClick={() => setHighlight('colours')}>
-          <span className="flex gap-0.5">
-            {BANDS.map((b) => (
-              <span key={b} className="h-6 w-1.5 rounded-full" style={{ background: BAND_HUE[b], opacity: profile.best_bands.includes(b) ? 1 : 0.25 }} />
-            ))}
-          </span>
-        </HighlightBubble>
-        <HighlightBubble label={t('highlights.position')} onClick={() => setHighlight('position')}>
-          <IconTarget size={28} />
-        </HighlightBubble>
-        <HighlightBubble label={t('highlights.sources')} onClick={() => setHighlight('sources')}>
-          <IconLink size={28} />
-        </HighlightBubble>
-      </ul>
 
       {(unmeasurable || profile.verdict === 'indicative' || isSaturated(profile.saturation)) && (
         <div className="mt-4 px-4">
-          <button type="button" onClick={() => setHighlight('why')} className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-surface px-3 text-left text-note active:bg-surface-pressed">
+          <button type="button" onClick={() => setWhy(true)} className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-surface px-3 text-left text-note active:bg-surface-pressed">
             <IconWarning size={20} className="shrink-0 text-warning" />
             <span className="min-w-0 flex-1 font-semibold">{unmeasurable ? t('whyTitle') : t(`verdicts.${profile.verdict}`)}</span>
             <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
@@ -244,11 +220,11 @@ export function ObjectProfileView({ id }: { id: string }) {
       {tab === 'photos' && (
         <>
           <div className="no-scrollbar flex gap-1.5 overflow-x-auto px-3 py-2">
-            <Chip active={!band} onClick={() => setBand(null)}>
+            <Chip active={!band} onClick={() => setBand(null)} className="hit-44">
               {t('filterAll')}
             </Chip>
             {bandsPresent.map((b) => (
-              <Chip key={b} active={band === b} onClick={() => setBand(b)}>
+              <Chip key={b} active={band === b} onClick={() => setBand(b)} className="hit-44">
                 <span className="size-2 rounded-full" style={{ background: BAND_HUE[b] }} />
                 {b}
               </Chip>
@@ -289,59 +265,14 @@ export function ObjectProfileView({ id }: { id: string }) {
         </section>
       )}
 
-      <Sheet open={highlight !== null} onClose={() => setHighlight(null)} title={highlight ? t(`highlights.${highlight}`) : ''}>
+      <Sheet open={why} onClose={() => setWhy(false)} title={t('why')}>
         <div className="space-y-3 px-4 py-4 text-body">
-          {highlight === 'why' && (
-            <>
-              <p className="font-semibold">{t(`verdicts.${profile.verdict}`)}</p>
-              <ul className="list-disc space-y-2 pl-4 text-text-secondary">
-                {profile.limits.map((l) => (
-                  <li key={l}>{l}</li>
-                ))}
-              </ul>
-            </>
-          )}
-          {highlight === 'colours' && (
-            <>
-              <p>{t('bestBands', { bands: profile.best_bands.join(', ') })}</p>
-              <p className="text-text-secondary">{t('seen', { n: profile.n_images, from: formatShortDate(profile.first_seen, locale), to: formatShortDate(profile.last_seen, locale) })}</p>
-              <dl className="grid grid-cols-2 gap-2">
-                {profile.facts.map((f, i) => (
-                  <div key={`${f.label}-${i}`} className="rounded-lg bg-surface px-3 py-2">
-                    <dt className="text-meta text-text-secondary">{f.label}</dt>
-                    <dd className="font-semibold">
-                      {typeof f.value === 'number' ? f.value.toLocaleString(locale, { maximumFractionDigits: 3 }) : f.value} {f.unit ?? ''}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </>
-          )}
-          {highlight === 'position' && (
-            <>
-              <p className="text-text-secondary">{t('coords', { epoch: profile.epoch })}</p>
-              <p className="font-mono text-ui">
-                {formatRa(profile.ra)} {formatDec(profile.dec)}
-              </p>
-              <p className="font-mono text-note text-text-secondary">
-                {profile.ra.toFixed(5)}°, {profile.dec.toFixed(5)}°
-              </p>
-              <Link href={`/sky?ra=${profile.ra.toFixed(5)}&dec=${profile.dec.toFixed(5)}&fov=0.1&name=${encodeURIComponent(profile.name)}&obj=${profile.id}`} className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 font-medium text-on-accent">
-                {tsky('watch')}
-              </Link>
-            </>
-          )}
-          {highlight === 'sources' && (
-            <ul className="space-y-2">
-              {profile.sources.map((s) => (
-                <li key={s.id}>
-                  <a href={s.url} target="_blank" rel="noreferrer" className="text-link">
-                    {s.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
+          <p className="font-semibold">{t(`verdicts.${profile.verdict}`)}</p>
+          <ul className="list-disc space-y-2 pl-4 text-text-secondary">
+            {profile.limits.map((l) => (
+              <li key={l}>{l}</li>
+            ))}
+          </ul>
         </div>
       </Sheet>
 
