@@ -853,7 +853,7 @@
     "subtitle": "Ferramentas científicas para {name}",
     "band": "Cor",
     "epoch": "Exposição",
-    "epochInfo": "{date}, {release}, {lam} µm",
+    "epochInfo": "{ra}°, {dec}°, {release}, {lam} µm",
     "fov": "Campo de visão",
     "zoom": "Zoom",
     "zoomHint": "Faça pinça, role ou use os botões. O pacote desta cor tem {size}.",
@@ -946,9 +946,7 @@
     "pixelPlace": "Na imagem",
     "pixelXY": "x {x}, y {y}",
     "pixelWaveValue": "{lam} µm",
-    "pixelSky": "No céu",
-    "heading": "Lab: {name}",
-    "headingFrame": "{date}, {ra}°, {dec}°"
+    "pixelSky": "No céu"
   },
   "alerts": {
     "title": "Alertas",

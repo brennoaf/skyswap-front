@@ -853,7 +853,7 @@
     "subtitle": "Science tools for {name}",
     "band": "Colour",
     "epoch": "Exposure",
-    "epochInfo": "{date}, {release}, {lam} µm",
+    "epochInfo": "{ra}°, {dec}°, {release}, {lam} µm",
     "fov": "Field of view",
     "zoom": "Zoom",
     "zoomHint": "Pinch, scroll or use the buttons. This colour's pack is {size}.",
@@ -946,9 +946,7 @@
     "pixelPlace": "On the image",
     "pixelXY": "x {x}, y {y}",
     "pixelWaveValue": "{lam} µm",
-    "pixelSky": "In the sky",
-    "heading": "Lab: {name}",
-    "headingFrame": "{date}, {ra}°, {dec}°"
+    "pixelSky": "In the sky"
   },
   "alerts": {
     "title": "Alerts",

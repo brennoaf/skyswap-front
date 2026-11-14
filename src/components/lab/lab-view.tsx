@@ -93,7 +93,7 @@ const TOOLS = [
 
 type Tool = (typeof TOOLS)[number]['key']
 
-const PHOTO_HEIGHT = { large: '42dvh', small: '22dvh', hidden: '44px' } as const
+const PHOTO_HEIGHT = { large: '42dvh', small: '22dvh', hidden: '0px' } as const
 
 type PhotoSize = keyof typeof PHOTO_HEIGHT
 
@@ -121,6 +121,14 @@ function Toolbar({ value, onChange }: { value: Tool; onChange: (t: Tool) => void
         )
       })}
     </div>
+  )
+}
+
+function PhotoButton({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+  return (
+    <button type="button" aria-label={label} title={label} onClick={onClick} className="inline-flex h-11 w-9 items-center justify-center text-text active:scale-90">
+      {children}
+    </button>
   )
 }
 
@@ -321,14 +329,26 @@ export function LabView({ id }: { id: string }) {
       <TopBar
         title={
           <span className="block leading-tight">
-            <span className="block truncate">{t('heading', { name: profile.name })}</span>
-            {ep && <span className="block truncate font-sans text-meta font-normal text-text-secondary">{t('headingFrame', { date: formatDateTime(ep.iso, locale), ra: ep.target_radec[0].toFixed(2), dec: ep.target_radec[1].toFixed(2) })}</span>}
+            <span className="block truncate">{profile.name}</span>
+            {ep && <span className="block truncate font-sans text-meta font-normal text-text-secondary">{formatDateTime(ep.iso, locale)}</span>}
           </span>
         }
         actions={
-          <Link href={`/o/${profile.id}`} aria-label={profile.name} className="inline-flex size-11 items-center justify-center">
-            <ObjectAvatar src={profile.avatar} alt="" size={32} />
-          </Link>
+          <>
+            {profile.pack && (
+              <>
+                <PhotoButton label={photo === 'large' ? t('tools.photoSmaller') : t('tools.photoBigger')} onClick={() => setPhoto(photo === 'large' ? 'small' : 'large')}>
+                  {photo === 'large' ? <IconShrink size={22} /> : <IconExpand size={22} />}
+                </PhotoButton>
+                <PhotoButton label={photo === 'hidden' ? t('tools.photoShow') : t('tools.photoHide')} onClick={() => setPhoto(photo === 'hidden' ? 'large' : 'hidden')}>
+                  {photo === 'hidden' ? <IconEye size={22} /> : <IconEyeOff size={22} />}
+                </PhotoButton>
+              </>
+            )}
+            <Link href={`/o/${profile.id}`} aria-label={profile.name} className="inline-flex size-11 items-center justify-center">
+              <ObjectAvatar src={profile.avatar} alt="" size={32} />
+            </Link>
+          </>
         }
       />
 
@@ -339,72 +359,54 @@ export function LabView({ id }: { id: string }) {
       ) : pack.data ? (
         <>
           <div className="sticky top-[var(--height-topbar)] z-20 bg-bg">
-            {photo === 'hidden' && (
-              <button type="button" onClick={() => setPhoto('large')} className="flex h-11 w-full items-center gap-2 px-4 text-ui font-medium active:bg-surface">
-                <IconEye size={22} />
-                {t('tools.photoShow')}
-              </button>
-            )}
-            <div className={photo === 'hidden' ? 'hidden' : 'flex items-start'}>
-              <div className="flex w-11 shrink-0 flex-col">
-                <IconButton label={photo === 'large' ? t('tools.photoSmaller') : t('tools.photoBigger')} onClick={() => setPhoto(photo === 'large' ? 'small' : 'large')}>
-                  {photo === 'large' ? <IconShrink size={22} /> : <IconExpand size={22} />}
-                </IconButton>
-                <IconButton label={t('tools.photoHide')} onClick={() => setPhoto('hidden')}>
-                  <IconEyeOff size={22} />
-                </IconButton>
-              </div>
-              <div className="min-w-0 flex-1">
-                <div
-                  className="relative mx-auto overflow-hidden bg-media-bg motion-safe:transition-[width]"
-                  style={{ aspectRatio: ep ? `${ep.nx} / ${ep.ny}` : '1 / 1', width: ep ? `min(100%, calc(${PHOTO_HEIGHT[photo]} * ${ep.nx / ep.ny}))` : `min(100%, ${PHOTO_HEIGHT[photo]})` }}
-                >
-                  <div className="absolute inset-0 origin-center transition-transform" style={{ transform: `scale(${zoom})` }}>
-                    <canvas
-                      ref={canvas}
-                      className="pixelated size-full"
-                      onPointerMove={(e) => {
-                        if (!ep || e.pointerType !== 'mouse') return
-                        const r = e.currentTarget.getBoundingClientRect()
-                        setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
-                      }}
-                      onClick={(e) => {
-                        if (!ep) return
-                        if (tool !== 'notes') setTool('pixel')
-                        const r = e.currentTarget.getBoundingClientRect()
-                        setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
-                      }}
-                      onWheel={(e) => setZoom((z) => Math.min(8, Math.max(1, z * (e.deltaY < 0 ? 1.2 : 1 / 1.2))))}
-                      aria-label={t('pixelHint')}
-                    />
-                    {flagPixels.map((p, i) => (
-                      <span key={i} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ ...toPct(p.x, p.y), width: `${100 / (ep?.nx ?? 1)}%`, height: `${100 / (ep?.ny ?? 1)}%`, background: LAYER_COLOR[p.k] }} />
+            <div
+              className={cx('relative mx-auto overflow-hidden bg-media-bg motion-safe:transition-[width]', photo === 'hidden' && 'hidden')}
+              style={{ aspectRatio: ep ? `${ep.nx} / ${ep.ny}` : '1 / 1', width: ep ? `min(100%, calc(${PHOTO_HEIGHT[photo]} * ${ep.nx / ep.ny}))` : `min(100%, ${PHOTO_HEIGHT[photo]})` }}
+            >
+              <div className="absolute inset-0 origin-center transition-transform" style={{ transform: `scale(${zoom})` }}>
+                <canvas
+                  ref={canvas}
+                  className="pixelated size-full"
+                  onPointerMove={(e) => {
+                    if (!ep || e.pointerType !== 'mouse') return
+                    const r = e.currentTarget.getBoundingClientRect()
+                    setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
+                  }}
+                  onClick={(e) => {
+                    if (!ep) return
+                    if (tool !== 'notes') setTool('pixel')
+                    const r = e.currentTarget.getBoundingClientRect()
+                    setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
+                  }}
+                  onWheel={(e) => setZoom((z) => Math.min(8, Math.max(1, z * (e.deltaY < 0 ? 1.2 : 1 / 1.2))))}
+                  aria-label={t('pixelHint')}
+                />
+                {flagPixels.map((p, i) => (
+                  <span key={i} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ ...toPct(p.x, p.y), width: `${100 / (ep?.nx ?? 1)}%`, height: `${100 / (ep?.ny ?? 1)}%`, background: LAYER_COLOR[p.k] }} />
+                ))}
+                <svg className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${ep?.nx ?? 1} ${ep?.ny ?? 1}`} preserveAspectRatio="none" aria-hidden="true">
+                  {layers.gaia &&
+                    gaiaMarks.map((s) => (
+                      <g key={s.id} stroke={LAYER_COLOR.gaia} strokeWidth={0.18} fill="none">
+                        <circle cx={s.x + 0.5} cy={s.y + 0.5} r={Math.max(0.5, 2.2 - s.g / 10)} />
+                        <line x1={s.x + 0.5} y1={s.y + 0.5} x2={s.x2 + 0.5} y2={s.y2 + 0.5} />
+                      </g>
                     ))}
-                    <svg className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${ep?.nx ?? 1} ${ep?.ny ?? 1}`} preserveAspectRatio="none" aria-hidden="true">
-                      {layers.gaia &&
-                        gaiaMarks.map((s) => (
-                          <g key={s.id} stroke={LAYER_COLOR.gaia} strokeWidth={0.18} fill="none">
-                            <circle cx={s.x + 0.5} cy={s.y + 0.5} r={Math.max(0.5, 2.2 - s.g / 10)} />
-                            <line x1={s.x + 0.5} y1={s.y + 0.5} x2={s.x2 + 0.5} y2={s.y2 + 0.5} />
-                          </g>
-                        ))}
-                      {layers.wise &&
-                        wiseMarks.map((s) => (
-                          <path key={s.i} d={`M${s.xy[0]} ${s.xy[1]}l1 1M${s.xy[0] + 1} ${s.xy[1]}l-1 1`} stroke={LAYER_COLOR.wise} strokeWidth={0.18} />
-                        ))}
-                      {layers.target && ep && (
-                        <g stroke={LAYER_COLOR.target} strokeWidth={0.25} fill="none">
-                          <circle cx={ep.target_xy[0] + 0.5} cy={ep.target_xy[1] + 0.5} r={2} />
-                          <path d={`M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] - 3}v1.5M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] + 2.5}v1.5M${ep.target_xy[0] - 3} ${ep.target_xy[1] + 0.5}h1.5M${ep.target_xy[0] + 2.5} ${ep.target_xy[1] + 0.5}h1.5`} />
-                        </g>
-                      )}
-                      {pixel && <rect x={pixel.x} y={pixel.y} width={1} height={1} fill="none" stroke="var(--color-mark-outline)" strokeWidth={0.15} />}
-                    </svg>
-                  </div>
-                  {!decoded && <span className="absolute inset-0 flex items-center justify-center text-note text-on-media-muted">{t('loading')}</span>}
-                  <span className="absolute bottom-2 left-2 rounded bg-media-scrim px-2 py-0.5 text-meta text-on-media">{tcom('falseColour')}</span>
-                </div>
+                  {layers.wise &&
+                    wiseMarks.map((s) => (
+                      <path key={s.i} d={`M${s.xy[0]} ${s.xy[1]}l1 1M${s.xy[0] + 1} ${s.xy[1]}l-1 1`} stroke={LAYER_COLOR.wise} strokeWidth={0.18} />
+                    ))}
+                  {layers.target && ep && (
+                    <g stroke={LAYER_COLOR.target} strokeWidth={0.25} fill="none">
+                      <circle cx={ep.target_xy[0] + 0.5} cy={ep.target_xy[1] + 0.5} r={2} />
+                      <path d={`M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] - 3}v1.5M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] + 2.5}v1.5M${ep.target_xy[0] - 3} ${ep.target_xy[1] + 0.5}h1.5M${ep.target_xy[0] + 2.5} ${ep.target_xy[1] + 0.5}h1.5`} />
+                    </g>
+                  )}
+                  {pixel && <rect x={pixel.x} y={pixel.y} width={1} height={1} fill="none" stroke="var(--color-mark-outline)" strokeWidth={0.15} />}
+                </svg>
               </div>
+              {!decoded && <span className="absolute inset-0 flex items-center justify-center text-note text-on-media-muted">{t('loading')}</span>}
+              <span className="absolute bottom-2 left-2 rounded bg-media-scrim px-2 py-0.5 text-meta text-on-media">{tcom('falseColour')}</span>
             </div>
             {ep && (
               <div className="flex items-center gap-1 px-2 pt-1">
@@ -426,7 +428,7 @@ export function LabView({ id }: { id: string }) {
           <div id="lab-panel" role="tabpanel" aria-labelledby={`lab-tab-${tool}`} className="space-y-3 px-4 pt-3">
             {tool === 'date' && ep && (
               <>
-                <p className="text-body">{t('epochInfo', { date: formatShortDate(ep.iso, locale), release: ep.release.toUpperCase(), lam: ep.lam_um.toFixed(3) })}</p>
+                <p className="text-body">{t('epochInfo', { ra: ep.target_radec[0].toFixed(2), dec: ep.target_radec[1].toFixed(2), release: ep.release.toUpperCase(), lam: ep.lam_um.toFixed(3) })}</p>
                 <EpochGrid epochs={epochs} value={Math.min(epochIdx, epochs.length - 1)} onChange={setEpochIdx} photoHeight={PHOTO_HEIGHT[photo]} />
                 <p className="text-meta text-text-secondary">{t('pack', { n: epochs.length, bytes: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
                 <p className="text-meta text-text-secondary">{t('tools.dateHint')}</p>
