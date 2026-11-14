@@ -11,6 +11,7 @@ import type { FeedItem, SearchResult } from '@/lib/api/client'
 import { useFeed, useObjects, useSearch } from '@/lib/api/hooks'
 import { formatDec, formatRa } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
+import { useFmt } from '@/lib/use-fmt'
 
 function IconCode() {
   return (
@@ -36,6 +37,7 @@ function RowSkeleton() {
 }
 
 function ResultRow({ o, onOpen }: { o: Hit; onOpen: () => void }) {
+  const fmt = useFmt()
   const t = useTranslations('search')
   const tp = useTranslations('post')
   const kindKey = `kinds.${o.kind}`
@@ -51,7 +53,7 @@ function ResultRow({ o, onOpen }: { o: Hit; onOpen: () => void }) {
           </span>
           <span className="block truncate text-body text-text-secondary">
             {o.name} · {kind}
-            {o.separation_deg !== null && ` · ${t('separation', { deg: o.separation_deg.toFixed(2) })}`}
+            {o.separation_deg !== null && ` · ${t('separation', { deg: fmt.fixed(o.separation_deg, 2) })}`}
           </span>
         </span>
       </Link>
@@ -59,12 +61,13 @@ function ResultRow({ o, onOpen }: { o: Hit; onOpen: () => void }) {
   )
 }
 
-function SpotCard({ spot, onWatch }: { spot: Spot; onWatch: () => void }) {
+function SpotCard({ spot, onWatch, obj }: { spot: Spot; onWatch: () => void; obj: string | null }) {
+  const fmt = useFmt()
   const t = useTranslations('search')
   const ts = useTranslations('sky')
   const toast = useUi((s) => s.toast)
   const [manual, setManual] = useState<string | null>(null)
-  const href = skyHref({ ra: spot.ra, dec: spot.dec, name: spot.name })
+  const href = skyHref({ ra: spot.ra, dec: spot.dec, name: spot.name, obj })
   const sourceKey = `sources.${spot.source}`
   const source = t.has(sourceKey) ? t(sourceKey) : spot.source
   const coords = t('coordinates', { ra: formatRa(spot.ra), dec: formatDec(spot.dec) })
@@ -102,7 +105,7 @@ function SpotCard({ spot, onWatch }: { spot: Spot; onWatch: () => void }) {
       {spot.stale && (
         <div className="mt-3">
           <Notice tone="warning" icon={<IconWarning size={20} />}>
-            {spot.moved_arcsec !== null && spot.epoch !== null ? t('stale', { epoch: spot.epoch, moved: spot.moved_arcsec.toFixed(1) }) : t('staleUnknown')}
+            {spot.moved_arcsec !== null && spot.epoch !== null ? t('stale', { epoch: spot.epoch, moved: fmt.fixed(spot.moved_arcsec, 1) }) : t('staleUnknown')}
           </Notice>
         </div>
       )}
@@ -324,7 +327,7 @@ export default function SearchPage() {
           {data && !data.resolved && <EmptyState title={t('noResults', { q: data.query })} body={t('hint')} />}
           {data?.resolved && (
             <>
-              {data.spot && <SpotCard spot={data.spot} onWatch={remember} />}
+              {data.spot && <SpotCard spot={data.spot} onWatch={remember} obj={data.spot.source === 'kit' ? (data.objects[0]?.id ?? null) : null} />}
               {data.objects.length > 0 && (
                 <section aria-labelledby="results-title" className="pt-2">
                   <h2 id="results-title" className="px-4 pb-1 pt-2 text-title-sm font-semibold">

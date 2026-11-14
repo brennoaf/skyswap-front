@@ -1,5 +1,3 @@
-// Decodificador do formato de cache "sxq1" e do pacote de campo "sxqpack" (ver arch/cachefmt.py).
-// Sem dependencias alem de rice.js; "deflate" usa o DecompressionStream nativo do navegador.
 import { riceDecode32 } from './rice.js'
 
 export function mulberry32Fill(seed, n, out = new Float64Array(n)) {
@@ -33,7 +31,7 @@ async function decodeBlock(bytes, codec, n) {
 
 export async function decodeSxq(buf) {
   const u8 = new Uint8Array(buf)
-  if (String.fromCharCode(...u8.subarray(0, 4)) !== 'SXQ1') throw new Error('nao e SXQ1')
+  if (String.fromCharCode(...u8.subarray(0, 4)) !== 'SXQ1') throw new Error('not an SXQ1 file')
   const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength)
   const n = dv.getUint32(4, true)
   const head = JSON.parse(new TextDecoder().decode(u8.subarray(8, 8 + n)))
@@ -48,7 +46,6 @@ export async function decodeSxq(buf) {
       out.image = img
       out.ints = ints
     } else if (blk.name === 'variance') {
-      // sigma quantizado em log (passo relativo var_eps): var = exp(2 (q - 1 + lo) ln(1 + eps)); q = 0 -> NaN
       const v = new Float32Array(npx), l = Math.log1p(head.var_eps)
       for (let k = 0; k < npx; k++) v[k] = ints[k] === 0 ? NaN : Math.exp(2 * (ints[k] - 1 + head.var_lo) * l)
       out.variance = v
@@ -59,19 +56,17 @@ export async function decodeSxq(buf) {
 
 export function unpack(buf) {
   const u8 = new Uint8Array(buf), dv = new DataView(buf)
-  if (String.fromCharCode(...u8.subarray(0, 4)) !== 'SXQP') throw new Error('nao e SXQP')
+  if (String.fromCharCode(...u8.subarray(0, 4)) !== 'SXQP') throw new Error('not an SXQP pack')
   const n = dv.getUint32(4, true), parts = []
   for (let i = 0; i < n; i++) parts.push(u8.subarray(dv.getUint32(8 + 8 * i, true), dv.getUint32(8 + 8 * i, true) + dv.getUint32(12 + 8 * i, true)))
   return parts
 }
 
-// ---- codificador no navegador (rodada 2): guarda o RECORTE codificado (~4 KB) em vez das linhas do S3 (~510 KB)
 export async function deflate(bytes) {
   const cs = new CompressionStream('deflate')
   return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(cs)).arrayBuffer())
 }
 
-// sigma do ruido estimado da propria imagem (como o fpack): 1,4826 * mediana|x_i - x_{i+1}| / sqrt(2)
 export function noiseSigma(img, nx) {
   const d = []
   for (let k = 0; k + 1 < img.length; k++) if ((k + 1) % nx && Number.isFinite(img[k]) && Number.isFinite(img[k + 1])) d.push(Math.abs(img[k] - img[k + 1]))
@@ -89,7 +84,7 @@ export async function encodeSxq(img, ny, nx, meta, sigma = noiseSigma(img, nx), 
   for (let k = 0; k < m; k++) { sh[k] = u[4 * k]; sh[m + k] = u[4 * k + 1]; sh[2 * m + k] = u[4 * k + 2]; sh[3 * m + k] = u[4 * k + 3] }
   const blk = await deflate(sh)
   const head = new TextEncoder().encode(JSON.stringify({ ...meta, ny, nx, step, lo, seed: seed >>> 0, sigma_ref: sigma,
-    quant: 'sigma/4 dither=mulberry32 (sigma estimado no cliente)', blocks: [{ name: 'image', codec: 'deflate4', nbytes: blk.length }] }))
+    quant: 'sigma/4 dither=mulberry32 (sigma estimated on the client)', blocks: [{ name: 'image', codec: 'deflate4', nbytes: blk.length }] }))
   const out = new Uint8Array(8 + head.length + blk.length)
   out.set([83, 88, 81, 49]); new DataView(out.buffer).setUint32(4, head.length, true); out.set(head, 8); out.set(blk, 8 + head.length)
   return out

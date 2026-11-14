@@ -78,6 +78,16 @@ export function PostViewer({ id }: { id: string }) {
   const activeGroup = Math.max(0, groups.findLastIndex((g) => g <= player.index))
   const currentWave = (current && centre(current)) ?? range.min
 
+  const startedAt = useRef<string | null>(null)
+  const bestBand = profile?.best_bands[0]
+  const setIndex = player.setIndex
+  useEffect(() => {
+    if (!bestBand || !data || startedAt.current === data.post.id || filter !== 'original') return
+    startedAt.current = data.post.id
+    const first = frames.findIndex((f) => f.band === bestBand)
+    if (first > 0) setIndex(first)
+  }, [bestBand, data, frames, filter, setIndex])
+
   const setPlaying = player.setPlaying
   useEffect(() => {
     if (mode !== 'play') setPlaying(false)

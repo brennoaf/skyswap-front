@@ -8,7 +8,7 @@ import { LoginForm } from '@/components/shell/login-sheet'
 import { Onboarding } from '@/components/shell/onboarding'
 import { Button, Skeleton, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
-import { useHealth, useLogout, useMe, useSession, useSetExpert } from '@/lib/api/hooks'
+import { useHealth, useLogout, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
 import { useUi, type ThemePref } from '@/lib/state/ui'
 
@@ -25,25 +25,6 @@ function Section({ id, title, children }: { id: string; title?: string; children
       )}
       {children}
     </section>
-  )
-}
-
-function Switch({ checked, onChange, labelledBy, describedBy, disabled }: { checked: boolean; onChange: (v: boolean) => void; labelledBy: string; describedBy?: string; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-labelledby={labelledBy}
-      aria-describedby={describedBy}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className="relative inline-flex h-11 w-[60px] shrink-0 items-center justify-center disabled:opacity-50"
-    >
-      <span className={cx('relative h-[31px] w-[51px] rounded-full motion-safe:transition-colors', checked ? 'bg-accent' : 'bg-surface-pressed')}>
-        <span className={cx('absolute top-[2px] size-[27px] rounded-full bg-white shadow-[0_2px_6px_rgb(0_0_0/0.25)] motion-safe:transition-[left]', checked ? 'left-[22px]' : 'left-[2px]')} />
-      </span>
-    </button>
   )
 }
 
@@ -99,34 +80,6 @@ function Account() {
   )
 }
 
-function Expert() {
-  const t = useTranslations('settings')
-  const { data: user } = useSession()
-  const me = useMe(!!user)
-  const setExpert = useSetExpert()
-  const askLogin = useUi((s) => s.askLogin)
-  const checked = setExpert.isPending ? !!setExpert.variables : (me.data?.user.expert ?? user?.expert ?? false)
-  return (
-    <div className="flex items-center gap-3 px-4">
-      <div className="min-w-0 flex-1">
-        <h2 id="expert-label" className="text-ui font-semibold">
-          {t('expert')}
-        </h2>
-        <p id="expert-hint" className="mt-0.5 text-note text-text-secondary">
-          {t('expertHint')}
-        </p>
-      </div>
-      <Switch
-        checked={!!user && checked}
-        labelledBy="expert-label"
-        describedBy="expert-hint"
-        disabled={!!user && (me.isLoading || setExpert.isPending)}
-        onChange={(v) => (user ? setExpert.mutate(v) : askLogin('expert'))}
-      />
-    </div>
-  )
-}
-
 function Notes() {
   const t = useTranslations('settings')
   const { notes, reload } = usePrivateNotes()
@@ -164,10 +117,6 @@ export default function SettingsPage() {
           <IconCheck size={24} className="text-accent" />
         </div>
         <p className="px-4 text-note text-text-secondary">{t('languageHint')}</p>
-      </Section>
-
-      <Section id="s-expert">
-        <Expert />
       </Section>
 
       <Section id="s-notes" title={t('notes')}>

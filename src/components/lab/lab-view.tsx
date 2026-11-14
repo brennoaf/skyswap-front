@@ -3,19 +3,17 @@
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
-import { IconDownload, IconFlask, IconLayers, IconLock } from '@/components/icons'
+import { IconDownload, IconFlask, IconLayers } from '@/components/icons'
 import { Button, Chip, EmptyState, Notice, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
-import { useMe, useObject, useSession } from '@/lib/api/hooks'
-import { TOOL_UNLOCKS as UNLOCK, type LabTool as Tool } from '@/lib/levels'
-import { BAND_HUE, BANDS, cx, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
+import { useObject } from '@/lib/api/hooks'
+import { BAND_HUE, BANDS, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { download, labNotes, saveLabNote, type LabNote } from '@/lib/notes'
 import { decodeSxq, FLAG_LAYERS, flagNames, lambdaAt, makeWcs, measureStar, percentileOf, unpack, type Decoded, type Pack, type PackEpoch } from '@/lib/sky/lab'
 
 type LayerKey = 'target' | 'gaia' | 'wise' | 'saturation' | 'cosmic' | 'persistence' | 'satellite'
 
-const LAYER_TOOL: Record<LayerKey, Tool | null> = { target: null, gaia: 'gaia', wise: 'wise', saturation: 'flags', cosmic: 'flags', persistence: 'flags', satellite: 'flags' }
 const LAYER_COLOR: Record<LayerKey, string> = {
   target: 'var(--color-crosshair)',
   gaia: 'var(--color-layer-gaia)',
@@ -43,25 +41,6 @@ interface WiseSource {
   w1: number | null
   w2: number | null
   source: string
-}
-
-function Locked({ tool, children }: { tool: Tool; children: ReactNode }) {
-  const t = useTranslations('lab')
-  const tt = useTranslations('tools')
-  return (
-    <section className="rounded-2xl bg-surface p-3">
-      <h3 className="flex items-center gap-2 text-ui font-semibold">
-        {children}
-        <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-bg px-2 py-0.5 text-meta text-text-secondary">
-          <IconLock size={16} />
-          {t('locked')}
-        </span>
-      </h3>
-      <p className="mt-1 text-note text-text-secondary">
-        {tt(tool)} · {t('lockedHint', { n: UNLOCK[tool] })}
-      </p>
-    </section>
-  )
 }
 
 function useBand(pack: Pack | undefined, dir: string | null, band: string) {
@@ -103,18 +82,13 @@ export function LabView({ id }: { id: string }) {
   const tl = useTranslations('lab.layerItems')
   const tcom = useTranslations('common')
   const { data: profile } = useObject(id)
-  const { data: user } = useSession()
-  const { data: me } = useMe(!!user)
   const pack = useKitJson<Pack>(profile?.pack)
   const gaia = useKitJson<GaiaStar[]>(profile?.overlays.gaia)
   const wise = useKitJson<WiseSource[]>(profile?.overlays.wise)
   const spectra = useKitJson<SpectraData>(profile?.measurements.spectra)
   const dir = profile?.pack ? profile.pack.replace(/pack\.json$/, '') : null
-  const level = me?.level.level ?? 1
-  const expert = me?.user.expert ?? false
-  const has = useCallback((tool: Tool) => expert || UNLOCK[tool] <= level, [expert, level])
 
-  const [band, setBand] = useState<string>('D1')
+  const [band, setBand] = useState<string>('')
   const [epochIdx, setEpochIdx] = useState(0)
   const [decoded, setDecoded] = useState<Decoded | null>(null)
   const [zoom, setZoom] = useState(1)
@@ -132,8 +106,10 @@ export function LabView({ id }: { id: string }) {
   const wcs = useMemo(() => (ep ? makeWcs({ wcs: ep.wcs, sip: ep.sip }) : null), [ep])
 
   useEffect(() => {
-    if (pack.data && !pack.data.bands[band]) setBand(BANDS.find((b) => pack.data?.bands[b]) ?? 'D1')
-  }, [pack.data, band])
+    if (!pack.data || (band && pack.data.bands[band])) return
+    const best = profile?.best_bands.find((b) => pack.data?.bands[b])
+    setBand(best ?? BANDS.find((b) => pack.data?.bands[b]) ?? 'D1')
+  }, [pack.data, band, profile])
 
   useEffect(() => {
     let alive = true
@@ -247,15 +223,6 @@ export function LabView({ id }: { id: string }) {
     <main className="pb-8">
       <TopBar
         title={t('title')}
-        actions={
-          expert ? (
-            <span className="mr-3 rounded-full bg-accent/15 px-2 py-0.5 text-meta font-semibold text-accent">{t('expertOn')}</span>
-          ) : Object.values(UNLOCK).some((n) => n > level) ? (
-            <Link href="/settings" className="mr-3 text-note font-semibold text-accent">
-              {t('lockedCount', { n: Object.values(UNLOCK).filter((n) => n > level).length })}
-            </Link>
-          ) : null
-        }
       />
       <Link href={`/o/${profile.id}`} className="flex items-center gap-3 px-4 pb-3">
         <ObjectAvatar src={profile.avatar} alt="" size={44} />
@@ -304,21 +271,21 @@ export function LabView({ id }: { id: string }) {
                   const r = e.currentTarget.getBoundingClientRect()
                   setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
                 }}
-                onWheel={(e) => has('fov') && setZoom((z) => Math.min(8, Math.max(1, z * (e.deltaY < 0 ? 1.2 : 1 / 1.2))))}
+                onWheel={(e) => setZoom((z) => Math.min(8, Math.max(1, z * (e.deltaY < 0 ? 1.2 : 1 / 1.2))))}
                 aria-label={t('pixelHint')}
               />
               {flagPixels.map((p, i) => (
                 <span key={i} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ ...toPct(p.x, p.y), width: `${100 / (ep?.nx ?? 1)}%`, height: `${100 / (ep?.ny ?? 1)}%`, background: LAYER_COLOR[p.k] }} />
               ))}
               <svg className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${ep?.nx ?? 1} ${ep?.ny ?? 1}`} preserveAspectRatio="none" aria-hidden="true">
-                {layers.gaia && has('gaia') &&
+                {layers.gaia &&
                   gaiaMarks.map((s) => (
                     <g key={s.id} stroke={LAYER_COLOR.gaia} strokeWidth={0.18} fill="none">
                       <circle cx={s.x + 0.5} cy={s.y + 0.5} r={Math.max(0.5, 2.2 - s.g / 10)} />
                       <line x1={s.x + 0.5} y1={s.y + 0.5} x2={s.x2 + 0.5} y2={s.y2 + 0.5} />
                     </g>
                   ))}
-                {layers.wise && has('wise') &&
+                {layers.wise &&
                   wiseMarks.map((s) => (
                     <path key={s.i} d={`M${s.xy[0]} ${s.xy[1]}l1 1M${s.xy[0] + 1} ${s.xy[1]}l-1 1`} stroke={LAYER_COLOR.wise} strokeWidth={0.18} />
                   ))}
@@ -346,8 +313,7 @@ export function LabView({ id }: { id: string }) {
           )}
 
           <div className="space-y-3 px-4">
-            {has('fov') ? (
-              <section className="rounded-2xl bg-surface p-3">
+                          <section className="rounded-2xl bg-surface p-3">
                 <h3 className="text-ui font-semibold">{t('zoom')}</h3>
                 <div className="mt-2 flex items-center gap-2">
                   {[1, 2, 4, 8].map((z) => (
@@ -359,9 +325,7 @@ export function LabView({ id }: { id: string }) {
                 </div>
                 <p className="mt-2 text-meta text-text-secondary">{t('zoomHint', { size: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
               </section>
-            ) : (
-              <Locked tool="fov">{t('zoom')}</Locked>
-            )}
+            
 
             <section className="rounded-2xl bg-surface p-3">
               <h3 className="flex items-center gap-2 text-ui font-semibold">
@@ -370,12 +334,10 @@ export function LabView({ id }: { id: string }) {
               </h3>
               <ul className="mt-2 space-y-1">
                 {(Object.keys(layers) as LayerKey[]).map((k) => {
-                  const tool = LAYER_TOOL[k]
-                  const ok = !tool || has(tool)
                   return (
                     <li key={k}>
-                      <label className={cx('flex min-h-11 items-center gap-3', !ok && 'opacity-45')}>
-                        <input type="checkbox" checked={layers[k] && ok} disabled={!ok} onChange={(e) => setLayers((l) => ({ ...l, [k]: e.target.checked }))} className="size-5 accent-[var(--color-accent)]" />
+                      <label className="flex min-h-11 items-center gap-3">
+                        <input type="checkbox" checked={layers[k]} onChange={(e) => setLayers((l) => ({ ...l, [k]: e.target.checked }))} className="size-5 accent-[var(--color-accent)]" />
                         <span className="size-3 rounded-full" style={{ background: LAYER_COLOR[k] }} />
                         <span className="flex-1 text-body">
                           {tl(k)}
@@ -383,7 +345,6 @@ export function LabView({ id }: { id: string }) {
                           {k === 'gaia' && gaia.data && <span className="text-meta text-text-secondary"> · {gaiaMarks.length}</span>}
                           {k === 'wise' && wise.data && <span className="text-meta text-text-secondary"> · {wiseMarks.length}</span>}
                         </span>
-                        {!ok && tool && <span className="text-meta text-text-secondary">{t('lockedHint', { n: UNLOCK[tool] })}</span>}
                       </label>
                     </li>
                   )
@@ -391,8 +352,7 @@ export function LabView({ id }: { id: string }) {
               </ul>
             </section>
 
-            {has('pixels') ? (
-              <section className="rounded-2xl bg-surface p-3" aria-live="polite">
+                          <section className="rounded-2xl bg-surface p-3" aria-live="polite">
                 <h3 className="text-ui font-semibold">{t('pixel')}</h3>
                 {readout ? (
                   <dl className="mt-1 space-y-0.5 font-mono text-note">
@@ -409,14 +369,11 @@ export function LabView({ id }: { id: string }) {
                   <p className="mt-1 text-note text-text-secondary">{t('pixelHint')}</p>
                 )}
               </section>
-            ) : (
-              <Locked tool="pixels">{t('pixel')}</Locked>
-            )}
+            
 
             <QrWarning />
 
-            {has('spectrum') ? (
-              <section className="rounded-2xl bg-surface p-3">
+                          <section className="rounded-2xl bg-surface p-3">
                 <h3 className="text-ui font-semibold">{t('spectrum')}</h3>
                 {spectra.data && <SpectrumChart data={spectra.data} />}
                 <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -428,23 +385,17 @@ export function LabView({ id }: { id: string }) {
                   <SpectrumChart data={{ passes: [{ pass: 0, t: live.points[0]?.iso ?? '', points: live.points.map((p) => ({ wavelength_um: p.lam, flux_mjy: p.flux, err: p.err, saturated: false })) }] }} />
                 )}
               </section>
-            ) : (
-              <Locked tool="spectrum">{t('spectrum')}</Locked>
-            )}
+            
 
-            {has('lightcurve') ? (
-              profile.measurements.lightcurve && (
+            {profile.measurements.lightcurve && (
                 <section className="rounded-2xl bg-surface p-3">
                   <h3 className="text-ui font-semibold">{t('lightcurve')}</h3>
                   <KitChart kind="lightcurve" url={profile.measurements.lightcurve} />
                 </section>
-              )
-            ) : (
-              <Locked tool="lightcurve">{t('lightcurve')}</Locked>
-            )}
+              )}
+            
 
-            {has('notes') ? (
-              <section className="rounded-2xl bg-surface p-3">
+                          <section className="rounded-2xl bg-surface p-3">
                 <h3 className="text-ui font-semibold">{t('notes')}</h3>
                 <p className="mt-1 text-meta text-text-secondary">
                   {t('noteFields', {
@@ -505,12 +456,9 @@ export function LabView({ id }: { id: string }) {
                   ))}
                 </ul>
               </section>
-            ) : (
-              <Locked tool="notes">{t('notes')}</Locked>
-            )}
+            
 
-            {has('export') ? (
-              <section className="rounded-2xl bg-surface p-3">
+                          <section className="rounded-2xl bg-surface p-3">
                 <h3 className="text-ui font-semibold">{t('export')}</h3>
                 <div className="mt-2 flex gap-2">
                   <Button onClick={csv} disabled={!spectra.data && !live?.points.length}>
@@ -523,9 +471,7 @@ export function LabView({ id }: { id: string }) {
                   </Button>
                 </div>
               </section>
-            ) : (
-              <Locked tool="export">{t('export')}</Locked>
-            )}
+            
 
             <Notice>{t('sources')}</Notice>
           </div>

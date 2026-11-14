@@ -1,9 +1,6 @@
-// Nucleos WebGPU (compute) para bilinear e adaptativo. O mapa de coordenadas vem da CPU (f64 -> f32 local).
-// WGSL nao garante semantica de NaN: a validade de cada pixel de entrada vai num buffer u32 separado e a saida invalida
-// e marcada num buffer de validade (o JS converte para NaN). Mesma regra de bordas/NaN de arch/sci/reproject.js.
 const WG = 64
 
-const BILINEAR = /* wgsl */`
+const BILINEAR = `
 struct P { sw: u32, sh: u32, n: u32, pad: u32 }
 @group(0) @binding(0) var<storage, read> src: array<f32>;
 @group(0) @binding(1) var<storage, read> ok: array<u32>;
@@ -26,7 +23,7 @@ struct P { sw: u32, sh: u32, n: u32, pad: u32 }
   outok[k] = 1u;
 }`
 
-const ADAPTIVE = /* wgsl */`
+const ADAPTIVE = `
 struct P { sw: u32, sh: u32, n: u32, conserve: u32, kw: f32, region: f32, pad0: f32, pad1: f32 }
 @group(0) @binding(0) var<storage, read> src: array<f32>;
 @group(0) @binding(1) var<storage, read> ok: array<u32>;
@@ -77,9 +74,9 @@ fn P2(j: u32, i: u32, c: u32) -> f32 { let m = p.n + 2u; return map[2u * (j * m 
 }`
 
 export async function createGpu() {
-  if (!globalThis.navigator?.gpu) throw new Error('WebGPU indisponivel neste navegador')
+  if (!globalThis.navigator?.gpu) throw new Error('WebGPU is not available in this browser')
   const adapter = await navigator.gpu.requestAdapter()
-  if (!adapter) throw new Error('sem adaptador WebGPU')
+  if (!adapter) throw new Error('no WebGPU adapter')
   const device = await adapter.requestDevice()
   const mk = code => device.createComputePipeline({ layout: 'auto', compute: { module: device.createShaderModule({ code }), entryPoint: 'main' } })
   const pipes = { bilinear: mk(BILINEAR), adaptive: mk(ADAPTIVE) }

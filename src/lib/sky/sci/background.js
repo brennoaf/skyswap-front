@@ -1,8 +1,3 @@
-// Fundo suave (zodiacal residual + luz espalhada), aproximacao do photutils Background2D usado no pipeline:
-// caixas de `box` px (24 por padrao, menor em recortes pequenos como no pipeline), mediana com sigma-clip 3,
-// caixas com menos de 50% de pixels validos sao descartadas (exclude_percentile = 50) e preenchidas pela mediana
-// global, filtro de mediana 3x3 na malha e interpolacao BILINEAR entre centros de caixa (o photutils usa spline
-// cubica -- a diferenca e medida em arch/results/round3/background_vs_photutils.json).
 import { sigmaClippedStats } from './phot.js'
 
 export function background(img, mask, w, h) {
@@ -23,7 +18,6 @@ export function background(img, mask, w, h) {
     if (vals.length >= 0.5 * tot) grid[by * nbx + bx] = sigmaClippedStats(vals, 3)[1]
   }
   for (let k = 0; k < grid.length; k++) if (!Number.isFinite(grid[k])) grid[k] = global
-  // filtro de mediana 3x3
   const filt = new Float64Array(grid.length)
   for (let by = 0; by < nby; by++) for (let bx = 0; bx < nbx; bx++) {
     const v = []
@@ -34,7 +28,6 @@ export function background(img, mask, w, h) {
     v.sort((a, b) => a - b)
     filt[by * nbx + bx] = v[4]
   }
-  // interpolacao bilinear entre centros das caixas
   const out = new Float32Array(w * h)
   for (let y = 0; y < h; y++) {
     const gy = Math.min(nby - 1, Math.max(0, (y + 0.5) / box - 0.5)), y0 = Math.min(nby - 2, Math.floor(gy)), ty = nby > 1 ? gy - Math.max(0, y0) : 0

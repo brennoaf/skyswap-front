@@ -158,17 +158,6 @@ export function useMe(enabled = true) {
   return useQuery({ queryKey: keys.me, enabled, queryFn: async () => unwrap(await api.GET('/api/me')) })
 }
 
-export function useSetExpert() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (expert: boolean) => unwrap(await api.PATCH('/api/me', { body: { expert } })),
-    onSuccess: (me) => {
-      qc.setQueryData(keys.me, me)
-      qc.invalidateQueries({ queryKey: keys.session })
-    },
-  })
-}
-
 export function useAlerts(enabled = true) {
   return useQuery({ queryKey: keys.alerts, enabled, queryFn: async () => unwrap(await api.GET('/api/alerts')), refetchInterval: 60_000 })
 }

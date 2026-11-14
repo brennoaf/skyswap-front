@@ -159,7 +159,7 @@
     },
     "menu": {
       "lab": "Open in Lab",
-      "labHint": "Expert tools: pixels, layers, spectra",
+      "labHint": "Pixels, layers, spectra, light curves",
       "compare": "Compare dates",
       "mark": "Mark the moving dot",
       "copyLink": "Copy link",
@@ -202,8 +202,7 @@
       "follow": "Pick a nickname to follow objects.",
       "classify": "Pick a nickname to classify candidates.",
       "me": "Pick a nickname to keep your progress.",
-      "alerts": "Pick a nickname to get alerts.",
-      "expert": "Pick a nickname to switch on expert mode."
+      "alerts": "Pick a nickname to get alerts."
     }
   },
   "xp": {
@@ -252,17 +251,6 @@
     "tracker": "Tracker",
     "analyst": "Analyst",
     "researcher": "Researcher"
-  },
-  "tools": {
-    "fov": "Field of view zoom",
-    "gaia": "Gaia stars layer",
-    "wise": "WISE positions layer",
-    "flags": "Quality flags layer",
-    "pixels": "Pixel values and exact wavelength",
-    "spectrum": "Spectrum with error bars",
-    "lightcurve": "Light curve",
-    "notes": "Structured notes",
-    "export": "Export CSV / JSON"
   },
   "object": {
     "badges": {
@@ -507,8 +495,6 @@
     "none": "No SPHEREx images cover this spot yet.",
     "fov": "Field of view",
     "fovValue": "{arcmin}′ wide",
-    "dataSize": "About {size} to download",
-    "dataSizeWarning": "Bigger fields need more data. This one is about {size}.",
     "band": "Colour",
     "allBands": "All",
     "start": "Build the time-lapse",
@@ -544,7 +530,11 @@
     "moreImages": "{n, plural, one {# more image} other {# more images}}",
     "rebuild": "Build again",
     "noFrames": "None of the images could be read for this spot.",
-    "coordinates": "RA {ra} · Dec {dec}"
+    "coordinates": "RA {ra} · Dec {dec}",
+    "willRead": "Up to {n, plural, one {# image} other {# images}} will be read from NASA when you build it.",
+    "bigField": "Bigger fields read more data from NASA ({n, plural, one {# image} other {# images}}). It may take a while on slow connections.",
+    "downloaded": "Downloaded {size} from NASA for this time-lapse.",
+    "crosshairMoving": "The crosshair follows the object to where it was on each date (catalogue motion)."
   },
   "classify": {
     "title": "Classify",
@@ -622,9 +612,6 @@
     "maxLevel": "Top level reached",
     "streak": "{n, plural, one {# day} other {# days}} in a row",
     "today": "{xp} XP today (daily limit {cap})",
-    "unlocks": "Lab tools",
-    "unlockedAt": "Unlocks at level {n}",
-    "expertAll": "Expert mode: every tool unlocked",
     "badges": "Badges",
     "history": "History",
     "notes": "Notes",
@@ -667,7 +654,6 @@
     "statusInconclusive": "community: undecided",
     "progress": "Progress to the next level",
     "levelBadge": "Level {n}",
-    "unlocked": "Unlocked",
     "earnedOn": "Earned on {date}",
     "classify": "Classify",
     "noteUntitled": "Untitled post",
@@ -675,17 +661,13 @@
   },
   "lab": {
     "title": "Lab",
-    "subtitle": "Expert tools for {name}",
-    "locked": "Locked",
-    "lockedCount": "{n, plural, one {# tool locked} other {# tools locked}}",
-    "lockedHint": "Reach level {n}, or switch on Expert mode in Settings.",
-    "expertOn": "Expert mode on",
+    "subtitle": "Science tools for {name}",
     "band": "Colour",
     "epoch": "Exposure",
     "epochInfo": "{date} · {release} · {lam} µm",
     "fov": "Field of view",
     "zoom": "Zoom",
-    "zoomHint": "Pinch, scroll or use the buttons. Bigger fields need more data: this band is {size}.",
+    "zoomHint": "Pinch, scroll or use the buttons. This colour’s pack is {size}.",
     "layers": "Layers",
     "layerItems": {
       "gaia": "Gaia DR3 stars (arrows: 10-year motion)",
@@ -742,7 +724,7 @@
       "new_data": "{name} has new SPHEREx data from {date}.",
       "consensus": "A candidate you voted on reached a decision: {status}.",
       "badge": "You earned the badge “{badge}”.",
-      "level": "You reached level {level}: {name}. New Lab tools unlocked.",
+      "level": "You reached level {level}: {name}.",
       "goal": "The community reached its goal: {target} {goal} this month!"
     }
   },
@@ -759,8 +741,6 @@
     },
     "language": "Language",
     "languageHint": "More languages can be added as files in messages/.",
-    "expert": "Expert mode",
-    "expertHint": "Unlocks every Lab tool right away. For people who already work with astronomical data.",
     "tutorial": "Replay the tutorial",
     "notes": "Private notes",
     "notesHint": "Your notes live only in this browser.",
@@ -770,6 +750,6 @@
     "api": "API docs",
     "languageName": "English",
     "notesCount": "{n, plural, =0 {No notes saved} one {# note saved} other {# notes saved}}",
-    "loggedOut": "Pick a nickname to keep your progress and switch on Expert mode."
+    "loggedOut": "Pick a nickname to keep your progress."
   }
 }

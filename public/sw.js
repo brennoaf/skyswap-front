@@ -1,5 +1,3 @@
-// Service worker da PoC (rodada 2): cache-first para o indice, o cache sxq e as leituras Range do S3.
-// A Cache API nao aceita respostas 206: guardamos o corpo como 200 numa chave sintetica (URL + faixa) e devolvemos 206.
 const VERSION = 'kit-2026.10.29-1'
 const S3_HOSTS = ['nasa-irsa-spherex.s3.amazonaws.com', 'nasa-irsa-spherex.s3.us-east-1.amazonaws.com',
   's3.us-east-1.amazonaws.com', 's3.amazonaws.com', 'nasa-irsa-spherex.s3.dualstack.us-east-1.amazonaws.com']
@@ -33,7 +31,6 @@ async function cacheFirst(req) {
 
 async function s3Range(req, range) {
   const c = await caches.open(VERSION)
-  // a chave ignora o hostname: o mesmo objeto via qualquer endpoint compartilha o cache
   const path = new URL(req.url).pathname.replace(/^\/nasa-irsa-spherex\//, '/')
   const key = new Request(`${location.origin}/__s3cache${path}?r=${encodeURIComponent(range)}`)
   const hit = await c.match(key)

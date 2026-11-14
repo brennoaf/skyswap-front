@@ -1,12 +1,5 @@
-// Decodificador RICE_1 (formato do cfitsio fits_rcomp / fits_rdecomp), pixels de 32 bits, em JS puro.
-// Porte direto do algoritmo de ricecomp.c (CFITSIO, dominio publico/NASA). Usado para:
-//   - o FLAGS do QR3 (compressao em ladrilhos, um ladrilho por linha, BYTEPIX=4, BLOCKSIZE=32);
-//   - recortes de ciencia quantizados codificados com RICE (imagecodecs.rcomp_encode).
-// Devolve quantos bytes consumiu: como cada ladrilho termina alinhado em byte, linhas consecutivas do heap podem ser
-// decodificadas em sequencia SEM a tabela de descritores (ver arch/results/round2/rice_*.json).
-
 const NONZERO = new Uint8Array(256)
-for (let b = 1; b < 256; b++) NONZERO[b] = 32 - Math.clz32(b) // bits necessarios para representar b
+for (let b = 1; b < 256; b++) NONZERO[b] = 32 - Math.clz32(b)
 
 export function riceDecode32(src, offset, nx, nblock, out, outOffset = 0) {
   const fsbits = 5, fsmax = 25, bbits = 32
@@ -52,7 +45,6 @@ export function riceDecode32(src, offset, nx, nblock, out, outOffset = 0) {
   return c - offset
 }
 
-// Linhas [0, nrows) de um trecho de heap que comeca exatamente no inicio de uma linha (sem descritores).
 export function riceDecodeRows(heap, nrows, nx, nblock = 32) {
   const out = new Int32Array(nrows * nx)
   let off = 0

@@ -7,10 +7,11 @@ import { Crosshair } from '@/components/feed/post-media'
 import { skyHref } from '@/components/feed/spot-sheet'
 import { IconCrosshair, IconPause, IconPlay, IconStepBack, IconStepForward, IconWarning } from '@/components/icons'
 import { Button, Chip, EmptyState, IconButton, Notice, ObjectAvatar, Skeleton } from '@/components/ui/primitives'
+import { QrWarning } from '@/components/charts/charts'
 import type { SkyResult } from '@/lib/api/client'
-import { useSky } from '@/lib/api/hooks'
+import { useObject, useSky } from '@/lib/api/hooks'
 import { BAND_HUE, BANDS, cssColor, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
-import { parseFitsImage, percentile, skyMovie, stretch } from '@/lib/sky'
+import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch } from '@/lib/sky'
 import { useUi } from '@/lib/state/ui'
 
 export const FOVS = [0.05, 0.1, 0.25, 0.5] as const
@@ -22,7 +23,9 @@ type ViewFrame = { key: string; img: Float32Array; w: number; h: number; mjd: nu
 type Colormap = 'grey' | 'band'
 type Status = 'idle' | 'building' | 'ready' | 'error'
 
-export type SkyParams = { ra: number; dec: number; fov: number; band: string | null; name: string | null }
+export type SkyParams = { ra: number; dec: number; fov: number; band: string | null; name: string | null; obj: string | null }
+
+export type SkyTarget = { ra: number; dec: number; epoch: number; pmra: number; pmdec: number }
 
 const mjdToMs = (mjd: number) => (mjd - 40587) * 86400000
 
@@ -77,13 +80,14 @@ function FrameCanvas({ frame, colormap, label }: { frame: ViewFrame; colormap: C
   return <canvas ref={ref} role="img" aria-label={label} className="pixelated absolute inset-0 size-full object-contain" />
 }
 
-function useBuilder(sky: SkyResult, p: SkyParams) {
+function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
   const [frames, setFrames] = useState<ViewFrame[]>([])
   const [status, setStatus] = useState<Status>('idle')
   const [errorKey, setErrorKey] = useState<'failed' | 'noFrames' | 'cutoutsFailed'>('failed')
   const [done, setDone] = useState(0)
   const [latest, setLatest] = useState<string | null>(null)
   const [ms, setMs] = useState<number | null>(null)
+  const [bytes, setBytes] = useState<number | null>(null)
   const alive = useRef(true)
   useEffect(() => {
     alive.current = true
@@ -117,6 +121,7 @@ function useBuilder(sky: SkyResult, p: SkyParams) {
     setDone(0)
     setLatest(null)
     setMs(null)
+    setBytes(null)
     setStatus('building')
     const t0 = performance.now()
     let count = 0
@@ -124,6 +129,7 @@ function useBuilder(sky: SkyResult, p: SkyParams) {
       const picks = spread([...sky.images].sort((a, b) => a.mjd - b.mjd), CUTOUTS)
       const size = Math.min(0.25, p.fov)
       let next = 0
+      let read = 0
       const worker = async () => {
         while (next < picks.length && alive.current) {
           const im = picks[next++]
@@ -132,7 +138,9 @@ function useBuilder(sky: SkyResult, p: SkyParams) {
             const q = new URLSearchParams({ key: im.key, ra: String(p.ra), dec: String(p.dec), size: String(size) })
             const r = await fetch(`/api/cutout?${q}`)
             if (!r.ok) throw new Error(String(r.status))
-            const fits = parseFitsImage(await r.arrayBuffer(), 'IMAGE')
+            const buf = await r.arrayBuffer()
+            read += buf.byteLength
+            const fits = parseFitsImage(buf, 'IMAGE')
             count++
             add(toFrame(im.key, fits.data, fits.nx, fits.ny, im.mjd, im.band, im.release))
           } catch {
@@ -141,13 +149,15 @@ function useBuilder(sky: SkyResult, p: SkyParams) {
         }
       }
       await Promise.all([worker(), worker()])
+      if (alive.current) setBytes(read)
       finish(count, t0, 'cutoutsFailed')
       return
     }
     try {
-      await skyMovie({
+      const result = await skyMovie({
         ra: p.ra,
         dec: p.dec,
+        target,
         fovDeg: p.fov,
         indexBase: INDEX_BASE,
         maxEpochs,
@@ -159,6 +169,7 @@ function useBuilder(sky: SkyResult, p: SkyParams) {
           add(toFrame(f.h.key, f.img, n, n, f.h.mjd, f.h.band, f.h.release))
         },
       })
+      if (alive.current) setBytes(result.bytes)
       finish(count, t0, 'noFrames')
     } catch {
       if (!alive.current) return
@@ -168,19 +179,20 @@ function useBuilder(sky: SkyResult, p: SkyParams) {
         setStatus('error')
       }
     }
-  }, [sky, p.ra, p.dec, p.fov, p.band, maxEpochs, add, finish])
+  }, [sky, p.ra, p.dec, p.fov, p.band, maxEpochs, add, finish, target])
 
-  return { frames, status, errorKey, done, total, latest, ms, start }
+  return { frames, status, errorKey, done, total, latest, ms, bytes, start }
 }
 
-function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; compact: boolean }) {
+function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyParams; compact: boolean; target: SkyTarget | null }) {
   const locale = useLocale()
   const t = useTranslations('sky')
   const tc = useTranslations('common')
   const crosshair = useUi((s) => s.crosshair)
   const setCrosshair = useUi((s) => s.setCrosshair)
   const speed = useUi((s) => s.speed)
-  const b = useBuilder(sky, params)
+  const b = useBuilder(sky, params, target)
+  const grid = useMemo(() => referenceGrid(params.ra, params.dec, params.fov), [params.ra, params.dec, params.fov])
   const [cur, setCur] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [colormap, setColormap] = useState<Colormap>('grey')
@@ -234,7 +246,7 @@ function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; c
       data-frames={n}
     >
       {frame && <FrameCanvas frame={frame} colormap={colormap} label={t('frameAlt', { band: frame.band, date })} />}
-      {frame && crosshair && <Crosshair x={0.5} y={0.5} />}
+      {frame && crosshair && <TargetCrosshair frame={frame} target={target} grid={grid} />}
       {frame && (
         <>
           <span className="absolute left-2 top-2 rounded-md bg-black/60 px-2 py-1 text-meta font-medium">{date}</span>
@@ -338,7 +350,13 @@ function Player({ sky, params, compact }: { sky: SkyResult; params: SkyParams; c
           )}
         </div>
       )}
-      {crosshair && n > 0 && <p className="px-4 pt-1 text-meta text-text-secondary">{t('crosshairCentre')}</p>}
+      {crosshair && n > 0 && <p className="px-4 pt-1 text-meta text-text-secondary">{target ? t('crosshairMoving') : t('crosshairCentre')}</p>}
+      {b.status === 'ready' && b.bytes !== null && <p className="px-4 pt-1 text-meta text-text-secondary">{t('downloaded', { size: formatBytes(b.bytes) })}</p>}
+      {new Set(b.frames.map((f) => f.release)).size > 1 && (
+        <div className="px-4 pt-2">
+          <QrWarning />
+        </div>
+      )}
       {b.status === 'ready' && <p className="sr-only" role="status">{t('built', { n })}</p>}
     </div>
   )
@@ -368,26 +386,37 @@ function SiaList({ sky }: { sky: SkyResult }) {
 
 function DataSize({ sky, fov }: { sky: SkyResult; fov: number }) {
   const t = useTranslations('sky')
-  const used = Math.min(48, sky.total)
-  if (sky.source !== 'fragment' || !used) return null
-  const bytes = (sky.estimated_bytes / used) * Math.min(maxEpochsFor(fov), sky.total)
-  const size = formatBytes(bytes)
+  const n = sky.source === 'sia' ? Math.min(CUTOUTS, sky.images.length) : Math.min(maxEpochsFor(fov), sky.total)
+  if (!n) return null
   return fov >= 0.25 ? (
     <div className="px-4 pt-2">
       <Notice tone="warning" icon={<IconWarning size={20} />}>
-        {t('dataSizeWarning', { size })}
+        {t('bigField', { n })}
       </Notice>
     </div>
   ) : (
-    <p className="px-4 pt-2 text-note text-text-secondary">{t('dataSize', { size })}</p>
+    <p className="px-4 pt-2 text-note text-text-secondary">{t('willRead', { n })}</p>
   )
+}
+
+function TargetCrosshair({ frame, target, grid }: { frame: ViewFrame; target: SkyTarget | null; grid: ReturnType<typeof referenceGrid> }) {
+  if (!target) return <Crosshair x={0.5} y={0.5} />
+  const [tra, tdec] = propagate(target, frame.mjd)
+  const [gx, gy] = grid.wcs.world2pix(tra, tdec)
+  return <Crosshair x={(gx + 0.5) / grid.n} y={1 - (gy + 0.5) / grid.n} />
 }
 
 export function SkyViewer({ params, compact = false, onChange }: { params: SkyParams; compact?: boolean; onChange?: (next: Partial<SkyParams>) => void }) {
   const t = useTranslations('sky')
   const tc = useTranslations('common')
-  const { ra, dec, fov, band, name } = params
+  const { ra, dec, fov, band, name, obj } = params
   const sky = useSky(ra, dec, fov, band)
+  const { data: object } = useObject(obj ?? '')
+  const target = useMemo<SkyTarget | null>(() => {
+    if (!object || object.pm_ra_cosdec === null || object.pm_dec === null) return null
+    const epoch = Number(/([0-9]{4}(?:\.[0-9]+)?)/.exec(object.epoch)?.[1] ?? 2016)
+    return { ra: object.ra, dec: object.dec, epoch, pmra: object.pm_ra_cosdec, pmdec: object.pm_dec }
+  }, [object])
   const playerKey = `${ra}|${dec}|${fov}|${band ?? 'all'}`
   const allCount = useMemo(() => Object.values(sky.data?.bands ?? {}).reduce((s, v) => s + v, 0), [sky.data?.bands])
 
@@ -408,7 +437,7 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
 
   if (compact) {
     if (d.source === 'none') return <EmptyState title={t('none')} />
-    return <Player key={playerKey} sky={d} params={params} compact />
+    return <Player key={`${playerKey}|${target ? 'pm' : 'fixed'}`} sky={d} params={params} target={target} compact />
   }
 
   return (
@@ -437,7 +466,7 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
         </div>
       )}
 
-      {d.source === 'none' ? <EmptyState title={t('none')} /> : <Player key={playerKey} sky={d} params={params} compact={false} />}
+      {d.source === 'none' ? <EmptyState title={t('none')} /> : <Player key={`${playerKey}|${target ? 'pm' : 'fixed'}`} sky={d} params={params} target={target} compact={false} />}
 
       <section className="pt-4">
         <h2 className="px-4 text-ui font-semibold">{t('fov')}</h2>
@@ -497,7 +526,8 @@ export function parseSkyParams(sp: URLSearchParams): SkyParams | null {
   const b = sp.get('band')
   const band = b && (BANDS as readonly string[]).includes(b) ? b : null
   const name = sp.get('name')?.trim() || null
-  return { ra, dec, fov, band, name }
+  const obj = sp.get('obj')?.trim() || null
+  return { ra, dec, fov, band, name, obj }
 }
 
 export function skyTitle(p: SkyParams) {

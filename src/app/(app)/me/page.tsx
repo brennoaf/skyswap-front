@@ -3,16 +3,15 @@
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { IconFollow, IconHighlight, IconNote, IconSave, IconSettings, IconSparkle, IconStar } from '@/components/icons'
+import { IconFollow, IconHighlight, IconNote, IconSave, IconSettings, IconStar } from '@/components/icons'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
-import { BadgeDetail, BadgeGrid, BadgeHighlights, FollowingList, GoalsCard, HistoryList, LabToolsStrip, LevelRing, ProgressBar, SavedGrid, useAgo } from '@/components/me/profile-parts'
+import { BadgeDetail, BadgeGrid, BadgeHighlights, FollowingList, GoalsCard, HistoryList, LevelRing, ProgressBar, SavedGrid, useAgo } from '@/components/me/profile-parts'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Button, EmptyState, IconTabs, Notice, Sheet, Skeleton, Stat, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { ApiError, type Me } from '@/lib/api/client'
 import { useMe, useSession } from '@/lib/api/hooks'
 import { formatNumber } from '@/lib/format'
-import { DAILY_XP_CAP } from '@/lib/levels'
 import { useUi } from '@/lib/state/ui'
 
 type Tab = 'history' | 'badges' | 'notes' | 'saved' | 'following'
@@ -140,7 +139,7 @@ function Profile({ me }: { me: Me }) {
             {next && me.level.next_min_xp !== null ? t('toNext', { xp: formatNumber(me.level.next_min_xp - me.xp, locale), name: tl(next.key) }) : t('maxLevel')}
           </p>
           {me.streak > 0 && <p className="mt-0.5">{t('streak', { n: me.streak })}</p>}
-          <p className="mt-0.5 text-text-secondary">{t('today', { xp: me.xp_today, cap: DAILY_XP_CAP })}</p>
+          <p className="mt-0.5 text-text-secondary">{t('today', { xp: me.xp_today, cap: me.daily_cap })}</p>
         </div>
 
         <div className="mt-3 flex gap-1.5">
@@ -152,18 +151,12 @@ function Profile({ me }: { me: Me }) {
           </Link>
         </div>
 
-        {me.user.expert && (
-          <div className="mt-3">
-            <Notice icon={<IconSparkle size={18} />}>{t('expertAll')}</Notice>
-          </div>
-        )}
       </section>
 
       <div className="pt-4">
         <BadgeHighlights badges={me.badges} onOpen={setBadge} />
       </div>
 
-      <LabToolsStrip tools={me.tools} expert={me.user.expert} />
       <GoalsCard />
 
       <div className="sticky top-[var(--height-topbar)] z-20 mt-5 bg-bg">

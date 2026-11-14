@@ -1,9 +1,3 @@
-// "Filme do ceu" para uma coordenada qualquer, inteiro no navegador: indice estatico -> leituras Range no S3 ->
-// fundo -> reamostragem na grade comum (quadro a quadro, com callback) -> coadicoes por passagem/banda -> diferencas ->
-// espectro (fotometria forcada nos pixels nativos) -> movimento proprio (centroides por passagem).
-// Uso minimo:
-//   const r = await skyMovie({ ra, dec, fovDeg: 0.1, indexBase: '/index3/', onFrame: (i, f) => desenhar(f) })
-// Dependencias: so os modulos de arch/sci e arch/web/spherex.js (hyparquet para ler o ladrilho do indice).
 import { epochsAtTile, S3_HOSTS } from '../web/spherex.js'
 import { makeWcs, referenceGrid, coordMap } from './wcs.js'
 import { bilinear, adaptive } from './reproject.js'
@@ -37,7 +31,7 @@ function pickEpochs(hits, maxEpochs) {
 
 async function getRange(url, start, len, stats) {
   const r = await fetch(url, { headers: { Range: `bytes=${start}-${start + len - 1}` }, cache: 'no-store' })
-  if (r.status !== 206) throw new Error(`esperava 206, veio ${r.status}`)
+  if (r.status !== 206) throw new Error(`expected 206, got ${r.status}`)
   const b = new Uint8Array(await r.arrayBuffer())
   stats.gets++; stats.bytes += b.length
   return b
@@ -52,7 +46,6 @@ function cropBE(u8, rows, x0, w, kind) {
   return out
 }
 
-// caixa do detector que cobre a grade (com margem), a partir dos cantos da grade projetados no pixel da imagem
 function boxFor(h, grid, n, margin = 10) {
   const w = makeWcs({ wcs: Array.from(h.wcs), sip: Array.from(h.sip) })
   const xs = [], ys = []
@@ -68,7 +61,6 @@ async function fetchEpoch(h, box, host, stats) {
   let flagsP
   if (!h.flags_rice) flagsP = getRange(url, h.off_flags + y0 * rowBytes, rows * rowBytes, stats).then(b => cropBE(b, rows, x0, w, 'i32'))
   else {
-    // QR3: FLAGS em RICE, um ladrilho por linha. Com checkpoints no indice: 1 GET; sem: descritores + heap (2 GETs)
     const heap = h.off_flags + h.flags_theap
     if (h.flags_ckpt) {
       const K = 32, c0 = Math.floor(y0 / K), c1 = Math.ceil((y0 + rows) / K), ck = Array.from(h.flags_ckpt)
@@ -99,7 +91,6 @@ function cropRows(full, rows, x0, w) {
 export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase, maxEpochs = 48, mode = 'bilinear',
   engine = null, onFrame = null, concurrency = 12, hosts = S3_HOSTS, bands = null } = {}) {
   const T0 = performance.now(), stats = { gets: 0, bytes: 0 }, tm = {}
-  // 1) indice
   const wave = await fetch(indexBase + 'wave.json').then(r => r.json())
   const q = await epochsAtTile(indexBase, wave, ra, dec, { order: 5 })
   tm.index_ms = performance.now() - T0
@@ -107,7 +98,6 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
   const nAvailable = hits.length
   hits = pickEpochs(hits, maxEpochs)
   const { n, wcs: grid } = referenceGrid(ra, dec, fovDeg)
-  // 2) quadros: busca + fundo + reamostragem, com concorrencia limitada
   const frames = new Array(hits.length)
   let next = 0, firstFrame = null
   const worker = async (wi) => {
@@ -122,7 +112,6 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
       const bkg = background(raw.img, bad, box.w, box.h)
       const sub = new Float32Array(raw.img.length), svar = new Float32Array(raw.img.length)
       for (let k = 0; k < sub.length; k++) { sub[k] = bad[k] ? NaN : raw.img[k] - bkg[k]; svar[k] = bad[k] ? NaN : raw.variance[k] }
-      // WCS do recorte = WCS da imagem com CRPIX deslocado
       const wv = Array.from(h.wcs); wv[0] -= box.x0; wv[1] -= box.y0
       const sw = makeWcs({ wcs: wv, sip: Array.from(h.sip) })
       let a, v
@@ -142,7 +131,6 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
   }
   await Promise.all(Array.from({ length: concurrency }, (_, wi) => worker(wi)))
   tm.all_frames_ms = performance.now() - T0
-  // 3) ciencia
   const T1 = performance.now()
   const ok = frames.filter(Boolean), passes = assignPasses(ok.map(f => f.h.mjd)), bandSet = [...new Set(ok.map(f => f.h.band))].sort()
   const co = {}
@@ -162,7 +150,6 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
       { ...wave[f.h.wave_id], x: wave[f.h.wave_id].x.map(v => v - f.box.x0), y: wave[f.h.wave_id].y.map(v => v - f.box.y0) })
     if (m && !m.rejected) spectrum.push({ mjd: f.h.mjd, band: f.h.band, lam: m.wavelength_um, flux_mjy: m.flux_mjy, err_mjy: m.err_mjy })
   }
-  // movimento proprio: centroide do alvo (posicao propagada para a 1a passagem) em cada passagem
   const [sra, sdec] = target ? propagate(target, co[`p${ps[0]}_white`]?.mjd ?? ok[0].h.mjd) : [ra, dec]
   const [gx, gy] = grid.world2pix(sra, sdec), sx = Math.round(gx), sy = Math.round(gy), pos = []
   for (const p of ps) {

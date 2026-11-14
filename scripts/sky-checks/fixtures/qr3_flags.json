@@ -1,0 +1,72 @@
+{
+ "source": "nasa2026 data/arch/r2/qr3_flags_{heap.bin,desc.json,ref.i32}: QR3 FLAGS extension, RICE_1 tiles of one row (BYTEPIX=4, BLOCKSIZE=32), reference decoded by astropy",
+ "nx": 2040,
+ "nblock": 32,
+ "blocks": [
+  {
+   "row0": 0,
+   "nrows": 4,
+   "offset": 0,
+   "bytes": 21867,
+   "off": [
+    0,
+    5397,
+    10845,
+    16367
+   ],
+   "nel": [
+    5397,
+    5448,
+    5522,
+    5500
+   ],
+   "sha256_astropy": "8980beddea4f7bdab861659eb250ab4ad8323dc31aedaa38d1ef9acd675ca0d1"
+  },
+  {
+   "row0": 1000,
+   "nrows": 8,
+   "offset": 21867,
+   "bytes": 44375,
+   "off": [
+    21867,
+    27640,
+    33293,
+    38955,
+    44547,
+    49972,
+    55225,
+    60657
+   ],
+   "nel": [
+    5773,
+    5653,
+    5662,
+    5592,
+    5425,
+    5253,
+    5432,
+    5585
+   ],
+   "sha256_astropy": "da6274c0acb742ca07f70ee43d180ddcfe3d38fddd5c2019392a7d1e5094bb73"
+  },
+  {
+   "row0": 2036,
+   "nrows": 4,
+   "offset": 66242,
+   "bytes": 23227,
+   "off": [
+    66242,
+    72018,
+    77930,
+    83722
+   ],
+   "nel": [
+    5776,
+    5912,
+    5792,
+    5747
+   ],
+   "sha256_astropy": "53801fcc6571ccef03ab7a4761f7e0a6ad060a6681883485be8c3dfb38bd47f6"
+  }
+ ]
+}

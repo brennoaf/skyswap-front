@@ -36,6 +36,7 @@
           "official_target",
           "saturation",
           "verdict",
+          "best_bands",
           "has_new_data",
           "last_seen"
         ],
@@ -63,6 +64,12 @@
           },
           "verdict": {
             "type": "string"
+          },
+          "best_bands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "has_new_data": {
             "type": "boolean"
@@ -588,6 +595,7 @@
               "official_target",
               "saturation",
               "verdict",
+              "best_bands",
               "has_new_data",
               "last_seen"
             ],
@@ -615,6 +623,12 @@
               },
               "verdict": {
                 "type": "string"
+              },
+              "best_bands": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               },
               "has_new_data": {
                 "type": "boolean"
@@ -682,7 +696,6 @@
         "required": [
           "id",
           "nickname",
-          "expert",
           "created_at"
         ],
         "properties": {
@@ -691,9 +704,6 @@
           },
           "nickname": {
             "type": "string"
-          },
-          "expert": {
-            "type": "boolean"
           },
           "created_at": {
             "type": "number"
@@ -704,6 +714,9 @@
         "type": "object",
         "required": [
           "kind",
+          "band",
+          "size_arcmin",
+          "frames",
           "known",
           "rate_arcsec_h",
           "ra",
@@ -717,6 +730,34 @@
         "properties": {
           "kind": {
             "type": "string"
+          },
+          "band": {
+            "type": "string"
+          },
+          "size_arcmin": {
+            "type": "number"
+          },
+          "frames": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "t",
+                "wl_min",
+                "wl_max"
+              ],
+              "properties": {
+                "t": {
+                  "type": "string"
+                },
+                "wl_min": {
+                  "type": "number"
+                },
+                "wl_max": {
+                  "type": "number"
+                }
+              }
+            }
           },
           "known": {
             "anyOf": [
@@ -862,8 +903,6 @@
           "sprite",
           "tile",
           "n_frames",
-          "band",
-          "size_arcmin",
           "frames"
         ],
         "properties": {
@@ -879,12 +918,6 @@
           "n_frames": {
             "type": "integer"
           },
-          "band": {
-            "type": "string"
-          },
-          "size_arcmin": {
-            "type": "number"
-          },
           "frames": {
             "type": "array",
             "items": {
@@ -892,8 +925,6 @@
               "required": [
                 "t",
                 "mjd",
-                "wl_min",
-                "wl_max",
                 "n_exp"
               ],
               "properties": {
@@ -901,12 +932,6 @@
                   "type": "string"
                 },
                 "mjd": {
-                  "type": "number"
-                },
-                "wl_min": {
-                  "type": "number"
-                },
-                "wl_max": {
                   "type": "number"
                 },
                 "n_exp": {
@@ -1329,6 +1354,7 @@
                               "official_target",
                               "saturation",
                               "verdict",
+                              "best_bands",
                               "has_new_data",
                               "last_seen"
                             ],
@@ -1356,6 +1382,12 @@
                               },
                               "verdict": {
                                 "type": "string"
+                              },
+                              "best_bands": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "has_new_data": {
                                 "type": "boolean"
@@ -1461,6 +1493,7 @@
                               "official_target",
                               "saturation",
                               "verdict",
+                              "best_bands",
                               "has_new_data",
                               "last_seen"
                             ],
@@ -1488,6 +1521,12 @@
                               },
                               "verdict": {
                                 "type": "string"
+                              },
+                              "best_bands": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "has_new_data": {
                                 "type": "boolean"
@@ -1569,6 +1608,7 @@
                           "official_target",
                           "saturation",
                           "verdict",
+                          "best_bands",
                           "has_new_data",
                           "last_seen"
                         ],
@@ -1596,6 +1636,12 @@
                           },
                           "verdict": {
                             "type": "string"
+                          },
+                          "best_bands": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
                           },
                           "has_new_data": {
                             "type": "boolean"
@@ -2478,6 +2524,7 @@
                         "official_target",
                         "saturation",
                         "verdict",
+                        "best_bands",
                         "has_new_data",
                         "last_seen"
                       ],
@@ -2505,6 +2552,12 @@
                         },
                         "verdict": {
                           "type": "string"
+                        },
+                        "best_bands": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
                         },
                         "has_new_data": {
                           "type": "boolean"
@@ -2684,6 +2737,7 @@
                               "official_target",
                               "saturation",
                               "verdict",
+                              "best_bands",
                               "has_new_data",
                               "last_seen"
                             ],
@@ -2711,6 +2765,12 @@
                               },
                               "verdict": {
                                 "type": "string"
+                              },
+                              "best_bands": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "has_new_data": {
                                 "type": "boolean"
@@ -2884,7 +2944,7 @@
                     "bands",
                     "images",
                     "nearby",
-                    "estimated_bytes"
+                    "total_file_bytes"
                   ],
                   "properties": {
                     "ra": {
@@ -2947,7 +3007,8 @@
                           "lam_um",
                           "lam_min",
                           "lam_max",
-                          "obs_id"
+                          "obs_id",
+                          "file_size"
                         ],
                         "properties": {
                           "key": {
@@ -2990,6 +3051,16 @@
                                 "type": "null"
                               }
                             ]
+                          },
+                          "file_size": {
+                            "anyOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           }
                         }
                       }
@@ -3009,6 +3080,7 @@
                               "official_target",
                               "saturation",
                               "verdict",
+                              "best_bands",
                               "has_new_data",
                               "last_seen"
                             ],
@@ -3036,6 +3108,12 @@
                               },
                               "verdict": {
                                 "type": "string"
+                              },
+                              "best_bands": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "has_new_data": {
                                 "type": "boolean"
@@ -3066,8 +3144,15 @@
                         ]
                       }
                     },
-                    "estimated_bytes": {
-                      "type": "integer"
+                    "total_file_bytes": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   }
                 }
@@ -3086,7 +3171,7 @@
           {
             "schema": {
               "type": "string",
-              "pattern": "^qr[23]/[A-Za-z0-9_./-]+\\.fits$",
+              "pattern": "^qr[23]\\/level2\\/[A-Za-z0-9_.-]+(\\/[A-Za-z0-9_.-]+)*\\.fits$",
               "maxLength": 200
             },
             "in": "query",
@@ -3154,7 +3239,6 @@
                           "required": [
                             "id",
                             "nickname",
-                            "expert",
                             "created_at"
                           ],
                           "properties": {
@@ -3163,9 +3247,6 @@
                             },
                             "nickname": {
                               "type": "string"
-                            },
-                            "expert": {
-                              "type": "boolean"
                             },
                             "created_at": {
                               "type": "number"
@@ -3227,7 +3308,6 @@
                           "required": [
                             "id",
                             "nickname",
-                            "expert",
                             "created_at"
                           ],
                           "properties": {
@@ -3236,9 +3316,6 @@
                             },
                             "nickname": {
                               "type": "string"
-                            },
-                            "expert": {
-                              "type": "boolean"
                             },
                             "created_at": {
                               "type": "number"
@@ -3297,7 +3374,6 @@
                           "required": [
                             "id",
                             "nickname",
-                            "expert",
                             "created_at"
                           ],
                           "properties": {
@@ -3306,9 +3382,6 @@
                             },
                             "nickname": {
                               "type": "string"
-                            },
-                            "expert": {
-                              "type": "boolean"
                             },
                             "created_at": {
                               "type": "number"
@@ -3824,10 +3897,10 @@
                     "user",
                     "xp",
                     "xp_today",
+                    "daily_cap",
                     "streak",
                     "level",
                     "levels",
-                    "tools",
                     "badges",
                     "counts",
                     "following",
@@ -3839,7 +3912,6 @@
                       "required": [
                         "id",
                         "nickname",
-                        "expert",
                         "created_at"
                       ],
                       "properties": {
@@ -3848,9 +3920,6 @@
                         },
                         "nickname": {
                           "type": "string"
-                        },
-                        "expert": {
-                          "type": "boolean"
                         },
                         "created_at": {
                           "type": "number"
@@ -3861,6 +3930,9 @@
                       "type": "integer"
                     },
                     "xp_today": {
+                      "type": "integer"
+                    },
+                    "daily_cap": {
                       "type": "integer"
                     },
                     "streak": {
@@ -3920,12 +3992,6 @@
                             "type": "integer"
                           }
                         }
-                      }
-                    },
-                    "tools": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
                       }
                     },
                     "badges": {
@@ -3989,6 +4055,7 @@
                           "official_target",
                           "saturation",
                           "verdict",
+                          "best_bands",
                           "has_new_data",
                           "last_seen"
                         ],
@@ -4017,333 +4084,11 @@
                           "verdict": {
                             "type": "string"
                           },
-                          "has_new_data": {
-                            "type": "boolean"
-                          },
-                          "last_seen": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    },
-                    "history": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": [
-                          "type",
-                          "ref",
-                          "detail",
-                          "created_at",
-                          "status",
-                          "post"
-                        ],
-                        "properties": {
-                          "type": {
-                            "type": "string"
-                          },
-                          "ref": {
-                            "type": "string"
-                          },
-                          "detail": {
-                            "type": "string"
-                          },
-                          "created_at": {
-                            "type": "number"
-                          },
-                          "status": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "post": {
-                            "anyOf": [
-                              {
-                                "type": "object",
-                                "required": [
-                                  "id",
-                                  "title",
-                                  "object_id",
-                                  "cover"
-                                ],
-                                "properties": {
-                                  "id": {
-                                    "type": "string"
-                                  },
-                                  "title": {
-                                    "type": "string"
-                                  },
-                                  "object_id": {
-                                    "type": "string"
-                                  },
-                                  "cover": {
-                                    "type": "string"
-                                  }
-                                }
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "error"
-                  ],
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "tags": [
-          "me"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "expert"
-                ],
-                "properties": {
-                  "expert": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "user",
-                    "xp",
-                    "xp_today",
-                    "streak",
-                    "level",
-                    "levels",
-                    "tools",
-                    "badges",
-                    "counts",
-                    "following",
-                    "history"
-                  ],
-                  "properties": {
-                    "user": {
-                      "type": "object",
-                      "required": [
-                        "id",
-                        "nickname",
-                        "expert",
-                        "created_at"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "nickname": {
-                          "type": "string"
-                        },
-                        "expert": {
-                          "type": "boolean"
-                        },
-                        "created_at": {
-                          "type": "number"
-                        }
-                      }
-                    },
-                    "xp": {
-                      "type": "integer"
-                    },
-                    "xp_today": {
-                      "type": "integer"
-                    },
-                    "streak": {
-                      "type": "integer"
-                    },
-                    "level": {
-                      "type": "object",
-                      "required": [
-                        "level",
-                        "key",
-                        "min_xp",
-                        "next_min_xp",
-                        "progress"
-                      ],
-                      "properties": {
-                        "level": {
-                          "type": "integer"
-                        },
-                        "key": {
-                          "type": "string"
-                        },
-                        "min_xp": {
-                          "type": "integer"
-                        },
-                        "next_min_xp": {
-                          "anyOf": [
-                            {
-                              "type": "integer"
-                            },
-                            {
-                              "type": "null"
+                          "best_bands": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
                             }
-                          ]
-                        },
-                        "progress": {
-                          "type": "number"
-                        }
-                      }
-                    },
-                    "levels": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": [
-                          "level",
-                          "key",
-                          "min_xp"
-                        ],
-                        "properties": {
-                          "level": {
-                            "type": "integer"
-                          },
-                          "key": {
-                            "type": "string"
-                          },
-                          "min_xp": {
-                            "type": "integer"
-                          }
-                        }
-                      }
-                    },
-                    "tools": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "badges": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": [
-                          "key",
-                          "earned_at"
-                        ],
-                        "properties": {
-                          "key": {
-                            "type": "string"
-                          },
-                          "earned_at": {
-                            "anyOf": [
-                              {
-                                "type": "number"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          }
-                        }
-                      }
-                    },
-                    "counts": {
-                      "type": "object",
-                      "required": [
-                        "votes",
-                        "marks",
-                        "tags",
-                        "following"
-                      ],
-                      "properties": {
-                        "votes": {
-                          "type": "integer"
-                        },
-                        "marks": {
-                          "type": "integer"
-                        },
-                        "tags": {
-                          "type": "integer"
-                        },
-                        "following": {
-                          "type": "integer"
-                        }
-                      }
-                    },
-                    "following": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": [
-                          "id",
-                          "handle",
-                          "name",
-                          "kind",
-                          "avatar",
-                          "official_target",
-                          "saturation",
-                          "verdict",
-                          "has_new_data",
-                          "last_seen"
-                        ],
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "handle": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "kind": {
-                            "type": "string"
-                          },
-                          "avatar": {
-                            "type": "string"
-                          },
-                          "official_target": {
-                            "type": "boolean"
-                          },
-                          "saturation": {
-                            "type": "string"
-                          },
-                          "verdict": {
-                            "type": "string"
                           },
                           "has_new_data": {
                             "type": "boolean"
@@ -4510,6 +4255,7 @@
                                   "official_target",
                                   "saturation",
                                   "verdict",
+                                  "best_bands",
                                   "has_new_data",
                                   "last_seen"
                                 ],
@@ -4537,6 +4283,12 @@
                                   },
                                   "verdict": {
                                     "type": "string"
+                                  },
+                                  "best_bands": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
                                   },
                                   "has_new_data": {
                                     "type": "boolean"
@@ -4712,8 +4464,6 @@
                             "sprite",
                             "tile",
                             "n_frames",
-                            "band",
-                            "size_arcmin",
                             "frames"
                           ],
                           "properties": {
@@ -4729,12 +4479,6 @@
                             "n_frames": {
                               "type": "integer"
                             },
-                            "band": {
-                              "type": "string"
-                            },
-                            "size_arcmin": {
-                              "type": "number"
-                            },
                             "frames": {
                               "type": "array",
                               "items": {
@@ -4742,8 +4486,6 @@
                                 "required": [
                                   "t",
                                   "mjd",
-                                  "wl_min",
-                                  "wl_max",
                                   "n_exp"
                                 ],
                                 "properties": {
@@ -4751,12 +4493,6 @@
                                     "type": "string"
                                   },
                                   "mjd": {
-                                    "type": "number"
-                                  },
-                                  "wl_min": {
-                                    "type": "number"
-                                  },
-                                  "wl_max": {
                                     "type": "number"
                                   },
                                   "n_exp": {
@@ -4811,8 +4547,7 @@
                 "type": "object",
                 "required": [
                   "card_id",
-                  "label",
-                  "ms"
+                  "label"
                 ],
                 "properties": {
                   "card_id": {
@@ -4840,11 +4575,6 @@
                         ]
                       }
                     ]
-                  },
-                  "ms": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 3600000
                   }
                 }
               }
@@ -4895,6 +4625,9 @@
                       "type": "object",
                       "required": [
                         "kind",
+                        "band",
+                        "size_arcmin",
+                        "frames",
                         "known",
                         "rate_arcsec_h",
                         "ra",
@@ -4908,6 +4641,34 @@
                       "properties": {
                         "kind": {
                           "type": "string"
+                        },
+                        "band": {
+                          "type": "string"
+                        },
+                        "size_arcmin": {
+                          "type": "number"
+                        },
+                        "frames": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "t",
+                              "wl_min",
+                              "wl_max"
+                            ],
+                            "properties": {
+                              "t": {
+                                "type": "string"
+                              },
+                              "wl_min": {
+                                "type": "number"
+                              },
+                              "wl_max": {
+                                "type": "number"
+                              }
+                            }
+                          }
                         },
                         "known": {
                           "anyOf": [

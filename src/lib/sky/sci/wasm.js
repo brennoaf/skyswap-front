@@ -1,7 +1,3 @@
-// Carregador dos nucleos WASM (arch/sci/wasm, Rust sem wasm-bindgen). Mesma API dos equivalentes JS.
-//   const W = await loadWasm(bytes)   // bytes = ArrayBuffer do spherex_sci.wasm (fetch no navegador, fs no Node)
-//   W.coordMap(dstWcsArr8, n, pad, srcWcsArr8, srcSip40) -> Float64Array
-//   W.bilinear(src, sw, sh, map, n) -> Float32Array ;  W.adaptive(src, sw, sh, mapPad, n, {conserveFlux}) -> Float32Array
 export async function loadWasm(bytes) {
   const { instance } = await WebAssembly.instantiate(bytes, {})
   const ex = instance.exports

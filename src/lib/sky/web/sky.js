@@ -1,10 +1,3 @@
-// Geometria minima para o navegador, sem dependencias:
-//  - HEALPix nested ang2pix (para achar a celula do indice),
-//  - WCS TAN-SIP mundo -> pixel (para saber quais linhas do FITS ler),
-//  - teste de ponto dentro do quadrilatero do detector,
-//  - comprimento de onda no pixel (grade WAVE-TAB bilinear).
-// Validado contra astropy / astropy-healpix em arch/web/node_test.mjs.
-
 const D2R = Math.PI / 180
 
 export function ang2pixNest(order, raDeg, decDeg) {
@@ -12,7 +5,7 @@ export function ang2pixNest(order, raDeg, decDeg) {
   const theta = (90 - decDeg) * D2R
   let phi = (((raDeg % 360) + 360) % 360) * D2R
   const z = Math.cos(theta), za = Math.abs(z)
-  const tt = (phi / (Math.PI / 2)) % 4 // [0, 4)
+  const tt = (phi / (Math.PI / 2)) % 4
   let face, ix, iy
   if (za <= 2 / 3) {
     const t1 = nside * (0.5 + tt), t2 = nside * z * 0.75
@@ -33,7 +26,6 @@ export function ang2pixNest(order, raDeg, decDeg) {
   return face * nside * nside + pix
 }
 
-// sip: 40 coeficientes na ordem de build_index.SIP_KEYS: A,B,AP,BP; p=0..3; q=0..3; p+q<=3
 function sipTerms(c, off, u, v) {
   let s = 0, k = off
   for (let p = 0; p <= 3; p++) for (let q = 0; q <= 3; q++) {
@@ -43,7 +35,6 @@ function sipTerms(c, off, u, v) {
   return s
 }
 
-// wcs: [CRPIX1, CRPIX2, CRVAL1, CRVAL2, PC1_1, PC1_2, PC2_1, PC2_2]; devolve pixel 0-based (x, y)
 export function world2pix(wcs, sip, raDeg, decDeg) {
   const [crpix1, crpix2, crval1, crval2, a, b, c, d] = wcs
   const ra = raDeg * D2R, de = decDeg * D2R, ra0 = crval1 * D2R, de0 = crval2 * D2R
@@ -74,7 +65,6 @@ export function insideQuad(ra, dec, cra, cdec) {
   return pos === 4 || neg === 4
 }
 
-// grade WAVE-TAB: {x:[..], y:[..], lam:[ny*nx]} em pixels FITS 1-based
 export function wavelengthAt(grid, x0, y0) {
   const x = x0 + 1, y = y0 + 1, gx = grid.x, gy = grid.y, nx = gx.length
   const find = (g, v) => Math.max(0, Math.min(g.length - 2, g.findIndex(t => t > v) - 1 < 0 ? g.length - 2 : g.findIndex(t => t > v) - 1))

@@ -3,26 +3,13 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
-import { IconCheck, IconChart, IconCrosshair, IconDownload, IconLayers, IconLock, IconNote, IconSearch, IconSpectrum, IconStar, IconWarning } from '@/components/icons'
+import { IconCheck } from '@/components/icons'
 import { BadgeArt, LevelArt } from '@/components/ui/badge-art'
 import { EmptyState, ObjectAvatar, ObjectBadges, Skeleton, isSaturated, isVerified } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import type { Me } from '@/lib/api/client'
 import { useGoals, usePost } from '@/lib/api/hooks'
 import { cx, formatNumber, formatShortDate, relativeTime } from '@/lib/format'
-import { LAB_TOOLS, TOOL_UNLOCKS, isToolUnlocked, type LabTool } from '@/lib/levels'
-
-const TOOL_ICON: Record<LabTool, typeof IconStar> = {
-  fov: IconSearch,
-  gaia: IconStar,
-  wise: IconLayers,
-  flags: IconWarning,
-  pixels: IconCrosshair,
-  spectrum: IconSpectrum,
-  lightcurve: IconChart,
-  notes: IconNote,
-  export: IconDownload,
-}
 
 const STATUS_KEY: Record<string, string> = { open: 'statusOpen', real: 'statusReal', artifact: 'statusArtifact', inconclusive: 'statusInconclusive' }
 
@@ -105,34 +92,6 @@ export function BadgeDetail({ badge, earnedAt }: { badge: string; earnedAt: numb
         {earnedAt ? tm('earnedOn', { date: formatShortDate(earnedAt, locale) }) : t('locked')}
       </p>
     </div>
-  )
-}
-
-export function LabToolsStrip({ tools, expert }: { tools: string[]; expert: boolean }) {
-  const t = useTranslations('tools')
-  const tm = useTranslations('me')
-  return (
-    <section aria-labelledby="me-tools" className="pt-5">
-      <h2 id="me-tools" className="px-4 pb-2 text-body font-semibold">
-        {tm('unlocks')}
-      </h2>
-      <ul className="no-scrollbar flex gap-2 overflow-x-auto px-4">
-        {LAB_TOOLS.map((k) => {
-          const on = isToolUnlocked(k, tools, expert)
-          const Icon = TOOL_ICON[k]
-          return (
-            <li key={k} className="flex w-[124px] shrink-0 flex-col rounded-xl bg-surface p-3">
-              <Icon size={24} className={on ? 'text-text' : 'text-icon-muted'} />
-              <p className={cx('mt-2 line-clamp-2 min-h-[2lh] text-note font-semibold leading-tight', !on && 'text-text-secondary')}>{t(k)}</p>
-              <p className="mt-1.5 flex items-center gap-1 text-meta leading-tight text-text-secondary">
-                {on ? <IconCheck size={14} className="shrink-0 text-success" /> : <IconLock size={14} className="shrink-0" />}
-                <span>{on ? tm('unlocked') : tm('unlockedAt', { n: TOOL_UNLOCKS[k] })}</span>
-              </p>
-            </li>
-          )
-        })}
-      </ul>
-    </section>
   )
 }
 

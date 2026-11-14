@@ -1,9 +1,3 @@
-// Fotometria forcada e centroides, em JS puro, reproduzindo pipeline.spectrum.measure:
-//  refinamento por ajuste de gaussiana 2D (como photutils.centroids.centroid_2dg: momentos para o chute inicial,
-//  minimos quadrados nao lineares sem constante; aqui Levenberg-Marquardt), abertura de r_ap px pelo centro do pixel,
-//  anel r_in..r_out com sigma-clip (astropy sigma_clipped_stats: sigma 3, 5 iteracoes, mediana/desvio padrao),
-//  erro = sqrt(soma var + npx^2 var(anel)/n_anel), fluxo em mJy = soma(MJy/sr) * area do pixel (sr) * 1e9.
-
 export const MASK_VALUE = [0, 1, 2, 6, 7, 9, 10, 11, 14, 15, 17, 20, 22, 23, 24, 25, 26, 27, 28, 29].reduce((s, b) => s + 2 ** b, 0)
 
 function median(a) {
@@ -11,7 +5,6 @@ function median(a) {
   return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2
 }
 
-// astropy.stats.sigma_clipped_stats(data, sigma=3): devolve [media, mediana, desvio] dos valores sobreviventes
 export function sigmaClippedStats(values, sigma = 3, maxiters = 5) {
   let v = Float64Array.from(values)
   for (let it = 0; it < maxiters; it++) {
@@ -44,7 +37,6 @@ function gauss(p, x, y) {
   return A * Math.exp(-(a * dx * dx + b * dx * dy + cc * dy * dy))
 }
 
-// momentos de imagem (photutils _gaussian2d_moments) sobre dados deslocados para >= 0
 function moments(d, w, h) {
   let m00 = 0, m10 = 0, m01 = 0
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const v = d[y * w + x]; m00 += v; m10 += v * x; m01 += v * y }
@@ -60,7 +52,6 @@ function moments(d, w, h) {
   return [amp, xc, yc, Math.sqrt(Math.max(l1, 1e-6)), Math.sqrt(Math.max(l2, 1e-6)), t]
 }
 
-// centroid_2dg: devolve [x, y] no sistema da caixa (0-based)
 export function centroid2dg(data, w, h, mask = null) {
   let mn = Infinity
   for (let k = 0; k < data.length; k++) if (!(mask && mask[k]) && data[k] < mn) mn = data[k]
@@ -70,7 +61,6 @@ export function centroid2dg(data, w, h, mask = null) {
   const res = q => { const r = new Float64Array(N); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const k = y * w + x; r[k] = (mask && mask[k]) ? 0 : data[k] - gauss(q, x, y) } return r }
   let r = res(p), cost = r.reduce((s, v) => s + v * v, 0), lambda = 1e-3
   for (let it = 0; it < 200; it++) {
-    // jacobiano numerico (6 parametros)
     const J = []
     for (let j = 0; j < 6; j++) {
       const h_ = 1e-6 * Math.max(1, Math.abs(p[j])), q = p.slice(); q[j] += h_
@@ -113,7 +103,6 @@ function bilinearGrid(grid, x, y) {
   return L(j, i) * (1 - tx) * (1 - ty) + L(j, i + 1) * tx * (1 - ty) + L(j + 1, i) * (1 - tx) * ty + L(j + 1, i + 1) * tx * ty
 }
 
-// img, variance: Float32Array (h*w, nativos, SEM fundo removido); flags: Int32Array; wcs: makeWcs(); wave: {x, y, lam}
 export function measureStar(img, variance, flags, w, h, wcs, ra, dec, wave, { rAp = 2, rIn = 4, rOut = 7 } = {}) {
   let [x, y] = wcs.world2pix(ra, dec)
   if (!(rOut < x && x < w - rOut - 1 && rOut < y && y < h - rOut - 1)) return null
@@ -125,7 +114,7 @@ export function measureStar(img, variance, flags, w, h, wcs, ra, dec, wave, { rA
   try {
     const [dx, dy] = centroid2dg(box.map(v => v - med), 5, 5)
     if (Number.isFinite(dx) && Math.hypot(dx - 2, dy - 2) < 1.5) { x = xi - 2 + dx; y = yi - 2 + dy; refined = true }
-  } catch { /* como no pipeline: mantem a posicao do WCS */ }
+  } catch {}
   const ann = [], apIdx = []
   let apBad = false
   for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
@@ -150,7 +139,6 @@ export function measureStar(img, variance, flags, w, h, wcs, ra, dec, wave, { rA
     wavelength_um: bilinearGrid(wave, x + 1, y + 1) }
 }
 
-// Movimento proprio entre a 1a e a ultima passagem a partir de centroides na grade comum
 export function properMotion(positions) {
   if (positions.length < 2) return null
   const a = positions[0], b = positions[positions.length - 1], dt = (b.mjd - a.mjd) / 365.25

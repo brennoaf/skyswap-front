@@ -301,7 +301,7 @@ export function ObjectProfileView({ id }: { id: string }) {
                   <div key={`${f.label}-${i}`} className="rounded-lg bg-surface px-3 py-2">
                     <dt className="text-meta text-text-secondary">{f.label}</dt>
                     <dd className="font-semibold">
-                      {typeof f.value === 'number' ? f.value.toLocaleString('en-US', { maximumFractionDigits: 3 }) : f.value} {f.unit ?? ''}
+                      {typeof f.value === 'number' ? f.value.toLocaleString(locale, { maximumFractionDigits: 3 }) : f.value} {f.unit ?? ''}
                     </dd>
                   </div>
                 ))}
@@ -317,7 +317,7 @@ export function ObjectProfileView({ id }: { id: string }) {
               <p className="font-mono text-note text-text-secondary">
                 {profile.ra.toFixed(5)}°, {profile.dec.toFixed(5)}°
               </p>
-              <Link href={`/sky?ra=${profile.ra.toFixed(5)}&dec=${profile.dec.toFixed(5)}&fov=0.1&name=${encodeURIComponent(profile.name)}`} className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 font-medium text-on-accent">
+              <Link href={`/sky?ra=${profile.ra.toFixed(5)}&dec=${profile.dec.toFixed(5)}&fov=0.1&name=${encodeURIComponent(profile.name)}&obj=${profile.id}`} className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 font-medium text-on-accent">
                 {t('skyMap')}
               </Link>
             </>

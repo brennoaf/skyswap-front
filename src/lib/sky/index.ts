@@ -1,4 +1,5 @@
-import { skyMovie as skyMovieJs } from './sci/pipeline.js'
+import { propagate as propagateJs, skyMovie as skyMovieJs } from './sci/pipeline.js'
+import { referenceGrid as referenceGridJs } from './sci/wcs.js'
 import { parseFitsImage as parseFitsImageJs, percentile as percentileJs, stretch as stretchJs } from './web/spherex.js'
 
 export interface IndexRow {
@@ -52,3 +53,6 @@ export const skyMovie = skyMovieJs as unknown as (o: SkyMovieOptions) => Promise
 export const parseFitsImage = parseFitsImageJs as unknown as (buf: ArrayBuffer, extname?: string) => FitsImage
 export const percentile = percentileJs as unknown as (data: ArrayLike<number>, p: number) => number
 export const stretch = stretchJs as unknown as (data: ArrayLike<number>, lo: number, hi: number) => Uint8ClampedArray
+
+export const propagate = propagateJs as unknown as (t: { ra: number; dec: number; epoch: number; pmra: number; pmdec: number }, mjd: number) => [number, number]
+export const referenceGrid = referenceGridJs as unknown as (ra: number, dec: number, fovDeg: number) => { n: number; wcs: { world2pix: (ra: number, dec: number) => [number, number]; pix2world: (x: number, y: number) => [number, number] } }
