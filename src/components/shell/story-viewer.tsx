@@ -153,6 +153,7 @@ export function StoryViewer() {
 
           <div className="px-3 pt-2">
             <PlayerBar
+              reserve
               tone="media"
               playback={playback}
               seconds={story.frames.map((f) => (Date.parse(f.t) - Date.parse(story.frames[0]?.t ?? f.t)) / 1000)}

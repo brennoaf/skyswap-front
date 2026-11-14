@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { DipoleFigure } from '@/components/classify/dipole-figure'
 import { VoiceMark, VoiceSymbol, type Voice } from '@/components/classify/voices'
 import { PhotoViewer, useOffsetLabel } from '@/components/classify/photo-viewer'
-import { IconCards, IconFlashlight, IconMore, IconMoves, IconQuestion, IconStill, IconWarning } from '@/components/icons'
+import { IconCards, IconFlashlight, IconMore, IconMoves, IconQuestion, IconStill } from '@/components/icons'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { CatalogLinks } from '@/components/ui/catalog-links'
 import { Button, EmptyState, IconButton, Sheet, Skeleton, TopBar } from '@/components/ui/primitives'
@@ -102,7 +102,7 @@ function Stamp({ label, tone, style, className }: { label: string; tone: 'moves'
   )
 }
 
-function ChoiceButton({ label, onClick, disabled, pressed, primary, children }: { label: string; onClick: () => void; disabled: boolean; pressed?: boolean; primary?: boolean; children: ReactNode }) {
+function ChoiceButton({ label, onClick, disabled, pressed, primary, children }: { label: string; onClick: () => void; disabled: boolean; pressed?: boolean; primary?: boolean; children?: ReactNode }) {
   return (
     <button
       type="button"
@@ -219,27 +219,6 @@ function GuideRing({ marks, panel }: { marks: Mark[]; panel: number }) {
     <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden="true">
       <circle cx={m.u * 100} cy={m.v * 100} r="7" fill="none" stroke="var(--color-on-media)" strokeWidth="0.9" strokeDasharray="3 2" />
     </svg>
-  )
-}
-
-function CardFrame({ children, x, y }: { children: ReactNode; x?: MotionValue<number>; y?: MotionValue<number> }) {
-  const zero = useMotionValue(0)
-  const mx = x ?? zero
-  const my = y ?? zero
-  const moves = useTransform(mx, [24, SWIPE], [0, 1])
-  const still = useTransform(mx, [-SWIPE, -24], [1, 0])
-  const unsure = useTransform(my, [-SWIPE, -24], [1, 0])
-  return (
-    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border-[0.5px] border-divider bg-bg-elevated">
-      {children}
-      {x && (
-        <>
-          <motion.span aria-hidden="true" style={{ opacity: moves }} className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-inset ring-accent" />
-          <motion.span aria-hidden="true" style={{ opacity: still }} className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-inset ring-text-secondary" />
-          <motion.span aria-hidden="true" style={{ opacity: unsure }} className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-inset ring-warning" />
-        </>
-      )}
-    </div>
   )
 }
 
@@ -443,15 +422,13 @@ function VoteCard({
         style={{ x, y, rotate }}
         initial={reduce ? false : { opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative flex min-h-0 flex-1 flex-col px-3"
+        className="relative flex min-h-0 flex-1 flex-col"
       >
         <Stamp label={t('moves')} tone="moves" style={{ opacity: movesOpacity }} className="left-4 top-4" />
         <Stamp label={t('still')} tone="still" style={{ opacity: stillOpacity }} className="right-4 top-4" />
         <Stamp label={t('unsure')} tone="unsure" style={{ opacity: unsureOpacity }} className="left-1/2 top-4 -translate-x-1/2" />
         {demo && <GestureHand demo={demo} />}
-        <CardFrame x={x} y={y}>
-          <PhotoViewer onPlayingChange={onPaused} fit hold={stage === 'marking'} swipe={{ x, y, enabled: !held && !!img, threshold: SWIPE, onRelease, onCancel: settle }} sprite={card.sprite} img={img} offsets={card.offsets_s} overlay={viewerOverlay} caption={caption} onTouchPhoto={canMark ? () => setStage('marking') : undefined} onLocate={canMark ? locate : undefined} />
-        </CardFrame>
+        <PhotoViewer compact={!!held} note={held ? undefined : tip || firstUp ? <span role="status">{t(`tips.${tip ?? 'swipeUp'}`)}</span> : showHints && !lesson ? t('hints.swipe') : undefined} onPlayingChange={onPaused} fit hold={stage === 'marking'} swipe={{ x, y, enabled: !held && !!img, threshold: SWIPE, onRelease, onCancel: settle }} sprite={card.sprite} img={img} offsets={card.offsets_s} overlay={viewerOverlay} caption={caption} onTouchPhoto={canMark ? () => setStage('marking') : undefined} onLocate={canMark ? locate : undefined} />
       </motion.div>
 
       {lesson && !held && (
@@ -469,13 +446,6 @@ function VoteCard({
         <ConfirmStrip choice={t(held.answer)} stage={stage} marked={!!spot} canMark={held.answer === 'moves'} onUndo={undo} onSend={() => void send()} />
       ) : (
         <>
-          {tip || firstUp ? (
-            <p className="shrink-0 px-3 pt-1 text-center text-note font-medium leading-snug text-link" role="status">
-              {t(`tips.${tip ?? 'swipeUp'}`)}
-            </p>
-          ) : (
-            showHints && !lesson && <p className="shrink-0 truncate px-3 pt-1 text-center text-note text-text-secondary">{t('hints.swipe')}</p>
-          )}
           <div className="shrink-0 px-3 pb-2 pt-2">
             <div className="flex gap-2">
               <ChoiceButton label={t('still')} onClick={() => choose('still')} disabled={!img} primary>
@@ -486,12 +456,8 @@ function VoteCard({
               </ChoiceButton>
             </div>
             <div className="mt-1 flex gap-2">
-              <ChoiceButton label={t('glitch')} onClick={() => choose('glitch')} disabled={!img} pressed={lesson === 'glitch'}>
-                <IconWarning size={20} />
-              </ChoiceButton>
-              <ChoiceButton label={t('unsure')} onClick={() => choose('unsure')} disabled={!img}>
-                <IconQuestion size={20} />
-              </ChoiceButton>
+              <ChoiceButton label={t('glitch')} onClick={() => choose('glitch')} disabled={!img} pressed={lesson === 'glitch'} />
+              <ChoiceButton label={t('unsure')} onClick={() => choose('unsure')} disabled={!img} />
             </div>
           </div>
         </>
@@ -584,7 +550,6 @@ function WhySheet({ open, onClose }: { open: boolean; onClose: () => void }) {
 }
 
 function VoiceRow({ voice, name, children, on, onToggle }: { voice: Voice; name: string; children: ReactNode; on?: boolean; onToggle?: () => void }) {
-  const t = useTranslations('classify.voices')
   const body = (
     <>
       <VoiceSymbol voice={voice} className={on === false ? 'opacity-40' : undefined} />
@@ -592,7 +557,6 @@ function VoiceRow({ voice, name, children, on, onToggle }: { voice: Voice; name:
         <span className="font-semibold">{name}: </span>
         {children}
       </span>
-      {onToggle && <span className="shrink-0 text-meta font-semibold text-link">{on ? t('hide') : t('show')}</span>}
     </>
   )
   if (!onToggle) return <div className="flex min-h-8 items-center gap-2 py-0.5">{body}</div>
@@ -622,7 +586,7 @@ function ResultLine({ result }: { result: VoteResult }) {
   return <p className="pt-1 text-note font-semibold leading-snug text-accent">{parts.join(' ')}</p>
 }
 
-function Understand({ card, img, answer, result, spot, pacing, hints, help, onNext }: { card: PlayCard; img: HTMLImageElement | null; answer: Answer; result: VoteResult; spot: VotePosition | null; pacing: boolean; hints: CardHint[] | null; help: ReactNode; onNext: () => void }) {
+function Understand({ card, img, answer, result, spot, pacing, hints, onNext }: { card: PlayCard; img: HTMLImageElement | null; answer: Answer; result: VoteResult; spot: VotePosition | null; pacing: boolean; hints: CardHint[] | null; onNext: () => void }) {
   const t = useTranslations('classify')
   const reduce = useReducedMotion()
   const { reveal, guided } = result
@@ -636,7 +600,6 @@ function Understand({ card, img, answer, result, spot, pacing, hints, help, onNe
   const marksVoice: Voice = control?.truth === 'real' ? 'known' : 'program'
   const hasMarks = reveal.marks.length > 0 || !!hints?.length
   const showProgram = marksVoice === 'program' && (hasMarks || (!control && reveal.kind !== 'sky'))
-  const decided = reveal.outcome === 'moves' || reveal.outcome === 'still'
   const comparison = !control || control.correct === null ? null : control.correct ? t('checks.same') : t('checks.different')
   const overlay = (panel: number) => {
     const mark = reveal.marks[panel]
@@ -654,26 +617,21 @@ function Understand({ card, img, answer, result, spot, pacing, hints, help, onNe
         answer
         title={<span id="reveal-title">{verdict}</span>}
         actions={
-          <>
-            <IconButton label={t('about.open')} onClick={() => setAbout(true)}>
-              <IconMore />
-            </IconButton>
-            {help}
-          </>
+          <IconButton label={t('about.open')} onClick={() => setAbout(true)}>
+            <IconMore />
+          </IconButton>
         }
       />
-      <div className="flex min-h-[190px] flex-1 flex-col px-3">
-        <CardFrame>
-          <PhotoViewer fit compact sprite={card.sprite} img={img} offsets={card.offsets_s} reveal={reveal} swipe={{ x, y, enabled: false, threshold: SWIPE, onRelease: () => undefined, onCancel: () => undefined }} overlay={overlay} caption={hints ? (panel) => <HintCaption hints={hints} panel={panel} /> : undefined} />
-        </CardFrame>
+      <div className="flex min-h-[190px] flex-1 flex-col">
+        <PhotoViewer fit compact sprite={card.sprite} img={img} offsets={card.offsets_s} reveal={reveal} swipe={{ x, y, enabled: false, threshold: SWIPE, onRelease: () => undefined, onCancel: () => undefined }} overlay={overlay} caption={hints ? (panel) => <HintCaption hints={hints} panel={panel} /> : undefined} />
       </div>
       <section aria-labelledby="reveal-title" className="max-h-[38%] shrink-0 overflow-y-auto px-4 pt-1.5">
         <VoiceRow voice="you" name={t('voices.youName')} on={spot ? shown.you : undefined} onToggle={spot ? () => setShown((v) => ({ ...v, you: !v.you })) : undefined}>
           {t(answer)}
         </VoiceRow>
-        {showProgram && (
+        {showProgram && (hints || reveal.kind !== 'sky') && (
           <VoiceRow voice="program" name={t('voices.programName')} on={hasMarks ? shown.marks : undefined} onToggle={hasMarks ? () => setShown((v) => ({ ...v, marks: !v.marks })) : undefined}>
-            {hints ? t('voices.hints') : reveal.kind === 'sky' ? t('voices.none') : t('guess', { guess: t(`guesses.${reveal.kind}`) })}
+            {hints ? t('voices.hints') : t('guess', { guess: t(`guesses.${reveal.kind}`) })}
           </VoiceRow>
         )}
         {control ? (
@@ -682,13 +640,15 @@ function Understand({ card, img, answer, result, spot, pacing, hints, help, onNe
             {comparison && `. ${comparison}`}
           </VoiceRow>
         ) : (
-          <VoiceRow voice="others" name={t('voices.othersName')}>
-            {t('voices.others', { n: reveal.looked, moves: reveal.votes.real, still: reveal.votes.artifact })}
-          </VoiceRow>
+          reveal.looked > 1 && (
+            <VoiceRow voice="others" name={t('voices.othersName')}>
+              {t('voices.others', { n: reveal.looked, moves: reveal.votes.real, still: reveal.votes.artifact })}
+            </VoiceRow>
+          )
         )}
-        <p className="pt-1 text-note leading-snug text-text-secondary">{control ? t(`kinds.${reveal.kind}`) : reveal.kind === 'sky' ? t('sky.reveal') : decided ? null : reveal.outcome === 'open' ? t('outcome.open', { n: reveal.looked }) : null}</p>
+        {(control || reveal.kind === 'sky') && <p className="pt-1 text-note leading-snug text-text-secondary">{control ? t(`kinds.${reveal.kind}`) : t('sky.reveal')}</p>}
         <ResultLine result={result} />
-        {pacing && <p className="pt-1 text-note leading-snug text-text-secondary">{t('pacing')}</p>}
+        {pacing && !control && reveal.kind !== 'sky' && <p className="pt-1 text-note leading-snug text-text-secondary">{t('pacing')}</p>}
         {(guided || (control && reveal.kind === 'mover')) && (
           <button type="button" onClick={() => setWhy(true)} className="inline-flex min-h-9 items-center text-note font-semibold text-link">
             {t('whyLook')}
@@ -958,7 +918,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   )
   const hints = sky && hintsOn ? card.hints : null
 
-  if (result && result.cardId === card.id) return <Understand key={card.id} card={card} img={img} answer={result.answer} result={result.data} spot={result.spot} pacing={result.pacing} hints={hints} help={help} onNext={loadNext} />
+  if (result && result.cardId === card.id) return <Understand key={card.id} card={card} img={img} answer={result.answer} result={result.data} spot={result.spot} pacing={result.pacing} hints={hints} onNext={loadNext} />
 
   return (
     <Fill>

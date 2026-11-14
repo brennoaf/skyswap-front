@@ -97,6 +97,7 @@ export function PhotoViewer({
   onTouchPhoto,
   compact = false,
   onPlayingChange,
+  note,
 }: {
   sprite: string
   img: HTMLImageElement | null
@@ -111,6 +112,7 @@ export function PhotoViewer({
   onTouchPhoto?: () => void
   compact?: boolean
   onPlayingChange?: (playing: boolean) => void
+  note?: ReactNode
 }) {
   const t = useTranslations('classify')
   const reduce = useReducedMotion()
@@ -251,8 +253,9 @@ export function PhotoViewer({
   return (
     <div className={fit ? 'flex min-h-0 flex-1 flex-col' : undefined}>
       {fit ? <div className="flex min-h-0 flex-1 items-center justify-center [container-type:size]">{stage}</div> : stage}
-      <div className="px-2 pb-1 pt-1">
+      <div className="px-3 pb-1 pt-2">
         <PlayerBar
+          note={note}
           playback={playback}
           seconds={seconds}
           dates={dates}

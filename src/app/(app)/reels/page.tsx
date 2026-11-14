@@ -101,6 +101,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
 
       <div className="absolute inset-x-0 z-10 px-2" style={{ bottom: REEL_CAPTION }}>
         <PlayerBar
+          reserve
           tone="media"
           playback={playback}
           seconds={post.frames.map((f) => (Date.parse(f.t) - Date.parse(post.frames[0]?.t ?? f.t)) / 1000)}

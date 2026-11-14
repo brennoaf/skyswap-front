@@ -700,7 +700,8 @@
       "field": "Cada foto mostra {size} minutos de arco de céu (arcmin, 1/60 de grau), na banda de cor {band} (infravermelho, mostrado em cinza).",
       "where": "Onde no céu",
       "whereBody": "Ascensão reta {ra}°, declinação {dec}°.",
-      "whereSky": "Ascensão reta {ra}°, declinação {dec}°. Sorteado entre as partes do céu que o SkySwap consegue ler."
+      "whereSky": "Ascensão reta {ra}°, declinação {dec}°. Sorteado entre as partes do céu que o SkySwap consegue ler.",
+      "infrared": "Infravermelho, {range}"
     },
     "status": {
       "open": "Ainda aberto",
@@ -781,11 +782,8 @@
       "programName": "Programa",
       "knownName": "Resposta conhecida",
       "othersName": "Outras pessoas",
-      "others": "{n, plural, one {# pessoa olhou} other {# pessoas olharam}}: {moves} se move, {still} não se move",
-      "hints": "estas são as dicas que ele marcou.",
-      "none": "ele não marcou nada aqui.",
-      "show": "Mostrar",
-      "hide": "Ocultar"
+      "others": "{n} olharam: {moves} se move, {still} não",
+      "hints": "estas são as dicas que ele marcou."
     },
     "newBadge": "Selo novo: {name}.",
     "changesShort": "Mudanças",
@@ -793,8 +791,7 @@
       "swipeUp": "Não sabe? Deslize para cima.",
       "hold": "Você também pode segurar a foto para congelar, e soltar para voltar a rodar.",
       "short": "Arraste um pouco mais para responder."
-    },
-    "infrared": "Infravermelho, {range}"
+    }
   },
   "reels": {
     "title": "Reels",

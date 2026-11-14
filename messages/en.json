@@ -700,7 +700,8 @@
       "field": "Each photo shows {size} arcminutes of sky (arcmin, 1/60 of a degree), in colour band {band} (infrared, shown in grey).",
       "where": "Where in the sky",
       "whereBody": "Right ascension {ra}°, declination {dec}°.",
-      "whereSky": "Right ascension {ra}°, declination {dec}°. Picked at random among the parts of the sky SkySwap can read."
+      "whereSky": "Right ascension {ra}°, declination {dec}°. Picked at random among the parts of the sky SkySwap can read.",
+      "infrared": "Infrared, {range}"
     },
     "status": {
       "open": "Still open",
@@ -781,11 +782,8 @@
       "programName": "Program",
       "knownName": "Known answer",
       "othersName": "Other people",
-      "others": "{n, plural, one {# person looked} other {# people looked}}: {moves} it moves, {still} it does not",
-      "hints": "these are the hints it marked.",
-      "none": "it marked nothing here.",
-      "show": "Show",
-      "hide": "Hide"
+      "others": "{n} people looked: {moves} it moves, {still} it does not",
+      "hints": "these are the hints it marked."
     },
     "newBadge": "New badge: {name}.",
     "changesShort": "Changes",
@@ -793,8 +791,7 @@
       "swipeUp": "Not sure? Swipe up.",
       "hold": "You can also hold the photo to freeze it, and let go to play again.",
       "short": "Drag a little further to answer."
-    },
-    "infrared": "Infrared, {range}"
+    }
   },
   "reels": {
     "title": "Reels",
