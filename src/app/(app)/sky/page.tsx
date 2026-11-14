@@ -1,0 +1,46 @@
+'use client'
+
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { Suspense, useCallback } from 'react'
+import { skyHref } from '@/components/feed/spot-sheet'
+import { parseSkyParams, SkyViewer, skyTitle, type SkyParams } from '@/components/sky/sky-viewer'
+import { EmptyState, Skeleton, TopBar } from '@/components/ui/primitives'
+
+function SkyScreen() {
+  const t = useTranslations('sky')
+  const sp = useSearchParams()
+  const router = useRouter()
+  const params = parseSkyParams(new URLSearchParams(sp.toString()))
+
+  const onChange = useCallback(
+    (next: Partial<SkyParams>) => {
+      if (!params) return
+      router.replace(skyHref({ ...params, ...next }), { scroll: false })
+    },
+    [params, router],
+  )
+
+  if (!params)
+    return (
+      <main>
+        <TopBar title={t('title')} />
+        <EmptyState title={t('title')} body={t('invalid')} />
+      </main>
+    )
+
+  return (
+    <main>
+      <TopBar title={skyTitle(params)} />
+      <SkyViewer params={params} onChange={onChange} />
+    </main>
+  )
+}
+
+export default function SkyPage() {
+  return (
+    <Suspense fallback={<Skeleton className="aspect-square w-full rounded-none" />}>
+      <SkyScreen />
+    </Suspense>
+  )
+}

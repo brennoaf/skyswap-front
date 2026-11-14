@@ -486,7 +486,8 @@
     "fetchingCutouts": "Fetching cutouts… {done} of {total}",
     "moreImages": "{n, plural, one {# more image} other {# more images}}",
     "rebuild": "Build again",
-    "noFrames": "None of the images could be read for this spot."
+    "noFrames": "None of the images could be read for this spot.",
+    "coordinates": "RA {ra} · Dec {dec}"
   },
   "classify": {
     "title": "Classify",
