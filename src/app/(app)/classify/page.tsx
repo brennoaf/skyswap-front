@@ -10,7 +10,7 @@ import { PhotoViewer, useOffsetLabel } from '@/components/classify/photo-viewer'
 import { IconCards, IconFlashlight, IconMore, IconMoves, IconQuestion, IconStill, IconWarning } from '@/components/icons'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { CatalogLinks } from '@/components/ui/catalog-links'
-import { Button, EmptyState, IconButton, Notice, Sheet, Skeleton, TopBar } from '@/components/ui/primitives'
+import { Button, EmptyState, IconButton, Sheet, Skeleton, TopBar } from '@/components/ui/primitives'
 import { api, ApiError, unwrap, type DeckCard, type Reveal } from '@/lib/api/client'
 import { useGuideCard, useSession, useVote, type Choice, type VotePosition } from '@/lib/api/hooks'
 import type { CardHint } from '@/lib/explore/flashlight'
@@ -35,11 +35,26 @@ type PlayCard = DeckCard | SkyPlayCard
 type Lesson = 'moves' | 'still' | 'glitch'
 type Answer = Choice | 'glitch'
 
+const preloaded = new Map<string, HTMLImageElement>()
+
+function preloadSprite(src: string) {
+  if (preloaded.has(src)) return
+  const el = new Image()
+  el.src = src
+  preloaded.set(src, el)
+}
+
 function useSprite(src: string | undefined) {
   const [img, setImg] = useState<{ src: string; el: HTMLImageElement } | null>(null)
   useEffect(() => {
     if (!src) return
-    const el = new Image()
+    const ready = preloaded.get(src)
+    preloaded.delete(src)
+    if (ready?.complete && ready.naturalHeight) {
+      setImg({ src, el: ready })
+      return
+    }
+    const el = ready ?? new Image()
     let live = true
     el.onload = () => live && setImg({ src, el })
     el.src = src
@@ -262,6 +277,7 @@ function VoteCard({
   lesson,
   lessonIndex,
   lessonTotal,
+  hintsUsed,
   onVoted,
   onStale,
   onSkipGuide,
@@ -276,6 +292,7 @@ function VoteCard({
   lesson: Lesson | null
   lessonIndex: number
   lessonTotal: number
+  hintsUsed: () => boolean
   onVoted: (answer: Answer, r: VoteResult, spot: VotePosition | null) => void
   onStale: () => void
   onSkipGuide: () => void
@@ -315,7 +332,7 @@ function VoteCard({
     if (!held) return
     setStage('sending')
     try {
-      const r = await vote.mutateAsync({ card_id: card.id, choice: held.answer === 'glitch' ? 'still' : held.answer, ...(held.answer === 'glitch' ? { glitch: true } : {}), held_ms: Math.min(600000, Math.round(performance.now() - held.at)), ...(spot ? { position: spot } : {}) })
+      const r = await vote.mutateAsync({ card_id: card.id, choice: held.answer === 'glitch' ? 'still' : held.answer, ...(held.answer === 'glitch' ? { glitch: true } : {}), hints: hintsUsed(), held_ms: Math.min(600000, Math.round(performance.now() - held.at)), ...(spot ? { position: spot } : {}) })
       onVoted(held.answer, r, spot)
     } catch (err) {
       if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) {
@@ -324,7 +341,7 @@ function VoteCard({
       }
       setStage('failed')
     }
-  }, [card.id, held, onStale, onVoted, spot, vote])
+  }, [card.id, held, hintsUsed, onStale, onVoted, spot, vote])
 
   useEffect(() => {
     if (!held || stage !== 'confirm') return
@@ -707,9 +724,32 @@ type DeckState = { status: 'loading' | 'searching' | 'ready' | 'done' | 'error';
 let sessionLooks = 0
 let quietRun = 0
 
+async function fetchNext(): Promise<DeckState> {
+  const query = new URLSearchParams(window.location.search).has('open') ? { explore: true, open: true } : { explore: true }
+  let r = await api
+    .GET('/api/classify/next', { params: { query } })
+    .then(unwrap)
+    .catch(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1200))
+      return unwrap(await api.GET('/api/classify/next', { params: { query } }))
+    })
+  if (r.interesting) {
+    const strong = exploreQueue.takeStrong()
+    if (strong) return { status: 'ready', card: strong }
+  }
+  if (r.sky) {
+    const sky = exploreQueue.take()
+    if (sky) return { status: 'ready', card: sky }
+    r = unwrap(await api.GET('/api/classify/next', { params: { query: { explore: true, known: true } } }))
+  }
+  if (r.card) return { status: 'ready', card: r.card }
+  return { status: r.sky ? 'searching' : 'done', card: null }
+}
+
 function useDeckFlow(enabled: boolean) {
   const [state, setState] = useState<DeckState>({ status: 'loading', card: null })
   const live = useRef(true)
+  const next = useRef<{ work: Promise<DeckState>; done: DeckState | null } | null>(null)
   useEffect(() => {
     live.current = true
     return () => {
@@ -717,38 +757,33 @@ function useDeckFlow(enabled: boolean) {
     }
   }, [])
 
+  const prepare = useCallback(() => {
+    if (next.current) return
+    const entry: { work: Promise<DeckState>; done: DeckState | null } = { work: fetchNext(), done: null }
+    next.current = entry
+    entry.work.then(
+      (s) => {
+        entry.done = s
+        if (s.card) preloadSprite(s.card.sprite)
+      },
+      () => {
+        if (next.current === entry) next.current = null
+      },
+    )
+  }, [])
+
   const load = useCallback(async () => {
+    const prepared = next.current
+    next.current = null
+    if (prepared?.done?.status === 'ready') {
+      setState(prepared.done)
+      return
+    }
     setState({ status: 'loading', card: null })
     try {
-      const query = new URLSearchParams(window.location.search).has('open') ? { explore: true, open: true } : { explore: true }
-      let r = await api
-        .GET('/api/classify/next', { params: { query } })
-        .then(unwrap)
-        .catch(async () => {
-          await new Promise((resolve) => setTimeout(resolve, 1200))
-          return unwrap(await api.GET('/api/classify/next', { params: { query } }))
-        })
-      if (r.interesting) {
-        const strong = exploreQueue.takeStrong()
-        if (strong) {
-          if (live.current) setState({ status: 'ready', card: strong })
-          return
-        }
-      }
-      if (r.sky) {
-        const sky = exploreQueue.take()
-        if (sky) {
-          if (live.current) setState({ status: 'ready', card: sky })
-          return
-        }
-        r = unwrap(await api.GET('/api/classify/next', { params: { query: { explore: true, known: true } } }))
-      }
-      if (r.card) {
-        if (live.current) setState({ status: 'ready', card: r.card })
-        return
-      }
-      if (!r.sky) {
-        if (live.current) setState({ status: 'done', card: null })
+      const s = prepared ? await prepared.work.catch(fetchNext) : await fetchNext()
+      if (s.status !== 'searching') {
+        if (live.current) setState(s)
         return
       }
       if (live.current) setState({ status: 'searching', card: null })
@@ -763,7 +798,7 @@ function useDeckFlow(enabled: boolean) {
     if (enabled) void load()
   }, [enabled, load])
 
-  return { ...state, reload: load }
+  return { ...state, reload: load, prepare }
 }
 
 function PauseCard({ looks, onContinue }: { looks: number; onContinue: () => void }) {
@@ -814,6 +849,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   const [result, setResult] = useState<{ cardId: string; answer: Answer; data: VoteResult; pacing: boolean; spot: VotePosition | null } | null>(null)
   const [pause, setPause] = useState(false)
   const [hintsOn, setHintsOn] = useState(false)
+  const hintsTouched = useRef<string | null>(null)
   const card: PlayCard | null = lesson ? lesson.card : flow.card
   const img = useSprite(card?.sprite)
   const cardId = card?.id
@@ -823,6 +859,12 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   useEffect(() => {
     setHintsOn(voted)
   }, [cardId, voted])
+
+  useEffect(() => {
+    if (cardId && !lesson && !voted) void api.POST('/api/classify/shown', { body: { card_id: cardId } })
+  }, [cardId, lesson, voted])
+
+  const hintsUsed = useCallback(() => !!cardId && hintsTouched.current === cardId, [cardId])
 
   useEffect(() => {
     exploreQueue.start()
@@ -845,9 +887,12 @@ function Deck({ onHelp }: { onHelp: () => void }) {
         } else if (quietRun > 0 && quietRun % QUIET_RUN === 0) pacing = true
       }
       if (card) setResult({ cardId: card.id, answer, data, pacing, spot })
-      if (!guiding) sessionLooks++
+      if (!guiding) {
+        sessionLooks++
+        flow.prepare()
+      }
     },
-    [card, guiding, pacingSeen, markPacingSeen],
+    [card, flow, guiding, pacingSeen, markPacingSeen],
   )
   const loadNext = useCallback(() => {
     setResult(null)
@@ -897,7 +942,15 @@ function Deck({ onHelp }: { onHelp: () => void }) {
       sub={sky ? t('sky.label') : undefined}
       actions={
         <>
-          {sky && <FlashlightButton on={hintsOn} onChange={setHintsOn} />}
+          {sky && (
+            <FlashlightButton
+              on={hintsOn}
+              onChange={(on) => {
+                if (on) hintsTouched.current = card.id
+                setHintsOn(on)
+              }}
+            />
+          )}
           {help}
         </>
       }
@@ -920,6 +973,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
       lesson={lesson?.lesson ?? null}
       lessonIndex={lessonIndex}
       lessonTotal={lessons.length}
+      hintsUsed={hintsUsed}
       showHints={sessionLooks === 0 || idle}
       onVoted={onVoted}
       onStale={loadNext}

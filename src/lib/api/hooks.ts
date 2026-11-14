@@ -282,7 +282,7 @@ export type VotePosition = { frame: number; x: number; y: number }
 export function useVote() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (body: { card_id: string; choice: Choice; glitch?: boolean | null; position?: VotePosition; held_ms?: number }) => unwrap(await api.POST('/api/classify/votes', { body })),
+    mutationFn: async (body: { card_id: string; choice: Choice; glitch?: boolean | null; position?: VotePosition; held_ms?: number; hints?: boolean }) => unwrap(await api.POST('/api/classify/votes', { body })),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.me })
       qc.invalidateQueries({ queryKey: keys.alerts })
