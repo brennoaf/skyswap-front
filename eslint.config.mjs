@@ -7,7 +7,7 @@ const compat = new FlatCompat({ baseDirectory: dirname(fileURLToPath(import.meta
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   { rules: { 'no-console': 'error' } },
-  { ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts', 'src/lib/sky/**', 'public/sw.js', 'playwright-report/**', 'test-results/**'] },
+  { ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts', 'src/lib/sky/web/**', 'src/lib/sky/sci/**', 'public/sw.js', 'playwright-report/**', 'test-results/**'] },
 ]
 
 export default eslintConfig
