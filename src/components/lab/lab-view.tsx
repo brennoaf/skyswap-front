@@ -8,14 +8,13 @@ import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from
 import { IconDownload, IconFlask, IconLayers, IconLock } from '@/components/icons'
 import { Button, Chip, EmptyState, Notice, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
 import { useMe, useObject, useSession } from '@/lib/api/hooks'
+import { TOOL_UNLOCKS as UNLOCK, type LabTool as Tool } from '@/lib/levels'
 import { BAND_HUE, BANDS, cx, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { download, labNotes, saveLabNote, type LabNote } from '@/lib/notes'
 import { decodeSxq, FLAG_LAYERS, flagNames, lambdaAt, makeWcs, measureStar, percentileOf, unpack, type Decoded, type Pack, type PackEpoch } from '@/lib/sky/lab'
 
-type Tool = 'fov' | 'gaia' | 'wise' | 'flags' | 'pixels' | 'spectrum' | 'lightcurve' | 'notes' | 'export'
 type LayerKey = 'target' | 'gaia' | 'wise' | 'saturation' | 'cosmic' | 'persistence' | 'satellite'
 
-const UNLOCK: Record<Tool, number> = { fov: 1, gaia: 1, wise: 2, flags: 2, pixels: 3, spectrum: 4, lightcurve: 4, notes: 5, export: 6 }
 const LAYER_TOOL: Record<LayerKey, Tool | null> = { target: null, gaia: 'gaia', wise: 'wise', saturation: 'flags', cosmic: 'flags', persistence: 'flags', satellite: 'flags' }
 const LAYER_COLOR: Record<LayerKey, string> = { target: '#ffc800', gaia: '#7fe0ff', wise: '#ff00d7', saturation: '#ff5a4f', cosmic: '#33d6a6', persistence: '#c6e04a', satellite: '#ffa63d' }
 const HYPOTHESES = ['moving_object', 'variable', 'artifact', 'saturation', 'unknown'] as const
@@ -242,11 +241,11 @@ export function LabView({ id }: { id: string }) {
         actions={
           expert ? (
             <span className="mr-3 rounded-full bg-accent/15 px-2 py-0.5 text-[12px] font-semibold text-accent">{t('expertOn')}</span>
-          ) : (
+          ) : Object.values(UNLOCK).some((n) => n > level) ? (
             <Link href="/settings" className="mr-3 text-[13px] font-semibold text-accent">
-              {t('locked')}: {Object.values(UNLOCK).filter((n) => n > level).length}
+              {t('lockedCount', { n: Object.values(UNLOCK).filter((n) => n > level).length })}
             </Link>
-          )
+          ) : null
         }
       />
       <Link href={`/o/${profile.id}`} className="flex items-center gap-3 px-4 pb-3">

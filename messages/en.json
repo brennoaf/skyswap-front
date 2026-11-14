@@ -322,9 +322,15 @@
     "verdict": {
       "consistent": "SPHEREx agrees with the catalogue",
       "inconsistent": "SPHEREx disagrees with the catalogue",
+      "deviates": "SPHEREx positions deviate from the prediction (see the limits)",
       "not_measured": "Not measured",
       "insufficient": "Not enough data"
     },
+    "path": "Path",
+    "residuals": "Measured − predicted",
+    "residualHint": "How far each SPHEREx position is from the prediction at the same moment, in arcseconds. One SPHEREx pixel is 6.15″.",
+    "pixel": "1 pixel",
+    "points": "{n, plural, one {# point} other {# points}}",
     "east": "East (″)",
     "north": "North (″)",
     "qrWarning": "QR2 and QR3 were processed differently. Don’t compare small brightness changes across them.",
@@ -422,7 +428,15 @@
     "embed": "Embed code",
     "copied": "Copied",
     "searching": "Searching…",
-    "hint": "Try “WISE 0855”, “Eros” or “269.45 4.74”."
+    "hint": "Try “WISE 0855”, “Eros” or “269.45 4.74”.",
+    "clearQuery": "Clear search",
+    "copyDeepLink": "Copy the deep link",
+    "copyEmbed": "Copy the embed code",
+    "copyFailed": "Couldn’t copy automatically. Select the text below and copy it:",
+    "failed": "Search failed. Try again in a moment.",
+    "coordinates": "RA {ra} · Dec {dec}",
+    "recentSearch": "Search again for {q}",
+    "exploreTile": "Open {name}’s post"
   },
   "sky": {
     "title": "Sky spot",
@@ -454,7 +468,25 @@
     "crosshairCentre": "Crosshair marks the centre of the spot",
     "siaList": "Image list from IRSA. Cutouts are fetched on request.",
     "fetchCutouts": "Fetch {n} cutouts",
-    "invalid": "Add ra and dec to the address, e.g. /sky?ra=269.45&dec=4.74"
+    "invalid": "Add ra and dec to the address, e.g. /sky?ra=269.45&dec=4.74",
+    "lookupFailed": "Couldn’t look up the images for this spot.",
+    "releases": "Data releases",
+    "colormap": "Colour map",
+    "grey": "Grey",
+    "bandHue": "Band colour",
+    "play": "Play",
+    "pause": "Pause",
+    "prev": "Previous frame",
+    "next": "Next frame",
+    "frameOf": "Frame {n} of {total}",
+    "crosshair": "Crosshair",
+    "player": "Time-lapse of this spot",
+    "frameAlt": "SPHEREx image of this spot in band {band} taken {date}",
+    "cutoutsFailed": "Couldn’t fetch the cutouts from IRSA. Try again in a moment.",
+    "fetchingCutouts": "Fetching cutouts… {done} of {total}",
+    "moreImages": "{n, plural, one {# more image} other {# more images}}",
+    "rebuild": "Build again",
+    "noFrames": "None of the images could be read for this spot."
   },
   "classify": {
     "title": "Classify",
@@ -497,7 +529,14 @@
     "rate": "Moving {rate}″ per hour",
     "next": "Next card",
     "tooFast": "Too quick! Votes under 1 second don’t count.",
-    "swipeHint": "Swipe right for real, left for artifact"
+    "swipeHint": "Swipe right for real, left for artifact",
+    "yourVote": "Your vote: {label}",
+    "play": "Play blink",
+    "pause": "Pause blink",
+    "cardAlt": "Candidate image, panel {n} of {total}",
+    "marksHint": "Circles show where the pipeline found the source.",
+    "voteFailed": "Your vote didn’t go through. Try again.",
+    "view": "Image view"
   },
   "reels": {
     "title": "Reels",
@@ -506,7 +545,11 @@
     "openPost": "Open post",
     "profile": "Profile",
     "mute": "Motion paused",
-    "loading": "Loading reels…"
+    "loading": "Loading reels…",
+    "play": "Play",
+    "pause": "Pause",
+    "empty": "No time-lapses yet",
+    "emptyBody": "Time-lapses appear here as new SPHEREx passes arrive."
   },
   "me": {
     "title": "My profile",
@@ -534,7 +577,8 @@
       "history": "History",
       "badges": "Badges",
       "notes": "Notes",
-      "saved": "Saved"
+      "saved": "Saved",
+      "following": "Following"
     },
     "historyItems": {
       "vote": "You classified a candidate as “{label}”",
@@ -558,12 +602,20 @@
     "statusOpen": "open",
     "statusReal": "community: real",
     "statusArtifact": "community: artifact",
-    "statusInconclusive": "community: undecided"
+    "statusInconclusive": "community: undecided",
+    "progress": "Progress to the next level",
+    "levelBadge": "Level {n}",
+    "unlocked": "Unlocked",
+    "earnedOn": "Earned on {date}",
+    "classify": "Classify",
+    "noteUntitled": "Untitled post",
+    "errorTitle": "Couldn’t load your profile"
   },
   "lab": {
     "title": "Lab",
     "subtitle": "Expert tools for {name}",
     "locked": "Locked",
+    "lockedCount": "{n, plural, one {# tool locked} other {# tools locked}}",
     "lockedHint": "Reach level {n}, or switch on Expert mode in Settings.",
     "expertOn": "Expert mode on",
     "band": "Colour",
@@ -607,7 +659,14 @@
     "loading": "Loading science pack…",
     "noPack": "No science pack for this object.",
     "pack": "{n} exposures · {bytes} for this colour",
-    "sources": "Data: SPHEREx QR2/QR3 (IRSA), Gaia DR3 (ESA), AllWISE (IRSA)"
+    "sources": "Data: SPHEREx QR2/QR3 (IRSA), Gaia DR3 (ESA), AllWISE (IRSA)",
+    "hypotheses": {
+      "moving_object": "Moving object",
+      "variable": "Brightness change",
+      "artifact": "Detector artifact",
+      "saturation": "Saturation effect",
+      "unknown": "Unknown"
+    }
   },
   "alerts": {
     "title": "Alerts",
@@ -646,6 +705,9 @@
     "data": "About the data",
     "dataBody": "SkySwap shows real NASA SPHEREx images from public releases QR2 and QR3 (IRSA). Colours are false colours. Data kit {version}.",
     "about": "SkySwap is a non-commercial study prototype for the NASA Space Apps 2026 challenge “Planet X and SPHEREx”. It is not affiliated with NASA or Instagram.",
-    "api": "API docs"
+    "api": "API docs",
+    "languageName": "English",
+    "notesCount": "{n, plural, =0 {No notes saved} one {# note saved} other {# notes saved}}",
+    "loggedOut": "Pick a nickname to keep your progress and switch on Expert mode."
   }
 }
