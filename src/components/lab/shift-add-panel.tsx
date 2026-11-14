@@ -130,7 +130,7 @@ export function ShiftAddPanel({ epochs, parts, refEpoch, catalog }: { epochs: Pa
         step={10}
         value={motion[key]}
         onChange={(e) => setMotion((m) => ({ ...m, [key]: Number(e.target.value) || 0 }))}
-        className="mt-1 h-11 w-full rounded-[var(--radius-input)] border-[0.5px] border-divider bg-bg px-3 font-mono text-body text-text"
+        className="mt-1 h-11 w-full rounded-[var(--radius-input)] border-[0.5px] border-divider bg-bg px-3 text-body tabular-nums text-text"
       />
     </label>
   )
@@ -140,7 +140,7 @@ export function ShiftAddPanel({ epochs, parts, refEpoch, catalog }: { epochs: Pa
       <h3 id="stack-title" className="text-ui font-semibold">
         {t('title')}
       </h3>
-      <p className="mt-1 text-note text-text-secondary">{t('body')}</p>
+      <p className="mt-1 text-note leading-snug text-text-secondary">{t('body')}</p>
       <div className="mt-3 flex items-start gap-3">
         <MotionPad motion={motion} reach={reach} onChange={setMotion} />
         <div className="min-w-0 flex-1 space-y-2">
@@ -148,20 +148,21 @@ export function ShiftAddPanel({ epochs, parts, refEpoch, catalog }: { epochs: Pa
           {field('pmdec')}
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button variant="primary" className="h-11" onClick={() => void start()} disabled={!parts || run.status === 'running'}>
-          {run.status === 'running' ? t('running') : t('run')}
-        </Button>
+      <p className="mt-2 text-meta leading-snug text-text-secondary">{t('unit')}</p>
+      <div className="mt-2 flex gap-2">
         {catalog && (
-          <Button className="h-11" onClick={() => setMotion(catalog)}>
+          <Button className="h-10 flex-1 bg-bg px-2 text-body" onClick={() => setMotion(catalog)}>
             {t('useCatalog')}
           </Button>
         )}
-        <Button variant="ghost" className="h-11" onClick={() => setMotion({ pmra: 0, pmdec: 0 })}>
+        <Button className="h-10 flex-1 bg-bg px-2 text-body" onClick={() => setMotion({ pmra: 0, pmdec: 0 })}>
           {t('zero')}
         </Button>
       </div>
-      <p className="mt-2 text-meta text-text-secondary">{t('reference', { date: fmt.shortDate(refEpoch.iso), n: epochs.length })}</p>
+      <Button variant="primary" className="mt-2 h-11 w-full" onClick={() => void start()} disabled={!parts || run.status === 'running'}>
+        {run.status === 'running' ? t('running') : t('run')}
+      </Button>
+      <p className="mt-2 text-meta leading-snug text-text-secondary">{t('reference', { date: fmt.shortDate(refEpoch.iso), n: epochs.length })}</p>
       {run.status === 'error' && <p className="mt-2 text-note text-danger">{t('failed')}</p>}
       {done && (
         <div className="mt-3 grid grid-cols-2 gap-2" aria-live="polite">

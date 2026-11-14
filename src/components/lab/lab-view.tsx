@@ -1,17 +1,18 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
-import { IconColours, IconCompare, IconCrosshair, IconDownload, IconExpand, IconEye, IconEyeOff, IconLayers, IconMore, IconMoves, IconNote, IconSearch, IconShrink, IconSpectrum, IconStepBack, IconStepForward } from '@/components/icons'
+import { IconCheck, IconColours, IconCompare, IconCrosshair, IconDownload, IconExpand, IconEye, IconEyeOff, IconLayers, IconMore, IconMoves, IconNote, IconSearch, IconShrink, IconSpectrum, IconStepBack, IconStepForward } from '@/components/icons'
 import { ShiftAddPanel } from '@/components/lab/shift-add-panel'
 import { CatalogLinks } from '@/components/ui/catalog-links'
-import { Button, Chip, EmptyState, IconButton, Notice, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
+import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
 import { useObject, useObjectPosts } from '@/lib/api/hooks'
 import { yearsSpanned } from '@/lib/long-baseline'
-import { BAND_HUE, BANDS, cx, formatBytes, formatDate, formatDateTime, formatDec, formatRa, formatShortDate } from '@/lib/format'
+import { BAND_HUE, BANDS, cssColor, cx, formatDate, formatDateTime, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { download, labNotes, saveLabNote, type LabNote } from '@/lib/notes'
 import { decodeSxq, FLAG_LAYERS, flagNames, lambdaAt, makeWcs, measureStar, percentileOf, unpack, type Decoded, type Pack, type PackEpoch } from '@/lib/sky/lab'
 
@@ -60,7 +61,12 @@ function useBand(pack: Pack | undefined, dir: string | null, band: string) {
   })
 }
 
-function draw(canvas: HTMLCanvasElement, d: Decoded, nx: number, ny: number) {
+function bandRgb(band: string): [number, number, number] {
+  const n = parseInt(cssColor(`--color-band-${band.toLowerCase()}`).slice(1), 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+
+function draw(canvas: HTMLCanvasElement, d: Decoded, nx: number, ny: number, hue: [number, number, number]) {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   canvas.width = nx
@@ -71,9 +77,12 @@ function draw(canvas: HTMLCanvasElement, d: Decoded, nx: number, ny: number) {
   for (let k = 0; k < nx * ny; k++) {
     const v = d.image[k] as number
     const g = Number.isFinite(v) ? Math.max(0, Math.min(255, Math.round(Math.sqrt(Math.max(0, (v - lo) / (hi - lo || 1))) * 255))) : 0
-    img.data[k * 4] = g
-    img.data[k * 4 + 1] = g
-    img.data[k * 4 + 2] = g
+    const t = g / 255
+    const dark = Math.min(1, t / 0.6)
+    const light = Math.max(0, (t - 0.6) / 0.4)
+    img.data[k * 4] = hue[0] * dark * (1 - light) + 255 * light
+    img.data[k * 4 + 1] = hue[1] * dark * (1 - light) + 255 * light
+    img.data[k * 4 + 2] = hue[2] * dark * (1 - light) + 255 * light
     img.data[k * 4 + 3] = 255
   }
   ctx.putImageData(img, 0, 0)
@@ -99,8 +108,15 @@ type PhotoSize = keyof typeof PHOTO_HEIGHT
 
 function Toolbar({ value, onChange }: { value: Tool; onChange: (t: Tool) => void }) {
   const t = useTranslations('lab.tools')
+  const reduce = useReducedMotion()
+  const box = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const b = box.current
+    const a = b?.querySelector<HTMLElement>('[aria-selected="true"]')
+    if (b && a) b.scrollTo({ left: a.offsetLeft - (b.clientWidth - a.offsetWidth) / 2, behavior: reduce ? 'auto' : 'smooth' })
+  }, [value, reduce])
   return (
-    <div role="tablist" aria-label={t('label')} className="no-scrollbar flex overflow-x-auto border-b-[0.5px] border-divider px-1">
+    <div ref={box} role="tablist" aria-label={t('label')} className="no-scrollbar relative flex overflow-x-auto border-b-[0.5px] border-divider px-1">
       {TOOLS.map((tool) => {
         const on = tool.key === value
         return (
@@ -112,7 +128,7 @@ function Toolbar({ value, onChange }: { value: Tool; onChange: (t: Tool) => void
             aria-selected={on}
             aria-controls="lab-panel"
             onClick={() => onChange(tool.key)}
-            className={cx('relative flex min-h-16 min-w-[72px] flex-1 shrink-0 flex-col items-center justify-center gap-1 px-1', on ? 'text-text' : 'text-icon-muted')}
+            className={cx('relative flex min-h-16 min-w-[66px] flex-1 shrink-0 flex-col items-center justify-center gap-1 px-1', on ? 'text-text' : 'text-icon-muted')}
           >
             {tool.icon}
             <span className="text-meta font-medium">{t(tool.key)}</span>
@@ -128,6 +144,18 @@ function PhotoButton({ label, onClick, children }: { label: string; onClick: () 
   return (
     <button type="button" aria-label={label} title={label} onClick={onClick} className="inline-flex h-11 w-9 items-center justify-center text-text active:scale-90">
       {children}
+    </button>
+  )
+}
+
+function ExportRow({ title, hint, disabled, onClick }: { title: string; hint: string; disabled: boolean; onClick: () => void }) {
+  return (
+    <button type="button" disabled={disabled} onClick={onClick} className="flex min-h-14 w-full items-center gap-3 px-3 py-2 text-left active:bg-surface-pressed disabled:opacity-50">
+      <IconDownload size={22} className="shrink-0" />
+      <span className="min-w-0 flex-1">
+        <span className="block text-body font-medium">{title}</span>
+        <span className="block text-meta text-text-secondary">{hint}</span>
+      </span>
     </button>
   )
 }
@@ -154,7 +182,7 @@ function EpochGrid({ epochs, value, onChange, photoHeight }: { epochs: PackEpoch
     else if (a.offsetTop + a.offsetHeight > b.scrollTop + b.clientHeight) b.scrollTop = a.offsetTop + a.offsetHeight - b.clientHeight
   }, [value])
   return (
-    <div ref={box} role="group" aria-label={t('dates')} style={{ maxHeight: `max(120px, calc(100dvh - ${photoHeight} - 350px))` }} className="no-scrollbar relative grid auto-rows-max grid-cols-3 gap-1.5 overflow-y-auto overscroll-contain">
+    <div ref={box} role="group" aria-label={t('dates')} style={{ maxHeight: `max(120px, calc(100dvh - ${photoHeight} - 335px))` }} className="no-scrollbar relative grid auto-rows-max grid-cols-3 gap-1.5 overflow-y-auto overscroll-contain">
       {epochs.map((e, i) => {
         const on = i === value
         return (
@@ -208,6 +236,25 @@ export function LabView({ id }: { id: string }) {
   const epochs = useMemo(() => (pack.data?.epochs ?? []).filter((e) => e.band === band).sort((a, b) => a.mjd - b.mjd), [pack.data, band])
   const ep: PackEpoch | undefined = epochs[Math.min(epochIdx, epochs.length - 1)]
   const parts = useBand(pack.data, dir, band)
+  const bandInfo = useMemo(() => {
+    const out: Record<string, { min: number; max: number; n: number }> = {}
+    for (const e of pack.data?.epochs ?? []) {
+      const o = out[e.band] ?? { min: e.lam_um, max: e.lam_um, n: 0 }
+      out[e.band] = { min: Math.min(o.min, e.lam_um), max: Math.max(o.max, e.lam_um), n: o.n + 1 }
+    }
+    return out
+  }, [pack.data])
+  const pickBand = (b: string) => {
+    const list = (pack.data?.epochs ?? []).filter((e) => e.band === b).sort((x, y) => x.mjd - y.mjd)
+    const mjd = ep?.mjd ?? 0
+    let best = 0
+    list.forEach((e, i) => {
+      if (Math.abs(e.mjd - mjd) < Math.abs((list[best]?.mjd ?? 0) - mjd)) best = i
+    })
+    setBand(b)
+    setEpochIdx(best)
+    setDecoded(null)
+  }
   const wcs = useMemo(() => (ep ? makeWcs({ wcs: ep.wcs, sip: ep.sip }) : null), [ep])
 
   useEffect(() => {
@@ -229,7 +276,7 @@ export function LabView({ id }: { id: string }) {
   }, [ep, parts.data])
 
   useEffect(() => {
-    if (decoded && ep && canvas.current) draw(canvas.current, decoded, ep.nx, ep.ny)
+    if (decoded && ep && canvas.current) draw(canvas.current, decoded, ep.nx, ep.ny, bandRgb(ep.band))
   }, [decoded, ep])
 
   useEffect(() => {
@@ -428,67 +475,85 @@ export function LabView({ id }: { id: string }) {
           <div id="lab-panel" role="tabpanel" aria-labelledby={`lab-tab-${tool}`} className="space-y-3 px-4 pt-3">
             {tool === 'date' && ep && (
               <>
-                <p className="text-body">{t('epochInfo', { ra: ep.target_radec[0].toFixed(2), dec: ep.target_radec[1].toFixed(2), release: ep.release.toUpperCase(), lam: ep.lam_um.toFixed(3) })}</p>
-                <EpochGrid epochs={epochs} value={Math.min(epochIdx, epochs.length - 1)} onChange={setEpochIdx} photoHeight={PHOTO_HEIGHT[photo]} />
-                <p className="text-meta text-text-secondary">{t('pack', { n: epochs.length, bytes: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
-                <p className="text-meta text-text-secondary">{t('tools.dateHint')}</p>
+                <dl className="grid grid-cols-[auto_auto_auto] justify-between gap-x-3">
+                  <Reading label={t('pixelSky')}>{t('skyDegrees', { ra: ep.target_radec[0].toFixed(2), dec: ep.target_radec[1].toFixed(2) })}</Reading>
+                  <Reading label={t('tools.release')}>{ep.release.toUpperCase()}</Reading>
+                  <Reading label={t('tools.light')}>{t('tools.lightValue', { band, lam: ep.lam_um.toFixed(2) })}</Reading>
+                </dl>
+                <div>
+                  <p className="pb-1.5 text-meta text-text-secondary">{t('pack', { n: epochs.length })}</p>
+                  <EpochGrid epochs={epochs} value={Math.min(epochIdx, epochs.length - 1)} onChange={setEpochIdx} photoHeight={PHOTO_HEIGHT[photo]} />
+                </div>
               </>
             )}
 
             {tool === 'colour' && (
               <>
-                <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('band')}>
-                  {BANDS.filter((b) => pack.data?.bands[b]).map((b) => (
-                    <Chip
-                      key={b}
-                      active={band === b}
-                      onClick={() => {
-                        setBand(b)
-                        setEpochIdx(0)
-                        setDecoded(null)
-                      }}
-                    >
-                      <span className="size-2 rounded-full" style={{ background: BAND_HUE[b] }} />
-                      {b}
-                    </Chip>
-                  ))}
+                <div className="grid grid-cols-3 gap-2" role="group" aria-label={t('band')}>
+                  {BANDS.filter((b) => pack.data?.bands[b]).map((b) => {
+                    const info = bandInfo[b]
+                    const on = band === b
+                    return (
+                      <button key={b} type="button" aria-pressed={on} onClick={() => pickBand(b)} className={cx('overflow-hidden rounded-xl bg-surface text-left transition-transform active:scale-95', on && 'ring-2 ring-text')}>
+                        <span className="block h-4" style={{ background: BAND_HUE[b] }} />
+                        <span className="block px-2.5 pb-2 pt-1.5">
+                          <span className="flex h-6 items-center justify-between text-ui font-semibold">
+                            {b}
+                            {on && <IconCheck size={20} />}
+                          </span>
+                          {info && <span className="block text-meta tabular-nums text-text-secondary">{t('tools.bandWave', { min: info.min.toFixed(1), max: info.max.toFixed(1) })}</span>}
+                        </span>
+                      </button>
+                    )
+                  })}
                 </div>
-                <p className="text-meta text-text-secondary">{t('tools.colourHint')}</p>
+                <div>
+                  <div className="h-1.5 rounded-full" style={{ background: 'var(--gradient-bands)' }} />
+                  <div className="mt-1 flex justify-between gap-4 text-meta text-text-secondary">
+                    <span>{t('tools.colourShort')}</span>
+                    <span className="text-right">{t('tools.colourLong')}</span>
+                  </div>
+                </div>
+                <p className="text-note leading-snug text-text-secondary">{t('tools.colourHint', { band, n: bandInfo[band]?.n ?? 0 })}</p>
               </>
             )}
 
             {tool === 'zoom' && (
               <>
-                <div className="flex items-center gap-2">
+                <div className="grid grid-cols-4 gap-2" role="group" aria-label={t('zoom')}>
                   {[1, 2, 4, 8].map((z) => (
-                    <Chip key={z} active={Math.abs(zoom - z) < 0.01} onClick={() => setZoom(z)}>
+                    <Chip key={z} active={Math.abs(zoom - z) < 0.01} onClick={() => setZoom(z)} className="min-h-12 w-full justify-center text-ui">
                       {z}x
                     </Chip>
                   ))}
-                  <span className="ml-auto text-meta text-text-secondary">{tcom('arcmin', { n: (((pack.data.field.fov_deg ?? 0.1) * 60) / zoom).toFixed(1) })}</span>
                 </div>
-                <p className="text-meta text-text-secondary">{t('zoomHint', { size: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
+                <p className="text-body">{t('zoomField', { n: (((pack.data.field.fov_deg ?? 0.1) * 60) / zoom).toFixed(1) })}</p>
+                <p className="text-meta text-text-secondary">{t('zoomHint')}</p>
               </>
             )}
 
             {tool === 'layers' && (
-              <ul className="space-y-1">
-                {(Object.keys(layers) as LayerKey[]).map((k) => {
-                  return (
-                    <li key={k}>
-                      <label className="flex min-h-11 items-center gap-3">
-                        <input type="checkbox" checked={layers[k]} onChange={(e) => setLayers((l) => ({ ...l, [k]: e.target.checked }))} className="size-5 accent-[var(--color-accent)]" />
-                        <span className="size-3 rounded-full" style={{ background: LAYER_COLOR[k] }} />
-                        <span className="flex-1 text-body">
+              <ul className="divide-y-[0.5px] divide-divider overflow-hidden rounded-2xl bg-surface">
+                {(Object.keys(layers) as LayerKey[]).map((k) => (
+                  <li key={k}>
+                    <label className="flex min-h-14 items-center gap-3 px-3 py-2 active:bg-surface-pressed">
+                      <span className="size-3 shrink-0 rounded-full" style={{ background: LAYER_COLOR[k] }} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-body font-medium">
                           {tl(k)}
-                          {k === 'satellite' && <span className="block text-meta text-text-secondary">{t('satelliteNA')}</span>}
-                          {k === 'gaia' && gaia.data && <span className="text-meta text-text-secondary">, {gaiaMarks.length}</span>}
-                          {k === 'wise' && wise.data && <span className="text-meta text-text-secondary">, {wiseMarks.length}</span>}
+                          {k === 'gaia' && gaia.data && <span className="font-normal tabular-nums text-text-secondary"> {gaiaMarks.length}</span>}
+                          {k === 'wise' && wise.data && <span className="font-normal tabular-nums text-text-secondary"> {wiseMarks.length}</span>}
                         </span>
-                      </label>
-                    </li>
-                  )
-                })}
+                        <span className="block text-meta leading-snug text-text-secondary">{t(`layerHints.${k}`)}</span>
+                      </span>
+                      <input type="checkbox" role="switch" checked={layers[k]} onChange={(e) => setLayers((l) => ({ ...l, [k]: e.target.checked }))} className="peer sr-only" />
+                      <span
+                        aria-hidden="true"
+                        className="relative h-6 w-10 shrink-0 rounded-full bg-surface-pressed transition-colors after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-on-accent after:transition-transform peer-checked:bg-accent peer-checked:after:translate-x-4"
+                      />
+                    </label>
+                  </li>
+                ))}
               </ul>
             )}
 
@@ -549,52 +614,60 @@ export function LabView({ id }: { id: string }) {
 
             {tool === 'spectrum' && (
               <>
-                <QrWarning />
-                {spectra.data && <SpectrumChart data={spectra.data} />}
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <Button onClick={() => void measureLive()} disabled={!!live && live.done < live.total}>
+                <section className="rounded-2xl bg-surface p-3">
+                  <h3 className="text-ui font-semibold">{t('spectrum')}</h3>
+                  <p className="mt-0.5 text-note leading-snug text-text-secondary">{t('spectrumHint')}</p>
+                  {spectra.data && (
+                    <div className="mt-2">
+                      <SpectrumChart data={spectra.data} />
+                    </div>
+                  )}
+                  <Button className="mt-2 h-11 w-full bg-bg" onClick={() => void measureLive()} disabled={!!live && live.done < live.total}>
                     {live && live.done < live.total ? t('spectrumMeasuring', { done: live.done, total: live.total }) : t('spectrumLive')}
                   </Button>
-                </div>
-                {live && live.points.length > 0 && (
-                  <SpectrumChart data={{ passes: [{ pass: 0, t: live.points[0]?.iso ?? '', points: live.points.map((p) => ({ wavelength_um: p.lam, flux_mjy: p.flux, err: p.err, saturated: false })) }] }} />
-                )}
-            {profile.measurements.lightcurve && (
-                <section className="rounded-2xl bg-surface p-3">
-                  <h3 className="text-ui font-semibold">{t('lightcurve')}</h3>
-                  <KitChart kind="lightcurve" url={profile.measurements.lightcurve} />
+                  {live && live.points.length > 0 && (
+                    <div className="mt-2">
+                      <SpectrumChart data={{ passes: [{ pass: 0, t: live.points[0]?.iso ?? '', points: live.points.map((p) => ({ wavelength_um: p.lam, flux_mjy: p.flux, err: p.err, saturated: false })) }] }} />
+                    </div>
+                  )}
                 </section>
-              )}
+                {profile.measurements.lightcurve && (
+                  <section className="rounded-2xl bg-surface p-3">
+                    <h3 className="text-ui font-semibold">{t('lightcurve')}</h3>
+                    <p className="mt-0.5 text-note leading-snug text-text-secondary">{t('lightcurveHint')}</p>
+                    <KitChart kind="lightcurve" url={profile.measurements.lightcurve} />
+                  </section>
+                )}
+                <QrWarning />
               </>
             )}
 
             {tool === 'notes' && (
               <>
-                <p className="mt-1 text-meta text-text-secondary">
-                  {t('noteFields', {
-                    ra: readout ? formatRa(readout.ra) : '-',
-                    dec: readout ? formatDec(readout.dec) : '-',
-                    date: ep ? formatShortDate(ep.iso, locale) : '-',
-                    band,
-                  })}
-                </p>
-                <label className="mt-2 block text-note">
-                  {t('noteHypothesis')}
-                  <select value={hypothesis} onChange={(e) => setHypothesis(e.target.value as (typeof HYPOTHESES)[number])} className="mt-1 h-11 w-full rounded-[var(--radius-input)] border-[0.5px] border-divider bg-bg px-2">
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl bg-surface p-3">
+                  <Reading label={t('tools.date')}>{ep ? formatShortDate(ep.iso, locale) : '-'}</Reading>
+                  <Reading label={t('tools.colour')}>{band}</Reading>
+                  <Reading label={t('pixelSky')} wide>
+                    {readout ? t('pixelPos', { ra: formatRa(readout.ra), dec: formatDec(readout.dec) }) : <span className="text-text-secondary">{t('notePickSpot')}</span>}
+                  </Reading>
+                </dl>
+                <div>
+                  <p className="pb-1.5 text-note font-medium">{t('noteHypothesis')}</p>
+                  <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('noteHypothesis')}>
                     {HYPOTHESES.map((h) => (
-                      <option key={h} value={h}>
+                      <Chip key={h} active={hypothesis === h} onClick={() => setHypothesis(h)}>
                         {t(`hypotheses.${h}`)}
-                      </option>
+                      </Chip>
                     ))}
-                  </select>
-                </label>
-                <label className="mt-2 block text-note">
+                  </div>
+                </div>
+                <label className="block text-note font-medium">
                   {t('noteText')}
-                  <textarea value={noteText} onChange={(e) => setNoteText(e.target.value)} rows={3} className="mt-1 w-full rounded-[var(--radius-input)] border-[0.5px] border-divider bg-bg px-3 py-2" />
+                  <textarea value={noteText} onChange={(e) => setNoteText(e.target.value)} rows={3} className="mt-1.5 w-full rounded-[var(--radius-input)] border-[0.5px] border-divider bg-bg px-3 py-2 text-body font-normal" />
                 </label>
                 <Button
                   variant="primary"
-                  className="mt-2"
+                  className="h-11 w-full"
                   disabled={!noteText.trim()}
                   onClick={async () => {
                     const note: LabNote = {
@@ -616,45 +689,38 @@ export function LabView({ id }: { id: string }) {
                 >
                   {t('noteAdd')}
                 </Button>
-                <ul className="mt-3 space-y-2">
-                  {notes.length === 0 && <li className="text-note text-text-secondary">{t('noNotes')}</li>}
-                  {notes.map((n) => (
-                    <li key={n.id} className="rounded-lg bg-bg p-2 text-note">
-                      <p className="font-semibold">{t(`hypotheses.${n.hypothesis}`)}</p>
-                      <p>{n.text}</p>
-                      <p className="text-meta text-text-secondary">
-                        {n.band}, {n.date ? formatShortDate(n.date, locale) : '-'}, {n.ra !== null && n.dec !== null ? `${n.ra.toFixed(5)}, ${n.dec.toFixed(5)}` : '-'}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-meta text-text-secondary">{t('noteLocal')}</p>
+                {notes.length > 0 && (
+                  <ul className="space-y-2">
+                    {notes.map((n) => (
+                      <li key={n.id} className="rounded-xl bg-surface p-3 text-note">
+                        <p className="font-semibold">{t(`hypotheses.${n.hypothesis}`)}</p>
+                        <p className="mt-0.5">{n.text}</p>
+                        <p className="mt-1 text-meta text-text-secondary">
+                          {n.band}, {n.date ? formatShortDate(n.date, locale) : '-'}
+                          {n.ra !== null && n.dec !== null && `, ${t('skyDegrees', { ra: n.ra.toFixed(4), dec: n.dec.toFixed(4) })}`}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </>
             )}
 
             {tool === 'more' && (
               <>
-                <section>
-                  <h3 className="text-ui font-semibold">{t('export')}</h3>
-                <div className="mt-2 flex gap-2">
-                  <Button onClick={csv} disabled={!spectra.data && !live?.points.length}>
-                    <IconDownload size={20} />
-                    {t('exportCsv')}
-                  </Button>
-                  <Button onClick={() => download(`${id}-lab-notes.json`, JSON.stringify(notes, null, 2), 'application/json')} disabled={!notes.length}>
-                    <IconDownload size={20} />
-                    {t('exportJson')}
-                  </Button>
-                </div>
+                <section className="overflow-hidden rounded-2xl bg-surface">
+                  <h3 className="px-3 pt-3 text-ui font-semibold">{t('export')}</h3>
+                  <ExportRow title={t('exportCsv')} hint={t('exportCsvHint')} disabled={!spectra.data && !live?.points.length} onClick={csv} />
+                  <ExportRow title={t('exportJson')} hint={notes.length ? t('exportJsonHint') : t('exportJsonEmpty')} disabled={!notes.length} onClick={() => download(`${id}-lab-notes.json`, JSON.stringify(notes, null, 2), 'application/json')} />
                 </section>
-                <CatalogLinks ra={profile.ra} dec={profile.dec} />
-            <Notice>
-              <p>{t('sources')}</p>
-              {flipbook && (
-                <Link href={`/p/${flipbook.id}`} className="mt-1 inline-block text-link">
-                  {t('longBaseline', { n: yearsSpanned(flipbook), title: flipbook.title })}
-                </Link>
-              )}
-            </Notice>
+                <CatalogLinks ra={profile.ra} dec={profile.dec} className="rounded-2xl bg-surface p-3" />
+                {flipbook && (
+                  <Link href={`/p/${flipbook.id}`} className="block rounded-2xl bg-surface p-3 text-body text-link">
+                    {t('longBaseline', { n: yearsSpanned(flipbook), title: flipbook.title })}
+                  </Link>
+                )}
+                <p className="px-1 text-meta leading-snug text-text-secondary">{t('sources')}</p>
               </>
             )}
           </div>
