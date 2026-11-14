@@ -177,11 +177,13 @@ export function useExploreCells() {
   return useQuery({ queryKey: keys.exploreCells, queryFn: async () => unwrap(await api.GET('/api/explore/cells')).cells, staleTime: Infinity })
 }
 
-export function useCommunityFeed() {
+export type CommunityTab = 'new' | 'popular'
+
+export function useCommunityFeed(tab: CommunityTab = 'new') {
   return useInfiniteQuery({
-    queryKey: ['community', 'feed'],
+    queryKey: ['community', 'feed', tab],
     initialPageParam: 0,
-    queryFn: async ({ pageParam }) => unwrap(await api.GET('/api/community/feed', { params: { query: { tab: 'new', cursor: pageParam } } })),
+    queryFn: async ({ pageParam }) => unwrap(await api.GET('/api/community/feed', { params: { query: { tab, cursor: pageParam } } })),
     getNextPageParam: (last) => last.next_cursor ?? undefined,
   })
 }
@@ -193,6 +195,43 @@ export function useFinding(id: string) {
     refetchInterval: 30_000,
     queryFn: async () => unwrap(await api.GET('/api/community/findings/{id}', { params: { path: { id } } })),
   })
+}
+
+export function useCommunityOverview() {
+  return useQuery({ queryKey: ['community', 'overview'], queryFn: async () => unwrap(await api.GET('/api/community/overview')) })
+}
+
+export function useFindingPeople(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['community', 'people', id],
+    enabled,
+    queryFn: async () => unwrap(await api.GET('/api/community/findings/{id}/people', { params: { path: { id } } })),
+  })
+}
+
+type ReactionInput = { kind: 'interesting' | 'doubt'; on: boolean; reason?: 'image_defect' | 'known_asteroid' | 'variable_star' | 'other'; position?: { frame: number; x: number; y: number } }
+
+export function useFindingActions(id: string) {
+  const qc = useQueryClient()
+  const onSuccess = () => qc.invalidateQueries({ queryKey: ['community'] })
+  const path = { params: { path: { id } } }
+  return {
+    reaction: useMutation({
+      mutationFn: async (body: ReactionInput) => unwrap(await api.POST('/api/community/findings/{id}/reaction', { ...path, body })),
+      onSuccess,
+    }),
+    secondLook: useMutation({
+      mutationFn: async (choice: 'moves' | 'still' | 'unsure') => unwrap(await api.POST('/api/community/findings/{id}/second-look', { ...path, body: { choice } })),
+      onSuccess,
+    }),
+    follow: useMutation({
+      mutationFn: async (on: boolean) => unwrap(await api.POST('/api/community/findings/{id}/follow', { ...path, body: { on } })),
+      onSuccess: () => {
+        void onSuccess()
+        qc.invalidateQueries({ queryKey: keys.alerts })
+      },
+    }),
+  }
 }
 
 export function useMyCards(enabled: boolean) {

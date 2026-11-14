@@ -1382,6 +1382,7 @@ export interface paths {
                 query?: {
                     explore?: boolean;
                     known?: boolean;
+                    open?: boolean;
                 };
                 header?: never;
                 path?: never;
@@ -1914,7 +1915,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    tab?: "new";
+                    tab?: "new" | "popular";
                     cursor?: number;
                 };
                 header?: never;
@@ -1947,6 +1948,25 @@ export interface paths {
                                 checks_total: number;
                                 credit_names: string[];
                                 credit_others: number;
+                                social: {
+                                    interesting: number;
+                                    doubts: number;
+                                    doubt_reasons: {
+                                        image_defect: number;
+                                        known_asteroid: number;
+                                        variable_star: number;
+                                        other: number;
+                                    };
+                                    also_seen: number;
+                                    blind_answers: number;
+                                    mine: {
+                                        interesting: boolean;
+                                        doubt: string | null;
+                                        second_look: string | null;
+                                        vote: string | null;
+                                        following: boolean;
+                                    } | null;
+                                };
                             }[];
                             next_cursor: number | null;
                         };
@@ -2003,6 +2023,25 @@ export interface paths {
                             checks_total: number;
                             credit_names: string[];
                             credit_others: number;
+                            social: {
+                                interesting: number;
+                                doubts: number;
+                                doubt_reasons: {
+                                    image_defect: number;
+                                    known_asteroid: number;
+                                    variable_star: number;
+                                    other: number;
+                                };
+                                also_seen: number;
+                                blind_answers: number;
+                                mine: {
+                                    interesting: boolean;
+                                    doubt: string | null;
+                                    second_look: string | null;
+                                    vote: string | null;
+                                    following: boolean;
+                                } | null;
+                            };
                             fov_deg: number;
                             offsets_s: number[];
                             checks: {
@@ -2044,6 +2083,404 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            open_cards: number;
+                            highlight: {
+                                id: string;
+                                kind: "sky" | "deck";
+                                state: string;
+                                reason: string | null;
+                                example: boolean;
+                                ra: number;
+                                dec: number;
+                                band: string;
+                                sprite: string | null;
+                                passes: number;
+                                first_t: string | null;
+                                last_t: string | null;
+                                updated_at: number;
+                                checks_done: number;
+                                checks_total: number;
+                                credit_names: string[];
+                                credit_others: number;
+                                social: {
+                                    interesting: number;
+                                    doubts: number;
+                                    doubt_reasons: {
+                                        image_defect: number;
+                                        known_asteroid: number;
+                                        variable_star: number;
+                                        other: number;
+                                    };
+                                    also_seen: number;
+                                    blind_answers: number;
+                                    mine: {
+                                        interesting: boolean;
+                                        doubt: string | null;
+                                        second_look: string | null;
+                                        vote: string | null;
+                                        following: boolean;
+                                    } | null;
+                                };
+                            } | null;
+                            has_popular: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/findings/{id}/people": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            interesting: string[];
+                            interesting_anonymous: number;
+                            doubts: {
+                                name: string;
+                                reason: string;
+                            }[];
+                            doubts_anonymous: number;
+                            also_seen: string[];
+                            also_seen_anonymous: number;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/findings/{id}/reaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        kind: "interesting" | "doubt";
+                        on: boolean;
+                        reason?: "image_defect" | "known_asteroid" | "variable_star" | "other";
+                        position?: {
+                            frame: number;
+                            x: number;
+                            y: number;
+                        };
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            interesting: number;
+                            doubts: number;
+                            doubt_reasons: {
+                                image_defect: number;
+                                known_asteroid: number;
+                                variable_star: number;
+                                other: number;
+                            };
+                            also_seen: number;
+                            blind_answers: number;
+                            mine: {
+                                interesting: boolean;
+                                doubt: string | null;
+                                second_look: string | null;
+                                vote: string | null;
+                                following: boolean;
+                            } | null;
+                        };
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/findings/{id}/second-look": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        choice: "moves" | "still" | "unsure";
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            interesting: number;
+                            doubts: number;
+                            doubt_reasons: {
+                                image_defect: number;
+                                known_asteroid: number;
+                                variable_star: number;
+                                other: number;
+                            };
+                            also_seen: number;
+                            blind_answers: number;
+                            mine: {
+                                interesting: boolean;
+                                doubt: string | null;
+                                second_look: string | null;
+                                vote: string | null;
+                                following: boolean;
+                            } | null;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/findings/{id}/follow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        on: boolean;
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            interesting: number;
+                            doubts: number;
+                            doubt_reasons: {
+                                image_defect: number;
+                                known_asteroid: number;
+                                variable_star: number;
+                                other: number;
+                            };
+                            also_seen: number;
+                            blind_answers: number;
+                            mine: {
+                                interesting: boolean;
+                                doubt: string | null;
+                                second_look: string | null;
+                                vote: string | null;
+                                following: boolean;
+                            } | null;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2210,6 +2647,44 @@ export interface components {
             checks_total: number;
             credit_names: string[];
             credit_others: number;
+            social: {
+                interesting: number;
+                doubts: number;
+                doubt_reasons: {
+                    image_defect: number;
+                    known_asteroid: number;
+                    variable_star: number;
+                    other: number;
+                };
+                also_seen: number;
+                blind_answers: number;
+                mine: {
+                    interesting: boolean;
+                    doubt: string | null;
+                    second_look: string | null;
+                    vote: string | null;
+                    following: boolean;
+                } | null;
+            };
+        };
+        FindingSocial: {
+            interesting: number;
+            doubts: number;
+            doubt_reasons: {
+                image_defect: number;
+                known_asteroid: number;
+                variable_star: number;
+                other: number;
+            };
+            also_seen: number;
+            blind_answers: number;
+            mine: {
+                interesting: boolean;
+                doubt: string | null;
+                second_look: string | null;
+                vote: string | null;
+                following: boolean;
+            } | null;
         };
         CommunityFeed: {
             items: {
@@ -2230,6 +2705,25 @@ export interface components {
                 checks_total: number;
                 credit_names: string[];
                 credit_others: number;
+                social: {
+                    interesting: number;
+                    doubts: number;
+                    doubt_reasons: {
+                        image_defect: number;
+                        known_asteroid: number;
+                        variable_star: number;
+                        other: number;
+                    };
+                    also_seen: number;
+                    blind_answers: number;
+                    mine: {
+                        interesting: boolean;
+                        doubt: string | null;
+                        second_look: string | null;
+                        vote: string | null;
+                        following: boolean;
+                    } | null;
+                };
             }[];
             next_cursor: number | null;
         };
@@ -2251,6 +2745,25 @@ export interface components {
             checks_total: number;
             credit_names: string[];
             credit_others: number;
+            social: {
+                interesting: number;
+                doubts: number;
+                doubt_reasons: {
+                    image_defect: number;
+                    known_asteroid: number;
+                    variable_star: number;
+                    other: number;
+                };
+                also_seen: number;
+                blind_answers: number;
+                mine: {
+                    interesting: boolean;
+                    doubt: string | null;
+                    second_look: string | null;
+                    vote: string | null;
+                    following: boolean;
+                } | null;
+            };
             fov_deg: number;
             offsets_s: number[];
             checks: {

@@ -568,12 +568,13 @@ function useDeckFlow(enabled: boolean) {
   const load = useCallback(async () => {
     setState({ status: 'loading', card: null })
     try {
+      const query = new URLSearchParams(window.location.search).has('open') ? { explore: true, open: true } : { explore: true }
       let r = await api
-        .GET('/api/classify/next', { params: { query: { explore: true } } })
+        .GET('/api/classify/next', { params: { query } })
         .then(unwrap)
         .catch(async () => {
           await new Promise((resolve) => setTimeout(resolve, 1200))
-          return unwrap(await api.GET('/api/classify/next', { params: { query: { explore: true } } }))
+          return unwrap(await api.GET('/api/classify/next', { params: { query } }))
         })
       if (r.interesting) {
         const strong = exploreQueue.takeStrong()

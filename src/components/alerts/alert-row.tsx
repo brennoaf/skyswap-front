@@ -57,6 +57,14 @@ export function AlertRow({ alert, unread, now }: { alert: Alert; unread: boolean
     )
     text = t(`alerts.items.finding.${alert.detail}`)
     href = `/community/${encodeURIComponent(alert.ref)}`
+  } else if (alert.type === 'finding_followed') {
+    art = (
+      <RoundIcon tone="muted">
+        <IconStar size={24} />
+      </RoundIcon>
+    )
+    text = t('alerts.items.findingFollowed', { state: t(`community.states.${alert.detail}.label`) })
+    href = `/community/${encodeURIComponent(alert.ref)}`
   } else if (alert.type === 'badge') {
     art = <BadgeArt badge={alert.ref} size={44} earned />
     text = t('alerts.items.badge', { badge: t(`badges.items.${alert.ref}.name`) })

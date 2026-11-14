@@ -213,7 +213,8 @@
       "follow": "Pick a nickname to follow objects.",
       "classify": "Pick a nickname to help spot what moves.",
       "me": "Pick a nickname to keep your progress.",
-      "alerts": "Pick a nickname to get alerts."
+      "alerts": "Pick a nickname to get alerts.",
+      "community": "Pick a nickname to join in on findings."
     }
   },
   "xp": {
@@ -1015,7 +1016,8 @@
         "in_review": "A patch of sky you answered is being reviewed.",
         "published": "A patch of sky you answered was published.",
         "discarded": "A patch of sky you answered was set aside. Your answer counted."
-      }
+      },
+      "findingFollowed": "A patch of sky you follow changed: {state}."
     }
   },
   "settings": {
@@ -1051,7 +1053,7 @@
     "details": "Details",
     "detailsHint": "Data, API docs and project info",
     "credit": "Show my nickname in credits",
-    "creditHint": "When a finding lists who found it. If off, you count as anonymous."
+    "creditHint": "When a finding lists who found it or joined in. If off, you count as anonymous."
   },
   "catalogs": {
     "title": "Check catalogs",
@@ -1207,6 +1209,64 @@
       "emptyTitle": "You haven't answered any photos yet",
       "emptyAction": "Answer a photo set"
     },
-    "checksDone": "{done} of {total} checks done"
+    "checksDone": "{done} of {total} checks done",
+    "actionsLabel": "What you can do",
+    "interesting": "Interesting",
+    "doubt": "Doubt",
+    "secondLook": "Second look",
+    "follow": "Follow",
+    "following": "Following",
+    "interestingCount": "{n, plural, one {# person finds this interesting} other {# people find this interesting}}",
+    "doubtCount": "{n, plural, one {# person doubts} other {# people doubt}}: {reasons}",
+    "doubtShort": {
+      "image_defect": "defect",
+      "known_asteroid": "asteroid",
+      "variable_star": "varying star",
+      "other": "something else"
+    },
+    "doubtShortCount": "{label} ({n})",
+    "alsoSeen": "Also looked: {n}, kept apart from the answers that count",
+    "blindAnswers": "{n, plural, one {# blind answer counts} other {# blind answers count}} toward the result",
+    "peopleOpen": "See who joined in",
+    "peopleTitle": "Who joined in",
+    "peopleLead": "Nicknames only, in alphabetical order. People who prefer to stay anonymous are only counted.",
+    "peopleAnonymous": "{n, plural, one {# anonymous person} other {# anonymous people}}",
+    "peopleAnonymousMore": "{n, plural, one {and # anonymous person} other {and # anonymous people}}",
+    "peopleNone": "Nobody yet",
+    "peopleInteresting": "Found it interesting",
+    "peopleDoubts": "Doubt it",
+    "peopleAlso": "Also looked",
+    "doubtTitle": "What makes you doubt it?",
+    "doubtLead": "This only informs people who look later. It does not change the result.",
+    "doubtReasons": {
+      "image_defect": "A defect in the image",
+      "known_asteroid": "A known asteroid",
+      "variable_star": "A star that varies",
+      "other": "Something else"
+    },
+    "doubtRemove": "Take back my doubt",
+    "locateAsk": "Want to show where? Tap the spot on the image.",
+    "locateSkip": "Not now",
+    "locateSaved": "Spot saved.",
+    "lookTitle": "Do you see something move between the photos?",
+    "lookNote": "You have already seen this finding, so your answer stays apart and does not change the result.",
+    "lookChoices": {
+      "real": "It moves",
+      "artifact": "It doesn't move",
+      "unsure": "Not sure"
+    },
+    "lookLabels": {
+      "real": "it moves",
+      "artifact": "it doesn't move",
+      "unsure": "not sure"
+    },
+    "lookSaved": "Saved apart from the answers that count. You can change it.",
+    "lookVoted": "You already answered this photo set: {answer}.",
+    "openCards": "{n, plural, one {# open card waiting for a look} other {# open cards waiting for a look}}",
+    "goalLine": "This month's goal: {count} of {target} photo sets looked at",
+    "tabsLabel": "Order",
+    "tabNew": "Latest",
+    "tabPopular": "Popular",
+    "popularNote": "Popular shows what people are looking at, not what is right. Check the status on each item."
   }
 }

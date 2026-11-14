@@ -213,7 +213,8 @@
       "follow": "Escolha um apelido para seguir objetos.",
       "classify": "Escolha um apelido para ajudar a achar o que se move.",
       "me": "Escolha um apelido para guardar seu progresso.",
-      "alerts": "Escolha um apelido para receber alertas."
+      "alerts": "Escolha um apelido para receber alertas.",
+      "community": "Escolha um apelido para participar dos achados."
     }
   },
   "xp": {
@@ -1015,7 +1016,8 @@
         "in_review": "Um pedaço do céu que você respondeu está em revisão.",
         "published": "Um pedaço do céu que você respondeu foi publicado.",
         "discarded": "Um pedaço do céu que você respondeu foi deixado de lado. Sua resposta contou."
-      }
+      },
+      "findingFollowed": "Um pedaço do céu que você segue mudou: {state}."
     }
   },
   "settings": {
@@ -1051,7 +1053,7 @@
     "details": "Detalhes",
     "detailsHint": "Dados, documentação da API e o projeto",
     "credit": "Mostrar meu apelido nos créditos",
-    "creditHint": "Quando um achado lista quem encontrou. Se desligar, você conta como anônimo."
+    "creditHint": "Quando um achado lista quem encontrou ou participou. Se desligar, você conta como anônimo."
   },
   "catalogs": {
     "title": "Consultar catálogos",
@@ -1207,6 +1209,64 @@
       "emptyTitle": "Você ainda não respondeu nenhuma foto",
       "emptyAction": "Responder um conjunto de fotos"
     },
-    "checksDone": "{done} de {total} checagens feitas"
+    "checksDone": "{done} de {total} checagens feitas",
+    "actionsLabel": "O que você pode fazer",
+    "interesting": "Interessante",
+    "doubt": "Duvido",
+    "secondLook": "Segunda olhada",
+    "follow": "Seguir",
+    "following": "Seguindo",
+    "interestingCount": "{n, plural, one {# pessoa achou interessante} other {# pessoas acharam interessante}}",
+    "doubtCount": "{n, plural, one {# duvida} other {# duvidam}}: {reasons}",
+    "doubtShort": {
+      "image_defect": "defeito",
+      "known_asteroid": "asteroide",
+      "variable_star": "estrela que varia",
+      "other": "outra coisa"
+    },
+    "doubtShortCount": "{label} ({n})",
+    "alsoSeen": "Também viram: {n}, à parte das respostas que contam",
+    "blindAnswers": "{n, plural, one {# resposta às cegas conta} other {# respostas às cegas contam}} para o resultado",
+    "peopleOpen": "Ver quem participou",
+    "peopleTitle": "Quem participou",
+    "peopleLead": "Só apelidos, em ordem alfabética. Quem prefere ficar anônimo só entra na conta.",
+    "peopleAnonymous": "{n, plural, one {# pessoa anônima} other {# pessoas anônimas}}",
+    "peopleAnonymousMore": "{n, plural, one {e # pessoa anônima} other {e # pessoas anônimas}}",
+    "peopleNone": "Ninguém ainda",
+    "peopleInteresting": "Acharam interessante",
+    "peopleDoubts": "Duvidam",
+    "peopleAlso": "Também viram",
+    "doubtTitle": "O que faz você duvidar?",
+    "doubtLead": "Isso só informa quem olhar depois. Não muda o resultado.",
+    "doubtReasons": {
+      "image_defect": "Defeito na imagem",
+      "known_asteroid": "Asteroide conhecido",
+      "variable_star": "Estrela que varia",
+      "other": "Outra coisa"
+    },
+    "doubtRemove": "Retirar minha dúvida",
+    "locateAsk": "Quer mostrar onde? Toque no ponto da imagem.",
+    "locateSkip": "Agora não",
+    "locateSaved": "Ponto guardado.",
+    "lookTitle": "Você vê algo se mover entre as fotos?",
+    "lookNote": "Você já viu este achado, então sua resposta fica à parte e não muda o resultado.",
+    "lookChoices": {
+      "real": "Se move",
+      "artifact": "Não se move",
+      "unsure": "Não sei"
+    },
+    "lookLabels": {
+      "real": "se move",
+      "artifact": "não se move",
+      "unsure": "não sei"
+    },
+    "lookSaved": "Guardado à parte das respostas que contam. Você pode mudar.",
+    "lookVoted": "Você já respondeu este conjunto de fotos: {answer}.",
+    "openCards": "{n, plural, one {# cartão em aberto esperando olhares} other {# cartões em aberto esperando olhares}}",
+    "goalLine": "Meta do mês: {count} de {target} conjuntos de fotos olhados",
+    "tabsLabel": "Ordem",
+    "tabNew": "Novidades",
+    "tabPopular": "Popular",
+    "popularNote": "Popular mostra o que as pessoas estão olhando, não o que está certo. Confira a situação em cada item."
   }
 }

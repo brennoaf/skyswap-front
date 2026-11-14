@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
 import { skyHref } from '@/components/feed/spot-sheet'
 import { IconCrosshair, IconPause, IconPlay, IconStepBack, IconStepForward, IconWarning } from '@/components/icons'
@@ -14,7 +14,7 @@ import { Button, Chip, EmptyState, IconButton, Notice, ObjectAvatar, Segmented, 
 import { QrWarning } from '@/components/charts/charts'
 import type { SkyResult } from '@/lib/api/client'
 import { useObject, useSky } from '@/lib/api/hooks'
-import { BAND_HUE, BANDS, cssColor, formatBytes, formatShortDate } from '@/lib/format'
+import { BAND_HUE, BANDS, cssColor, formatBytes, formatShortDate, cx } from '@/lib/format'
 import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch, type IndexRow } from '@/lib/sky'
 import { pointHits, askServer } from '@/lib/explore/lookup'
 import { differenceGrey, differenceImages, differenceScale } from '@/lib/explore/sky-card'
@@ -220,7 +220,7 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
   return { frames, status, errorKey, done, total, latest, ms, bytes, tile, scanning, firstMs, start }
 }
 
-function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyParams; compact: boolean; target: SkyTarget | null }) {
+function Player({ sky, params, compact, target, onLocate, marker }: { sky: SkyResult; params: SkyParams; compact: boolean; target: SkyTarget | null; onLocate?: (frame: number, x: number, y: number) => void; marker?: ReactNode }) {
   const locale = useLocale()
   const t = useTranslations('sky')
   const tc = useTranslations('common')
@@ -276,9 +276,17 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
 
   const media = (
     <div
-      className="relative aspect-square w-full overflow-hidden bg-media-bg text-on-media outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className={cx('relative aspect-square w-full overflow-hidden bg-media-bg text-on-media outline-none focus-visible:ring-2 focus-visible:ring-accent', onLocate && ready && 'cursor-crosshair')}
       role="group"
       aria-label={t('player')}
+      onClick={
+        onLocate && ready
+          ? (e) => {
+              const r = e.currentTarget.getBoundingClientRect()
+              onLocate(cur, Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)))
+            }
+          : undefined
+      }
       tabIndex={ready ? 0 : -1}
       onKeyDown={(e) => {
         if (!ready) return
@@ -295,6 +303,7 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
     >
       {frame && <FrameCanvas frame={frame} colormap={colormap} diff={diff} label={diff ? t('changesAlt', { date }) : t('frameAlt', { band: frame.band, date })} />}
       {frame && crosshair && <TargetCrosshair frame={frame} target={target} grid={grid} />}
+      {marker}
       {frame && (
         <>
           <span className="absolute left-2 top-2 rounded-md bg-media-scrim px-2 py-1 text-meta font-medium">{date}</span>
@@ -508,7 +517,7 @@ function TargetCrosshair({ frame, target, grid }: { frame: ViewFrame; target: Sk
   return <Crosshair x={(gx + 0.5) / grid.n} y={1 - (gy + 0.5) / grid.n} />
 }
 
-export function SkyViewer({ params, compact = false, onChange }: { params: SkyParams; compact?: boolean; onChange?: (next: Partial<SkyParams>) => void }) {
+export function SkyViewer({ params, compact = false, onChange, onLocate, marker }: { params: SkyParams; compact?: boolean; onChange?: (next: Partial<SkyParams>) => void; onLocate?: (frame: number, x: number, y: number) => void; marker?: ReactNode }) {
   const t = useTranslations('sky')
   const tc = useTranslations('common')
   const { ra, dec, fov, band, name, obj } = params
@@ -539,7 +548,7 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
 
   if (compact) {
     if (d.source === 'none') return <EmptyState title={t('none')} />
-    return <Player key={`${playerKey}|${target ? 'pm' : 'fixed'}`} sky={d} params={params} target={target} compact />
+    return <Player key={`${playerKey}|${target ? 'pm' : 'fixed'}`} sky={d} params={params} target={target} compact onLocate={onLocate} marker={marker} />
   }
 
   return (

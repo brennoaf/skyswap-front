@@ -39,4 +39,5 @@ export function unwrap<T>(r: { data?: T; error?: unknown; response: Response }):
 }
 export type FindingSummary = components['schemas']['FindingSummary']
 export type FindingDetail = components['schemas']['FindingDetail']
+export type FindingSocial = components['schemas']['FindingSocial']
 export type MyCardItem = components['schemas']['MyCards']['items'][number]
