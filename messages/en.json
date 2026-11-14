@@ -169,7 +169,8 @@
       "notes": "Private notes",
       "notesHint": "Only in this browser",
       "share": "Share"
-    }
+    },
+    "menuLabel": "More options"
   },
   "tags": {
     "title": "What do you see?",
@@ -584,7 +585,8 @@
     "cardAlt": "Candidate image, panel {n} of {total}",
     "marksHint": "Circles show where the pipeline found the source.",
     "voteFailed": "Your vote didn’t go through. Try again.",
-    "view": "Image view"
+    "view": "Image view",
+    "cardInfoBefore": "{n, plural, one {# visit} other {# visits}}"
   },
   "reels": {
     "title": "Reels",

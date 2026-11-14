@@ -118,6 +118,7 @@ export interface paths {
                                     official_target: boolean;
                                     saturation: string;
                                     verdict: string;
+                                    best_bands: string[];
                                     has_new_data: boolean;
                                     last_seen: string;
                                 };
@@ -175,6 +176,7 @@ export interface paths {
                                     official_target: boolean;
                                     saturation: string;
                                     verdict: string;
+                                    best_bands: string[];
                                     has_new_data: boolean;
                                     last_seen: string;
                                 };
@@ -229,6 +231,7 @@ export interface paths {
                                 official_target: boolean;
                                 saturation: string;
                                 verdict: string;
+                                best_bands: string[];
                                 has_new_data: boolean;
                                 last_seen: string;
                             }[];
@@ -509,6 +512,7 @@ export interface paths {
                                 official_target: boolean;
                                 saturation: string;
                                 verdict: string;
+                                best_bands: string[];
                                 has_new_data: boolean;
                                 last_seen: string;
                             };
@@ -589,6 +593,7 @@ export interface paths {
                                 official_target: boolean;
                                 saturation: string;
                                 verdict: string;
+                                best_bands: string[];
                                 has_new_data: boolean;
                                 last_seen: string;
                             } & {
@@ -666,6 +671,7 @@ export interface paths {
                                 lam_min: number;
                                 lam_max: number;
                                 obs_id: string | null;
+                                file_size: number | null;
                             }[];
                             nearby: ({
                                 id: string;
@@ -676,12 +682,13 @@ export interface paths {
                                 official_target: boolean;
                                 saturation: string;
                                 verdict: string;
+                                best_bands: string[];
                                 has_new_data: boolean;
                                 last_seen: string;
                             } & {
                                 separation_deg: number | null;
                             })[];
-                            estimated_bytes: number;
+                            total_file_bytes: number | null;
                         };
                     };
                 };
@@ -757,7 +764,6 @@ export interface paths {
                             user: {
                                 id: string;
                                 nickname: string;
-                                expert: boolean;
                                 created_at: number;
                             } | null;
                         };
@@ -790,7 +796,6 @@ export interface paths {
                             user: {
                                 id: string;
                                 nickname: string;
-                                expert: boolean;
                                 created_at: number;
                             } | null;
                         };
@@ -826,7 +831,6 @@ export interface paths {
                             user: {
                                 id: string;
                                 nickname: string;
-                                expert: boolean;
                                 created_at: number;
                             } | null;
                         };
@@ -1083,11 +1087,11 @@ export interface paths {
                             user: {
                                 id: string;
                                 nickname: string;
-                                expert: boolean;
                                 created_at: number;
                             };
                             xp: number;
                             xp_today: number;
+                            daily_cap: number;
                             streak: number;
                             level: {
                                 level: number;
@@ -1101,7 +1105,6 @@ export interface paths {
                                 key: string;
                                 min_xp: number;
                             }[];
-                            tools: string[];
                             badges: {
                                 key: string;
                                 earned_at: number | null;
@@ -1121,6 +1124,7 @@ export interface paths {
                                 official_target: boolean;
                                 saturation: string;
                                 verdict: string;
+                                best_bands: string[];
                                 has_new_data: boolean;
                                 last_seen: string;
                             }[];
@@ -1157,99 +1161,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        expert: boolean;
-                    };
-                };
-            };
-            responses: {
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            user: {
-                                id: string;
-                                nickname: string;
-                                expert: boolean;
-                                created_at: number;
-                            };
-                            xp: number;
-                            xp_today: number;
-                            streak: number;
-                            level: {
-                                level: number;
-                                key: string;
-                                min_xp: number;
-                                next_min_xp: number | null;
-                                progress: number;
-                            };
-                            levels: {
-                                level: number;
-                                key: string;
-                                min_xp: number;
-                            }[];
-                            tools: string[];
-                            badges: {
-                                key: string;
-                                earned_at: number | null;
-                            }[];
-                            counts: {
-                                votes: number;
-                                marks: number;
-                                tags: number;
-                                following: number;
-                            };
-                            following: {
-                                id: string;
-                                handle: string;
-                                name: string;
-                                kind: string;
-                                avatar: string;
-                                official_target: boolean;
-                                saturation: string;
-                                verdict: string;
-                                has_new_data: boolean;
-                                last_seen: string;
-                            }[];
-                            history: {
-                                type: string;
-                                ref: string;
-                                detail: string;
-                                created_at: number;
-                                status: string | null;
-                                post: {
-                                    id: string;
-                                    title: string;
-                                    object_id: string;
-                                    cover: string;
-                                } | null;
-                            }[];
-                        };
-                    };
-                };
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            error: string;
-                        };
-                    };
-                };
-            };
-        };
+        patch?: never;
         trace?: never;
     };
     "/api/alerts": {
@@ -1290,6 +1202,7 @@ export interface paths {
                                     official_target: boolean;
                                     saturation: string;
                                     verdict: string;
+                                    best_bands: string[];
                                     has_new_data: boolean;
                                     last_seen: string;
                                 } | null;
@@ -1429,13 +1342,9 @@ export interface paths {
                                 sprite: string;
                                 tile: number;
                                 n_frames: number;
-                                band: string;
-                                size_arcmin: number;
                                 frames: {
                                     t: string;
                                     mjd: number;
-                                    wl_min: number;
-                                    wl_max: number;
                                     n_exp: number;
                                 }[];
                             } | null;
@@ -1483,7 +1392,6 @@ export interface paths {
                     "application/json": {
                         card_id: string;
                         label: "real" | "artifact" | "unsure";
-                        ms: number;
                     };
                 };
             };
@@ -1503,6 +1411,13 @@ export interface paths {
                             };
                             reveal: {
                                 kind: string;
+                                band: string;
+                                size_arcmin: number;
+                                frames: {
+                                    t: string;
+                                    wl_min: number;
+                                    wl_max: number;
+                                }[];
                                 known: {
                                     name: string;
                                     V: number | null;
@@ -1585,6 +1500,7 @@ export interface components {
             official_target: boolean;
             saturation: string;
             verdict: string;
+            best_bands: string[];
             has_new_data: boolean;
             last_seen: string;
         };
@@ -1698,6 +1614,7 @@ export interface components {
                 official_target: boolean;
                 saturation: string;
                 verdict: string;
+                best_bands: string[];
                 has_new_data: boolean;
                 last_seen: string;
             };
@@ -1717,11 +1634,17 @@ export interface components {
         User: {
             id: string;
             nickname: string;
-            expert: boolean;
             created_at: number;
         };
         Reveal: {
             kind: string;
+            band: string;
+            size_arcmin: number;
+            frames: {
+                t: string;
+                wl_min: number;
+                wl_max: number;
+            }[];
             known: {
                 name: string;
                 V: number | null;
@@ -1751,13 +1674,9 @@ export interface components {
             sprite: string;
             tile: number;
             n_frames: number;
-            band: string;
-            size_arcmin: number;
             frames: {
                 t: string;
                 mjd: number;
-                wl_min: number;
-                wl_max: number;
                 n_exp: number;
             }[];
         };

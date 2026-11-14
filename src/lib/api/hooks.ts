@@ -200,7 +200,7 @@ export function useVote() {
   const qc = useQueryClient()
   const celebrate = useCelebrate()
   return useMutation({
-    mutationFn: async (body: { card_id: string; label: Label; ms: number }) => unwrap(await api.POST('/api/classify/votes', { body })),
+    mutationFn: async (body: { card_id: string; label: Label }) => unwrap(await api.POST('/api/classify/votes', { body })),
     onSuccess: (r) => {
       celebrate(r.xp, r.new_badges)
       qc.invalidateQueries({ queryKey: keys.me })

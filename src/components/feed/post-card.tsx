@@ -29,7 +29,7 @@ export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | '
         </span>
         <span className="block truncate text-meta text-text-secondary">{item.object.official_target ? t('officialTarget') : t(`kinds.${item.object.kind}`)}</span>
       </Link>
-      <IconButton label={t('more')} onClick={onMore}>
+      <IconButton label={t('menuLabel')} onClick={onMore}>
         <IconMore />
       </IconButton>
     </div>

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { IconCheck, IconClose, IconPause, IconPlay, IconQuestion } from '@/components/icons'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Button, EmptyState, Notice, Skeleton, TopBar } from '@/components/ui/primitives'
-import { ApiError, type DeckCard } from '@/lib/api/client'
+import { ApiError, type DeckCard, type Reveal } from '@/lib/api/client'
 import { useNextCard, useSession, useVote, type Label } from '@/lib/api/hooks'
 import { cx, formatDateTime, formatWavelength } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
@@ -36,7 +36,7 @@ function isTyping(e: KeyboardEvent) {
   return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)
 }
 
-function Viewer({ card, img, marks }: { card: DeckCard; img: HTMLImageElement | null; marks?: { u: number; v: number }[] }) {
+function Viewer({ card, img, marks, reveal }: { card: DeckCard; img: HTMLImageElement | null; marks?: { u: number; v: number }[]; reveal?: Reveal }) {
   const locale = useLocale()
   const t = useTranslations('classify')
   const reduce = useReducedMotion()
@@ -117,18 +117,19 @@ function Viewer({ card, img, marks }: { card: DeckCard; img: HTMLImageElement | 
       </div>
       {frame && (
         <p className="px-3 pb-3 pt-1 text-meta text-text-muted">
-          {formatDateTime(frame.t, locale)} · {formatWavelength([frame.wl_min, frame.wl_max])}
+          {formatDateTime(frame.t, locale)}
+          {reveal?.frames[panel] && ` · ${formatWavelength([reveal.frames[panel].wl_min, reveal.frames[panel].wl_max])}`}
         </p>
       )}
     </div>
   )
 }
 
-function CardFrame({ card, children }: { card: DeckCard; children: ReactNode }) {
+function CardFrame({ card, reveal, children }: { card: DeckCard; reveal?: Reveal; children: ReactNode }) {
   const t = useTranslations('classify')
   return (
     <div className="overflow-hidden rounded-2xl border-[0.5px] border-divider bg-bg-elevated shadow-[0_6px_24px_rgb(0_0_0/0.18)]">
-      <p className="px-3 py-2.5 text-note font-semibold">{t('cardInfo', { band: card.band, size: card.size_arcmin, n: card.n_frames })}</p>
+      <p className="px-3 py-2.5 text-note font-semibold">{reveal ? t('cardInfo', { band: reveal.band, size: reveal.size_arcmin, n: card.n_frames }) : t('cardInfoBefore', { n: card.n_frames })}</p>
       {children}
     </div>
   )
@@ -196,7 +197,6 @@ function VoteCard({ card, img, onVoted, onStale }: { card: DeckCard; img: HTMLIm
       if (busy.current || shownAt.current === null) return
       busy.current = true
       setPending(true)
-      const ms = Math.min(3_600_000, Math.round(performance.now() - shownAt.current))
       const target = label === 'real' ? { x: 520, y: 0 } : label === 'artifact' ? { x: -520, y: 0 } : { x: 0, y: -720 }
       const fly = reduce
         ? Promise.resolve()
@@ -205,7 +205,7 @@ function VoteCard({ card, img, onVoted, onStale }: { card: DeckCard; img: HTMLIm
             new Promise((resolve) => setTimeout(resolve, 400)),
           ])
       try {
-        const [r] = await Promise.all([vote.mutateAsync({ card_id: card.id, label, ms }), fly])
+        const [r] = await Promise.all([vote.mutateAsync({ card_id: card.id, label }), fly])
         onVoted(label, r)
       } catch (err) {
         if (err instanceof ApiError && err.code === 'already_voted') {
@@ -414,8 +414,8 @@ function Deck() {
   if (result && result.cardId === card.id)
     return (
       <motion.div initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <CardFrame card={card}>
-          <Viewer card={card} img={img} marks={result.data.reveal.marks} />
+        <CardFrame card={card} reveal={result.data.reveal}>
+          <Viewer card={card} img={img} marks={result.data.reveal.marks} reveal={result.data.reveal} />
         </CardFrame>
         <RevealPanel label={result.label} result={result.data} onNext={loadNext} />
       </motion.div>
