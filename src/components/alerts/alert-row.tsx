@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import type { ReactNode } from 'react'
-import { IconCheck, IconQuestion, IconSparkle } from '@/components/icons'
+import { IconCheck, IconQuestion, IconStar } from '@/components/icons'
 import { BadgeArt, LevelArt } from '@/components/ui/badge-art'
 import { ObjectAvatar } from '@/components/ui/primitives'
 import type { Alert } from '@/lib/api/client'
@@ -53,7 +53,7 @@ export function AlertRow({ alert, unread, now }: { alert: Alert; unread: boolean
     const [ra, dec] = alert.detail.split(',')
     art = (
       <RoundIcon tone="success">
-        <IconSparkle size={24} />
+        <IconStar size={24} />
       </RoundIcon>
     )
     text = t('alerts.items.candidate')
@@ -70,7 +70,7 @@ export function AlertRow({ alert, unread, now }: { alert: Alert; unread: boolean
   } else if (alert.type === 'goal') {
     art = (
       <RoundIcon tone="accent">
-        <IconSparkle size={24} />
+        <IconStar size={24} />
       </RoundIcon>
     )
     text = t('alerts.items.goal', { target: Number(alert.detail), goal: lowerFirst(t(`me.goalItems.${alert.ref}`)) })

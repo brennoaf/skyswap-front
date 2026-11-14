@@ -1670,6 +1670,11 @@ export interface paths {
                         card_id: string;
                         choice: "moves" | "still" | "unsure";
                         glitch?: boolean | null;
+                        position?: {
+                            frame: number;
+                            x: number;
+                            y: number;
+                        };
                     };
                 };
             };
@@ -1729,6 +1734,16 @@ export interface paths {
                                 status: string;
                             };
                             new_badges: string[];
+                        };
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
                         };
                     };
                 };

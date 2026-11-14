@@ -196,10 +196,10 @@ export function MediaStage({
         {mode === 'compare' && compareFrames ? (
           <>
             <Pill>
-              {t('compareA')} · {fmt.shortDate(compareFrames[0].t)}
+              {t('compareA')}, {fmt.shortDate(compareFrames[0].t)}
             </Pill>
             <Pill>
-              {t('compareB')} · {fmt.shortDate(compareFrames[1].t)}
+              {t('compareB')}, {fmt.shortDate(compareFrames[1].t)}
             </Pill>
           </>
         ) : (
@@ -207,7 +207,7 @@ export function MediaStage({
             {frame.telescope || frame.release === 'wise' || frame.release === 'neowise' ? (
               <Pill className="text-note">{t('longBaseline.pill', { year: frameYear(frame), telescope: telescopeOf(frame) })}</Pill>
             ) : (
-              <Pill>{frame.band ? `${frame.band} · ${formatWavelength(frame.wavelength_um)}` : t('falseColourShort')}</Pill>
+              <Pill>{frame.band ? `${frame.band}, ${formatWavelength(frame.wavelength_um)}` : t('falseColourShort')}</Pill>
             )}
             {length > 1 && <Pill>{`${player.index + 1}/${length}`}</Pill>}
           </>
@@ -249,14 +249,14 @@ export function MediaStage({
               </button>
               <button
                 type="button"
-                aria-label={`${t('speed')} ${player.speed}×`}
+                aria-label={`${t('speed')} ${player.speed}x`}
                 onClick={() => {
                   setSpeed(SPEEDS[(SPEEDS.indexOf(player.speed) + 1) % SPEEDS.length] ?? 1)
                   poke()
                 }}
                 className="h-11 min-w-11 px-1 text-body font-semibold"
               >
-                {player.speed}×
+                {player.speed}x
               </button>
               <button
                 type="button"

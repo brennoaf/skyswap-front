@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { useEffect } from 'react'
 import { BadgeArt } from '@/components/ui/badge-art'
-import { IconSparkle } from '@/components/icons'
+import { IconStar } from '@/components/icons'
 import { useUi, type Toast } from '@/lib/state/ui'
 
 function ToastBody({ toast }: { toast: Toast }) {
@@ -12,7 +12,7 @@ function ToastBody({ toast }: { toast: Toast }) {
   if (toast.kind === 'xp')
     return (
       <>
-        <IconSparkle size={22} className="text-warning" />
+        <IconStar size={22} className="text-warning" />
         <span>{toast.streak ? t('xp.gainedStreak', { xp: toast.xp }) : t('xp.gained', { xp: toast.xp })}</span>
       </>
     )

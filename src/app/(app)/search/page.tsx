@@ -52,8 +52,8 @@ function ResultRow({ o, onOpen }: { o: Hit; onOpen: () => void }) {
             <ObjectBadges verified={isVerified(o.verdict)} saturated={isSaturated(o.saturation)} />
           </span>
           <span className="block truncate text-body text-text-secondary">
-            {o.name} · {kind}
-            {o.separation_deg !== null && ` · ${t('separation', { deg: fmt.fixed(o.separation_deg, 2) })}`}
+            {o.name}, {kind}
+            {o.separation_deg !== null && `, ${t('separation', { deg: fmt.fixed(o.separation_deg, 2) })}`}
           </span>
         </span>
       </Link>

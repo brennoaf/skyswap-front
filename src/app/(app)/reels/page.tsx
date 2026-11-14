@@ -78,7 +78,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
   const to = post.date_range[1] ?? from
 
   return (
-    <section ref={ref} aria-label={`${object.handle} · ${post.title}`} className={`relative w-full shrink-0 snap-start snap-always overflow-hidden bg-reels-bg ${REEL_H}`}>
+    <section ref={ref} aria-label={`${object.handle}, ${post.title}`} className={`relative w-full shrink-0 snap-start snap-always overflow-hidden bg-reels-bg ${REEL_H}`}>
       {shown && isLongBaseline(post) && (
         <span className="pointer-events-none absolute left-3 top-14 z-10 rounded-full bg-media-scrim px-2.5 py-1 text-note font-semibold text-on-media">
           {tv('pill', { year: frameYear(shown), telescope: telescopeOf(shown) })}
@@ -128,7 +128,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
         <p className="mt-1.5 text-meta text-[color:var(--color-text-secondary)]">{t('frames', { n, from: formatShortDate(from, locale), to: formatShortDate(to, locale) })}</p>
         {shown && (
           <p className="mt-0.5 text-meta tabular-nums text-[color:var(--color-text-secondary)]">
-            {isLongBaseline(post) ? telescopeOf(shown) : `${shown.band} · ${formatWavelength(shown.wavelength_um)}`} · {formatDateTime(shown.t, locale)} · {tp('falseColour')}
+            {isLongBaseline(post) ? telescopeOf(shown) : `${shown.band}, ${formatWavelength(shown.wavelength_um)}`}, {formatDateTime(shown.t, locale)}, {tp('falseColour')}
           </p>
         )}
       </div>

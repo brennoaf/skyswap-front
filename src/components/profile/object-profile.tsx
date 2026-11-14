@@ -157,11 +157,11 @@ export function ObjectProfileView({ id }: { id: string }) {
         <div className="mt-3 space-y-1 text-body">
           <p className="text-text-secondary">{profile.official_target ? tp('officialTarget') : tp(`kinds.${profile.kind}`)}</p>
           {profile.kind === 'candidate' ? <p>{t('candidateBody')}</p> : <p>{profile.bio}</p>}
-          {profile.aliases.length > 0 && <p className="text-text-secondary">{t('aliases', { names: profile.aliases.slice(0, 4).join(' · ') })}</p>}
+          {profile.aliases.length > 0 && <p className="text-text-secondary">{t('aliases', { names: profile.aliases.slice(0, 4).join(', ') })}</p>}
           <p>
             {profile.sources.slice(0, 3).map((s, i) => (
               <span key={s.id}>
-                {i > 0 && ' · '}
+                {i > 0 && ', '}
                 <a href={s.url} target="_blank" rel="noreferrer" className="text-link">
                   {s.label.split(/[(,]/)[0]?.trim()}
                 </a>

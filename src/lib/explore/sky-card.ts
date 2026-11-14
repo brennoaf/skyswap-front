@@ -100,12 +100,46 @@ export function coverage(img: Float32Array): number {
   return n / img.length
 }
 
-function robustScale(values: number[]): number {
-  if (!values.length) return 1
+function medianOf(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b)
-  const med = sorted[sorted.length >> 1] as number
-  const dev = values.map((v) => Math.abs(v - med)).sort((a, b) => a - b)
-  return Math.max(1e-6, 1.4826 * (dev[dev.length >> 1] as number))
+  const m = sorted.length >> 1
+  return sorted.length % 2 ? (sorted[m] as number) : ((sorted[m - 1] as number) + (sorted[m] as number)) / 2
+}
+
+export function robustScale(values: number[]): number {
+  if (!values.length) return 1
+  const med = medianOf(values)
+  return Math.max(1e-6, 1.4826 * medianOf(values.map((v) => Math.abs(v - med))))
+}
+
+export function differenceImages(images: Float32Array[]): Float32Array[] {
+  const k = images.length
+  const n = images[0]?.length ?? 0
+  const others: number[] = []
+  return images.map((img, i) => {
+    const out = new Float32Array(n)
+    for (let p = 0; p < n; p++) {
+      others.length = 0
+      for (let j = 0; j < k; j++) {
+        if (j === i) continue
+        const v = (images[j] as Float32Array)[p] as number
+        if (Number.isFinite(v)) others.push(v)
+      }
+      const v = img[p] as number
+      out[p] = others.length && Number.isFinite(v) ? v - medianOf(others) : NaN
+    }
+    return out
+  })
+}
+
+export function differenceScale(diffs: Float32Array[]): number {
+  const values: number[] = []
+  for (const d of diffs) for (let p = 0; p < d.length; p += 3) if (Number.isFinite(d[p])) values.push(d[p] as number)
+  return 6 * robustScale(values)
+}
+
+export function differenceGrey(d: number, scale: number): number {
+  return Number.isFinite(d) ? 128 + 127 * Math.max(-1, Math.min(1, d / scale)) : 128
 }
 
 export function composeSprite(images: Float32Array[], n: number): { width: number; height: number; data: Uint8ClampedArray } {
@@ -119,27 +153,8 @@ export function composeSprite(images: Float32Array[], n: number): { width: numbe
   const hi = all.length ? percentile(all, 99.6) : 1
   const span = hi > lo ? hi - lo : 1
   const asinh10 = Math.asinh(10)
-  const diffs = images.map((img, i) => {
-    const out = new Float32Array(n * n)
-    for (let p = 0; p < n * n; p++) {
-      let sum = 0
-      let cnt = 0
-      for (let j = 0; j < k; j++) {
-        if (j === i) continue
-        const v = (images[j] as Float32Array)[p] as number
-        if (Number.isFinite(v)) {
-          sum += v
-          cnt++
-        }
-      }
-      const v = img[p] as number
-      out[p] = cnt && Number.isFinite(v) ? v - sum / cnt : NaN
-    }
-    return out
-  })
-  const diffValues: number[] = []
-  for (const d of diffs) for (let p = 0; p < d.length; p += 3) if (Number.isFinite(d[p])) diffValues.push(d[p] as number)
-  const scale = 6 * robustScale(diffValues)
+  const diffs = differenceImages(images)
+  const scale = differenceScale(diffs)
   const put = (x: number, y: number, g: number) => {
     const o = (y * width + x) * 4
     data[o] = g
@@ -156,8 +171,7 @@ export function composeSprite(images: Float32Array[], n: number): { width: numbe
         const v = img[src] as number
         const t = Number.isFinite(v) ? Math.min(1, Math.max(0, (v - lo) / span)) : 0
         put(i * n + x, y, Number.isFinite(v) ? (255 * Math.asinh(10 * t)) / asinh10 : 0)
-        const d = diff[src] as number
-        put(i * n + x, n + y, Number.isFinite(d) ? 128 + 127 * Math.max(-1, Math.min(1, d / scale)) : 128)
+        put(i * n + x, n + y, differenceGrey(diff[src] as number, scale))
       }
     }
   }

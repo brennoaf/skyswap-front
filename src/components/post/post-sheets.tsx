@@ -7,6 +7,7 @@ import { IconCompare, IconDirect, IconFlask, IconLink, IconNote, IconWarning } f
 import { NotesPanel } from '@/components/post/notes-panel'
 import { centre, FILTERS, type FilterKey, type Sequence } from '@/components/post/sequences'
 import { TagPanel } from '@/components/post/tag-panel'
+import { CatalogLinks } from '@/components/ui/catalog-links'
 import { Notice, Sheet, SheetRow } from '@/components/ui/primitives'
 import type { Frame, ObjectProfile, PostDetail } from '@/lib/api/client'
 import { cx, formatWavelength } from '@/lib/format'
@@ -55,7 +56,7 @@ export function ColoursSheet({
           )
         })}
       </ul>
-      <p className="px-4 pt-2 text-meta text-text-secondary">{active === 'slider' ? (sliderFrame ? `${sliderFrame.band} · ${formatWavelength(sliderFrame.wavelength_um)} · ${fmt.shortDate(sliderFrame.t)}` : t('filterEmpty')) : sequences[active as FilterKey]?.frames.length ? t(`filterHints.${active}`) : t('filterEmpty')}</p>
+      <p className="px-4 pt-2 text-meta text-text-secondary">{active === 'slider' ? (sliderFrame ? `${sliderFrame.band}, ${formatWavelength(sliderFrame.wavelength_um)}, ${fmt.shortDate(sliderFrame.t)}` : t('filterEmpty')) : sequences[active as FilterKey]?.frames.length ? t(`filterHints.${active}`) : t('filterEmpty')}</p>
       <div className="px-4 pb-2 pt-4">
         <div className="flex items-baseline justify-between">
           <label htmlFor="wavelength" className="text-body font-semibold">
@@ -142,6 +143,7 @@ export function MoreSheet({
 export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open: boolean; onClose: () => void; data: PostDetail; profile: ObjectProfile | undefined; frame: Frame | undefined; wise?: boolean }) {
   const t = useTranslations('viewer')
   const tp = useTranslations('post')
+  const tc = useTranslations('common')
   const fmt = useFmt()
   const { post, object } = data
   const fs = post.flags_summary
@@ -153,13 +155,13 @@ export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open
         {frame && (
           <dl className="grid grid-cols-2 gap-x-3 gap-y-2">
             <dt className="text-text-secondary">{t('aboutBand')}</dt>
-            <dd>{frame.band || '—'}</dd>
+            <dd>{frame.band || '-'}</dd>
             <dt className="text-text-secondary">{t('wavelength')}</dt>
-            <dd>{c !== null ? `${formatWavelength(frame.wavelength_um)}` : '—'}</dd>
+            <dd>{c !== null ? `${formatWavelength(frame.wavelength_um)}` : '-'}</dd>
             <dt className="text-text-secondary">{t('aboutDate')}</dt>
-            <dd>{frame.t ? fmt.dateTime(frame.t) : '—'}</dd>
+            <dd>{frame.t ? fmt.dateTime(frame.t) : '-'}</dd>
             <dt className="text-text-secondary">{t('aboutRelease')}</dt>
-            <dd>{frame.release ? frame.release.toUpperCase().replace('+', ' + ') : releases.join(' + ') || '—'}</dd>
+            <dd>{frame.release ? frame.release.toUpperCase().replace('+', ' + ') : releases.join(' + ') || '-'}</dd>
             <dt className="text-text-secondary">{t('aboutKind')}</dt>
             <dd>{t(`kinds.${frame.kind}`)}</dd>
             {frame.telescope && (
@@ -175,7 +177,7 @@ export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open
               </>
             )}
             <dt className="text-text-secondary">{t('aboutFov')}</dt>
-            <dd>{frame.fov_deg ? `${fmt.fixed(frame.fov_deg * 60, 1)}′` : '—'}</dd>
+            <dd>{frame.fov_deg ? tc('arcmin', { n: fmt.fixed(frame.fov_deg * 60, 1) }) : '-'}</dd>
           </dl>
         )}
         {object.saturation === 'heavy' && (
@@ -225,6 +227,7 @@ export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open
             </ul>
           </section>
         )}
+        {profile && <CatalogLinks ra={profile.ra} dec={profile.dec} />}
         <p className="text-meta text-text-secondary">{t('dataNotice')}</p>
         {wise && <p className="text-meta text-text-secondary">{t('longBaseline.credit')}</p>}
       </div>

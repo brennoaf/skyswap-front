@@ -6,6 +6,7 @@ const apiUrl = process.env.SKYSWAP_API_URL ?? 'http://127.0.0.1:4000'
 const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR ?? '.next',
   images: { unoptimized: true },
+  devIndicators: false,
   async rewrites() {
     return [
       { source: '/api/:path*', destination: `${apiUrl}/api/:path*` },

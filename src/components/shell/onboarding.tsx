@@ -54,7 +54,7 @@ function Art({ step, tick }: { step: (typeof STEPS)[number]; tick: number }) {
       <circle cx="120" cy="90" r="28" fill="var(--color-spot-star)" />
       <path d="M100 90H140M120 70V110" stroke="var(--color-on-warning)" strokeWidth="3" opacity="0.15" />
       <text x="120" y="160" textAnchor="middle" fontSize="12" fill="var(--color-text-secondary)">
-        255 · 255 · 255
+        255 255 255
       </text>
     </svg>
   )

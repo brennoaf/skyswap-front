@@ -10,7 +10,7 @@
     "save": "Save",
     "saved": "Saved",
     "delete": "Delete",
-    "loading": "Loading…",
+    "loading": "Loading",
     "retry": "Try again",
     "linkCopied": "Link copied",
     "linkIs": "Link: {url}",
@@ -21,7 +21,7 @@
     "on": "On",
     "off": "Off",
     "notFound": "Not found",
-    "notFoundBody": "This page doesn’t exist in SkySwap.",
+    "notFoundBody": "This page doesn't exist in SkySwap.",
     "goHome": "Go home",
     "time": {
       "now": "now",
@@ -29,7 +29,8 @@
       "h": "{value}h",
       "d": "{value}d",
       "w": "{value}w"
-    }
+    },
+    "arcmin": "{n} arcmin"
   },
   "nav": {
     "label": "Main",
@@ -68,8 +69,8 @@
         "body": "The data kit has no posts."
       },
       "following": {
-        "title": "You don’t follow anything yet",
-        "body": "Open an object’s profile and tap Follow. Its posts will show up here."
+        "title": "You don't follow anything yet",
+        "body": "Open an object's profile and tap Follow. Its posts will show up here."
       },
       "new": {
         "title": "Nothing new",
@@ -81,16 +82,16 @@
       }
     },
     "explore": "Explore objects",
-    "errorTitle": "Couldn’t load the feed",
+    "errorTitle": "Couldn't load the feed",
     "errorBody": "Check that the SkySwap API is running.",
     "retry": "Try again",
-    "end": "You’re all caught up"
+    "end": "You're all caught up"
   },
   "stories": {
     "title": "Objects with stories",
     "spot": "My sky spot",
     "spotLabel": "My sky spot: watch any patch of sky",
-    "open": "Watch {name}’s time-lapse",
+    "open": "Watch {name}'s time-lapse",
     "new": "New",
     "label": "{name} time-lapse",
     "play": "Play",
@@ -99,20 +100,20 @@
     "profile": "View profile",
     "openPost": "Open post",
     "frameAlt": "{name} in band {band} on {date}",
-    "frameLabel": "{band} · frame {n} of {total}",
+    "frameLabel": "{band}, frame {n} of {total}",
     "falseColour": "False colours",
-    "yearLabel": "{year} · {telescope} · {n} of {total}"
+    "yearLabel": "{year}, {telescope}, {n} of {total}"
   },
   "spot": {
     "title": "My sky spot",
     "intro": "Type a name or sky coordinates (RA and Dec) to watch that patch of sky in SPHEREx images.",
     "label": "Name or coordinates",
-    "placeholder": "e.g. Barnard’s Star or 269.45 4.74",
+    "placeholder": "Barnard's Star or 269.45 4.74",
     "watch": "Watch this spot",
-    "resolving": "Looking it up…",
-    "notFound": "We couldn’t find that name. Try coordinates in degrees, like 269.45 4.74.",
+    "resolving": "Looking it up",
+    "notFound": "We couldn't find that name. Try coordinates in degrees, like 269.45 4.74.",
     "failed": "The lookup failed. Try again in a moment.",
-    "stale": "Catalogue positions are old. This object has moved {moved}″ since then, so we moved the target to where it is now.",
+    "stale": "Catalogue positions are old. This object has moved {moved} arcsec since then, so we moved the target to where it is now.",
     "staleUnknown": "This position comes from a catalogue made for the year 2000. Fast-moving stars may have shifted since.",
     "watchAnyway": "Watch the corrected spot"
   },
@@ -142,7 +143,7 @@
     "title": "Post",
     "more": "more",
     "open": "Open post: {title}",
-    "openStory": "Watch {name}’s story",
+    "openStory": "Watch {name}'s story",
     "frameAlt": "SPHEREx image in band {band} taken {date}",
     "chartAlt": "Chart: {title}",
     "falseColour": "false colours",
@@ -177,7 +178,7 @@
   },
   "tags": {
     "title": "What do you see?",
-    "explain": "Tags replace comments. Pick what fits; you’ll see what others picked after you tag.",
+    "explain": "Tags replace comments. Pick what fits. You'll see what others picked after you tag.",
     "items": {
       "asteroid": "Looks like an asteroid",
       "artifact": "Looks like an artifact",
@@ -191,13 +192,13 @@
     "title": "Join SkySwap",
     "nicknameLabel": "Pick a nickname",
     "nicknamePlaceholder": "stargazer_42",
-    "nicknameHelp": "3–24 letters, numbers, dots or underscores. No email, no password.",
+    "nicknameHelp": "3 to 24 letters, numbers, dots or underscores. No email, no password.",
     "join": "Join",
-    "joining": "Joining…",
+    "joining": "Joining",
     "privacy": "Your nickname is the only thing we store. Notes stay in your browser.",
     "errors": {
       "taken": "That nickname is taken. Try another.",
-      "invalid": "Use 3–24 letters, numbers, dots or underscores.",
+      "invalid": "Use 3 to 24 letters, numbers, dots or underscores.",
       "generic": "Something went wrong. Try again."
     },
     "reasons": {
@@ -211,8 +212,8 @@
   },
   "xp": {
     "gained": "+{xp} XP",
-    "gainedStreak": "+{xp} XP · streak bonus",
-    "tooFast": "That was very fast. Take a closer look — quick votes don’t count."
+    "gainedStreak": "+{xp} XP, streak bonus",
+    "tooFast": "That was very fast. Quick votes don't count, so take a closer look."
   },
   "badges": {
     "earned": "New badge",
@@ -220,7 +221,7 @@
     "items": {
       "first_vote": {
         "name": "First look",
-        "how": "Answer “Does it move?” for one set of photos."
+        "how": "Answer \"Does it move?\" for one set of photos."
       },
       "first_motion": {
         "name": "First motion marked",
@@ -232,7 +233,7 @@
       },
       "first_spectrum": {
         "name": "First spectrum",
-        "how": "Open an object’s spectrum."
+        "how": "Open an object's spectrum."
       },
       "infrared_only": {
         "name": "Infrared-only finder",
@@ -270,10 +271,10 @@
     "step": "{n} of {total}",
     "blink": {
       "title": "Blink to find what moves",
-      "body": "SPHEREx photographs the whole sky again and again. Flip between two dates: stars stay put, but nearby stars, asteroids and comets jump. SPHEREx pixels are big, so most jumps are under one pixel — the crosshair shows where to look."
+      "body": "SPHEREx photographs the whole sky again and again. Flip between two dates: stars stay put, but nearby stars, asteroids and comets jump. SPHEREx pixels are big, so most jumps are under one pixel. The crosshair shows where to look."
     },
     "colours": {
-      "title": "102 colours you can’t see",
+      "title": "102 colours you can't see",
       "body": "SPHEREx sees infrared light, from 0.75 to 5 micrometres, in six groups called D1 to D6. We paint them with false colours so your eyes can tell them apart. Some cold objects only appear in D5 and D6."
     },
     "mark": {
@@ -310,10 +311,10 @@
       "clear": "SPHEREx sees it clearly",
       "with_help": "SPHEREx sees it with help (crosshair and difference images)",
       "indicative": "SPHEREx gives indicative results only",
-      "not_measurable": "SPHEREx can’t measure this one",
-      "not_detected": "SPHEREx doesn’t detect it here"
+      "not_measurable": "SPHEREx can't measure this one",
+      "not_detected": "SPHEREx doesn't detect it here"
     },
-    "whyTitle": "Why SPHEREx can’t measure it",
+    "whyTitle": "Why SPHEREx can't measure it",
     "candidateTitle": "Candidate #{id}",
     "candidateBody": "Nobody knows yet what this is. Help find out: blink it, mark it and tag it.",
     "facts": "Facts",
@@ -327,7 +328,7 @@
     "noMeasurements": "No measurements for this object in the data kit.",
     "skyMapTitle": "Sky map",
     "skyMapHint": "Interactive map from Aladin Lite (CDS). Needs an internet connection.",
-    "skyMapCredit": "Aladin Lite · CDS Strasbourg · DSS2 colour survey",
+    "skyMapCredit": "Aladin Lite, CDS Strasbourg, DSS2 colour survey",
     "coords": "Position ({epoch})",
     "highlights": {
       "why": "Why",
@@ -361,13 +362,13 @@
       "insufficient": "Not enough data"
     },
     "path": "Path",
-    "residuals": "Measured − predicted",
-    "residualHint": "How far each SPHEREx position is from the prediction at the same moment, in arcseconds. One SPHEREx pixel is 6.15″.",
+    "residuals": "Measured minus predicted",
+    "residualHint": "How far each SPHEREx position is from the prediction at the same moment, in arcseconds. One SPHEREx pixel is 6.15 arcsec.",
     "pixel": "1 pixel",
     "points": "{n, plural, one {# point} other {# points}}",
-    "east": "East (″)",
-    "north": "North (″)",
-    "qrWarning": "QR2 and QR3 were processed differently. Don’t compare small brightness changes across them.",
+    "east": "East (arcsec)",
+    "north": "North (arcsec)",
+    "qrWarning": "QR2 and QR3 were processed differently. Don't compare small brightness changes across them.",
     "noData": "No data"
   },
   "viewer": {
@@ -407,7 +408,7 @@
     "markHint": "Tap the dot on each frame. We move to the next frame for you.",
     "markProgress": "{n} of {total} frames marked",
     "markSave": "Save marks",
-    "markSaving": "Saving…",
+    "markSaving": "Saving",
     "markClear": "Clear",
     "markDone": "Done marking",
     "markSaved": "Your marks are saved.",
@@ -429,9 +430,9 @@
     "flagFrac": "{pct}% of frames",
     "satelliteNote": "Satellite trails are not flagged by SPHEREx.",
     "saturatedWarning": "This star is too bright for SPHEREx: its centre overflows the detector, so brightness here is indicative only.",
-    "frameInfo": "{band} · {wavelength} · {date} · {release}",
+    "frameInfo": "{band}, {wavelength}, {date}, {release}",
     "dataNotice": "Images: NASA SPHEREx public data (QR2/QR3, IRSA). Colours are false colours.",
-    "loading": "Loading post…",
+    "loading": "Loading post",
     "notFound": "Post not found",
     "falseColourShort": "False colours",
     "saturatedPill": "Too bright",
@@ -449,15 +450,15 @@
       "difference": "Difference image"
     },
     "longBaseline": {
-      "pill": "{year} · {telescope}",
+      "pill": "{year}, {telescope}",
       "timeline": "When each photo was taken, 2010 to today",
       "frame": "{year}, {telescope}",
       "asleep": "WISE asleep",
-      "now": "{year} · {telescope} · photo {n} of {total}",
+      "now": "{year}, {telescope}, photo {n} of {total}",
       "path": "Show path",
       "telescope": "Telescope",
       "exposures": "Exposures combined",
-      "honest": "WISE pixels are 2.75″ and SPHEREx pixels 6.15″, so SPHEREx frames look blurrier. Brightness is scaled per telescope; compare positions, not brightness. Empty corners on SPHEREx frames mean no data there.",
+      "honest": "WISE pixels are 2.75 arcsec and SPHEREx pixels 6.15 arcsec, so SPHEREx frames look blurrier. Brightness is scaled per telescope: compare positions, not brightness. Empty corners on SPHEREx frames mean no data there.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
     }
   },
@@ -470,7 +471,7 @@
     "explore": "Explore",
     "results": "Objects",
     "nearby": "Nearby objects in SkySwap",
-    "noResults": "No objects in SkySwap match “{q}”.",
+    "noResults": "No objects in SkySwap match \"{q}\".",
     "watchTitle": "Watch this spot",
     "watchBody": "See every SPHEREx image of this patch of sky as a time-lapse.",
     "watchOpen": "Watch",
@@ -482,26 +483,26 @@
       "mast": "MAST name resolver",
       "horizons": "JPL Horizons (today)"
     },
-    "stale": "Catalogue position is from {epoch}. It moved {moved}″ since, so the spot is moved to now.",
+    "stale": "Catalogue position is from {epoch}. It moved {moved} arcsec since, so the spot is moved to now.",
     "staleUnknown": "Catalogue position is for the year 2000. Fast-moving stars may have shifted.",
     "separation": "{deg}° away",
     "deepLink": "Deep link",
     "embed": "Embed code",
     "copied": "Copied",
-    "searching": "Searching…",
-    "hint": "Try “WISE 0855”, “Eros” or “269.45 4.74”.",
+    "searching": "Searching",
+    "hint": "Try \"WISE 0855\", \"Eros\" or \"269.45 4.74\".",
     "clearQuery": "Clear search",
     "copyDeepLink": "Copy the deep link",
     "copyEmbed": "Copy the embed code",
-    "copyFailed": "Couldn’t copy automatically. Select the text below and copy it:",
+    "copyFailed": "Couldn't copy automatically. Select the text below and copy it.",
     "failed": "Search failed. Try again in a moment.",
-    "coordinates": "RA {ra} · Dec {dec}",
+    "coordinates": "RA {ra}, Dec {dec}",
     "recentSearch": "Search again for {q}",
-    "exploreTile": "Open {name}’s post"
+    "exploreTile": "Open {name}'s post"
   },
   "sky": {
     "title": "Sky spot",
-    "loadingIndex": "Looking up SPHEREx images…",
+    "loadingIndex": "Looking up SPHEREx images",
     "images": "{n, plural, one {# image} other {# images}} cover this spot",
     "source": {
       "fragment": "from the SkySwap image dictionary",
@@ -510,25 +511,25 @@
     },
     "none": "No SPHEREx images cover this spot yet.",
     "fov": "Field of view",
-    "fovValue": "{arcmin}′ wide",
+    "fovValue": "{arcmin} arcmin wide",
     "band": "Colour",
     "allBands": "All",
     "start": "Build the time-lapse",
-    "building": "Reading images from NASA… {done} of {total}",
+    "building": "Reading images from NASA: {done} of {total}",
     "built": "{n, plural, one {# frame} other {# frames}} ready",
-    "failed": "Couldn’t read the images from NASA’s archive. Check your connection.",
-    "liveNote": "Images are read live from NASA’s public SPHEREx archive, straight into your browser.",
+    "failed": "Couldn't read the images from NASA's archive. Check your connection.",
+    "liveNote": "Images are read live from NASA's public SPHEREx archive, straight into your browser.",
     "staleTyped": "Typed coordinates are fixed in time. If your star moves fast, use its name instead so we can move it to each date.",
     "nearby": "SkySwap objects here",
     "openProfile": "Open profile",
     "embedTitle": "SkySwap sky spot",
     "openInSkySwap": "Open in SkySwap",
-    "frameDate": "{date} · {band}",
+    "frameDate": "{date}, {band}",
     "crosshairCentre": "Crosshair marks the centre of the spot",
     "siaList": "Image list from IRSA. Cutouts are fetched on request.",
     "fetchCutouts": "Fetch {n} cutouts",
     "invalid": "Add ra and dec to the address, e.g. /sky?ra=269.45&dec=4.74",
-    "lookupFailed": "Couldn’t look up the images for this spot.",
+    "lookupFailed": "Couldn't look up the images for this spot.",
     "releases": "Data releases",
     "colormap": "Colour map",
     "grey": "Grey",
@@ -541,23 +542,33 @@
     "crosshair": "Crosshair",
     "player": "Time-lapse of this spot",
     "frameAlt": "SPHEREx image of this spot in band {band} taken {date}",
-    "cutoutsFailed": "Couldn’t fetch the cutouts from IRSA. Try again in a moment.",
-    "fetchingCutouts": "Fetching cutouts… {done} of {total}",
+    "cutoutsFailed": "Couldn't fetch the cutouts from IRSA. Try again in a moment.",
+    "fetchingCutouts": "Fetching cutouts: {done} of {total}",
     "moreImages": "{n, plural, one {# more image} other {# more images}}",
     "rebuild": "Build again",
     "noFrames": "None of the images could be read for this spot.",
-    "coordinates": "RA {ra} · Dec {dec}",
+    "coordinates": "RA {ra}, Dec {dec}",
     "willRead": "Up to {n, plural, one {# image} other {# images}} will be read from NASA when you build it.",
     "bigField": "Bigger fields read more data from NASA ({n, plural, one {# image} other {# images}}). It may take a while on slow connections.",
     "downloaded": "Downloaded {size} from NASA for this time-lapse.",
     "crosshairMoving": "The crosshair follows the object to where it was on each date (catalogue motion).",
     "readingIndex": "Reading the sky index for this area: {loaded} of {total}. Busy parts of the sky take a few seconds the first time.",
     "readingIndexNoSize": "Reading the sky index for this area: {loaded}",
-    "scanningIndex": "Finding the best photos among {n, plural, one {# image} other {# images}} of this spot…"
+    "scanningIndex": "Finding the best photos among {n, plural, one {# image} other {# images}} of this spot",
+    "timeline": "When each photo was taken",
+    "timelineDot": "Photo {n}, {date}",
+    "view": "What to show",
+    "viewPhotos": "Photos",
+    "viewChanges": "What changed",
+    "firstLast": "First and last",
+    "changesHint": "Each photo minus the middle value of the others. Dark: something left. Bright: something arrived.",
+    "changesEnds": "Oldest and newest photo only, each minus the other.",
+    "changesAlt": "What changed on {date}",
+    "frameTags": "{band}, {release}, {colours}",
+    "releaseFrame": "{release}, frame {n} of {total}"
   },
   "classify": {
     "title": "Classify",
-    "intro": "Our program spotted something in these photos of the sky. Your eyes help decide what it is.",
     "question": "Does it move?",
     "moves": "It moves",
     "still": "It doesn't move",
@@ -579,35 +590,34 @@
       "days": "+{n, plural, one {# day} other {# days}}"
     },
     "hints": {
-      "swipe": "Swipe the card: right if it moves, left if it doesn’t. Pause to step through the photos.",
-      "paused": "Paused: swipe or tap the sides of the photo to step. Press play to swipe the card again.",
-      "keys": "← → step through photos · Shift + → it moves · Shift + ← it doesn’t · ↑ not sure"
+      "swipe": "Swipe right if it moves, left if it doesn't.",
+      "paused": "Paused. Tap the sides of the photo to step, or press play to swipe again."
     },
     "guide": {
-      "body": "See? It jumped to a new spot between the photos. That’s what moving looks like — swipe right.",
+      "body": "See how it jumps between the photos? That's moving. Swipe right.",
       "skip": "Skip"
     },
     "yourVote": "Your vote: {choice}",
     "whatWasIt": "What was it?",
-    "known": "It’s a known asteroid: {name}.",
+    "known": "It's a known asteroid: {name}.",
     "checks": {
       "same": "You saw it the same way our checks did.",
-      "different": "Our checks saw it differently — that’s why.",
-      "unsure": "That’s what our checks saw."
+      "different": "Our checks saw it differently.",
+      "unsure": "That's what our checks saw."
     },
-    "nobodyKnows": "Nobody knows yet — you’re one of the first to look.",
-    "guess": "Our program’s guess: {guess}",
+    "nobodyKnows": "Nobody knows yet. You're one of the first to look.",
+    "guess": "Our program's guess: {guess}",
     "outcome": {
-      "open": "{n, plural, one {# person looked} other {# people looked}} so far · still early",
+      "open": "{n, plural, one {# person looked} other {# people looked}} so far. Still early.",
       "moves": "Most likely a moving object",
       "still": "Most likely not moving",
       "undecided": "People see this one differently"
     },
     "kinds": {
-      "mover": "A moving object: it shows up in a different spot in each photo, like an asteroid crossing the sky.",
-      "residual": "A leftover around a bright star. When photos taken at different times are compared, bright stars leave rings and smudges that don’t move.",
-      "single": "A dot that shows up in only one photo — usually a tiny particle hitting the camera, not something in the sky.",
-      "trail": "A streak across the photo — often a satellite or a camera glitch.",
+      "mover": "A moving object: it shows up in a different spot in each photo, like an asteroid crossing the sky. A slow one doesn't jump: in What changed it shows as a dark spot touching a bright one.",
+      "residual": "A leftover around a bright star. When photos taken at different times are compared, bright stars leave rings and smudges that don't move.",
+      "single": "A dot that shows up in only one photo. Usually a tiny particle hitting the camera, not something in the sky.",
+      "trail": "A streak across the photo. Often a satellite or a camera glitch.",
       "stationary": "Something that stays in the same place in every photo.",
       "orphan": "A dot with no match in the other photos, so nothing shows it moving."
     },
@@ -620,28 +630,28 @@
       "orphan": "a lone dot with no match"
     },
     "glitch": {
-      "question": "Looks like a camera glitch? (a streak, a smudge, or a dot that flashes once)",
+      "question": "Looks like a camera glitch? A streak, a smudge, or a dot that flashes once.",
       "yes": "Yes",
       "skip": "Skip",
-      "thanks": "Thanks — noted."
+      "thanks": "Thanks, noted."
     },
-    "tooFast": "That was quick. Answers in under a second don’t count, so take a closer look next time.",
+    "tooFast": "That was quick. Answers in under a second don't count, so take a closer look next time.",
     "next": "Next photo set",
-    "voteFailed": "Couldn’t save your answer. Try again.",
-    "done": "You’ve looked at every set",
-    "doneBody": "Thank you! New photos arrive when NASA releases new data.",
+    "voteFailed": "Couldn't save your answer. Try again.",
+    "done": "You've looked at every set",
+    "doneBody": "New photos arrive when NASA releases new data.",
     "loginTitle": "Help spot what moves in the sky",
     "loginBody": "Pick a nickname to start. Your answers help everyone figure out what each dot is.",
     "about": {
       "open": "More about these photos",
       "title": "About these photos",
       "chance": "Estimated chance it moves: {pct}%",
-      "chanceHint": "Our program’s running estimate, which updates as more people answer. It starts low because most dots turn out not to move.",
+      "chanceHint": "Our program's running estimate, which updates as more people answer. It starts low because most dots turn out not to move.",
       "photos": "When and in which colour each photo was taken",
-      "field": "Each photo shows {size}′ of sky, in colour band {band} (false colours).",
+      "field": "Each photo shows {size} arcmin of sky, in colour band {band} (false colours).",
       "where": "Where in the sky",
-      "whereBody": "Right ascension {ra}°, declination {dec}°. This spot was picked at random among the parts of the sky SkySwap can read.",
-      "openSky": "Open this spot in the sky viewer"
+      "whereBody": "Right ascension {ra}°, declination {dec}°.",
+      "whereSky": "Right ascension {ra}°, declination {dec}°. Picked at random among the parts of the sky SkySwap can read."
     },
     "status": {
       "open": "Still open",
@@ -652,37 +662,74 @@
       "candidate": "Candidate: several people saw it move"
     },
     "sky": {
-      "label": "A random patch of sky. You may be the first person to look here.",
-      "intro": "Nobody has checked this patch of sky yet. Look for a dot that changes place from photo to photo.",
+      "label": "Random patch of sky",
       "reveal": "This patch was picked at random. If enough people see something move here, it goes on a list for a closer look."
     },
-    "searching": "Finding a fresh patch of sky…",
+    "searching": "Finding a fresh patch of sky",
     "pause": "Pause",
     "rest": {
-      "title": "You’ve looked at {n} patches of sky",
-      "body": "Nice work. Rest your eyes for a moment: look at something far away, blink, stretch. The sky will still be here.",
+      "title": "You've looked at {n} patches of sky",
+      "body": "Rest your eyes for a minute. Look at something far away, blink, then come back.",
       "continue": "Keep exploring",
-      "map": "See the sky we’ve explored together"
+      "map": "See the sky we've explored together"
     },
     "flashlight": {
       "button": "Hints",
       "kinds": {
-        "appeared": "Something here wasn’t there in the other photos",
+        "appeared": "Something here wasn't there in the other photos",
         "missing": "Something here disappeared",
-        "flash": "A dot that shows in one photo only — often a camera glitch"
+        "flash": "A dot in one photo only. Often a camera glitch."
       },
       "elsewhere": "Hints are on other photos: step through them",
       "none": "No hints for this patch. Trust your own eyes."
+    },
+    "frameWhen": "{date}, {wavelength}",
+    "pacing": "Most photo sets have nothing new. That's normal, and every look still counts.",
+    "locate": {
+      "prompt": "Where is it? Tap it",
+      "skip": "Skip",
+      "hint": "Tap the dot that moves, or skip.",
+      "hintKeys": "Click the dot that moves. Esc skips."
+    },
+    "keys": {
+      "step": "Step",
+      "moves": "It moves",
+      "still": "It doesn't move",
+      "unsure": "Not sure",
+      "shift": "Shift",
+      "left": "Left arrow",
+      "right": "Right arrow",
+      "up": "Up arrow"
+    },
+    "help": {
+      "open": "How to look",
+      "title": "How to look",
+      "jumpTitle": "What moving looks like",
+      "jumpBody": "A dot that sits in a different place in each photo. Stars stay put.",
+      "slowTitle": "Slow objects don't jump",
+      "slowBody": "In What changed they show as a dark spot touching a bright one. That still counts as moving.",
+      "glitchTitle": "What is not real",
+      "glitchBody": "Something real shows up in most of the photos. A dot in only one photo is usually a camera glitch.",
+      "emptyTitle": "Most sets are empty",
+      "emptyBody": "Most photo sets have nothing new. That's normal, and every look still counts.",
+      "keysTitle": "Keyboard"
+    },
+    "dipole": {
+      "whole": "What changed, whole photo",
+      "zoom": "Zoomed in on the box",
+      "wholeAlt": "Difference between two SPHEREx photos a year apart, whole field",
+      "zoomAlt": "Close-up: a dark spot where the object was, touching a bright spot where it is now",
+      "source": "Real SPHEREx data: {name}, {last} minus {first}."
     }
   },
   "reels": {
     "title": "Reels",
     "label": "Time-lapses",
-    "frames": "{n} frames · {from} → {to}",
+    "frames": "{n} frames, {from} to {to}",
     "openPost": "Open post",
     "profile": "Profile",
     "mute": "Motion paused",
-    "loading": "Loading reels…",
+    "loading": "Loading reels",
     "play": "Play",
     "pause": "Pause",
     "empty": "No time-lapses yet",
@@ -695,7 +742,7 @@
     "classifications": "photo sets",
     "marks": "marks",
     "tags": "tags",
-    "level": "Level {n} · {name}",
+    "level": "Level {n}: {name}",
     "xp": "{xp} XP",
     "toNext": "{xp} XP to {name}",
     "maxLevel": "Top level reached",
@@ -715,19 +762,19 @@
       "following": "Following"
     },
     "historyItems": {
-      "vote": "You looked at a set of photos: “{label}”",
+      "vote": "You looked at a set of photos: \"{label}\"",
       "mark": "You marked {n} frames on {title}",
       "tag": "You tagged {title}: {tag}"
     },
     "labels": {
       "real": "it moves",
-      "artifact": "it doesn’t move",
+      "artifact": "it doesn't move",
       "unsure": "not sure"
     },
     "noHistory": "Nothing yet. Classify, mark or tag to see your history.",
     "noNotes": "No private notes yet.",
     "noSaved": "Nothing saved yet. Tap the bookmark on a post.",
-    "noFollowing": "You don’t follow any object yet.",
+    "noFollowing": "You don't follow any object yet.",
     "goals": "Community goals this month",
     "goalItems": {
       "motions": "Motions measured",
@@ -735,7 +782,7 @@
       "tags": "Posts tagged"
     },
     "goalProgress": "{count} of {target}",
-    "noLeaderboard": "No rankings here: everyone’s careful work counts the same.",
+    "noLeaderboard": "No rankings here: everyone's careful work counts the same.",
     "settings": "Settings",
     "statusOpen": "open",
     "statusReal": "community: real",
@@ -746,7 +793,7 @@
     "earnedOn": "Earned on {date}",
     "classify": "Classify",
     "noteUntitled": "Untitled post",
-    "errorTitle": "Couldn’t load your profile",
+    "errorTitle": "Couldn't load your profile",
     "statusCandidate": "candidate",
     "explored": {
       "title": "Sky explored together",
@@ -762,10 +809,10 @@
     "subtitle": "Science tools for {name}",
     "band": "Colour",
     "epoch": "Exposure",
-    "epochInfo": "{date} · {release} · {lam} µm",
+    "epochInfo": "{date}, {release}, {lam} µm",
     "fov": "Field of view",
     "zoom": "Zoom",
-    "zoomHint": "Pinch, scroll or use the buttons. This colour’s pack is {size}.",
+    "zoomHint": "Pinch, scroll or use the buttons. This colour's pack is {size}.",
     "layers": "Layers",
     "layerItems": {
       "gaia": "Gaia DR3 stars (arrows: 10-year motion)",
@@ -782,25 +829,25 @@
     "pixelValue": "Value {v} MJy/sr ± {e}",
     "pixelWave": "Wavelength {lam} µm",
     "pixelFlags": "Flags: {flags}",
-    "pixelPos": "RA {ra} · Dec {dec}",
+    "pixelPos": "RA {ra}, Dec {dec}",
     "noFlags": "none",
     "spectrum": "Spectrum",
     "spectrumLive": "Measure on this pack",
-    "spectrumMeasuring": "Measuring {done} of {total}…",
+    "spectrumMeasuring": "Measuring {done} of {total}",
     "lightcurve": "Light curve",
     "calibration": "Calibration",
     "notes": "Structured notes",
     "noteHypothesis": "Hypothesis",
     "noteText": "Notes",
     "noteAdd": "Save note",
-    "noteFields": "Position {ra}, {dec} · {date} · {band}",
+    "noteFields": "Position {ra}, {dec}. Date {date}. Band {band}.",
     "noNotes": "No notes yet. Pick a pixel, then write your hypothesis.",
     "export": "Export",
     "exportCsv": "Spectrum CSV",
     "exportJson": "Notes JSON",
-    "loading": "Loading science pack…",
+    "loading": "Loading science pack",
     "noPack": "No science pack for this object.",
-    "pack": "{n} exposures · {bytes} for this colour",
+    "pack": "{n} exposures, {bytes} for this colour",
     "sources": "Data: SPHEREx QR2/QR3 (IRSA), Gaia DR3 (ESA), AllWISE (IRSA)",
     "hypotheses": {
       "moving_object": "Moving object",
@@ -809,7 +856,23 @@
       "saturation": "Saturation effect",
       "unknown": "Unknown"
     },
-    "longBaseline": "{n}-year flipbook: {title}"
+    "longBaseline": "{n}-year flipbook: {title}",
+    "stack": {
+      "title": "Follow a motion",
+      "body": "Adds up every photo of this colour after shifting each one along the motion you set. A faint object that really moves that way gets brighter. Runs only when you press the button.",
+      "pmra": "Motion east (milliarcsec per year)",
+      "pmdec": "Motion north (milliarcsec per year)",
+      "run": "Stack along this motion",
+      "running": "Stacking",
+      "useCatalog": "Use catalogue motion",
+      "zero": "No motion",
+      "reference": "Reference: the photo above, {date}. {n} photos in this colour. Saturated, cosmic-ray and persistence pixels are left out.",
+      "along": "Along {pmra}, {pmdec}",
+      "still": "No motion",
+      "snr": "Peak at the target: {v} times the noise. {n} photos used.",
+      "sameStretch": "Both stacks use the same brightness scale. The ring is the target at the reference date.",
+      "failed": "Couldn't stack these photos."
+    }
   },
   "alerts": {
     "title": "Alerts",
@@ -817,14 +880,14 @@
     "week": "This week",
     "earlier": "Earlier",
     "empty": "No alerts yet",
-    "emptyBody": "Follow objects and classify candidates. We’ll tell you when there’s news.",
+    "emptyBody": "Follow objects and classify candidates. We'll tell you when there's news.",
     "markRead": "Mark all as read",
     "items": {
       "new_data": "{name} has new SPHEREx data from {date}.",
       "consensus": "Photos you looked at now have an answer: {status}.",
-      "badge": "You earned the badge “{badge}”.",
+      "badge": "You earned the badge \"{badge}\".",
       "level": "You reached level {level}: {name}.",
-      "goal": "The community reached its goal: {target} {goal} this month!",
+      "goal": "The community reached its goal: {target} {goal} this month.",
       "candidate": "A patch of sky you looked at is now a candidate: several people saw something move there."
     }
   },
@@ -846,10 +909,28 @@
     "notesHint": "Your notes live only in this browser.",
     "data": "About the data",
     "dataBody": "SkySwap shows real NASA SPHEREx images from public releases QR2 and QR3 (IRSA). Colours are false colours. The sky index lists {images} published images, so any spot can be opened. The first look at a deep-field spot, where SPHEREx returns again and again near the ecliptic poles, can take a few seconds while that part of the index downloads; after that it is kept in the browser. Data kit {version}.",
-    "about": "SkySwap is a non-commercial study prototype for the NASA Space Apps 2026 challenge “Planet X and SPHEREx”. It is not affiliated with NASA or Instagram.",
+    "about": "SkySwap is a non-commercial study prototype for the NASA Space Apps 2026 challenge \"Planet X and SPHEREx\". It is not affiliated with NASA or Instagram.",
     "api": "API docs",
     "languageName": "English",
     "notesCount": "{n, plural, =0 {No notes saved} one {# note saved} other {# notes saved}}",
     "loggedOut": "Pick a nickname to keep your progress."
+  },
+  "catalogs": {
+    "title": "Check catalogs",
+    "hint": "See if something here is already known. Opens in a new tab.",
+    "names": {
+      "simbad": "SIMBAD",
+      "vizier": "VizieR",
+      "legacy": "Legacy Survey viewer",
+      "irsa": "IRSA Finder Chart",
+      "sky": "SkySwap sky viewer"
+    },
+    "what": {
+      "simbad": "Known stars and galaxies within 1 arcmin",
+      "vizier": "Published catalogues within 1 arcmin",
+      "legacy": "WISE and NEOWISE infrared images (unWISE)",
+      "irsa": "Older sky surveys: DSS, 2MASS, WISE",
+      "sky": "Every SPHEREx photo of this spot"
+    }
   }
 }

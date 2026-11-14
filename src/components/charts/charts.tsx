@@ -77,7 +77,7 @@ export function SpectrumChart({ data }: { data: SpectraData }) {
           )
         })}
       </Frame>
-      <Legend items={[...data.passes.map((p, i) => ({ color: PASS_COLORS[i % PASS_COLORS.length] as string, label: `${t('pass', { n: i + 1 })} · ${formatShortDate(p.t, locale)}` })), { color: 'var(--color-text-secondary)', label: t('saturated'), hollow: true }]} />
+      <Legend items={[...data.passes.map((p, i) => ({ color: PASS_COLORS[i % PASS_COLORS.length] as string, label: `${t('pass', { n: i + 1 })}, ${formatShortDate(p.t, locale)}` })), { color: 'var(--color-text-secondary)', label: t('saturated'), hollow: true }]} />
       <figcaption className="mt-2 text-meta text-text-secondary">{t('spectrumHint')}</figcaption>
     </figure>
   )
@@ -208,7 +208,7 @@ export function MotionChart({ data, pixelArcsec = 6.15 }: { data: MotionData; pi
           </>
         )}
       </Frame>
-      <Legend items={[{ color: 'var(--color-warning)', label: t('predicted'), hollow: true }, { color: PASS_COLORS[0] as string, label: `${t('measured')} · ${t('points', { n: data.measured.length })}` }, { color: 'var(--color-warning)', label: `- - ${t('pixel')}`, hollow: true }]} />
+      <Legend items={[{ color: 'var(--color-warning)', label: t('predicted'), hollow: true }, { color: PASS_COLORS[0] as string, label: `${t('measured')}, ${t('points', { n: data.measured.length })}` }, { color: 'var(--color-warning)', label: `- - ${t('pixel')}`, hollow: true }]} />
       <figcaption className="mt-2 space-y-2 text-meta text-text-secondary">
         <p className="font-semibold text-text">{t.has(`verdict.${data.verdict}`) ? t(`verdict.${data.verdict}`) : data.verdict}</p>
         <p>{view === 'residuals' ? t('residualHint') : t('motionHint')}</p>

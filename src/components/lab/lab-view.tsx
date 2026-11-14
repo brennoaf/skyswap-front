@@ -6,6 +6,8 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
 import { IconDownload, IconFlask, IconLayers } from '@/components/icons'
+import { ShiftAddPanel } from '@/components/lab/shift-add-panel'
+import { CatalogLinks } from '@/components/ui/catalog-links'
 import { Button, Chip, EmptyState, Notice, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
 import { useObject, useObjectPosts } from '@/lib/api/hooks'
 import { yearsSpanned } from '@/lib/long-baseline'
@@ -308,7 +310,7 @@ export function LabView({ id }: { id: string }) {
           {ep && (
             <div className="px-4">
               <label className="block text-note text-text-secondary">
-                {t('epoch')} · {t('epochInfo', { date: formatShortDate(ep.iso, locale), release: ep.release.toUpperCase(), lam: ep.lam_um.toFixed(3) })}
+                {t('epoch')}, {t('epochInfo', { date: formatShortDate(ep.iso, locale), release: ep.release.toUpperCase(), lam: ep.lam_um.toFixed(3) })}
                 <input type="range" min={0} max={Math.max(0, epochs.length - 1)} value={Math.min(epochIdx, epochs.length - 1)} onChange={(e) => setEpochIdx(Number(e.target.value))} className="mt-1 h-11 w-full" />
               </label>
               <p className="text-meta text-text-secondary">{t('pack', { n: epochs.length, bytes: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
@@ -321,10 +323,10 @@ export function LabView({ id }: { id: string }) {
                 <div className="mt-2 flex items-center gap-2">
                   {[1, 2, 4, 8].map((z) => (
                     <Chip key={z} active={Math.abs(zoom - z) < 0.01} onClick={() => setZoom(z)}>
-                      {z}×
+                      {z}x
                     </Chip>
                   ))}
-                  <span className="ml-auto text-meta text-text-secondary">{(((pack.data.field.fov_deg ?? 0.1) * 60) / zoom).toFixed(1)}′</span>
+                  <span className="ml-auto text-meta text-text-secondary">{tcom('arcmin', { n: (((pack.data.field.fov_deg ?? 0.1) * 60) / zoom).toFixed(1) })}</span>
                 </div>
                 <p className="mt-2 text-meta text-text-secondary">{t('zoomHint', { size: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
               </section>
@@ -345,8 +347,8 @@ export function LabView({ id }: { id: string }) {
                         <span className="flex-1 text-body">
                           {tl(k)}
                           {k === 'satellite' && <span className="block text-meta text-text-secondary">{t('satelliteNA')}</span>}
-                          {k === 'gaia' && gaia.data && <span className="text-meta text-text-secondary"> · {gaiaMarks.length}</span>}
-                          {k === 'wise' && wise.data && <span className="text-meta text-text-secondary"> · {wiseMarks.length}</span>}
+                          {k === 'gaia' && gaia.data && <span className="text-meta text-text-secondary">, {gaiaMarks.length}</span>}
+                          {k === 'wise' && wise.data && <span className="text-meta text-text-secondary">, {wiseMarks.length}</span>}
                         </span>
                       </label>
                     </li>
@@ -354,6 +356,16 @@ export function LabView({ id }: { id: string }) {
                 })}
               </ul>
             </section>
+
+            {ep && (
+              <ShiftAddPanel
+                key={band}
+                epochs={epochs}
+                parts={parts.data}
+                refEpoch={ep}
+                catalog={profile.pm_ra_cosdec !== null && profile.pm_dec !== null ? { pmra: profile.pm_ra_cosdec, pmdec: profile.pm_dec } : null}
+              />
+            )}
 
                           <section className="rounded-2xl bg-surface p-3" aria-live="polite">
                 <h3 className="text-ui font-semibold">{t('pixel')}</h3>
@@ -402,9 +414,9 @@ export function LabView({ id }: { id: string }) {
                 <h3 className="text-ui font-semibold">{t('notes')}</h3>
                 <p className="mt-1 text-meta text-text-secondary">
                   {t('noteFields', {
-                    ra: readout ? formatRa(readout.ra) : '—',
-                    dec: readout ? formatDec(readout.dec) : '—',
-                    date: ep ? formatShortDate(ep.iso, locale) : '—',
+                    ra: readout ? formatRa(readout.ra) : '-',
+                    dec: readout ? formatDec(readout.dec) : '-',
+                    date: ep ? formatShortDate(ep.iso, locale) : '-',
                     band,
                   })}
                 </p>
@@ -453,7 +465,7 @@ export function LabView({ id }: { id: string }) {
                       <p className="font-semibold">{t(`hypotheses.${n.hypothesis}`)}</p>
                       <p>{n.text}</p>
                       <p className="text-meta text-text-secondary">
-                        {n.band} · {n.date ? formatShortDate(n.date, locale) : '—'} · {n.ra !== null && n.dec !== null ? `${n.ra.toFixed(5)}, ${n.dec.toFixed(5)}` : '—'}
+                        {n.band}, {n.date ? formatShortDate(n.date, locale) : '-'}, {n.ra !== null && n.dec !== null ? `${n.ra.toFixed(5)}, ${n.dec.toFixed(5)}` : '-'}
                       </p>
                     </li>
                   ))}
@@ -475,6 +487,10 @@ export function LabView({ id }: { id: string }) {
                 </div>
               </section>
             
+
+            <section className="rounded-2xl bg-surface p-3">
+              <CatalogLinks ra={profile.ra} dec={profile.dec} />
+            </section>
 
             <Notice>
               <p>{t('sources')}</p>

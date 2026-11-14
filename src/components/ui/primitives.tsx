@@ -296,3 +296,41 @@ export function Stat({ value, label }: { value: ReactNode; label: string }) {
     </div>
   )
 }
+
+export function Segmented<T extends string>({ label, value, options, onChange, className }: { label: string; value: T; options: { value: T; label: ReactNode; disabled?: boolean }[]; onChange: (v: T) => void; className?: string }) {
+  return (
+    <div role="radiogroup" aria-label={label} className={cx('flex rounded-[var(--radius-button)] bg-surface p-0.5', className)}>
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          role="radio"
+          aria-checked={value === o.value}
+          disabled={o.disabled}
+          onClick={() => onChange(o.value)}
+          className={cx('min-h-9 flex-1 whitespace-nowrap rounded-[6px] px-3 text-meta font-semibold disabled:opacity-40', value === o.value ? 'bg-bg text-text shadow-sm' : 'text-text-secondary')}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+export function useLoopRestart(index: number, playing: boolean, ms = 450): boolean {
+  const [on, setOn] = useState(false)
+  const last = useRef(index)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    const wrapped = playing && index === 0 && last.current > 0
+    last.current = index
+    if (!wrapped) return
+    setOn(true)
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(() => setOn(false), ms)
+  }, [index, playing, ms])
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current)
+  }, [])
+  return on
+}

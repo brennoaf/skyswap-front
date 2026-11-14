@@ -43,7 +43,7 @@ export function compactNumber(n: number, locale: string): string {
 export function formatWavelength(range: readonly number[] | null | undefined): string {
   if (!range || range.length < 2) return ''
   const [a, b] = range as [number, number]
-  return Math.abs(a - b) < 0.005 ? `${a.toFixed(2)} µm` : `${a.toFixed(2)}–${b.toFixed(2)} µm`
+  return Math.abs(a - b) < 0.005 ? `${a.toFixed(2)} µm` : `${a.toFixed(2)}-${b.toFixed(2)} µm`
 }
 
 export function formatRa(deg: number): string {

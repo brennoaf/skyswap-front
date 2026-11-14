@@ -388,12 +388,6 @@ export const IconChart = (p: IconProps) => (
   </Svg>
 )
 
-export const IconSparkle = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M16 5.5L18.4 13.6L26.5 16L18.4 18.4L16 26.5L13.6 18.4L5.5 16L13.6 13.6L16 5.5Z" {...LINE} />
-  </Svg>
-)
-
 export const IconFlashlight = (p: IconProps) => (
   <Svg {...p}>
     <path d="M11 4.5H21L19.5 11.5H12.5L11 4.5Z" {...LINE} />

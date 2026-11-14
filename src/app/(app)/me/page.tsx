@@ -136,7 +136,7 @@ function Profile({ me }: { me: Me }) {
           <ProgressBar value={me.level.progress} label={t('progress')} className="my-2" />
           <p className="text-text-secondary">
             <span className="font-semibold text-text">{t('xp', { xp: formatNumber(me.xp, locale) })}</span>
-            {' · '}
+            {', '}
             {next && me.level.next_min_xp !== null ? t('toNext', { xp: formatNumber(me.level.next_min_xp - me.xp, locale), name: tl(next.key) }) : t('maxLevel')}
           </p>
           {me.streak > 0 && <p className="mt-0.5">{t('streak', { n: me.streak })}</p>}

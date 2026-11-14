@@ -15,6 +15,7 @@ interface PersistedUi {
   seenStories: string[]
   onboardingDone: boolean
   classifyGuideDone: boolean
+  classifyPacingSeen: boolean
   saved: string[]
   recentSearches: string[]
   crosshair: boolean
@@ -30,6 +31,7 @@ interface UiState extends PersistedUi {
   finishOnboarding: () => void
   resetOnboarding: () => void
   finishClassifyGuide: () => void
+  markPacingSeen: () => void
   toggleSaved: (postId: string) => void
   addRecentSearch: (q: string) => void
   clearRecentSearches: () => void
@@ -51,6 +53,7 @@ export const useUi = create<UiState>()(
       seenStories: [],
       onboardingDone: false,
       classifyGuideDone: false,
+      classifyPacingSeen: false,
       saved: [],
       recentSearches: [],
       crosshair: true,
@@ -63,6 +66,7 @@ export const useUi = create<UiState>()(
       finishOnboarding: () => set({ onboardingDone: true }),
       resetOnboarding: () => set({ onboardingDone: false, classifyGuideDone: false }),
       finishClassifyGuide: () => set({ classifyGuideDone: true }),
+      markPacingSeen: () => set({ classifyPacingSeen: true }),
       toggleSaved: (postId) => set((s) => ({ saved: s.saved.includes(postId) ? s.saved.filter((p) => p !== postId) : [postId, ...s.saved] })),
       addRecentSearch: (q) => set((s) => ({ recentSearches: [q, ...s.recentSearches.filter((x) => x !== q)].slice(0, 8) })),
       clearRecentSearches: () => set({ recentSearches: [] }),
@@ -82,6 +86,7 @@ export const useUi = create<UiState>()(
         seenStories: s.seenStories,
         onboardingDone: s.onboardingDone,
         classifyGuideDone: s.classifyGuideDone,
+        classifyPacingSeen: s.classifyPacingSeen,
         saved: s.saved,
         recentSearches: s.recentSearches,
         crosshair: s.crosshair,

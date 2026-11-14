@@ -6,13 +6,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
 import { skyHref } from '@/components/feed/spot-sheet'
 import { IconCrosshair, IconPause, IconPlay, IconStepBack, IconStepForward, IconWarning } from '@/components/icons'
-import { Button, Chip, EmptyState, IconButton, Notice, ObjectAvatar, Skeleton } from '@/components/ui/primitives'
+import { dotPositions, FrameTimeline } from '@/components/classify/photo-viewer'
+import { CatalogLinks } from '@/components/ui/catalog-links'
+import { Button, Chip, EmptyState, IconButton, Notice, ObjectAvatar, Segmented, Skeleton, useLoopRestart } from '@/components/ui/primitives'
 import { QrWarning } from '@/components/charts/charts'
 import type { SkyResult } from '@/lib/api/client'
 import { useObject, useSky } from '@/lib/api/hooks'
 import { BAND_HUE, BANDS, cssColor, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch, type IndexRow } from '@/lib/sky'
 import { pointHits, askServer } from '@/lib/explore/lookup'
+import { differenceGrey, differenceImages, differenceScale } from '@/lib/explore/sky-card'
 import { tileFetch } from '@/lib/explore/tiles'
 import { useUi } from '@/lib/state/ui'
 
@@ -23,6 +26,7 @@ const BASE_FPS = 4
 
 type ViewFrame = { key: string; img: Float32Array; w: number; h: number; mjd: number; band: string; release: string; lo: number; hi: number }
 type Colormap = 'grey' | 'band'
+type View = 'photos' | 'changes'
 type Status = 'idle' | 'building' | 'ready' | 'error'
 
 export type SkyParams = { ra: number; dec: number; fov: number; band: string | null; name: string | null; obj: string | null }
@@ -55,7 +59,7 @@ function prefersReducedMotion() {
   return typeof window !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-function FrameCanvas({ frame, colormap, label }: { frame: ViewFrame; colormap: Colormap; label: string }) {
+function FrameCanvas({ frame, colormap, label, diff }: { frame: ViewFrame; colormap: Colormap; label: string; diff: { img: Float32Array; scale: number } | null }) {
   const ref = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const c = ref.current
@@ -64,9 +68,9 @@ function FrameCanvas({ frame, colormap, label }: { frame: ViewFrame; colormap: C
     c.height = frame.h
     const ctx = c.getContext('2d')
     if (!ctx) return
-    const grey = stretch(frame.img, frame.lo, frame.hi)
+    const grey = diff ? Uint8ClampedArray.from(diff.img, (d) => differenceGrey(d, diff.scale)) : stretch(frame.img, frame.lo, frame.hi)
     const out = ctx.createImageData(frame.w, frame.h)
-    const [r, g, b] = colormap === 'band' ? hexRgb(cssColor(`--color-band-${frame.band.toLowerCase()}`)) : [255, 255, 255]
+    const [r, g, b] = colormap === 'band' && !diff ? hexRgb(cssColor(`--color-band-${frame.band.toLowerCase()}`)) : [255, 255, 255]
     for (let y = 0; y < frame.h; y++) {
       for (let x = 0; x < frame.w; x++) {
         const v = grey[(frame.h - 1 - y) * frame.w + x] ?? 0
@@ -78,7 +82,7 @@ function FrameCanvas({ frame, colormap, label }: { frame: ViewFrame; colormap: C
       }
     }
     ctx.putImageData(out, 0, 0)
-  }, [frame, colormap])
+  }, [frame, colormap, diff])
   return <canvas ref={ref} role="img" aria-label={label} className="pixelated absolute inset-0 size-full object-contain" />
 }
 
@@ -226,13 +230,23 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
   const [cur, setCur] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [colormap, setColormap] = useState<Colormap>('grey')
-  const n = b.frames.length
+  const [view, setView] = useState<View>('photos')
+  const [ends, setEnds] = useState(false)
+  const shown = useMemo(() => (ends && b.frames.length > 2 ? [b.frames[0], b.frames[b.frames.length - 1]].filter((f): f is ViewFrame => !!f) : b.frames), [ends, b.frames])
+  const n = shown.length
+  const sameGrid = n > 1 && shown.every((f) => f.w === shown[0]?.w && f.h === shown[0]?.h)
+  const diffs = useMemo(() => {
+    if (view !== 'changes' || !sameGrid || b.status !== 'ready') return null
+    const d = differenceImages(shown.map((f) => f.img))
+    return { d, scale: differenceScale(d) }
+  }, [view, sameGrid, b.status, shown])
+  const restart = useLoopRestart(cur, playing)
 
   useEffect(() => {
     if (b.status !== 'building' || !b.latest) return
-    const i = b.frames.findIndex((f) => f.key === b.latest)
+    const i = shown.findIndex((f) => f.key === b.latest)
     if (i >= 0) setCur(i)
-  }, [b.status, b.latest, b.frames])
+  }, [b.status, b.latest, shown])
 
   useEffect(() => {
     if (b.status === 'ready') {
@@ -247,7 +261,8 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
     return () => clearInterval(id)
   }, [playing, n, speed])
 
-  const frame = b.frames[Math.min(cur, n - 1)]
+  const frame = shown[Math.min(cur, n - 1)]
+  const diff = diffs ? { img: diffs.d[Math.min(cur, n - 1)] as Float32Array, scale: diffs.scale } : null
   const step = (d: number) => {
     setPlaying(false)
     setCur((c) => (c + d + n) % n)
@@ -259,7 +274,7 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
 
   const media = (
     <div
-      className="relative aspect-square w-full overflow-hidden bg-media-bg text-white outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="relative aspect-square w-full overflow-hidden bg-media-bg text-on-media outline-none focus-visible:ring-2 focus-visible:ring-accent"
       role="group"
       aria-label={t('player')}
       tabIndex={ready ? 0 : -1}
@@ -276,15 +291,13 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
       data-first-frame-ms={b.firstMs ?? undefined}
       data-frames={n}
     >
-      {frame && <FrameCanvas frame={frame} colormap={colormap} label={t('frameAlt', { band: frame.band, date })} />}
+      {frame && <FrameCanvas frame={frame} colormap={colormap} diff={diff} label={diff ? t('changesAlt', { date }) : t('frameAlt', { band: frame.band, date })} />}
       {frame && crosshair && <TargetCrosshair frame={frame} target={target} grid={grid} />}
       {frame && (
         <>
-          <span className="absolute left-2 top-2 rounded-md bg-black/60 px-2 py-1 text-meta font-medium">{date}</span>
-          <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-meta">
-            {frame.band} · {frame.release.toUpperCase()} · {tc('falseColour')}
-          </span>
-          {n > 1 && <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-meta font-medium">{t('frameOf', { n: cur + 1, total: n })}</span>}
+          <span className="absolute left-2 top-2 rounded-md bg-media-scrim px-2 py-1 text-meta font-medium">{date}</span>
+          <span className="absolute bottom-2 left-2 rounded-md bg-media-scrim px-2 py-1 text-meta">{t('frameTags', { band: frame.band, release: frame.release.toUpperCase(), colours: diff ? t('viewChanges') : tc('falseColour') })}</span>
+          {n > 1 && <span className="absolute right-2 top-2 rounded-full bg-media-scrim px-2 py-0.5 text-meta font-medium">{t('frameOf', { n: Math.min(cur, n - 1) + 1, total: n })}</span>}
         </>
       )}
       {b.status === 'idle' && (
@@ -295,15 +308,15 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
                 <IconPlay size={22} />
                 {sky.source === 'sia' ? t('fetchCutouts', { n: b.total }) : t('start')}
               </Button>
-              {(sky.source === 'fragment' || compact) && <p className="max-w-[280px] text-meta text-white/70">{sky.source === 'sia' ? t('siaList') : t('liveNote')}</p>}
+              {(sky.source === 'fragment' || compact) && <p className="max-w-72 text-meta text-on-media-muted">{sky.source === 'sia' ? t('siaList') : t('liveNote')}</p>}
             </>
           ) : (
-            <p className="text-body text-white/80">{t('none')}</p>
+            <p className="text-body text-on-media-muted">{t('none')}</p>
           )}
         </div>
       )}
       {b.status === 'building' && (
-        <div className="absolute inset-x-0 bottom-0 bg-black/70 px-3 py-2" role="status" aria-live="polite">
+        <div className="absolute inset-x-0 bottom-0 bg-media-scrim px-3 py-2" role="status" aria-live="polite">
           <p className="text-note">
             {b.tile
               ? b.tile.total
@@ -315,7 +328,7 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
                 ? t('fetchingCutouts', { done: b.done, total: b.total })
                 : t('building', { done: b.done, total: b.total })}
           </p>
-          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/20">
+          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-on-media/20">
             <div
               className="h-full bg-accent transition-[width]"
               style={{ width: `${b.tile ? (b.tile.total ? Math.min(100, (b.tile.loaded / b.tile.total) * 100) : 5) : b.total ? Math.min(100, (b.done / b.total) * 100) : 0}%` }}
@@ -324,7 +337,7 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
         </div>
       )}
       {b.status === 'error' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70 px-8 text-center" role="alert">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-media-scrim px-8 text-center" role="alert">
           <p className="text-body">{t(b.errorKey)}</p>
           <Button variant="primary" onClick={() => void b.start()}>
             {tc('retry')}
@@ -371,15 +384,55 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
         <div className="min-w-0 flex-1 px-1 leading-tight">
           <p className="truncate text-body font-semibold">{frame ? frameLabel : t('player')}</p>
           <p className="truncate text-meta text-text-secondary">
-            {frame ? `${frame.release.toUpperCase()} · ${t('frameOf', { n: cur + 1, total: n })}` : b.status === 'ready' ? t('built', { n }) : ''}
+            {frame ? t('releaseFrame', { release: frame.release.toUpperCase(), n: Math.min(cur, n - 1) + 1, total: n }) : b.status === 'ready' ? t('built', { n }) : ''}
           </p>
         </div>
         <IconButton label={t('crosshair')} aria-pressed={crosshair} onClick={() => setCrosshair(!crosshair)} className={crosshair ? 'text-warning' : 'text-icon-muted'}>
           <IconCrosshair size={26} />
         </IconButton>
       </div>
-      {n > 0 && (
-        <div className="flex flex-wrap items-center gap-2 px-4 pb-1 pt-1">
+      {n > 1 && (
+        <div className="px-4 pt-1">
+          <FrameTimeline
+            positions={dotPositions(shown.map((f) => (f.mjd - (shown[0]?.mjd ?? f.mjd)) * 86400))}
+            current={Math.min(cur, n - 1)}
+            restart={restart}
+            label={t('timeline')}
+            dotLabel={(i) => t('timelineDot', { n: i + 1, date: formatShortDate(mjdToMs(shown[i]?.mjd ?? 0), locale) })}
+            onPick={(i) => {
+              setPlaying(false)
+              setCur(i)
+            }}
+          />
+        </div>
+      )}
+      {b.status === 'ready' && b.frames.length > 1 && (
+        <div className="flex flex-wrap items-center gap-2 px-4 pt-2">
+          <Segmented
+            label={t('view')}
+            value={view}
+            onChange={setView}
+            options={[
+              { value: 'photos', label: t('viewPhotos') },
+              { value: 'changes', label: t('viewChanges'), disabled: !sameGrid },
+            ]}
+          />
+          {b.frames.length > 2 && (
+            <Chip
+              active={ends}
+              onClick={() => {
+                setEnds((v) => !v)
+                setCur(0)
+              }}
+            >
+              {t('firstLast')}
+            </Chip>
+          )}
+        </div>
+      )}
+      {view === 'changes' && diff && <p className="px-4 pt-2 text-meta text-text-secondary">{ends ? t('changesEnds') : t('changesHint')}</p>}
+      {n > 0 && view === 'photos' && (
+        <div className="flex flex-wrap items-center gap-2 px-4 pb-1 pt-2">
           <span className="text-note text-text-secondary">{t('colormap')}</span>
           <Chip active={colormap === 'grey'} onClick={() => setColormap('grey')}>
             {t('grey')}
@@ -491,7 +544,10 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
           {t('coordinates', { ra: formatRa(ra), dec: formatDec(dec) })}
         </p>
         <p className="mt-0.5 text-body">
-          {d.source === 'none' ? t('none') : t('images', { n: d.total })} <span className="text-text-secondary">· {t(`source.${d.source === 'sia' || d.source === 'fragment' ? d.source : 'none'}`)}</span>
+          {d.source === 'none' ? t('none') : t('images', { n: d.total })}
+        </p>
+        <p className="text-note text-text-secondary">
+          {t(`source.${d.source === 'sia' || d.source === 'fragment' ? d.source : 'none'}`)}
         </p>
         {d.releases.length > 0 && (
           <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-label={t('releases')}>
@@ -557,6 +613,7 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
         </section>
       )}
 
+      <CatalogLinks ra={ra} dec={dec} skyLink={false} className="px-4 pt-5" />
     </div>
   )
 }

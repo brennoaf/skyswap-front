@@ -55,7 +55,7 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
 
   const shown = isTimelapse ? post.frames[frame] : isMulti ? post.frames[slide] : post.frames[0]
   const mark = post.marks.find((m) => m.frame === (isTimelapse ? frame : isMulti ? slide : 0))
-  const caption = shown && longBaseline ? `${frameYear(shown)} · ${telescopeOf(shown)}` : shown ? `${shown.band} · ${formatWavelength(shown.wavelength_um)}` : post.band ? `${post.band} · ${formatWavelength(post.wavelength_um)}` : null
+  const caption = shown && longBaseline ? `${frameYear(shown)}, ${telescopeOf(shown)}` : shown ? `${shown.band}, ${formatWavelength(shown.wavelength_um)}` : post.band ? `${post.band}, ${formatWavelength(post.wavelength_um)}` : null
   const isChart = !post.frames.length
 
   return (
@@ -105,7 +105,7 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
       )}
       {caption && !isChart && (
         <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-1 text-meta text-white">
-          {caption} · {t('falseColour')}
+          {caption}, {t('falseColour')}
         </span>
       )}
       {isMulti && (

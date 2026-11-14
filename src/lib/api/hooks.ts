@@ -203,12 +203,13 @@ export function useSky(ra: number | null, dec: number | null, fov: number, band:
 }
 
 export type Choice = 'moves' | 'still' | 'unsure'
+export type VotePosition = { frame: number; x: number; y: number }
 
 export function useVote() {
   const qc = useQueryClient()
   const celebrate = useCelebrate()
   return useMutation({
-    mutationFn: async (body: { card_id: string; choice: Choice; glitch?: boolean | null }) => unwrap(await api.POST('/api/classify/votes', { body })),
+    mutationFn: async (body: { card_id: string; choice: Choice; glitch?: boolean | null; position?: VotePosition }) => unwrap(await api.POST('/api/classify/votes', { body })),
     onSuccess: (r) => {
       celebrate(r.xp, r.new_badges)
       qc.invalidateQueries({ queryKey: keys.me })

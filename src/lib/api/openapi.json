@@ -5313,6 +5313,32 @@
                         "type": "null"
                       }
                     ]
+                  },
+                  "position": {
+                    "type": "object",
+                    "required": [
+                      "frame",
+                      "x",
+                      "y"
+                    ],
+                    "properties": {
+                      "frame": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 64
+                      },
+                      "x": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "y": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    },
+                    "additionalProperties": false
                   }
                 }
               }
@@ -5633,6 +5659,24 @@
                       "items": {
                         "type": "string"
                       }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
                     }
                   }
                 }

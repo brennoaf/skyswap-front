@@ -100,7 +100,7 @@ export function PostCard({ item, priority = false }: { item: FeedItem; priority?
         )}
         <p className="mt-1 text-meta text-text-muted">
           <time dateTime={post.date_range[1]}>{formatDate(post.date_range[1] ?? post.date_range[0] ?? '', locale)}</time>
-          {post.frames[0] && ` · ${[...new Set(post.frames.flatMap((f) => f.release.split('+')).map((r) => r.trim().toUpperCase()))].join(' + ')}`}
+          {post.frames[0] && `, ${[...new Set(post.frames.flatMap((f) => f.release.split('+')).map((r) => r.trim().toUpperCase()))].join(' + ')}`}
         </p>
       </div>
       <PostMoreSheet open={more} onClose={() => setMore(false)} item={item} />

@@ -60,7 +60,7 @@ export function frameTiles(posts: Post[], band: string, locale: string): GridTil
     for (const f of p.frames) {
       if (f.band !== band || seen.has(f.src)) continue
       seen.add(f.src)
-      out.push({ key: f.src, href: `/p/${p.id}`, src: f.src, alt: `${p.title} · ${f.band} · ${formatShortDate(f.t, locale)}`, label: formatShortDate(f.t, locale), pixelated: true, mjd: f.mjd })
+      out.push({ key: f.src, href: `/p/${p.id}`, src: f.src, alt: `${p.title}, ${f.band}, ${formatShortDate(f.t, locale)}`, label: formatShortDate(f.t, locale), pixelated: true, mjd: f.mjd })
     }
   }
   return out.sort((a, b) => a.mjd - b.mjd)

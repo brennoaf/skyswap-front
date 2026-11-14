@@ -219,7 +219,7 @@ export function PostViewer({ id }: { id: string }) {
               {tp('tagPrompt')}
             </button>
           )}
-          {data.community_marks && <span className="text-text-secondary"> · {t('markedBy', { people: data.community_marks.people })}</span>}
+          {data.community_marks && <span className="text-text-secondary">, {t('markedBy', { people: data.community_marks.people })}</span>}
         </p>
         <p className={expanded ? 'mt-1 text-body' : 'mt-1 line-clamp-2 text-body'}>
           <Link href={`/o/${object.id}`} className="font-semibold">
@@ -233,8 +233,8 @@ export function PostViewer({ id }: { id: string }) {
           </button>
         )}
         <p className="mt-1 text-meta text-text-muted">
-          <time dateTime={post.date_range[1]}>{fmt.date(post.date_range[1] ?? post.date_range[0] ?? '')}</time> · {tp(`types.${post.type}`)}
-          {post.frames[0] && ` · ${[...new Set(post.frames.flatMap((f) => f.release.split('+')).map((r) => r.trim().toUpperCase()))].join(' + ')}`}
+          <time dateTime={post.date_range[1]}>{fmt.date(post.date_range[1] ?? post.date_range[0] ?? '')}</time>, {tp(`types.${post.type}`)}
+          {post.frames[0] && `, ${[...new Set(post.frames.flatMap((f) => f.release.split('+')).map((r) => r.trim().toUpperCase()))].join(' + ')}`}
         </p>
       </div>
 
