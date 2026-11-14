@@ -284,6 +284,32 @@ export const IconSettings = (p: IconProps) => (
   </Svg>
 )
 
+export const IconShrink = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 5.5V12H5.5M20 5.5V12H26.5M12 26.5V20H5.5M20 26.5V20H26.5" {...LINE} />
+  </Svg>
+)
+
+export const IconExpand = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5.5 12V5.5H12M26.5 12V5.5H20M5.5 20V26.5H12M26.5 20V26.5H20" {...LINE} />
+  </Svg>
+)
+
+export const IconEye = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3.5 16C6.5 10.5 10.8 7.5 16 7.5C21.2 7.5 25.5 10.5 28.5 16C25.5 21.5 21.2 24.5 16 24.5C10.8 24.5 6.5 21.5 3.5 16Z" {...LINE} />
+    <circle cx="16" cy="16" r="4" {...LINE} />
+  </Svg>
+)
+
+export const IconEyeOff = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3.5 16C6.5 10.5 10.8 7.5 16 7.5C21.2 7.5 25.5 10.5 28.5 16C25.5 21.5 21.2 24.5 16 24.5C10.8 24.5 6.5 21.5 3.5 16Z" {...LINE} />
+    <path d="M6 26L26 6" {...LINE} />
+  </Svg>
+)
+
 export const IconFlask = (p: IconProps) => (
   <Svg {...p}>
     <path d="M13 5.5H19M14 5.5V12.5L7.6 23.2C6.8 24.6 7.8 26.5 9.4 26.5H22.6C24.2 26.5 25.2 24.6 24.4 23.2L18 12.5V5.5" {...LINE} />

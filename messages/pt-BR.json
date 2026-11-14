@@ -869,12 +869,11 @@
     },
     "satelliteNA": "não sinalizado pelo SPHEREx",
     "pixel": "Pixel",
-    "pixelHint": "Toque ou passe o mouse na imagem para ler um pixel.",
-    "pixelValue": "Valor {v} MJy/sr ± {e}",
-    "pixelWave": "Comprimento de onda {lam} µm",
-    "pixelFlags": "Avisos: {flags}",
+    "pixelHint": "Toque na imagem para ler um pixel.",
+    "pixelWave": "Comprimento de onda",
+    "pixelFlags": "Avisos",
     "pixelPos": "AR {ra}, Dec {dec}",
-    "noFlags": "nenhum",
+    "noFlags": "Nenhum",
     "spectrum": "Espectro",
     "spectrumLive": "Medir neste pacote",
     "spectrumMeasuring": "Medindo {done} de {total}",
@@ -930,13 +929,26 @@
       "more": "Mais",
       "prev": "Foto anterior",
       "next": "Próxima foto",
-      "dateHint": "Deslize ou use as setas para passar as fotos enquanto olha.",
-      "colourHint": "Cada cor é uma faixa do infravermelho, mostrada em cor falsa."
+      "dateHint": "Deslize, use as setas ou toque numa data para trocar a foto enquanto olha.",
+      "colourHint": "Cada cor é uma faixa do infravermelho, mostrada em cor falsa.",
+      "dates": "Datas das fotos",
+      "photoSmaller": "Diminuir a foto",
+      "photoBigger": "Aumentar a foto",
+      "photoHide": "Esconder a foto",
+      "photoShow": "Mostrar a foto"
     },
     "picker": {
       "title": "Escolha um objeto",
       "intro": "O modo pro: as mesmas fotos reais, com ferramentas para datas, cores, pixels, movimento e espectro. Nada do que você faz aqui muda os dados."
-    }
+    },
+    "pixelBrightness": "Brilho",
+    "pixelUnit": "MJy/sr, ± {e}",
+    "pixelPlace": "Na imagem",
+    "pixelXY": "x {x}, y {y}",
+    "pixelWaveValue": "{lam} µm",
+    "pixelSky": "No céu",
+    "heading": "Lab: {name}",
+    "headingFrame": "{date}, {ra}°, {dec}°"
   },
   "alerts": {
     "title": "Alertas",

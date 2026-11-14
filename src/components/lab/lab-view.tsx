@@ -3,15 +3,15 @@
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
-import { IconColours, IconCompare, IconCrosshair, IconDownload, IconLayers, IconMore, IconMoves, IconNote, IconSearch, IconSpectrum, IconStepBack, IconStepForward } from '@/components/icons'
+import { IconColours, IconCompare, IconCrosshair, IconDownload, IconExpand, IconEye, IconEyeOff, IconLayers, IconMore, IconMoves, IconNote, IconSearch, IconShrink, IconSpectrum, IconStepBack, IconStepForward } from '@/components/icons'
 import { ShiftAddPanel } from '@/components/lab/shift-add-panel'
 import { CatalogLinks } from '@/components/ui/catalog-links'
 import { Button, Chip, EmptyState, IconButton, Notice, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
 import { useObject, useObjectPosts } from '@/lib/api/hooks'
 import { yearsSpanned } from '@/lib/long-baseline'
-import { BAND_HUE, BANDS, cx, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
+import { BAND_HUE, BANDS, cx, formatBytes, formatDate, formatDateTime, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { download, labNotes, saveLabNote, type LabNote } from '@/lib/notes'
 import { decodeSxq, FLAG_LAYERS, flagNames, lambdaAt, makeWcs, measureStar, percentileOf, unpack, type Decoded, type Pack, type PackEpoch } from '@/lib/sky/lab'
 
@@ -80,18 +80,22 @@ function draw(canvas: HTMLCanvasElement, d: Decoded, nx: number, ny: number) {
 }
 
 const TOOLS = [
-  { key: 'date', icon: <IconCompare size={22} /> },
-  { key: 'colour', icon: <IconColours size={22} /> },
-  { key: 'zoom', icon: <IconSearch size={22} /> },
-  { key: 'layers', icon: <IconLayers size={22} /> },
-  { key: 'pixel', icon: <IconCrosshair size={22} /> },
-  { key: 'motion', icon: <IconMoves size={22} /> },
-  { key: 'spectrum', icon: <IconSpectrum size={22} /> },
-  { key: 'notes', icon: <IconNote size={22} /> },
-  { key: 'more', icon: <IconMore size={22} /> },
+  { key: 'date', icon: <IconCompare size={26} /> },
+  { key: 'colour', icon: <IconColours size={26} /> },
+  { key: 'zoom', icon: <IconSearch size={26} /> },
+  { key: 'layers', icon: <IconLayers size={26} /> },
+  { key: 'pixel', icon: <IconCrosshair size={26} /> },
+  { key: 'motion', icon: <IconMoves size={26} /> },
+  { key: 'spectrum', icon: <IconSpectrum size={26} /> },
+  { key: 'notes', icon: <IconNote size={26} /> },
+  { key: 'more', icon: <IconMore size={26} /> },
 ] as const
 
 type Tool = (typeof TOOLS)[number]['key']
+
+const PHOTO_HEIGHT = { large: '42dvh', small: '22dvh', hidden: '44px' } as const
+
+type PhotoSize = keyof typeof PHOTO_HEIGHT
 
 function Toolbar({ value, onChange }: { value: Tool; onChange: (t: Tool) => void }) {
   const t = useTranslations('lab.tools')
@@ -108,11 +112,56 @@ function Toolbar({ value, onChange }: { value: Tool; onChange: (t: Tool) => void
             aria-selected={on}
             aria-controls="lab-panel"
             onClick={() => onChange(tool.key)}
-            className={cx('relative flex min-h-14 min-w-[60px] flex-1 shrink-0 flex-col items-center justify-center gap-0.5 px-1', on ? 'text-text' : 'text-icon-muted')}
+            className={cx('relative flex min-h-16 min-w-[72px] flex-1 shrink-0 flex-col items-center justify-center gap-1 px-1', on ? 'text-text' : 'text-icon-muted')}
           >
             {tool.icon}
-            <span className="text-micro font-medium">{t(tool.key)}</span>
-            {on && <span className="absolute bottom-0 h-[2px] w-8 rounded-full bg-text" />}
+            <span className="text-meta font-medium">{t(tool.key)}</span>
+            {on && <span className="absolute bottom-0 h-[2px] w-10 rounded-full bg-text" />}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function Reading({ label, wide, children }: { label: string; wide?: boolean; children: ReactNode }) {
+  return (
+    <div className={wide ? 'col-span-2' : undefined}>
+      <dt className="text-meta text-text-secondary">{label}</dt>
+      <dd className="text-body tabular-nums">{children}</dd>
+    </div>
+  )
+}
+
+function EpochGrid({ epochs, value, onChange, photoHeight }: { epochs: PackEpoch[]; value: number; onChange: (i: number) => void; photoHeight: string }) {
+  const locale = useLocale()
+  const t = useTranslations('lab.tools')
+  const box = useRef<HTMLDivElement>(null)
+  const active = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    const b = box.current
+    const a = active.current
+    if (!b || !a) return
+    if (a.offsetTop < b.scrollTop) b.scrollTop = a.offsetTop
+    else if (a.offsetTop + a.offsetHeight > b.scrollTop + b.clientHeight) b.scrollTop = a.offsetTop + a.offsetHeight - b.clientHeight
+  }, [value])
+  return (
+    <div ref={box} role="group" aria-label={t('dates')} style={{ maxHeight: `max(120px, calc(100dvh - ${photoHeight} - 350px))` }} className="no-scrollbar relative grid auto-rows-max grid-cols-3 gap-1.5 overflow-y-auto overscroll-contain">
+      {epochs.map((e, i) => {
+        const on = i === value
+        return (
+          <button
+            key={`${e.iso}-${i}`}
+            ref={on ? active : undefined}
+            type="button"
+            aria-pressed={on}
+            onClick={() => onChange(i)}
+            className={cx('flex min-h-11 flex-col items-center justify-center rounded-lg border-[0.5px] px-1 py-1 leading-tight', on ? 'border-text bg-text text-bg' : 'border-divider bg-surface text-text')}
+          >
+            <span className="text-body font-medium">{formatDate(e.iso, locale, { day: 'numeric', month: 'short' })}</span>
+            <span className={cx('text-micro', !on && 'text-text-secondary')}>
+              {e.iso.slice(0, 4)}, {new Date(e.iso).toISOString().slice(11, 16)}
+            </span>
           </button>
         )
       })}
@@ -136,6 +185,7 @@ export function LabView({ id }: { id: string }) {
 
   const [band, setBand] = useState<string>('')
   const [epochIdx, setEpochIdx] = useState(0)
+  const [photo, setPhoto] = useState<PhotoSize>('large')
   const [decoded, setDecoded] = useState<Decoded | null>(null)
   const [zoom, setZoom] = useState(1)
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>({ target: true, gaia: true, wise: false, saturation: false, cosmic: false, persistence: false, satellite: false })
@@ -269,7 +319,12 @@ export function LabView({ id }: { id: string }) {
   return (
     <main className="pb-8">
       <TopBar
-        title={t('title')}
+        title={
+          <span className="block leading-tight">
+            <span className="block truncate">{t('heading', { name: profile.name })}</span>
+            {ep && <span className="block truncate font-sans text-meta font-normal text-text-secondary">{t('headingFrame', { date: formatDateTime(ep.iso, locale), ra: ep.target_radec[0].toFixed(2), dec: ep.target_radec[1].toFixed(2) })}</span>}
+          </span>
+        }
         actions={
           <Link href={`/o/${profile.id}`} aria-label={profile.name} className="inline-flex size-11 items-center justify-center">
             <ObjectAvatar src={profile.avatar} alt="" size={32} />
@@ -284,7 +339,26 @@ export function LabView({ id }: { id: string }) {
       ) : pack.data ? (
         <>
           <div className="sticky top-[var(--height-topbar)] z-20 bg-bg">
-            <div className="relative mx-auto overflow-hidden bg-media-bg" style={{ aspectRatio: ep ? `${ep.nx} / ${ep.ny}` : '1 / 1', width: ep ? `min(100%, calc(42dvh * ${ep.nx / ep.ny}))` : 'min(100%, 42dvh)' }}>
+            {photo === 'hidden' && (
+              <button type="button" onClick={() => setPhoto('large')} className="flex h-11 w-full items-center gap-2 px-4 text-ui font-medium active:bg-surface">
+                <IconEye size={22} />
+                {t('tools.photoShow')}
+              </button>
+            )}
+            <div
+              className={cx('relative mx-auto overflow-hidden bg-media-bg motion-safe:transition-[width]', photo === 'hidden' && 'hidden')}
+              style={{ aspectRatio: ep ? `${ep.nx} / ${ep.ny}` : '1 / 1', width: ep ? `min(100%, calc(${PHOTO_HEIGHT[photo]} * ${ep.nx / ep.ny}))` : `min(100%, ${PHOTO_HEIGHT[photo]})` }}
+            >
+              <div className="absolute left-1 top-1 z-10 flex">
+                <IconButton label={photo === 'large' ? t('tools.photoSmaller') : t('tools.photoBigger')} onClick={() => setPhoto(photo === 'large' ? 'small' : 'large')}>
+                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-media-scrim text-on-media">{photo === 'large' ? <IconShrink size={20} /> : <IconExpand size={20} />}</span>
+                </IconButton>
+                <IconButton label={t('tools.photoHide')} onClick={() => setPhoto('hidden')}>
+                  <span className="inline-flex size-8 items-center justify-center rounded-full bg-media-scrim text-on-media">
+                    <IconEyeOff size={20} />
+                  </span>
+                </IconButton>
+              </div>
               <div className="absolute inset-0 origin-center transition-transform" style={{ transform: `scale(${zoom})` }}>
                 <canvas
                   ref={canvas}
@@ -351,6 +425,7 @@ export function LabView({ id }: { id: string }) {
             {tool === 'date' && ep && (
               <>
                 <p className="text-body">{t('epochInfo', { date: formatShortDate(ep.iso, locale), release: ep.release.toUpperCase(), lam: ep.lam_um.toFixed(3) })}</p>
+                <EpochGrid epochs={epochs} value={Math.min(epochIdx, epochs.length - 1)} onChange={setEpochIdx} photoHeight={PHOTO_HEIGHT[photo]} />
                 <p className="text-meta text-text-secondary">{t('pack', { n: epochs.length, bytes: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
                 <p className="text-meta text-text-secondary">{t('tools.dateHint')}</p>
               </>
@@ -416,18 +491,40 @@ export function LabView({ id }: { id: string }) {
             {tool === 'pixel' && (
               <div aria-live="polite">
                 {readout ? (
-                  <dl className="mt-1 space-y-0.5 font-mono text-note">
-                    <dt className="sr-only">{t('pixel')}</dt>
-                    <dd>
-                      x {pixel?.x}, y {pixel?.y}
-                    </dd>
-                    <dd>{t('pixelValue', { v: Number.isFinite(readout.v) ? readout.v.toPrecision(4) : 'NaN', e: Number.isFinite(readout.e) ? readout.e.toPrecision(2) : 'NaN' })}</dd>
-                    {readout.lam !== null && <dd>{t('pixelWave', { lam: readout.lam.toFixed(4) })}</dd>}
-                    <dd>{t('pixelPos', { ra: formatRa(readout.ra), dec: formatDec(readout.dec) })}</dd>
-                    <dd>{t('pixelFlags', { flags: readout.flags.length ? readout.flags.join(', ') : t('noFlags') })}</dd>
+                  <dl className="rounded-xl bg-surface p-3">
+                    <div>
+                      <dt className="text-meta text-text-secondary">{t('pixelBrightness')}</dt>
+                      <dd className="mt-0.5 flex flex-wrap items-baseline gap-x-2 tabular-nums">
+                        <span className="font-[family-name:var(--font-display)] text-title-lg font-bold">{Number.isFinite(readout.v) ? readout.v.toPrecision(4) : '-'}</span>
+                        <span className="text-note text-text-secondary">{t('pixelUnit', { e: Number.isFinite(readout.e) ? readout.e.toPrecision(2) : '-' })}</span>
+                      </dd>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 border-t-[0.5px] border-divider pt-3">
+                      <Reading label={t('pixelPlace')}>{t('pixelXY', { x: pixel?.x ?? 0, y: pixel?.y ?? 0 })}</Reading>
+                      {readout.lam !== null && <Reading label={t('pixelWave')}>{t('pixelWaveValue', { lam: readout.lam.toFixed(4) })}</Reading>}
+                      <Reading label={t('pixelSky')} wide>
+                        {t('pixelPos', { ra: formatRa(readout.ra), dec: formatDec(readout.dec) })}
+                      </Reading>
+                      <Reading label={t('pixelFlags')} wide>
+                        {readout.flags.length ? (
+                          <span className="flex flex-wrap gap-1 pt-0.5">
+                            {readout.flags.map((f) => (
+                              <span key={f} className="rounded-full bg-bg px-2 py-0.5 text-meta font-medium text-warning">
+                                {f}
+                              </span>
+                            ))}
+                          </span>
+                        ) : (
+                          t('noFlags')
+                        )}
+                      </Reading>
+                    </div>
                   </dl>
                 ) : (
-                  <p className="mt-1 text-note text-text-secondary">{t('pixelHint')}</p>
+                  <p className="flex items-center gap-3 rounded-xl bg-surface p-3 text-note leading-snug">
+                    <IconCrosshair size={24} className="shrink-0" />
+                    {t('pixelHint')}
+                  </p>
                 )}
               </div>
             )}

@@ -869,12 +869,11 @@
     },
     "satelliteNA": "not flagged by SPHEREx",
     "pixel": "Pixel",
-    "pixelHint": "Tap or hover the image to read a pixel.",
-    "pixelValue": "Value {v} MJy/sr ± {e}",
-    "pixelWave": "Wavelength {lam} µm",
-    "pixelFlags": "Flags: {flags}",
+    "pixelHint": "Tap the image to read a pixel.",
+    "pixelWave": "Wavelength",
+    "pixelFlags": "Warnings",
     "pixelPos": "RA {ra}, Dec {dec}",
-    "noFlags": "none",
+    "noFlags": "None",
     "spectrum": "Spectrum",
     "spectrumLive": "Measure on this pack",
     "spectrumMeasuring": "Measuring {done} of {total}",
@@ -930,13 +929,26 @@
       "more": "More",
       "prev": "Previous photo",
       "next": "Next photo",
-      "dateHint": "Slide or use the arrows to step through the photos while you watch.",
-      "colourHint": "Each colour is one infrared band, shown in false colour."
+      "dateHint": "Slide, use the arrows or tap a date to change the photo while you watch.",
+      "colourHint": "Each colour is one infrared band, shown in false colour.",
+      "dates": "Photo dates",
+      "photoSmaller": "Make the photo smaller",
+      "photoBigger": "Make the photo bigger",
+      "photoHide": "Hide the photo",
+      "photoShow": "Show the photo"
     },
     "picker": {
       "title": "Pick an object",
       "intro": "The pro mode: the same real photos, with tools for dates, colours, pixels, motion and spectrum. Nothing you do here changes the data."
-    }
+    },
+    "pixelBrightness": "Brightness",
+    "pixelUnit": "MJy/sr, ± {e}",
+    "pixelPlace": "On the image",
+    "pixelXY": "x {x}, y {y}",
+    "pixelWaveValue": "{lam} µm",
+    "pixelSky": "In the sky",
+    "heading": "Lab: {name}",
+    "headingFrame": "{date}, {ra}°, {dec}°"
   },
   "alerts": {
     "title": "Alerts",
