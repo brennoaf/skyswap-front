@@ -29,7 +29,7 @@ function FindingCard({ finding }: { finding: FindingSummary }) {
           {finding.example && <ExamplePill />}
           <StatePill state={finding.state} />
         </div>
-        <div className="bg-reels-bg px-10 py-3 text-spot-star">
+        <div className="bg-reels-bg px-10 py-3 text-on-media">
           <SkyLocator ra={finding.ra} dec={finding.dec} name={title} />
         </div>
         <div className="space-y-1 px-3 pt-2">
