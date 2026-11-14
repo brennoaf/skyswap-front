@@ -89,14 +89,14 @@ function cropRows(full, rows, x0, w) {
 }
 
 export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase, maxEpochs = 48, mode = 'bilinear',
-  engine = null, onFrame = null, concurrency = 12, hosts = S3_HOSTS, bands = null } = {}) {
+  engine = null, onFrame = null, concurrency = 12, hosts = S3_HOSTS, bands = null, pick = null } = {}) {
   const T0 = performance.now(), stats = { gets: 0, bytes: 0 }, tm = {}
   const wave = await fetch(indexBase + 'wave.json').then(r => r.json())
   const q = await epochsAtTile(indexBase, wave, ra, dec, { order: 5 })
   tm.index_ms = performance.now() - T0
   let hits = q.hits.filter(h => h.dqa === 'Pass' && (!bands || bands.includes(h.band)))
   const nAvailable = hits.length
-  hits = pickEpochs(hits, maxEpochs)
+  hits = pick ? pick(hits) : pickEpochs(hits, maxEpochs)
   const { n, wcs: grid } = referenceGrid(ra, dec, fovDeg)
   const frames = new Array(hits.length)
   let next = 0, firstFrame = null

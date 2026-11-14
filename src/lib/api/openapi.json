@@ -4642,6 +4642,24 @@
         "tags": [
           "classify"
         ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "name": "explore",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "boolean"
+            },
+            "in": "query",
+            "name": "known",
+            "required": false
+          }
+        ],
         "responses": {
           "200": {
             "description": "Default Response",
@@ -4651,7 +4669,9 @@
                   "type": "object",
                   "required": [
                     "done",
-                    "card"
+                    "card",
+                    "sky",
+                    "interesting"
                   ],
                   "properties": {
                     "done": {
@@ -4689,6 +4709,12 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "sky": {
+                      "type": "boolean"
+                    },
+                    "interesting": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -4707,6 +4733,398 @@
                   "properties": {
                     "error": {
                       "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classify/sky": {
+      "post": {
+        "tags": [
+          "classify"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "ra",
+                  "dec",
+                  "fov_deg",
+                  "band",
+                  "size_px",
+                  "frames"
+                ],
+                "properties": {
+                  "ra": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 360
+                  },
+                  "dec": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                  },
+                  "fov_deg": {
+                    "type": "number",
+                    "minimum": 0.05,
+                    "maximum": 0.2
+                  },
+                  "band": {
+                    "type": "string",
+                    "pattern": "^D[1-6]$"
+                  },
+                  "size_px": {
+                    "type": "integer",
+                    "minimum": 8,
+                    "maximum": 400
+                  },
+                  "frames": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "key",
+                        "mjd",
+                        "wl_um"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "mjd": {
+                          "type": "number",
+                          "minimum": 50000,
+                          "maximum": 80000
+                        },
+                        "wl_um": {
+                          "type": "number",
+                          "minimum": 0.5,
+                          "maximum": 6
+                        }
+                      }
+                    },
+                    "minItems": 2,
+                    "maxItems": 8
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "ra",
+                    "dec",
+                    "cell",
+                    "offsets_s"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "ra": {
+                      "type": "number"
+                    },
+                    "dec": {
+                      "type": "number"
+                    },
+                    "cell": {
+                      "type": "integer"
+                    },
+                    "offsets_s": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/explore/cells": {
+      "get": {
+        "tags": [
+          "explore"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "order",
+                    "cells"
+                  ],
+                  "properties": {
+                    "order": {
+                      "type": "integer"
+                    },
+                    "cells": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/explore/map": {
+      "get": {
+        "tags": [
+          "explore"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "order",
+                    "indexed",
+                    "cells",
+                    "looks",
+                    "people",
+                    "mine"
+                  ],
+                  "properties": {
+                    "order": {
+                      "type": "integer"
+                    },
+                    "indexed": {
+                      "type": "integer"
+                    },
+                    "cells": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "cell",
+                          "looks"
+                        ],
+                        "properties": {
+                          "cell": {
+                            "type": "integer"
+                          },
+                          "looks": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "looks": {
+                      "type": "integer"
+                    },
+                    "people": {
+                      "type": "integer"
+                    },
+                    "mine": {
+                      "type": "object",
+                      "required": [
+                        "cells",
+                        "looks"
+                      ],
+                      "properties": {
+                        "cells": {
+                          "type": "integer"
+                        },
+                        "looks": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/candidates": {
+      "get": {
+        "tags": [
+          "explore"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "candidates"
+                  ],
+                  "properties": {
+                    "candidates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "ra",
+                          "dec",
+                          "fov_deg",
+                          "band",
+                          "cell",
+                          "p_real",
+                          "votes",
+                          "frames",
+                          "status",
+                          "catalog_check"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "ra": {
+                            "type": "number"
+                          },
+                          "dec": {
+                            "type": "number"
+                          },
+                          "fov_deg": {
+                            "type": "number"
+                          },
+                          "band": {
+                            "type": "string"
+                          },
+                          "cell": {
+                            "type": "integer"
+                          },
+                          "p_real": {
+                            "type": "number"
+                          },
+                          "votes": {
+                            "type": "object",
+                            "required": [
+                              "real",
+                              "artifact",
+                              "unsure"
+                            ],
+                            "properties": {
+                              "real": {
+                                "type": "integer"
+                              },
+                              "artifact": {
+                                "type": "integer"
+                              },
+                              "unsure": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "frames": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "key",
+                                "t",
+                                "mjd",
+                                "wl_um"
+                              ],
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "t": {
+                                  "type": "string"
+                                },
+                                "mjd": {
+                                  "type": "number"
+                                },
+                                "wl_um": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "catalog_check": {
+                            "type": "null"
+                          }
+                        }
+                      }
                     }
                   }
                 }

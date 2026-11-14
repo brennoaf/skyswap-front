@@ -394,6 +394,14 @@ export const IconSparkle = (p: IconProps) => (
   </Svg>
 )
 
+export const IconFlashlight = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M11 4.5H21L19.5 11.5H12.5L11 4.5Z" {...LINE} />
+    <path d="M12.5 11.5H19.5V26C19.5 26.8 18.8 27.5 18 27.5H14C13.2 27.5 12.5 26.8 12.5 26V11.5Z" {...LINE} />
+    <path d="M16 16.5V19.5" {...LINE} />
+  </Svg>
+)
+
 export const IconLock = (p: IconProps) => (
   <Svg {...p}>
     <rect x="8" y="14.5" width="16" height="11.5" rx="2.5" {...LINE} />

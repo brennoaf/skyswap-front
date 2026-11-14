@@ -563,7 +563,6 @@
     "changes": "What changed",
     "view": "What to show",
     "play": "Play",
-    "pause": "Pause",
     "timeline": "When each photo was taken",
     "photoAt": "Photo {n}, {when}",
     "photoOf": "Photo {n} of {total}",
@@ -636,14 +635,41 @@
       "chance": "Estimated chance it moves: {pct}%",
       "chanceHint": "Our program’s running estimate, which updates as more people answer. It starts low because most dots turn out not to move.",
       "photos": "When and in which colour each photo was taken",
-      "field": "Each photo shows {size}′ of sky, in colour band {band} (false colours)."
+      "field": "Each photo shows {size}′ of sky, in colour band {band} (false colours).",
+      "where": "Where in the sky",
+      "whereBody": "Right ascension {ra}°, declination {dec}°. This spot was picked at random among the parts of the sky SkySwap can read.",
+      "openSky": "Open this spot in the sky viewer"
     },
     "status": {
       "open": "Still open",
       "real": "Most likely a moving object",
       "artifact": "Most likely not moving",
       "inconclusive": "People see this one differently",
-      "gold": "Practice photos"
+      "gold": "Practice photos",
+      "candidate": "Candidate: several people saw it move"
+    },
+    "sky": {
+      "label": "A random patch of sky. You may be the first person to look here.",
+      "intro": "Nobody has checked this patch of sky yet. Look for a dot that changes place from photo to photo.",
+      "reveal": "This patch was picked at random. If enough people see something move here, it goes on a list for a closer look."
+    },
+    "searching": "Finding a fresh patch of sky…",
+    "pause": "Pause",
+    "rest": {
+      "title": "You’ve looked at {n} patches of sky",
+      "body": "Nice work. Rest your eyes for a moment: look at something far away, blink, stretch. The sky will still be here.",
+      "continue": "Keep exploring",
+      "map": "See the sky we’ve explored together"
+    },
+    "flashlight": {
+      "button": "Hints",
+      "kinds": {
+        "appeared": "Something here wasn’t there in the other photos",
+        "missing": "Something here disappeared",
+        "flash": "A dot that shows in one photo only — often a camera glitch"
+      },
+      "elsewhere": "Hints are on other photos: step through them",
+      "none": "No hints for this patch. Trust your own eyes."
     }
   },
   "reels": {
@@ -717,7 +743,16 @@
     "earnedOn": "Earned on {date}",
     "classify": "Classify",
     "noteUntitled": "Untitled post",
-    "errorTitle": "Couldn’t load your profile"
+    "errorTitle": "Couldn’t load your profile",
+    "statusCandidate": "candidate",
+    "explored": {
+      "title": "Sky explored together",
+      "body": "Each dot is a patch of sky about 1.8° wide. Grey patches can be explored; coloured ones have been looked at.",
+      "summary": "{looks, plural, one {# look} other {# looks}} by {people, plural, one {# person} other {# people}} in {cells, plural, one {# patch} other {# patches}} of {indexed}",
+      "mine": "You: {looks, plural, one {# look} other {# looks}} in {cells, plural, one {# patch} other {# patches}}",
+      "alt": "Map of the whole sky. {cells} of {indexed} patches have been looked at.",
+      "empty": "Nobody has explored yet. Your first look will light up a patch."
+    }
   },
   "lab": {
     "title": "Lab",
@@ -786,7 +821,8 @@
       "consensus": "Photos you looked at now have an answer: {status}.",
       "badge": "You earned the badge “{badge}”.",
       "level": "You reached level {level}: {name}.",
-      "goal": "The community reached its goal: {target} {goal} this month!"
+      "goal": "The community reached its goal: {target} {goal} this month!",
+      "candidate": "A patch of sky you looked at is now a candidate: several people saw something move there."
     }
   },
   "settings": {

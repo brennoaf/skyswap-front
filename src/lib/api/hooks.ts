@@ -23,6 +23,8 @@ export const keys = {
   search: (q: string) => ['search', q] as const,
   sky: (ra: number, dec: number, fov: number, band: string | null) => ['sky', ra, dec, fov, band] as const,
   health: ['health'] as const,
+  exploreMap: ['explore-map'] as const,
+  exploreCells: ['explore-cells'] as const,
 }
 
 export function useSession() {
@@ -170,6 +172,14 @@ export function useReadAlerts() {
   })
 }
 
+export function useExploreMap() {
+  return useQuery({ queryKey: keys.exploreMap, queryFn: async () => unwrap(await api.GET('/api/explore/map')), staleTime: 60_000 })
+}
+
+export function useExploreCells() {
+  return useQuery({ queryKey: keys.exploreCells, queryFn: async () => unwrap(await api.GET('/api/explore/cells')).cells, staleTime: Infinity })
+}
+
 export function useGoals() {
   return useQuery({ queryKey: keys.goals, queryFn: async () => unwrap(await api.GET('/api/community/goals')).goals, staleTime: 60_000 })
 }
@@ -192,10 +202,6 @@ export function useSky(ra: number | null, dec: number | null, fov: number, band:
   })
 }
 
-export function useNextCard(enabled: boolean) {
-  return useQuery({ queryKey: ['classify-next'], enabled, queryFn: async () => unwrap(await api.GET('/api/classify/next')), staleTime: Infinity, gcTime: 0 })
-}
-
 export type Choice = 'moves' | 'still' | 'unsure'
 
 export function useVote() {
@@ -208,6 +214,7 @@ export function useVote() {
       qc.invalidateQueries({ queryKey: keys.me })
       qc.invalidateQueries({ queryKey: keys.alerts })
       qc.invalidateQueries({ queryKey: keys.goals })
+      qc.invalidateQueries({ queryKey: keys.exploreMap })
     },
   })
 }

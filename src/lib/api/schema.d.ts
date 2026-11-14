@@ -1330,7 +1330,10 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    explore?: boolean;
+                    known?: boolean;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1350,6 +1353,8 @@ export interface paths {
                                 n_frames: number;
                                 offsets_s: number[];
                             } | null;
+                            sky: boolean;
+                            interesting: boolean;
                         };
                     };
                 };
@@ -1360,6 +1365,224 @@ export interface paths {
                     content: {
                         "application/json": {
                             error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classify/sky": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        ra: number;
+                        dec: number;
+                        fov_deg: number;
+                        band: string;
+                        size_px: number;
+                        frames: {
+                            key: string;
+                            mjd: number;
+                            wl_um: number;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            ra: number;
+                            dec: number;
+                            cell: number;
+                            offsets_s: number[];
+                        };
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/explore/cells": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            order: number;
+                            cells: number[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/explore/map": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            order: number;
+                            indexed: number;
+                            cells: {
+                                cell: number;
+                                looks: number;
+                            }[];
+                            looks: number;
+                            people: number;
+                            mine: {
+                                cells: number;
+                                looks: number;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            candidates: {
+                                id: string;
+                                ra: number;
+                                dec: number;
+                                fov_deg: number;
+                                band: string;
+                                cell: number;
+                                p_real: number;
+                                votes: {
+                                    real: number;
+                                    artifact: number;
+                                    unsure: number;
+                                };
+                                frames: {
+                                    key: string;
+                                    t: string;
+                                    mjd: number;
+                                    wl_um: number;
+                                }[];
+                                status: string;
+                                catalog_check: null;
+                            }[];
                         };
                     };
                 };

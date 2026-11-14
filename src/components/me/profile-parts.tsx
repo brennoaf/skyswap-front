@@ -11,7 +11,7 @@ import type { Me } from '@/lib/api/client'
 import { useGoals, usePost } from '@/lib/api/hooks'
 import { cx, formatNumber, formatShortDate, relativeTime } from '@/lib/format'
 
-const STATUS_KEY: Record<string, string> = { open: 'statusOpen', real: 'statusReal', artifact: 'statusArtifact', inconclusive: 'statusInconclusive' }
+const STATUS_KEY: Record<string, string> = { open: 'statusOpen', real: 'statusReal', artifact: 'statusArtifact', inconclusive: 'statusInconclusive', candidate: 'statusCandidate' }
 
 export function useAgo() {
   const t = useTranslations('common.time')

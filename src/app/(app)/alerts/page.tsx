@@ -13,7 +13,7 @@ import { useUi } from '@/lib/state/ui'
 type Group = 'today' | 'week' | 'earlier'
 
 const GROUPS: Group[] = ['today', 'week', 'earlier']
-const KNOWN = new Set(['new_data', 'consensus', 'badge', 'level', 'goal'])
+const KNOWN = new Set(['new_data', 'consensus', 'candidate', 'badge', 'level', 'goal'])
 
 function groupOf(ms: number, now: number): Group {
   const start = new Date(now)

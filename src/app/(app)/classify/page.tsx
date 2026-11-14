@@ -1,14 +1,17 @@
 'use client'
 
 import { animate, motion, useMotionValue, useReducedMotion, useTransform, type PanInfo } from 'framer-motion'
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { PhotoViewer, useOffsetLabel } from '@/components/classify/photo-viewer'
-import { IconCards, IconMore, IconMoves, IconQuestion, IconStill } from '@/components/icons'
+import { IconCards, IconFlashlight, IconMore, IconMoves, IconQuestion, IconSparkle, IconStill } from '@/components/icons'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Button, EmptyState, IconButton, Notice, Sheet, Skeleton, TopBar } from '@/components/ui/primitives'
-import { ApiError, type DeckCard, type Reveal } from '@/lib/api/client'
-import { useGlitch, useGuideCard, useNextCard, useSession, useVote, type Choice } from '@/lib/api/hooks'
+import { api, ApiError, unwrap, type DeckCard, type Reveal } from '@/lib/api/client'
+import { useGlitch, useGuideCard, useSession, useVote, type Choice } from '@/lib/api/hooks'
+import type { CardHint } from '@/lib/explore/flashlight'
+import { exploreQueue, isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
 import { cx, formatWavelength } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
@@ -17,6 +20,9 @@ type VoteResult = NonNullable<ReturnType<typeof useVote>['data']>
 type Mark = { u: number; v: number }
 
 const SWIPE = 110
+const PAUSE_EVERY = 25
+
+type PlayCard = DeckCard | SkyPlayCard
 
 function useSprite(src: string | undefined) {
   const [img, setImg] = useState<{ src: string; el: HTMLImageElement } | null>(null)
@@ -79,6 +85,38 @@ function GuideArrow({ marks, panel }: { marks: Mark[]; panel: number }) {
   )
 }
 
+function HintsOverlay({ hints, panel }: { hints: CardHint[]; panel: number }) {
+  const t = useTranslations('classify.flashlight')
+  const here = hints.filter((h) => h.visit === panel)
+  return (
+    <>
+      <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden="true">
+        {hints.map((h, i) => (
+          <circle key={i} cx={h.u * 100} cy={h.v * 100} r="7.5" fill="none" stroke="var(--color-crosshair)" strokeWidth={h.visit === panel ? 1 : 0.6} strokeDasharray="2.4 1.8" opacity={h.visit === panel ? 0.95 : 0.35} />
+        ))}
+      </svg>
+      <span className="pointer-events-none absolute inset-x-2 bottom-2 rounded-xl bg-media-scrim px-2.5 py-1.5 text-meta font-medium leading-snug text-on-media" aria-live="polite">
+        {here[0] ? t(`kinds.${here[0].kind}`) : hints.length ? t('elsewhere') : t('none')}
+      </span>
+    </>
+  )
+}
+
+function FlashlightButton({ on, onChange }: { on: boolean; onChange: (on: boolean) => void }) {
+  const t = useTranslations('classify.flashlight')
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={() => onChange(!on)}
+      className={cx('inline-flex h-9 shrink-0 items-center gap-1 rounded-full px-3 text-note font-semibold', on ? 'bg-text text-bg' : 'bg-surface text-text')}
+    >
+      <IconFlashlight size={20} />
+      {t('button')}
+    </button>
+  )
+}
+
 function MarksOverlay({ marks, panel }: { marks: Mark[]; panel: number }) {
   const m = marks[panel]
   if (!m) return null
@@ -90,7 +128,7 @@ function MarksOverlay({ marks, panel }: { marks: Mark[]; panel: number }) {
   )
 }
 
-function VoteCard({ card, img, guide, onVoted, onStale, onSkipGuide }: { card: DeckCard; img: HTMLImageElement | null; guide: Mark[] | null; onVoted: (choice: Choice, r: VoteResult) => void; onStale: () => void; onSkipGuide: () => void }) {
+function VoteCard({ card, header, img, guide, overlay, onVoted, onStale, onSkipGuide }: { card: PlayCard; header: ReactNode; img: HTMLImageElement | null; guide: Mark[] | null; overlay?: (panel: number) => ReactNode; onVoted: (choice: Choice, r: VoteResult) => void; onStale: () => void; onSkipGuide: () => void }) {
   const t = useTranslations('classify')
   const reduce = useReducedMotion()
   const toast = useUi((s) => s.toast)
@@ -176,8 +214,8 @@ function VoteCard({ card, img, guide, onVoted, onStale, onSkipGuide }: { card: D
         <Stamp label={t('still')} style={{ opacity: stillOpacity, rotate: 8 }} className="right-4 top-16" />
         <Stamp label={t('unsure')} style={{ opacity: unsureOpacity }} className="bottom-24 left-1/2 -translate-x-1/2 whitespace-nowrap" />
         <div className="overflow-hidden rounded-2xl border-[0.5px] border-divider bg-bg-elevated pb-1 shadow-[0_6px_24px_rgb(0_0_0/0.18)]">
-          <h2 className="px-4 py-3 font-[family-name:var(--font-display)] text-title-md font-bold">{t('question')}</h2>
-          <PhotoViewer sprite={card.sprite} img={img} offsets={card.offsets_s} onPlayingChange={setPlaying} overlay={guide ? (panel) => <GuideArrow marks={guide} panel={panel} /> : undefined} />
+          {header}
+          <PhotoViewer sprite={card.sprite} img={img} offsets={card.offsets_s} onPlayingChange={setPlaying} overlay={guide ? (panel) => <GuideArrow marks={guide} panel={panel} /> : overlay} />
         </div>
       </motion.div>
 
@@ -238,6 +276,15 @@ function AboutCardSheet({ open, onClose, reveal }: { open: boolean; onClose: () 
           </ul>
         </section>
         <p className="text-note text-text-secondary">{t('field', { size: fmt.fixed(reveal.size_arcmin, 1), band: reveal.band })}</p>
+        {reveal.kind === 'sky' && (
+          <section>
+            <h3 className="font-semibold">{t('where')}</h3>
+            <p className="mt-1 text-note text-text-secondary">{t('whereBody', { ra: fmt.fixed(reveal.ra, 4), dec: fmt.fixed(reveal.dec, 4) })}</p>
+            <Link href={`/sky?ra=${reveal.ra}&dec=${reveal.dec}&fov=0.1`} className="mt-2 inline-flex min-h-10 items-center text-note font-semibold text-link">
+              {t('openSky')}
+            </Link>
+          </section>
+        )}
       </div>
     </Sheet>
   )
@@ -297,7 +344,7 @@ function RevealPanel({ cardId, choice, result, onNext }: { cardId: string; choic
           <h2 id="reveal-title" className="mt-3 text-title-sm font-semibold">
             {t('nobodyKnows')}
           </h2>
-          <p className="mt-1.5 text-note text-text-muted">{t('guess', { guess: t(`guesses.${reveal.kind}`) })}</p>
+          <p className="mt-1.5 text-note text-text-muted">{reveal.kind === 'sky' ? t('sky.reveal') : t('guess', { guess: t(`guesses.${reveal.kind}`) })}</p>
           <p className="mt-3 text-body">{reveal.outcome === 'moves' ? t('outcome.moves') : reveal.outcome === 'still' ? t('outcome.still') : reveal.outcome === 'undecided' ? t('outcome.undecided') : t('outcome.open', { n: reveal.looked })}</p>
         </>
       )}
@@ -349,6 +396,101 @@ function DeckSkeleton() {
   )
 }
 
+type DeckState = { status: 'loading' | 'searching' | 'ready' | 'done' | 'error'; card: PlayCard | null }
+
+let sessionLooks = 0
+
+function useDeckFlow(enabled: boolean) {
+  const [state, setState] = useState<DeckState>({ status: 'loading', card: null })
+  const live = useRef(true)
+  useEffect(() => {
+    live.current = true
+    return () => {
+      live.current = false
+    }
+  }, [])
+
+  const load = useCallback(async () => {
+    setState({ status: 'loading', card: null })
+    try {
+      let r = await api
+        .GET('/api/classify/next', { params: { query: { explore: true } } })
+        .then(unwrap)
+        .catch(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 1200))
+          return unwrap(await api.GET('/api/classify/next', { params: { query: { explore: true } } }))
+        })
+      if (r.interesting) {
+        const strong = exploreQueue.takeStrong()
+        if (strong) {
+          if (live.current) setState({ status: 'ready', card: strong })
+          return
+        }
+      }
+      if (r.sky) {
+        const sky = exploreQueue.take()
+        if (sky) {
+          if (live.current) setState({ status: 'ready', card: sky })
+          return
+        }
+        r = unwrap(await api.GET('/api/classify/next', { params: { query: { explore: true, known: true } } }))
+      }
+      if (r.card) {
+        if (live.current) setState({ status: 'ready', card: r.card })
+        return
+      }
+      if (!r.sky) {
+        if (live.current) setState({ status: 'done', card: null })
+        return
+      }
+      if (live.current) setState({ status: 'searching', card: null })
+      const sky = await exploreQueue.wait(30_000)
+      if (live.current) setState(sky ? { status: 'ready', card: sky } : { status: 'done', card: null })
+    } catch {
+      if (live.current) setState({ status: 'error', card: null })
+    }
+  }, [])
+
+  useEffect(() => {
+    if (enabled) void load()
+  }, [enabled, load])
+
+  return { ...state, reload: load }
+}
+
+function PauseCard({ looks, onContinue }: { looks: number; onContinue: () => void }) {
+  const t = useTranslations('classify.rest')
+  return (
+    <section aria-labelledby="pause-title" className="rounded-2xl border-[0.5px] border-divider bg-bg-elevated px-5 py-6 text-center shadow-[0_6px_24px_rgb(0_0_0/0.12)]">
+      <span className="mx-auto mb-3 inline-flex size-14 items-center justify-center rounded-full bg-accent/15 text-accent" aria-hidden="true">
+        <IconSparkle size={30} />
+      </span>
+      <h2 id="pause-title" className="font-[family-name:var(--font-display)] text-title-md font-bold">
+        {t('title', { n: looks })}
+      </h2>
+      <p className="mx-auto mt-2 max-w-[300px] text-body leading-snug text-text-secondary">{t('body')}</p>
+      <div className="mt-5 flex flex-col gap-2">
+        <Button variant="primary" full className="h-11" onClick={onContinue}>
+          {t('continue')}
+        </Button>
+        <Link href="/me#explored" className="inline-flex h-11 items-center justify-center rounded-[var(--radius-button)] text-ui font-semibold text-link">
+          {t('map')}
+        </Link>
+      </div>
+    </section>
+  )
+}
+
+function Searching() {
+  const t = useTranslations('classify')
+  return (
+    <div aria-live="polite">
+      <DeckSkeleton />
+      <p className="mt-3 text-center text-note text-text-secondary">{t('searching')}</p>
+    </div>
+  )
+}
+
 function Deck() {
   const t = useTranslations('classify')
   const tc = useTranslations('common')
@@ -359,10 +501,23 @@ function Deck() {
   const guideQuery = useGuideCard(guideActive)
   const [guideOver, setGuideOver] = useState(false)
   const guiding = guideActive && !guideOver && !!guideQuery.data?.card
-  const next = useNextCard(!guideActive || guideOver || (guideQuery.isFetched && !guideQuery.data?.card))
+  const flow = useDeckFlow(!guideActive || guideOver || (guideQuery.isFetched && !guideQuery.data?.card))
   const [result, setResult] = useState<{ cardId: string; choice: Choice; data: VoteResult } | null>(null)
-  const card = guiding ? (guideQuery.data?.card ?? null) : (next.data?.card ?? null)
+  const [pause, setPause] = useState(false)
+  const [hintsOn, setHintsOn] = useState(false)
+  const card: PlayCard | null = guiding ? (guideQuery.data?.card ?? null) : flow.card
   const img = useSprite(card?.sprite)
+  const cardId = card?.id
+  const voted = !!result && result.cardId === cardId
+
+  useEffect(() => {
+    setHintsOn(voted)
+  }, [cardId, voted])
+
+  useEffect(() => {
+    exploreQueue.start()
+    return () => exploreQueue.stop()
+  }, [])
 
   const endGuide = useCallback(() => {
     finishGuide()
@@ -373,24 +528,36 @@ function Deck() {
     (choice: Choice, data: VoteResult) => {
       if (card) setResult({ cardId: card.id, choice, data })
       if (guiding) finishGuide()
+      sessionLooks++
     },
     [card, guiding, finishGuide],
   )
   const loadNext = useCallback(() => {
     setResult(null)
     window.scrollTo({ top: 0 })
-    if (guiding) setGuideOver(true)
-    else void next.refetch()
-  }, [next, guiding])
+    exploreQueue.release(isSkyCard(flow.card) ? flow.card : null)
+    if (guiding) {
+      setGuideOver(true)
+      return
+    }
+    if (sessionLooks > 0 && sessionLooks % PAUSE_EVERY === 0 && !pause) {
+      setPause(true)
+      return
+    }
+    setPause(false)
+    void flow.reload()
+  }, [flow, guiding, pause])
 
+  if (pause) return <PauseCard looks={sessionLooks} onContinue={loadNext} />
   if (guideActive && guideQuery.isLoading) return <DeckSkeleton />
-  if (!guiding && (next.isLoading || (next.isFetching && !result))) return <DeckSkeleton />
-  if (!guiding && next.isError)
+  if (!guiding && flow.status === 'searching') return <Searching />
+  if (!guiding && flow.status === 'loading' && !result) return <DeckSkeleton />
+  if (!guiding && flow.status === 'error')
     return (
       <EmptyState
         title={tc('retry')}
         action={
-          <Button variant="primary" onClick={() => next.refetch()}>
+          <Button variant="primary" onClick={() => flow.reload()}>
             {tc('retry')}
           </Button>
         }
@@ -398,12 +565,24 @@ function Deck() {
     )
   if (!card) return <EmptyState art={<IconCards size={56} className="text-accent" />} title={t('done')} body={t('doneBody')} />
 
+  const sky = isSkyCard(card)
+  const header = (
+    <div className="flex items-start gap-2 px-4 py-3">
+      <div className="min-w-0 flex-1">
+        <h2 className="font-[family-name:var(--font-display)] text-title-md font-bold">{t('question')}</h2>
+        {sky && <p className="mt-0.5 text-note text-text-secondary">{t('sky.label')}</p>}
+      </div>
+      {sky && <FlashlightButton on={hintsOn} onChange={setHintsOn} />}
+    </div>
+  )
+  const hints = sky && hintsOn ? card.hints : null
+
   if (result && result.cardId === card.id)
     return (
       <motion.div initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
         <div className="overflow-hidden rounded-2xl border-[0.5px] border-divider bg-bg-elevated pb-1">
-          <h2 className="px-4 py-3 font-[family-name:var(--font-display)] text-title-md font-bold">{t('question')}</h2>
-          <PhotoViewer sprite={card.sprite} img={img} offsets={card.offsets_s} reveal={result.data.reveal} overlay={(panel) => <MarksOverlay marks={result.data.reveal.marks} panel={panel} />} />
+          {header}
+          <PhotoViewer sprite={card.sprite} img={img} offsets={card.offsets_s} reveal={result.data.reveal} overlay={(panel) => (hints ? <HintsOverlay hints={hints} panel={panel} /> : <MarksOverlay marks={result.data.reveal.marks} panel={panel} />)} />
         </div>
         <RevealPanel cardId={card.id} choice={result.choice} result={result.data} onNext={loadNext} />
       </motion.div>
@@ -411,8 +590,8 @@ function Deck() {
 
   return (
     <>
-      {!guiding && <p className="mb-3 text-note leading-snug text-text-secondary">{t('intro')}</p>}
-      <VoteCard key={card.id} card={card} img={img} guide={guiding ? (guideQuery.data?.marks ?? []) : null} onVoted={onVoted} onStale={loadNext} onSkipGuide={endGuide} />
+      {!guiding && <p className="mb-3 text-note leading-snug text-text-secondary">{sky ? t('sky.intro') : t('intro')}</p>}
+      <VoteCard key={card.id} card={card} header={header} img={img} overlay={hints ? (panel) => <HintsOverlay hints={hints} panel={panel} /> : undefined} guide={guiding ? (guideQuery.data?.marks ?? []) : null} onVoted={onVoted} onStale={loadNext} onSkipGuide={endGuide} />
     </>
   )
 }

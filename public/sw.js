@@ -1,4 +1,4 @@
-const VERSION = 'kit-2026.10.29-1'
+const VERSION = 'kit-2026.10.29-2'
 const S3_HOSTS = ['nasa-irsa-spherex.s3.amazonaws.com', 'nasa-irsa-spherex.s3.us-east-1.amazonaws.com',
   's3.us-east-1.amazonaws.com', 's3.amazonaws.com', 'nasa-irsa-spherex.s3.dualstack.us-east-1.amazonaws.com']
 
@@ -13,9 +13,9 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url)
   if (e.request.method !== 'GET') return
   const range = e.request.headers.get('range')
-  if (S3_HOSTS.includes(url.hostname) && range) {
+  if ((S3_HOSTS.includes(url.hostname) || (url.origin === location.origin && url.pathname.startsWith('/api/s3/'))) && range) {
     e.respondWith(s3Range(e.request, range))
-  } else if (url.origin === location.origin && /^\/kit\/(index|objects)\//.test(url.pathname) && !range) {
+  } else if (url.origin === location.origin && /^\/kit\/(index|objects|deck)\//.test(url.pathname) && !range) {
     e.respondWith(cacheFirst(e.request))
   }
 })
@@ -31,7 +31,7 @@ async function cacheFirst(req) {
 
 async function s3Range(req, range) {
   const c = await caches.open(VERSION)
-  const path = new URL(req.url).pathname.replace(/^\/nasa-irsa-spherex\//, '/')
+  const path = new URL(req.url).pathname.replace(/^\/(nasa-irsa-spherex|api\/s3)\//, '/')
   const key = new Request(`${location.origin}/__s3cache${path}?r=${encodeURIComponent(range)}`)
   const hit = await c.match(key)
   if (hit) return new Response(await hit.arrayBuffer(), { status: 206, headers: { 'x-sw': 'hit' } })

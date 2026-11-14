@@ -49,6 +49,15 @@ export function AlertRow({ alert, unread, now }: { alert: Alert; unread: boolean
     art = <RoundIcon tone={alert.detail === 'real' ? 'success' : done ? 'muted' : 'warning'}>{done ? <IconCheck size={24} /> : <IconQuestion size={24} />}</RoundIcon>
     text = t('alerts.items.consensus', { status: t(`classify.status.${alert.detail}`) })
     href = '/classify'
+  } else if (alert.type === 'candidate') {
+    const [ra, dec] = alert.detail.split(',')
+    art = (
+      <RoundIcon tone="success">
+        <IconSparkle size={24} />
+      </RoundIcon>
+    )
+    text = t('alerts.items.candidate')
+    href = ra && dec ? `/sky?ra=${ra}&dec=${dec}&fov=0.1` : '/classify'
   } else if (alert.type === 'badge') {
     art = <BadgeArt badge={alert.ref} size={44} earned />
     text = t('alerts.items.badge', { badge: t(`badges.items.${alert.ref}.name`) })

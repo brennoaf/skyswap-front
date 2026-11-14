@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { IconFollow, IconHighlight, IconNote, IconSave, IconSettings, IconStar } from '@/components/icons'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
+import { ExploredSkyCard } from '@/components/me/explored-sky'
 import { BadgeDetail, BadgeGrid, BadgeHighlights, FollowingList, GoalsCard, HistoryList, LevelRing, ProgressBar, SavedGrid, useAgo } from '@/components/me/profile-parts'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Button, EmptyState, IconTabs, Notice, Sheet, Skeleton, Stat, TopBar } from '@/components/ui/primitives'
@@ -158,6 +159,7 @@ function Profile({ me }: { me: Me }) {
       </div>
 
       <GoalsCard />
+      <ExploredSkyCard />
 
       <div className="sticky top-[var(--height-topbar)] z-20 mt-5 bg-bg">
         <IconTabs tabs={tabs} value={tab} onChange={setTab} label={t('tabs.label')} />
