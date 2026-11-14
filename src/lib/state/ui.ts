@@ -15,6 +15,7 @@ interface PersistedUi {
   seenStories: string[]
   languageChosen: boolean
   onboardingDone: boolean
+  labIntroDone: boolean
   classifyGuideDone: boolean
   classifyPacingSeen: boolean
   saved: string[]
@@ -32,6 +33,8 @@ interface UiState extends PersistedUi {
   chooseLanguage: () => void
   finishOnboarding: () => void
   resetOnboarding: () => void
+  finishLabIntro: () => void
+  showLabIntro: () => void
   finishClassifyGuide: () => void
   markPacingSeen: () => void
   toggleSaved: (postId: string) => void
@@ -55,6 +58,7 @@ export const useUi = create<UiState>()(
       seenStories: [],
       languageChosen: false,
       onboardingDone: false,
+      labIntroDone: false,
       classifyGuideDone: false,
       classifyPacingSeen: false,
       saved: [],
@@ -68,7 +72,9 @@ export const useUi = create<UiState>()(
       markStorySeen: (id) => set((s) => (s.seenStories.includes(id) ? s : { seenStories: [...s.seenStories, id] })),
       chooseLanguage: () => set({ languageChosen: true }),
       finishOnboarding: () => set({ onboardingDone: true }),
-      resetOnboarding: () => set({ onboardingDone: false, classifyGuideDone: false }),
+      resetOnboarding: () => set({ onboardingDone: false, labIntroDone: false, classifyGuideDone: false }),
+      finishLabIntro: () => set({ labIntroDone: true }),
+      showLabIntro: () => set({ labIntroDone: false }),
       finishClassifyGuide: () => set({ classifyGuideDone: true }),
       markPacingSeen: () => set({ classifyPacingSeen: true }),
       toggleSaved: (postId) => set((s) => ({ saved: s.saved.includes(postId) ? s.saved.filter((p) => p !== postId) : [postId, ...s.saved] })),
@@ -90,6 +96,7 @@ export const useUi = create<UiState>()(
         seenStories: s.seenStories,
         languageChosen: s.languageChosen,
         onboardingDone: s.onboardingDone,
+        labIntroDone: s.labIntroDone,
         classifyGuideDone: s.classifyGuideDone,
         classifyPacingSeen: s.classifyPacingSeen,
         saved: s.saved,

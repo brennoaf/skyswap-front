@@ -966,7 +966,25 @@
     "notePickSpot": "Toque na foto para marcar um ponto",
     "exportCsvHint": "Os pontos medidos, para uma planilha",
     "exportJsonHint": "Suas notas sobre este objeto",
-    "exportJsonEmpty": "Salve uma nota primeiro"
+    "exportJsonEmpty": "Salve uma nota primeiro",
+    "intro": {
+      "title": "Boas-vindas ao Lab",
+      "body": "Este é o modo avançado, com o tipo de ferramenta que cientistas usam. Pode parecer técnico, mas é livre para qualquer pessoa explorar. Teste à vontade: nada do que você faz aqui muda os dados.",
+      "action": "Começar a explorar",
+      "again": "Como o Lab funciona",
+      "againHint": "Veja de novo o que cada ferramenta faz",
+      "tools": {
+        "date": "Passe pelas datas das fotos",
+        "colour": "Veja a foto em cada faixa de luz infravermelha",
+        "zoom": "Chegue mais perto do centro da foto",
+        "layers": "Mostre estrelas conhecidas e pixels com problema por cima",
+        "pixel": "Toque na foto para ler o brilho de um ponto",
+        "motion": "Empilhe as fotos para achar objetos fracos em movimento",
+        "spectrum": "Veja o brilho por cor e ao longo do tempo",
+        "notes": "Anote o que você viu",
+        "more": "Baixe dados e confira catálogos"
+      }
+    }
   },
   "alerts": {
     "title": "Alertas",

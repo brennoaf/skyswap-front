@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
-import { IconCheck, IconColours, IconCompare, IconCrosshair, IconDownload, IconExpand, IconEye, IconEyeOff, IconLayers, IconMore, IconMoves, IconNote, IconSearch, IconShrink, IconSpectrum, IconStepBack, IconStepForward } from '@/components/icons'
+import { IconCheck, IconCrosshair, IconDownload, IconExpand, IconEye, IconEyeOff, IconQuestion, IconShrink, IconStepBack, IconStepForward } from '@/components/icons'
+import { TOOLS, type Tool } from '@/components/lab/lab-intro'
 import { ShiftAddPanel } from '@/components/lab/shift-add-panel'
 import { CatalogLinks } from '@/components/ui/catalog-links'
 import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
@@ -14,6 +15,7 @@ import { useObject, useObjectPosts } from '@/lib/api/hooks'
 import { yearsSpanned } from '@/lib/long-baseline'
 import { BAND_HUE, BANDS, cssColor, cx, formatDate, formatDateTime, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { download, labNotes, saveLabNote, type LabNote } from '@/lib/notes'
+import { useUi } from '@/lib/state/ui'
 import { decodeSxq, FLAG_LAYERS, flagNames, lambdaAt, makeWcs, measureStar, percentileOf, unpack, type Decoded, type Pack, type PackEpoch } from '@/lib/sky/lab'
 
 type LayerKey = 'target' | 'gaia' | 'wise' | 'saturation' | 'cosmic' | 'persistence' | 'satellite'
@@ -88,20 +90,6 @@ function draw(canvas: HTMLCanvasElement, d: Decoded, nx: number, ny: number, hue
   ctx.putImageData(img, 0, 0)
 }
 
-const TOOLS = [
-  { key: 'date', icon: <IconCompare size={26} /> },
-  { key: 'colour', icon: <IconColours size={26} /> },
-  { key: 'zoom', icon: <IconSearch size={26} /> },
-  { key: 'layers', icon: <IconLayers size={26} /> },
-  { key: 'pixel', icon: <IconCrosshair size={26} /> },
-  { key: 'motion', icon: <IconMoves size={26} /> },
-  { key: 'spectrum', icon: <IconSpectrum size={26} /> },
-  { key: 'notes', icon: <IconNote size={26} /> },
-  { key: 'more', icon: <IconMore size={26} /> },
-] as const
-
-type Tool = (typeof TOOLS)[number]['key']
-
 const PHOTO_HEIGHT = { large: '42dvh', small: '22dvh', hidden: '0px' } as const
 
 type PhotoSize = keyof typeof PHOTO_HEIGHT
@@ -148,10 +136,10 @@ function PhotoButton({ label, onClick, children }: { label: string; onClick: () 
   )
 }
 
-function ExportRow({ title, hint, disabled, onClick }: { title: string; hint: string; disabled: boolean; onClick: () => void }) {
+function ActionRow({ icon, title, hint, disabled, onClick }: { icon: ReactNode; title: string; hint: string; disabled?: boolean; onClick: () => void }) {
   return (
     <button type="button" disabled={disabled} onClick={onClick} className="flex min-h-14 w-full items-center gap-3 px-3 py-2 text-left active:bg-surface-pressed disabled:opacity-50">
-      <IconDownload size={22} className="shrink-0" />
+      <span className="shrink-0">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block text-body font-medium">{title}</span>
         <span className="block text-meta text-text-secondary">{hint}</span>
@@ -231,6 +219,7 @@ export function LabView({ id }: { id: string }) {
   const [hypothesis, setHypothesis] = useState<(typeof HYPOTHESES)[number]>('moving_object')
   const [noteText, setNoteText] = useState('')
   const [tool, setTool] = useState<Tool>('date')
+  const showIntro = useUi((s) => s.showLabIntro)
   const canvas = useRef<HTMLCanvasElement>(null)
 
   const epochs = useMemo(() => (pack.data?.epochs ?? []).filter((e) => e.band === band).sort((a, b) => a.mjd - b.mjd), [pack.data, band])
@@ -710,9 +699,12 @@ export function LabView({ id }: { id: string }) {
             {tool === 'more' && (
               <>
                 <section className="overflow-hidden rounded-2xl bg-surface">
+                  <ActionRow icon={<IconQuestion size={22} />} title={t('intro.again')} hint={t('intro.againHint')} onClick={showIntro} />
+                </section>
+                <section className="overflow-hidden rounded-2xl bg-surface">
                   <h3 className="px-3 pt-3 text-ui font-semibold">{t('export')}</h3>
-                  <ExportRow title={t('exportCsv')} hint={t('exportCsvHint')} disabled={!spectra.data && !live?.points.length} onClick={csv} />
-                  <ExportRow title={t('exportJson')} hint={notes.length ? t('exportJsonHint') : t('exportJsonEmpty')} disabled={!notes.length} onClick={() => download(`${id}-lab-notes.json`, JSON.stringify(notes, null, 2), 'application/json')} />
+                  <ActionRow icon={<IconDownload size={22} />} title={t('exportCsv')} hint={t('exportCsvHint')} disabled={!spectra.data && !live?.points.length} onClick={csv} />
+                  <ActionRow icon={<IconDownload size={22} />} title={t('exportJson')} hint={notes.length ? t('exportJsonHint') : t('exportJsonEmpty')} disabled={!notes.length} onClick={() => download(`${id}-lab-notes.json`, JSON.stringify(notes, null, 2), 'application/json')} />
                 </section>
                 <CatalogLinks ra={profile.ra} dec={profile.dec} className="rounded-2xl bg-surface p-3" />
                 {flipbook && (

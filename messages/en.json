@@ -966,7 +966,25 @@
     "notePickSpot": "Tap the photo to add a spot",
     "exportCsvHint": "The measured points, for a spreadsheet",
     "exportJsonHint": "Your notes on this object",
-    "exportJsonEmpty": "Save a note first"
+    "exportJsonEmpty": "Save a note first",
+    "intro": {
+      "title": "Welcome to the Lab",
+      "body": "This is the advanced mode, with the kind of tools scientists use. It may look technical, but it's free for anyone to explore. Try anything: nothing you do here changes the data.",
+      "action": "Start exploring",
+      "again": "How the Lab works",
+      "againHint": "See what each tool does again",
+      "tools": {
+        "date": "Move through the dates of the photos",
+        "colour": "See the photo in each band of infrared light",
+        "zoom": "Get closer to the centre of the photo",
+        "layers": "Show known stars and problem pixels on top",
+        "pixel": "Tap the photo to read the brightness of a spot",
+        "motion": "Stack the photos to find faint moving objects",
+        "spectrum": "See brightness by colour and over time",
+        "notes": "Write down what you saw",
+        "more": "Download data and check catalogs"
+      }
+    }
   },
   "alerts": {
     "title": "Alerts",
