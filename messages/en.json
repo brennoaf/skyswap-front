@@ -591,7 +591,7 @@
     },
     "hints": {
       "swipe": "Swipe right if it moves, left if it doesn't.",
-      "paused": "Paused. Tap the sides of the photo to step, or press play to swipe again."
+      "paused": "Paused. Tap the sides of the photo to step, or tap play to swipe again."
     },
     "guide": {
       "body": "See how it jumps between the photos? That's moving. Swipe right.",
@@ -688,18 +688,7 @@
     "locate": {
       "prompt": "Where is it? Tap it",
       "skip": "Skip",
-      "hint": "Tap the dot that moves, or skip.",
-      "hintKeys": "Click the dot that moves. Esc skips."
-    },
-    "keys": {
-      "step": "Step",
-      "moves": "It moves",
-      "still": "It doesn't move",
-      "unsure": "Not sure",
-      "shift": "Shift",
-      "left": "Left arrow",
-      "right": "Right arrow",
-      "up": "Up arrow"
+      "hint": "Tap the dot that moves, or skip."
     },
     "help": {
       "open": "How to look",
@@ -711,8 +700,7 @@
       "glitchTitle": "What is not real",
       "glitchBody": "Something real shows up in most of the photos. A dot in only one photo is usually a camera glitch.",
       "emptyTitle": "Most sets are empty",
-      "emptyBody": "Most photo sets have nothing new. That's normal, and every look still counts.",
-      "keysTitle": "Keyboard"
+      "emptyBody": "Most photo sets have nothing new. That's normal, and every look still counts."
     },
     "dipole": {
       "whole": "What changed, whole photo",

@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { DipoleFigure } from '@/components/classify/dipole-figure'
 import { PhotoViewer, useOffsetLabel } from '@/components/classify/photo-viewer'
-import { IconCards, IconChevronLeft, IconChevronRight, IconFlashlight, IconMore, IconMoves, IconQuestion, IconStill } from '@/components/icons'
+import { IconCards, IconFlashlight, IconMore, IconMoves, IconQuestion, IconStill } from '@/components/icons'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { CatalogLinks } from '@/components/ui/catalog-links'
 import { Button, EmptyState, IconButton, Notice, Sheet, Skeleton, TopBar } from '@/components/ui/primitives'
@@ -62,56 +62,6 @@ function useIdle(key: string, ms = IDLE_MS) {
     }
   }, [key, ms])
   return idle
-}
-
-function Kbd({ children, label }: { children: ReactNode; label?: string }) {
-  return (
-    <kbd aria-label={label} className="inline-flex h-6 min-w-6 items-center justify-center rounded-md border-[0.5px] border-divider bg-surface px-1.5 font-sans text-meta font-semibold text-text">
-      {children}
-    </kbd>
-  )
-}
-
-function KeyArrow({ dir }: { dir: 'left' | 'right' | 'up' }) {
-  return dir === 'left' ? <IconChevronLeft size={16} /> : dir === 'right' ? <IconChevronRight size={16} /> : <IconChevronRight size={16} className="-rotate-90" />
-}
-
-function KeyHints() {
-  const t = useTranslations('classify.keys')
-  const item = 'inline-flex items-center gap-1.5'
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-meta text-text-secondary">
-      <span className={item}>
-        <Kbd label={t('left')}>
-          <KeyArrow dir="left" />
-        </Kbd>
-        <Kbd label={t('right')}>
-          <KeyArrow dir="right" />
-        </Kbd>
-        {t('step')}
-      </span>
-      <span className={item}>
-        <Kbd>{t('shift')}</Kbd>
-        <Kbd label={t('right')}>
-          <KeyArrow dir="right" />
-        </Kbd>
-        {t('moves')}
-      </span>
-      <span className={item}>
-        <Kbd>{t('shift')}</Kbd>
-        <Kbd label={t('left')}>
-          <KeyArrow dir="left" />
-        </Kbd>
-        {t('still')}
-      </span>
-      <span className={item}>
-        <Kbd label={t('up')}>
-          <KeyArrow dir="up" />
-        </Kbd>
-        {t('unsure')}
-      </span>
-    </div>
-  )
 }
 
 function Stamp({ label, tone, style, className }: { label: string; tone: 'moves' | 'still' | 'unsure'; style: { opacity: MotionValue<number> }; className: string }) {
@@ -329,25 +279,6 @@ function VoteCard({
     [commit, guide, img, locating, settle],
   )
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey || document.querySelector('[role="dialog"]')) return
-      const el = e.target as HTMLElement | null
-      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return
-      if (locating && e.key === 'Escape') {
-        e.preventDefault()
-        void commit('moves')
-        return
-      }
-      const choice: Choice | null = e.key === 'ArrowUp' ? 'unsure' : e.shiftKey && e.key === 'ArrowRight' ? 'moves' : e.shiftKey && e.key === 'ArrowLeft' ? 'still' : null
-      if (!choice) return
-      e.preventDefault()
-      choose(choice)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [choose, commit, locating])
-
   const onDragEnd = (_: unknown, info: PanInfo) => {
     const dx = info.offset.x
     const dy = info.offset.y
@@ -422,8 +353,7 @@ function VoteCard({
       </div>
       {(showHints || locating) && (
         <div className="mt-3">
-          <p className="text-center text-meta text-text-secondary [@media(pointer:fine)]:hidden">{locating ? t('locate.hint') : playing ? t('hints.swipe') : t('hints.paused')}</p>
-          <div className="hidden [@media(pointer:fine)]:block">{locating ? <p className="text-center text-meta text-text-secondary">{t('locate.hintKeys')}</p> : <KeyHints />}</div>
+          <p className="text-center text-meta text-text-secondary">{locating ? t('locate.hint') : playing ? t('hints.swipe') : t('hints.paused')}</p>
         </div>
       )}
     </>
@@ -451,10 +381,6 @@ function HelpSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
         <section>
           <h3 className="text-ui font-semibold">{t('emptyTitle')}</h3>
           <p className="mt-1 text-body text-text-secondary">{t('emptyBody')}</p>
-        </section>
-        <section className="hidden [@media(pointer:fine)]:block">
-          <h3 className="mb-2 text-ui font-semibold">{t('keysTitle')}</h3>
-          <KeyHints />
         </section>
       </div>
     </Sheet>
@@ -516,14 +442,6 @@ function RevealPanel({ cardId, choice, result, pacing, onNext }: { cardId: strin
     const timer = setTimeout(() => el.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }), 350)
     return () => clearTimeout(timer)
   }, [])
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && !document.querySelector('[role="dialog"]')) onNext()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onNext])
 
   return (
     <section ref={panel} aria-labelledby="reveal-title" className="mt-4 scroll-mb-[calc(var(--height-bottomnav)+12px)] rounded-2xl bg-surface px-4 py-4">
