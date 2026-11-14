@@ -382,7 +382,7 @@
     "noTimelapse": "Não há time-lapse deste objeto no kit de dados.",
     "noMeasurements": "Não há medições deste objeto no kit de dados.",
     "skyMapTitle": "Mapa do céu",
-    "skyMapCredit": "Aladin Lite, CDS Strasbourg, levantamento colorido DSS2",
+    "skyMapCredit": "Aladin Lite (CDS), levantamento colorido DSS2 servido pela ESA",
     "coords": "Posição ({epoch})",
     "highlights": {
       "why": "Por quê",
@@ -636,12 +636,12 @@
       "copyFailed": "Não foi possível copiar as coordenadas",
       "watch": "Ver este ponto ao longo do tempo",
       "explore": "Explorar fotos reais desta região",
-      "exploreHint": "Abre um mapa interativo do Aladin Lite. Usa mais dados e depende desse serviço.",
-      "checking": "Conectando ao serviço de mapa",
-      "loading": "Carregando o mapa",
-      "failedTitle": "O serviço de mapa não está respondendo",
-      "failedBody": "O Aladin Lite é de outro observatório, então pode ser temporário. As fotos do SkySwap continuam funcionando.",
-      "openExternal": "Abrir em nova aba"
+      "exploreHint": "Abre fotos do céu real em volta dele, com zoom. Usa mais dados.",
+      "loading": "Carregando as fotos",
+      "failedTitle": "Estas fotos não estão carregando",
+      "failedBody": "Elas vêm de um arquivo externo, então pode ser temporário. As fotos do SkySwap continuam funcionando.",
+      "openExternal": "Abrir em nova aba",
+      "photosHint": "Fotos mais antigas, em luz visível, para dar contexto. Faça pinça ou use os botões para o zoom e arraste para mover. A marca amarela é a posição indicada acima."
     }
   },
   "classify": {
