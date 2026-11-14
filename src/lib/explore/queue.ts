@@ -1,8 +1,9 @@
 import { api, unwrap, type DeckCard } from '@/lib/api/client'
-import { loadCells, pickCell, type SkyCell } from '@/lib/sky'
+import { ang2pixNest, loadCells, pickCell, type SkyCell } from '@/lib/sky'
 import { isStrong, runFlashlight, type CardHint } from './flashlight'
 import { randomSpot, type Spot } from './sampler'
 import { buildSkyCard, INDEX_BASE, SKY_FOV_DEG, type SkyCardDraft } from './sky-card'
+import { loadTile, tileUrl } from './tiles'
 
 export const PREFETCH = 3
 const PARALLEL = 2
@@ -19,6 +20,7 @@ let building = 0
 let failures = 0
 let active = false
 const waiters: ((c: SkyPlayCard | null) => void)[] = []
+let upcoming: Spot | null = null
 
 async function loadSky(): Promise<Sky> {
   if (sky) return sky
@@ -68,7 +70,8 @@ async function toBlobUrl(pixels: SkyCardDraft['pixels']): Promise<string> {
 async function buildOne(): Promise<SkyPlayCard | null> {
   const s = await loadSky()
   for (let i = 0; i < TRIES_PER_CARD && active; i++) {
-    const spot = nextSpot(s)
+    const spot = upcoming ?? nextSpot(s)
+    upcoming = null
     if (!spot) return null
     try {
       const draft = await buildSkyCard(spot)
@@ -95,6 +98,12 @@ async function buildOne(): Promise<SkyPlayCard | null> {
   return null
 }
 
+function warmNext() {
+  if (upcoming || !sky || !active) return
+  upcoming = nextSpot(sky)
+  if (upcoming) loadTile(tileUrl(ang2pixNest(5, upcoming.ra, upcoming.dec))).catch(() => null)
+}
+
 function pump() {
   while (active && ready.length + building < PREFETCH && building < PARALLEL) {
     building++
@@ -107,7 +116,10 @@ function pump() {
       })
       .finally(() => {
         building--
-        if (active && failures < TRIES_PER_CARD * PREFETCH) pump()
+        if (active && failures < TRIES_PER_CARD * PREFETCH) {
+          pump()
+          if (ready.length + building >= PREFETCH) warmNext()
+        }
         else if (!building) for (const w of waiters.splice(0)) w(null)
       })
   }

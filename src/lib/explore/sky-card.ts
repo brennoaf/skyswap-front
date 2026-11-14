@@ -1,5 +1,6 @@
 import { epochsAtTile, percentile, skyMovie, type IndexRow } from '@/lib/sky'
 import type { Spot } from './sampler'
+import { tileFetch } from './tiles'
 
 export const INDEX_BASE = '/kit/index/'
 export const SKY_HOSTS = ['/api/s3/']
@@ -179,7 +180,7 @@ function loadWave(): Promise<unknown> {
 
 export async function buildSkyCard(spot: Spot): Promise<SkyCardDraft | null> {
   const wave = await loadWave()
-  const q = await epochsAtTile(INDEX_BASE, wave, spot.ra, spot.dec, { order: 5 })
+  const q = await epochsAtTile(INDEX_BASE, wave, spot.ra, spot.dec, { order: 5, fetchImpl: tileFetch })
   const choice = chooseVisits(q.hits)
   if (!choice) return null
   const visitOf = new Map<string, number>()
@@ -193,6 +194,7 @@ export async function buildSkyCard(spot: Spot): Promise<SkyCardDraft | null> {
     mode: 'bilinear',
     bands: [choice.band],
     hosts: SKY_HOSTS,
+    fetchImpl: tileFetch,
     concurrency: 4,
     pick: (hits) => hits.filter((h) => visitOf.has(`${h.key}|${h.mjd}`)),
     onFrame: (_i, f) => {

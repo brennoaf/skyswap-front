@@ -1,9 +1,9 @@
-const VERSION = 'kit-2026.10.29-2'
+const VERSION = 'index-2026.10.29-full-1'
 const S3_HOSTS = ['nasa-irsa-spherex.s3.amazonaws.com', 'nasa-irsa-spherex.s3.us-east-1.amazonaws.com',
   's3.us-east-1.amazonaws.com', 's3.amazonaws.com', 'nasa-irsa-spherex.s3.dualstack.us-east-1.amazonaws.com']
 
 self.addEventListener('install', e => self.skipWaiting())
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()))
+self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim())))
 
 self.addEventListener('message', e => {
   if (e.data === 'clear') e.waitUntil(caches.delete(VERSION).then(() => e.source.postMessage('cleared')))

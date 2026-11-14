@@ -550,7 +550,10 @@
     "willRead": "Up to {n, plural, one {# image} other {# images}} will be read from NASA when you build it.",
     "bigField": "Bigger fields read more data from NASA ({n, plural, one {# image} other {# images}}). It may take a while on slow connections.",
     "downloaded": "Downloaded {size} from NASA for this time-lapse.",
-    "crosshairMoving": "The crosshair follows the object to where it was on each date (catalogue motion)."
+    "crosshairMoving": "The crosshair follows the object to where it was on each date (catalogue motion).",
+    "readingIndex": "Reading the sky index for this area: {loaded} of {total}. Busy parts of the sky take a few seconds the first time.",
+    "readingIndexNoSize": "Reading the sky index for this area: {loaded}",
+    "scanningIndex": "Finding the best photos among {n, plural, one {# image} other {# images}} of this spot…"
   },
   "classify": {
     "title": "Classify",
@@ -842,7 +845,7 @@
     "notes": "Private notes",
     "notesHint": "Your notes live only in this browser.",
     "data": "About the data",
-    "dataBody": "SkySwap shows real NASA SPHEREx images from public releases QR2 and QR3 (IRSA). Colours are false colours. Data kit {version}.",
+    "dataBody": "SkySwap shows real NASA SPHEREx images from public releases QR2 and QR3 (IRSA). Colours are false colours. The sky index lists {images} published images, so any spot can be opened. The first look at a deep-field spot, where SPHEREx returns again and again near the ecliptic poles, can take a few seconds while that part of the index downloads; after that it is kept in the browser. Data kit {version}.",
     "about": "SkySwap is a non-commercial study prototype for the NASA Space Apps 2026 challenge “Planet X and SPHEREx”. It is not affiliated with NASA or Instagram.",
     "api": "API docs",
     "languageName": "English",

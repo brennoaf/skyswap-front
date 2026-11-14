@@ -12,6 +12,7 @@ import type { SkyResult } from '@/lib/api/client'
 import { useObject, useSky } from '@/lib/api/hooks'
 import { BAND_HUE, BANDS, cssColor, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch } from '@/lib/sky'
+import { loadTile, tileFetch, tileUrl } from '@/lib/explore/tiles'
 import { useUi } from '@/lib/state/ui'
 
 export const FOVS = [0.05, 0.1, 0.25, 0.5] as const
@@ -88,6 +89,9 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
   const [latest, setLatest] = useState<string | null>(null)
   const [ms, setMs] = useState<number | null>(null)
   const [bytes, setBytes] = useState<number | null>(null)
+  const [tile, setTile] = useState<{ loaded: number; total: number | null } | null>(null)
+  const [scanning, setScanning] = useState(false)
+  const [firstMs, setFirstMs] = useState<number | null>(null)
   const alive = useRef(true)
   useEffect(() => {
     alive.current = true
@@ -99,8 +103,11 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
   const maxEpochs = maxEpochsFor(p.fov)
   const total = sky.source === 'sia' ? Math.min(CUTOUTS, sky.images.length) : Math.min(maxEpochs, sky.total)
 
+  const t0Ref = useRef(0)
   const add = useCallback((f: ViewFrame) => {
     if (!alive.current) return
+    setFirstMs((v) => v ?? Math.round(performance.now() - t0Ref.current))
+    setScanning(false)
     setFrames((prev) => [...prev, f].sort((a, b) => a.mjd - b.mjd))
     setLatest(f.key)
     setDone((d) => d + 1)
@@ -108,6 +115,7 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
 
   const finish = useCallback((count: number, t0: number, failKey: 'noFrames' | 'cutoutsFailed') => {
     if (!alive.current) return
+    setScanning(false)
     setMs(Math.round(performance.now() - t0))
     if (count) setStatus('ready')
     else {
@@ -122,8 +130,11 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
     setLatest(null)
     setMs(null)
     setBytes(null)
+    setTile(null)
+    setFirstMs(null)
     setStatus('building')
     const t0 = performance.now()
+    t0Ref.current = t0
     let count = 0
     if (sky.source === 'sia') {
       const picks = spread([...sky.images].sort((a, b) => a.mjd - b.mjd), CUTOUTS)
@@ -154,7 +165,21 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
       return
     }
     try {
+      if (sky.cell !== null) {
+        let last = 0
+        await loadTile(tileUrl(sky.cell), (loaded, size) => {
+          const now = performance.now()
+          if (now - last < 120 && loaded !== size) return
+          last = now
+          if (alive.current) setTile({ loaded, total: size ?? sky.tile_bytes })
+        }).catch(() => null)
+        if (alive.current) {
+          setTile(null)
+          setScanning(true)
+        }
+      }
       const result = await skyMovie({
+        fetchImpl: tileFetch,
         ra: p.ra,
         dec: p.dec,
         target,
@@ -181,7 +206,7 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
     }
   }, [sky, p.ra, p.dec, p.fov, p.band, maxEpochs, add, finish, target])
 
-  return { frames, status, errorKey, done, total, latest, ms, bytes, start }
+  return { frames, status, errorKey, done, total, latest, ms, bytes, tile, scanning, firstMs, start }
 }
 
 function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyParams; compact: boolean; target: SkyTarget | null }) {
@@ -243,6 +268,7 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
         }
       }}
       data-build-ms={b.ms ?? undefined}
+      data-first-frame-ms={b.firstMs ?? undefined}
       data-frames={n}
     >
       {frame && <FrameCanvas frame={frame} colormap={colormap} label={t('frameAlt', { band: frame.band, date })} />}
@@ -273,9 +299,22 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
       )}
       {b.status === 'building' && (
         <div className="absolute inset-x-0 bottom-0 bg-black/70 px-3 py-2" role="status" aria-live="polite">
-          <p className="text-note">{sky.source === 'sia' ? t('fetchingCutouts', { done: b.done, total: b.total }) : t('building', { done: b.done, total: b.total })}</p>
+          <p className="text-note">
+            {b.tile
+              ? b.tile.total
+                ? t('readingIndex', { loaded: formatBytes(b.tile.loaded), total: formatBytes(b.tile.total) })
+                : t('readingIndexNoSize', { loaded: formatBytes(b.tile.loaded) })
+              : b.scanning
+                ? t('scanningIndex', { n: sky.total })
+                : sky.source === 'sia'
+                ? t('fetchingCutouts', { done: b.done, total: b.total })
+                : t('building', { done: b.done, total: b.total })}
+          </p>
           <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-white/20">
-            <div className="h-full bg-accent transition-[width]" style={{ width: `${b.total ? Math.min(100, (b.done / b.total) * 100) : 0}%` }} />
+            <div
+              className="h-full bg-accent transition-[width]"
+              style={{ width: `${b.tile ? (b.tile.total ? Math.min(100, (b.tile.loaded / b.tile.total) * 100) : 5) : b.total ? Math.min(100, (b.done / b.total) * 100) : 0}%` }}
+            />
           </div>
         </div>
       )}

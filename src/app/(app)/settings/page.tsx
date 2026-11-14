@@ -11,6 +11,7 @@ import { UserAvatar } from '@/components/ui/user-avatar'
 import { useHealth, useLogout, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
 import { useUi, type ThemePref } from '@/lib/state/ui'
+import { useFmt } from '@/lib/use-fmt'
 
 const THEMES: ThemePref[] = ['system', 'dark', 'light']
 const API_DOCS_URL = process.env.NEXT_PUBLIC_API_DOCS_URL ?? 'http://localhost:4000/docs'
@@ -95,6 +96,7 @@ function Notes() {
 
 export default function SettingsPage() {
   const t = useTranslations('settings')
+  const fmt = useFmt()
   const health = useHealth()
   const [tutorial, setTutorial] = useState(false)
   const resetOnboarding = useUi((s) => s.resetOnboarding)
@@ -136,7 +138,7 @@ export default function SettingsPage() {
 
       <Section id="s-data" title={t('data')}>
         <p className="px-4 text-body leading-relaxed">
-          {health.data ? t('dataBody', { version: health.data.version }) : <Skeleton className="h-10 w-full" />}
+          {health.data ? t('dataBody', { version: health.data.version, images: fmt.number(health.data.images_indexed) }) : <Skeleton className="h-10 w-full" />}
         </p>
         <p className="mt-3 px-4 text-note leading-relaxed text-text-secondary">{t('about')}</p>
         <a href={API_DOCS_URL} target="_blank" rel="noreferrer" className="mt-2 flex min-h-12 items-center gap-3 px-4 text-ui text-link active:bg-surface">

@@ -37,6 +37,7 @@ export interface SkyMovieOptions {
   bands?: string[] | null
   hosts?: string[]
   pick?: ((hits: IndexRow[]) => IndexRow[]) | null
+  fetchImpl?: typeof fetch | null
 }
 
 export interface SkyMovieResult {
@@ -65,7 +66,7 @@ export const propagate = propagateJs as unknown as (t: { ra: number; dec: number
 export const referenceGrid = referenceGridJs as unknown as (ra: number, dec: number, fovDeg: number) => { n: number; wcs: { world2pix: (ra: number, dec: number) => [number, number]; pix2world: (x: number, y: number) => [number, number] } }
 
 export const ang2pixNest = ang2pixNestJs as unknown as (order: number, ra: number, dec: number) => number
-export const epochsAtTile = epochsAtTileJs as unknown as (base: string, wave: unknown, ra: number, dec: number, opts?: { order?: number }) => Promise<{ cell: number; hits: IndexRow[]; bytes: number }>
+export const epochsAtTile = epochsAtTileJs as unknown as (base: string, wave: unknown, ra: number, dec: number, opts?: { order?: number; fetchImpl?: typeof fetch }) => Promise<{ cell: number; hits: IndexRow[]; bytes: number }>
 
 export interface FlashlightHint {
   kind: 'appeared' | 'missing' | 'flash' | 'residual'

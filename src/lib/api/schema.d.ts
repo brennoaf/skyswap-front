@@ -663,6 +663,7 @@ export interface paths {
                             band: string | null;
                             source: string;
                             cell: number | null;
+                            tile_bytes: number | null;
                             total: number;
                             releases: string[];
                             bands: {
@@ -1406,6 +1407,7 @@ export interface paths {
                             key: string;
                             mjd: number;
                             wl_um: number;
+                            visit?: number;
                         }[];
                     };
                 };
@@ -1579,6 +1581,7 @@ export interface paths {
                                     t: string;
                                     mjd: number;
                                     wl_um: number;
+                                    visit: number;
                                 }[];
                                 status: string;
                                 catalog_check: null;
