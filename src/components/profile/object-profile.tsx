@@ -5,11 +5,11 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { KitChart, QrWarning } from '@/components/charts/charts'
 import { frameTiles, PostGrid, tilesFromPosts } from '@/components/profile/post-grid'
-import { IconBell, IconChart, IconChevronDownSmall, IconCompare, IconFlask, IconGrid, IconLink, IconMap, IconMore, IconReel, IconSpectrum, IconTarget, IconWarning } from '@/components/icons'
-import { Button, Chip, EmptyState, IconButton, IconTabs, isSaturated, isVerified, Notice, ObjectAvatar, ObjectBadges, Sheet, SheetRow, Skeleton, TopBar } from '@/components/ui/primitives'
+import { IconBell, IconChart, IconChevronDownSmall, IconCompare, IconFlask, IconGrid, IconLink, IconMap, IconMore, IconReel, IconSpectrum, IconTarget, IconWarning, IconChevronRight } from '@/components/icons'
+import { Button, Chip, EmptyState, IconButton, IconTabs, isSaturated, isVerified, ObjectAvatar, ObjectBadges, Sheet, SheetRow, Skeleton, TopBar } from '@/components/ui/primitives'
 import type { ObjectProfile } from '@/lib/api/client'
 import { useFollow, useLearn, useObject, useObjectPosts, useSession } from '@/lib/api/hooks'
-import { BAND_HUE, BANDS, compactNumber, formatDec, formatRa, formatShortDate } from '@/lib/format'
+import { BAND_HUE, BANDS, compactNumber, cx, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
 
@@ -80,6 +80,7 @@ export function ObjectProfileView({ id }: { id: string }) {
   const [highlight, setHighlight] = useState<Highlight | null>(null)
   const [more, setMore] = useState(false)
   const [map, setMap] = useState(false)
+  const [bioOpen, setBioOpen] = useState(false)
 
   const learnRef = useRef(learn.mutate)
   learnRef.current = learn.mutate
@@ -156,24 +157,32 @@ export function ObjectProfileView({ id }: { id: string }) {
 
         <div className="mt-3 space-y-1 text-body">
           <p className="text-text-secondary">{profile.official_target ? tp('officialTarget') : tp(`kinds.${profile.kind}`)}</p>
-          {profile.kind === 'candidate' ? <p>{t('candidateBody')}</p> : <p>{profile.bio}</p>}
-          {profile.aliases.length > 0 && <p className="text-text-secondary">{t('aliases', { names: profile.aliases.slice(0, 4).join(', ') })}</p>}
-          <p>
-            {profile.sources.slice(0, 3).map((s, i) => (
-              <span key={s.id}>
-                {i > 0 && ', '}
-                <a href={s.url} target="_blank" rel="noreferrer" className="text-link">
-                  {s.label.split(/[(,]/)[0]?.trim()}
-                </a>
-              </span>
-            ))}
-          </p>
+          <p className={cx(!bioOpen && 'line-clamp-2')}>{profile.kind === 'candidate' ? t('candidateBody') : profile.bio}</p>
+          {bioOpen ? (
+            <>
+              {profile.aliases.length > 0 && <p className="text-text-secondary">{t('aliases', { names: profile.aliases.slice(0, 4).join(', ') })}</p>}
+              <p>
+                {profile.sources.slice(0, 3).map((s, i) => (
+                  <span key={s.id}>
+                    {i > 0 && ', '}
+                    <a href={s.url} target="_blank" rel="noreferrer" className="text-link">
+                      {s.label.split(/[(,]/)[0]?.trim()}
+                    </a>
+                  </span>
+                ))}
+              </p>
+            </>
+          ) : (
+            <button type="button" onClick={() => setBioOpen(true)} className="text-text-secondary">
+              {tp('more')}
+            </button>
+          )}
         </div>
       </section>
 
       <div className="mt-3 flex gap-[6px] px-4">
         <FollowButton profile={profile} />
-        <Button className="h-8 flex-1" onClick={() => setMap(true)}>
+        <Button className="h-8 flex-1 whitespace-nowrap px-2 text-body" onClick={() => setMap(true)}>
           {t('skyMap')}
         </Button>
         <Link href={`/lab/${profile.id}`} className="inline-flex h-8 flex-1 items-center justify-center rounded-[var(--radius-button)] bg-surface text-ui font-medium active:bg-surface-pressed">
@@ -207,14 +216,11 @@ export function ObjectProfileView({ id }: { id: string }) {
 
       {(unmeasurable || profile.verdict === 'indicative' || isSaturated(profile.saturation)) && (
         <div className="mt-4 px-4">
-          <Notice tone="warning" icon={<IconWarning size={20} />}>
-            <p className="font-semibold">{unmeasurable ? t('whyTitle') : t(`verdicts.${profile.verdict}`)}</p>
-            <ul className="mt-1 list-disc space-y-1 pl-4 text-text-secondary">
-              {profile.limits.slice(0, 2).map((l) => (
-                <li key={l}>{l}</li>
-              ))}
-            </ul>
-          </Notice>
+          <button type="button" onClick={() => setHighlight('why')} className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-surface px-3 text-left text-note active:bg-surface-pressed">
+            <IconWarning size={20} className="shrink-0 text-warning" />
+            <span className="min-w-0 flex-1 font-semibold">{unmeasurable ? t('whyTitle') : t(`verdicts.${profile.verdict}`)}</span>
+            <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
+          </button>
         </div>
       )}
 

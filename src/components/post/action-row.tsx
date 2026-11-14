@@ -40,7 +40,7 @@ export function ActionRow({
 }) {
   const t = useTranslations('post.actions')
   return (
-    <div className="relative flex h-12 items-center px-[5px]">
+    <div className="relative flex h-12 items-center px-[5px]" data-tour="post-actions">
       <ActionButton label={t('tag')} action={tag}>
         <IconComment />
       </ActionButton>

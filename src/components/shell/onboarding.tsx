@@ -1,129 +1,241 @@
 'use client'
 
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
-import { Button, Wordmark } from '@/components/ui/primitives'
+import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
+import { IconCards, IconColours, IconComment, IconHome, IconMore, IconReel, IconSave, IconSearch, IconTarget } from '@/components/icons'
+import { Button } from '@/components/ui/primitives'
+import { UserAvatar } from '@/components/ui/user-avatar'
+import { cx } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 
-const STEPS = ['blink', 'colours', 'mark', 'saturation'] as const
+type Item = { icon: ReactNode; key: string }
+type Step = { id: string; target?: string; items?: Item[]; art?: 'sky' | 'blink' }
 
-function Art({ step, tick }: { step: (typeof STEPS)[number]; tick: number }) {
+const STEPS: Step[] = [
+  { id: 'welcome', art: 'sky' },
+  { id: 'help', art: 'blink' },
+  { id: 'stories', target: 'stories' },
+  { id: 'post', target: 'post-head' },
+  { id: 'photo', target: 'post-media' },
+  {
+    id: 'actions',
+    target: 'post-actions',
+    items: [
+      { icon: <IconComment size={22} />, key: 'tag' },
+      { icon: <IconTarget size={22} />, key: 'mark' },
+      { icon: <IconColours size={22} />, key: 'colours' },
+      { icon: <IconSave size={22} />, key: 'save' },
+    ],
+  },
+  { id: 'more', target: 'post-more', items: [{ icon: <IconMore size={22} />, key: 'lab' }] },
+  { id: 'alerts', target: 'alerts' },
+  {
+    id: 'nav',
+    target: 'nav',
+    items: [
+      { icon: <IconHome size={22} />, key: 'home' },
+      { icon: <IconSearch size={22} />, key: 'search' },
+      { icon: <IconCards size={22} />, key: 'classify' },
+      { icon: <IconReel size={22} />, key: 'reels' },
+      { icon: <UserAvatar nickname={null} size={22} />, key: 'me' },
+    ],
+  },
+  { id: 'finish' },
+]
+
+type Box = { top: number; left: number; width: number; height: number }
+
+function Art({ kind, tick }: { kind: 'sky' | 'blink'; tick: number }) {
   const on = tick % 2 === 0
-  if (step === 'blink')
+  if (kind === 'sky')
     return (
-      <svg viewBox="0 0 240 180" className="w-full" aria-hidden="true">
-        <rect x="20" y="10" width="200" height="160" rx="18" fill="var(--color-surface)" />
-        {[[50, 40], [180, 60], [90, 140], [160, 130], [60, 100]].map(([x, y]) => (
-          <circle key={`${x}-${y}`} cx={x} cy={y} r="5" fill="var(--color-text)" opacity="0.8" />
+      <svg viewBox="0 0 240 120" className="w-full" aria-hidden="true">
+        {[[30, 30, 2], [70, 80, 1.5], [110, 24, 2.5], [150, 70, 1.5], [200, 36, 2], [220, 92, 1.5], [52, 100, 1.2], [180, 104, 1.2]].map(([x, y, r], i) => (
+          <circle key={i} cx={x} cy={y} r={r} fill="var(--color-text)" opacity={(i + tick) % 3 === 0 ? 0.95 : 0.45} />
         ))}
-        <circle cx={on ? 112 : 128} cy={on ? 92 : 84} r="7" fill="var(--color-crosshair)" />
-        <circle cx={on ? 128 : 112} cy={on ? 84 : 92} r="7" fill="none" stroke="var(--color-crosshair)" strokeDasharray="3 3" opacity="0.6" />
-        <path d="M100 70H90V80M140 70H150V80M100 110H90V100M140 110H150V100" stroke="var(--color-accent)" strokeWidth="2.5" fill="none" />
-      </svg>
-    )
-  if (step === 'colours')
-    return (
-      <svg viewBox="0 0 240 180" className="w-full" aria-hidden="true">
-        {[1, 2, 3, 4, 5, 6].map((n) => `var(--color-band-d${n})`).map((c, i) => (
-          <g key={c} transform={`translate(${24 + i * 33} ${tick % 6 === i ? 20 : 34})`}>
-            <rect width="28" height="110" rx="10" fill={c} opacity={tick % 6 === i ? 1 : 0.55} />
-            <text x="14" y="128" textAnchor="middle" fontSize="12" fill="var(--color-text-secondary)">{`D${i + 1}`}</text>
-          </g>
-        ))}
-      </svg>
-    )
-  if (step === 'mark')
-    return (
-      <svg viewBox="0 0 240 180" className="w-full" aria-hidden="true">
-        <rect x="20" y="10" width="200" height="160" rx="18" fill="var(--color-surface)" />
-        {[0, 1, 2, 3].map((i) => (
-          <circle key={i} cx={70 + i * 30} cy={120 - i * 18} r="6" fill={i <= tick % 4 ? 'var(--color-crosshair)' : 'var(--color-ring-seen)'} />
-        ))}
-        <path d="M70 120L160 66" stroke="var(--color-crosshair)" strokeWidth="2" strokeDasharray="4 4" opacity="0.6" />
-        <g transform={`translate(${70 + (tick % 4) * 30} ${120 - (tick % 4) * 18})`} stroke="var(--color-accent)" strokeWidth="2.5" fill="none">
-          <circle r="14" />
-          <path d="M0 -22V-16M0 16V22M-22 0H-16M16 0H22" />
-        </g>
+        <circle cx="120" cy="62" r="26" fill="none" stroke="var(--color-accent)" strokeWidth="3" />
+        <circle cx="120" cy="62" r="20" fill="var(--color-surface)" />
+        <circle cx="120" cy="62" r="6" fill="var(--color-spot-star)" />
       </svg>
     )
   return (
-    <svg viewBox="0 0 240 180" className="w-full" aria-hidden="true">
-      <rect x="20" y="10" width="200" height="160" rx="18" fill="var(--color-surface)" />
-      <circle cx="120" cy="90" r={on ? 46 : 40} fill="var(--color-crosshair)" opacity="0.25" />
-      <circle cx="120" cy="90" r="28" fill="var(--color-spot-star)" />
-      <path d="M100 90H140M120 70V110" stroke="var(--color-on-warning)" strokeWidth="3" opacity="0.15" />
-      <text x="120" y="160" textAnchor="middle" fontSize="12" fill="var(--color-text-secondary)">
-        255 255 255
-      </text>
+    <svg viewBox="0 0 240 120" className="w-full" aria-hidden="true">
+      <rect x="40" y="4" width="160" height="112" rx="16" fill="var(--color-surface)" />
+      {[[66, 28], [176, 38], [92, 98], [160, 94], [72, 70]].map(([x, y]) => (
+        <circle key={`${x}-${y}`} cx={x} cy={y} r="4.5" fill="var(--color-text)" opacity="0.8" />
+      ))}
+      <circle cx={on ? 112 : 128} cy={on ? 64 : 56} r="6.5" fill="var(--color-crosshair)" />
+      <circle cx={on ? 128 : 112} cy={on ? 56 : 64} r="6.5" fill="none" stroke="var(--color-crosshair)" strokeDasharray="3 3" opacity="0.6" />
+      <path d="M100 44H92V52M140 44H148V52M100 76H92V68M140 76H148V68" stroke="var(--color-accent)" strokeWidth="2.5" fill="none" />
     </svg>
   )
 }
 
-export function Onboarding({ force, onClose }: { force?: boolean; onClose?: () => void }) {
+function findTarget(id: string): HTMLElement | null {
+  return document.querySelector<HTMLElement>(`[data-tour="${id}"]`)
+}
+
+function useTargetBox(target: string | undefined, reduce: boolean) {
+  const [box, setBox] = useState<Box | null>(null)
+  const [missing, setMissing] = useState(false)
+  useLayoutEffect(() => {
+    setBox(null)
+    setMissing(false)
+    if (!target) return
+    let raf = 0
+    let tries = 0
+    let el: HTMLElement | null = null
+    const measure = () => {
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      setBox({ top: r.top, left: r.left, width: r.width, height: r.height })
+    }
+    const find = () => {
+      el = findTarget(target)
+      if (!el) {
+        if (++tries > 90) setMissing(true)
+        else raf = requestAnimationFrame(find)
+        return
+      }
+      const r = el.getBoundingClientRect()
+      const fixed = getComputedStyle(el).position === 'fixed' || !!el.closest('nav')
+      if (!fixed && (r.top < 64 || r.bottom > window.innerHeight - 220)) el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' })
+      measure()
+    }
+    find()
+    window.addEventListener('scroll', measure, true)
+    window.addEventListener('resize', measure)
+    const timer = setInterval(measure, 250)
+    return () => {
+      cancelAnimationFrame(raf)
+      clearInterval(timer)
+      window.removeEventListener('scroll', measure, true)
+      window.removeEventListener('resize', measure)
+    }
+  }, [target, reduce])
+  return { box, missing }
+}
+
+export function Onboarding() {
   const t = useTranslations('onboarding')
+  const path = usePathname()
   const done = useUi((s) => s.onboardingDone)
   const language = useUi((s) => s.languageChosen)
   const finish = useUi((s) => s.finishOnboarding)
-  const reduce = useReducedMotion()
-  const [step, setStep] = useState(0)
+  const reduce = useReducedMotion() ?? false
+  const [index, setIndex] = useState(0)
   const [tick, setTick] = useState(0)
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => setHydrated(true), [])
+  const visible = hydrated && language && !done && path === '/'
   useEffect(() => {
-    if (reduce) return
+    if (reduce || !visible) return
     const timer = setInterval(() => setTick((x) => x + 1), 700)
     return () => clearInterval(timer)
-  }, [reduce])
-  const visible = hydrated && (force || (language && !done))
+  }, [reduce, visible])
+
+  const step = STEPS[index] ?? STEPS[0]!
+  const { box, missing } = useTargetBox(visible ? step.target : undefined, reduce)
+  const last = index === STEPS.length - 1
+  const go = useCallback((d: number) => setIndex((i) => Math.max(0, Math.min(STEPS.length - 1, i + d))), [])
   const close = () => {
     finish()
-    setStep(0)
-    onClose?.()
+    setIndex(0)
   }
-  const key = STEPS[step] ?? 'blink'
+  useEffect(() => {
+    if (missing) go(1)
+  }, [missing, go])
+
+  const spot = step.target ? box : null
+  const pad = 6
+  const below = spot ? window.innerHeight - (spot.top + spot.height) > spot.top : false
+  const card = (
+    <motion.div
+      key={step.id}
+      initial={reduce ? false : { opacity: 0, y: below ? -8 : 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="pointer-events-auto rounded-2xl bg-sheet p-5 shadow-[0_12px_40px_rgb(0_0_0/0.35)] ring-1 ring-divider"
+    >
+      {step.art && (
+        <div className="mb-4">
+          <Art kind={step.art} tick={tick} />
+        </div>
+      )}
+      <p className="text-meta font-semibold uppercase tracking-wide text-accent">{t('step', { n: index + 1, total: STEPS.length })}</p>
+      <h2 id="tour-title" className="mt-1 font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">
+        {t(`${step.id}.title`)}
+      </h2>
+      {step.items ? (
+        <ul className="mt-3 flex flex-col gap-2.5">
+          {step.items.map((it) => (
+            <li key={it.key} className="flex items-center gap-3 text-body">
+              <span className="inline-flex size-8 shrink-0 items-center justify-center">{it.icon}</span>
+              <span>{t(`${step.id}.${it.key}`)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : step.id === 'finish' ? (
+        <div className="mt-2 flex flex-col gap-2 text-body leading-relaxed text-text-secondary">
+          <p>{t('finish.contribution')}</p>
+          <p>{t('finish.pro')}</p>
+        </div>
+      ) : (
+        <p className="mt-2 text-body leading-relaxed text-text-secondary">{t(`${step.id}.body`)}</p>
+      )}
+      {last ? (
+        <div className="mt-5 flex flex-col gap-2">
+          <Link href="/classify" onClick={close} className="inline-flex h-12 items-center justify-center rounded-[var(--radius-button)] bg-accent text-ui font-semibold text-on-accent active:bg-accent-pressed">
+            {t('finish.classify')}
+          </Link>
+          <Button className="h-12" onClick={close}>
+            {t('finish.explore')}
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-5 flex items-center gap-2">
+          <button type="button" onClick={close} className="h-11 px-1 text-ui font-semibold text-text-secondary">
+            {t('skip')}
+          </button>
+          <span className="flex-1" />
+          {index > 0 && (
+            <Button className="h-11 px-4" onClick={() => go(-1)}>
+              {t('back')}
+            </Button>
+          )}
+          <Button variant="primary" className="h-11 px-5" onClick={() => go(1)}>
+            {t('next')}
+          </Button>
+        </div>
+      )}
+    </motion.div>
+  )
+
   return (
     <AnimatePresence>
       {visible && (
-        <motion.div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="onboarding-title"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[65] mx-auto flex max-w-[var(--width-app)] flex-col bg-bg px-6 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))]"
-        >
-          <div className="flex items-center justify-between">
-            <Wordmark className="text-wordmark-sm" />
-            <button type="button" onClick={close} className="h-11 px-2 text-ui font-semibold text-text-secondary">
-              {t('skip')}
-            </button>
-          </div>
-          <div className="flex gap-1 pt-3" aria-hidden="true">
-            {STEPS.map((s, i) => (
-              <span key={s} className={i <= step ? 'h-[3px] flex-1 rounded-full bg-text' : 'h-[3px] flex-1 rounded-full bg-ring-seen'} />
-            ))}
-          </div>
-          <motion.div key={key} initial={reduce ? false : { opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} className="flex flex-1 flex-col justify-center gap-6">
-            <Art step={key} tick={tick} />
-            <div>
-              <p className="text-note font-semibold uppercase tracking-wide text-accent">{t('step', { n: step + 1, total: STEPS.length })}</p>
-              <h2 id="onboarding-title" className="mt-1 font-[family-name:var(--font-display)] text-display font-bold leading-tight">
-                {t(`${key}.title`)}
-              </h2>
-              <p className="mt-3 text-ui leading-relaxed text-text-secondary">{t(`${key}.body`)}</p>
+        <motion.div role="dialog" aria-modal="true" aria-labelledby="tour-title" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[65]">
+          {spot ? (
+            <motion.div
+              aria-hidden="true"
+              className="absolute rounded-2xl shadow-[0_0_0_9999px_var(--color-media-scrim)] ring-2 ring-accent"
+              initial={false}
+              animate={{ top: spot.top - pad, left: spot.left - pad, width: spot.width + pad * 2, height: spot.height + pad * 2 }}
+              transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 36 }}
+            />
+          ) : (
+            <div aria-hidden="true" className="absolute inset-0 bg-media-scrim" />
+          )}
+          <div className="pointer-events-none relative mx-auto h-full max-w-[var(--width-app)] px-4">
+            <div
+              className={cx('absolute inset-x-4', !spot && 'top-1/2 -translate-y-1/2')}
+              style={spot ? (below ? { top: Math.min(spot.top + spot.height + pad + 12, window.innerHeight - 300) } : { bottom: Math.min(window.innerHeight - spot.top + pad + 12, window.innerHeight - 300) }) : undefined}
+            >
+              {(spot || !step.target) && card}
             </div>
-          </motion.div>
-          <div className="flex gap-3">
-            {step > 0 && (
-              <Button className="h-12 flex-1" onClick={() => setStep((s) => s - 1)}>
-                {t('back')}
-              </Button>
-            )}
-            <Button variant="primary" className="h-12 flex-[2]" onClick={() => (step + 1 < STEPS.length ? setStep((s) => s + 1) : close())}>
-              {step + 1 < STEPS.length ? t('next') : t('start')}
-            </Button>
           </div>
         </motion.div>
       )}

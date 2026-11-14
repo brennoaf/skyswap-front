@@ -267,23 +267,56 @@
     "skip": "Skip",
     "back": "Back",
     "next": "Next",
-    "start": "Start exploring",
     "step": "{n} of {total}",
-    "blink": {
-      "title": "Blink to find what moves",
-      "body": "SPHEREx photographs the whole sky again and again. Flip between two dates: stars stay put, but nearby stars, asteroids and comets jump. SPHEREx pixels are big, so most jumps are under one pixel. The crosshair shows where to look."
+    "welcome": {
+      "title": "Welcome to SkySwap",
+      "body": "A social network where every account is a real object in the sky, with real photos from NASA's SPHEREx telescope. This quick tour shows what each part of the screen does."
     },
-    "colours": {
-      "title": "102 colours you can't see",
-      "body": "SPHEREx sees infrared light, from 0.75 to 5 micrometres, in six groups called D1 to D6. We paint them with false colours so your eyes can tell them apart. Some cold objects only appear in D5 and D6."
+    "help": {
+      "title": "You help find what moves",
+      "body": "SPHEREx photographs the whole sky again and again. Flip between two dates: most stars stay put, but nearby stars, asteroids and comets shift a little. Spotting those shifts is the job, and anyone can do it."
     },
-    "mark": {
-      "title": "Mark the moving dot",
-      "body": "On a time-lapse, tap the dot on each frame. Your marks are compared with the predicted path and with what others marked. Many careful eyes measure motion better than one."
+    "stories": {
+      "title": "Objects with new photos",
+      "body": "Each circle is a star, asteroid or comet. A coloured ring means new photos arrived. Tap one to watch its photos like a story."
     },
-    "saturation": {
-      "title": "Too bright is a result too",
-      "body": "Very bright stars overflow the detector, like a photo of the Sun. When that happens SkySwap says so instead of showing fake numbers."
+    "post": {
+      "title": "Every account is a sky object",
+      "body": "Posts are published by the objects themselves. Tap the name to open its profile with every photo of it."
+    },
+    "photo": {
+      "title": "Real telescope photos",
+      "body": "These are infrared photos, painted in false colours because our eyes cannot see infrared. Tap the photo to open it and play the dates one after another."
+    },
+    "actions": {
+      "title": "What the icons mean",
+      "tag": "Tag what you see",
+      "mark": "Mark the dot that moves",
+      "colours": "See the photo in each colour",
+      "save": "Save it for later"
+    },
+    "more": {
+      "title": "More tools",
+      "lab": "Open the Lab, compare two dates and see where the photo came from"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "body": "The heart shows news: new photos of objects you follow, badges you earned and what the community decided about the photos you answered."
+    },
+    "nav": {
+      "title": "The bar at the bottom",
+      "home": "Home: posts from the sky",
+      "search": "Search: objects and any place in the sky",
+      "classify": "Classify: answer \"does it move?\", the main way to help",
+      "reels": "Reels: time-lapses on the full screen",
+      "me": "Profile: your level, badges and notes"
+    },
+    "finish": {
+      "title": "Your part, and the pro tools",
+      "contribution": "Your answers are added to everyone else's. When many people agree that a dot moves, it becomes a candidate for scientists to check. You cannot break anything.",
+      "pro": "Want more detail? Open any object's profile and tap Lab for pixels, layers, colours and light curves.",
+      "classify": "Try a first card",
+      "explore": "Explore on my own"
     }
   },
   "languageSetup": {
@@ -753,6 +786,7 @@
       "label": "My profile sections",
       "history": "History",
       "badges": "Badges",
+      "community": "Community",
       "notes": "Notes",
       "saved": "Saved",
       "following": "Following"
@@ -868,6 +902,22 @@
       "snr": "Peak at the target: {v} times the noise. {n} photos used.",
       "sameStretch": "Both stacks use the same brightness scale. The ring is the target at the reference date.",
       "failed": "Couldn't stack these photos."
+    },
+    "tools": {
+      "label": "Lab tools",
+      "date": "Date",
+      "colour": "Colour",
+      "zoom": "Zoom",
+      "layers": "Layers",
+      "pixel": "Pixel",
+      "motion": "Motion",
+      "spectrum": "Spectrum",
+      "notes": "Notes",
+      "more": "More",
+      "prev": "Previous photo",
+      "next": "Next photo",
+      "dateHint": "Slide or use the arrows to step through the photos while you watch.",
+      "colourHint": "Each colour is one infrared band, shown in false colour."
     }
   },
   "alerts": {
@@ -890,7 +940,6 @@
   "settings": {
     "title": "Settings",
     "account": "Account",
-    "nickname": "Signed in as {name}",
     "logout": "Log out",
     "appearance": "Appearance",
     "theme": {
@@ -912,7 +961,12 @@
     "languages": {
       "en": "English",
       "pt-BR": "Português (Brasil)"
-    }
+    },
+    "signedIn": "Signed in on this browser",
+    "preferences": "Preferences",
+    "yourData": "Your data",
+    "help": "Help",
+    "tutorialHint": "A quick tour of each part of the screen"
   },
   "catalogs": {
     "title": "Check catalogs",

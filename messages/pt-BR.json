@@ -267,23 +267,56 @@
     "skip": "Pular",
     "back": "Voltar",
     "next": "Avançar",
-    "start": "Começar a explorar",
     "step": "{n} de {total}",
-    "blink": {
-      "title": "Pisque para achar o que se move",
-      "body": "O SPHEREx fotografa o céu inteiro várias e várias vezes. Alterne entre duas datas: as estrelas ficam paradas, mas estrelas próximas, asteroides e cometas pulam. Os pixels do SPHEREx são grandes, então a maioria dos pulos é menor que um pixel. A mira mostra onde olhar."
+    "welcome": {
+      "title": "Boas-vindas ao SkySwap",
+      "body": "Uma rede social em que cada conta é um objeto de verdade no céu, com fotos reais do telescópio SPHEREx, da NASA. Este tour rápido mostra para que serve cada parte da tela."
     },
-    "colours": {
-      "title": "102 cores que você não enxerga",
-      "body": "O SPHEREx vê luz infravermelha, de 0.75 a 5 micrômetros, em seis grupos chamados D1 a D6. Pintamos esses grupos com cores falsas para seus olhos conseguirem diferenciá-los. Alguns objetos frios só aparecem em D5 e D6."
+    "help": {
+      "title": "Você ajuda a achar o que se move",
+      "body": "O SPHEREx fotografa o céu inteiro várias e várias vezes. Alterne entre duas datas: a maioria das estrelas fica parada, mas estrelas próximas, asteroides e cometas mudam um pouco de lugar. Achar essas mudanças é a missão, e qualquer pessoa consegue."
     },
-    "mark": {
-      "title": "Marque o ponto que se move",
-      "body": "Em um time-lapse, toque no ponto em cada quadro. Suas marcações são comparadas com o caminho previsto e com o que outras pessoas marcaram. Muitos olhos cuidadosos medem o movimento melhor que um só."
+    "stories": {
+      "title": "Objetos com fotos novas",
+      "body": "Cada círculo é uma estrela, um asteroide ou um cometa. Um anel colorido quer dizer que chegaram fotos novas. Toque em um para ver as fotos como um story."
     },
-    "saturation": {
-      "title": "Brilhante demais também é um resultado",
-      "body": "Estrelas muito brilhantes estouram o detector, como uma foto do Sol. Quando isso acontece, o SkySwap avisa em vez de mostrar números falsos."
+    "post": {
+      "title": "Cada conta é um objeto do céu",
+      "body": "Os posts são publicados pelos próprios objetos. Toque no nome para abrir o perfil com todas as fotos dele."
+    },
+    "photo": {
+      "title": "Fotos reais de telescópio",
+      "body": "São fotos em infravermelho, pintadas com cores falsas porque nossos olhos não enxergam infravermelho. Toque na foto para abrir e passar as datas uma depois da outra."
+    },
+    "actions": {
+      "title": "O que cada ícone faz",
+      "tag": "Etiquetar o que você vê",
+      "mark": "Marcar o ponto que se move",
+      "colours": "Ver a foto em cada cor",
+      "save": "Salvar para depois"
+    },
+    "more": {
+      "title": "Mais ferramentas",
+      "lab": "Abrir o Lab, comparar duas datas e ver de onde veio a foto"
+    },
+    "alerts": {
+      "title": "Alertas",
+      "body": "O coração mostra as novidades: fotos novas de objetos que você segue, selos que você ganhou e o que a comunidade decidiu sobre as fotos que você respondeu."
+    },
+    "nav": {
+      "title": "A barra de baixo",
+      "home": "Início: posts do céu",
+      "search": "Pesquisar: objetos e qualquer lugar do céu",
+      "classify": "Classificar: responder \"se move?\", o jeito principal de ajudar",
+      "reels": "Reels: time-lapses em tela cheia",
+      "me": "Perfil: seu nível, selos e notas"
+    },
+    "finish": {
+      "title": "Sua parte, e as ferramentas pro",
+      "contribution": "Suas respostas se somam às de todo mundo. Quando muita gente concorda que um ponto se move, ele vira um candidato para cientistas conferirem. Você não consegue estragar nada.",
+      "pro": "Quer mais detalhes? Abra o perfil de qualquer objeto e toque em Lab para ver pixels, camadas, cores e curvas de luz.",
+      "classify": "Tentar um primeiro cartão",
+      "explore": "Explorar por conta própria"
     }
   },
   "languageSetup": {
@@ -735,7 +768,7 @@
     "title": "Meu perfil",
     "guestTitle": "Seu perfil de ciência cidadã",
     "guestBody": "Escolha um apelido para guardar suas classificações, marcações, etiquetas, nível e selos.",
-    "classifications": "conjuntos de fotos",
+    "classifications": "respostas",
     "marks": "marcações",
     "tags": "etiquetas",
     "level": "Nível {n}: {name}",
@@ -753,6 +786,7 @@
       "label": "Seções do meu perfil",
       "history": "Histórico",
       "badges": "Selos",
+      "community": "Comunidade",
       "notes": "Notas",
       "saved": "Salvos",
       "following": "Seguindo"
@@ -868,6 +902,22 @@
       "snr": "Pico no alvo: {v} vezes o ruído. {n} fotos usadas.",
       "sameStretch": "As duas pilhas usam a mesma escala de brilho. O anel é o alvo na data de referência.",
       "failed": "Não foi possível empilhar estas fotos."
+    },
+    "tools": {
+      "label": "Ferramentas do Lab",
+      "date": "Data",
+      "colour": "Cor",
+      "zoom": "Zoom",
+      "layers": "Camadas",
+      "pixel": "Pixel",
+      "motion": "Movimento",
+      "spectrum": "Espectro",
+      "notes": "Notas",
+      "more": "Mais",
+      "prev": "Foto anterior",
+      "next": "Próxima foto",
+      "dateHint": "Deslize ou use as setas para passar as fotos enquanto olha.",
+      "colourHint": "Cada cor é uma faixa do infravermelho, mostrada em cor falsa."
     }
   },
   "alerts": {
@@ -890,7 +940,6 @@
   "settings": {
     "title": "Configurações",
     "account": "Conta",
-    "nickname": "Conectado como {name}",
     "logout": "Sair",
     "appearance": "Aparência",
     "theme": {
@@ -912,7 +961,12 @@
     "languages": {
       "en": "English",
       "pt-BR": "Português (Brasil)"
-    }
+    },
+    "signedIn": "Conectado neste navegador",
+    "preferences": "Preferências",
+    "yourData": "Seus dados",
+    "help": "Ajuda",
+    "tutorialHint": "Um tour rápido por cada parte da tela"
   },
   "catalogs": {
     "title": "Consultar catálogos",

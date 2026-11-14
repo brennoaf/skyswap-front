@@ -35,7 +35,7 @@ function SkyField() {
           key={i}
           cx={x}
           cy={y}
-          r={r}
+          r={r * 1.8}
           fill={`var(--color-${tone})`}
           initial={{ opacity: 0.35 }}
           animate={reduce ? { opacity: 0.6 } : { opacity: [0.25, 0.9, 0.25] }}

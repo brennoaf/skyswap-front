@@ -55,7 +55,7 @@ export default function HomePage() {
           <IconChevronDown className="mb-0.5" />
         </button>
         <div className="flex items-center">
-          <Link href="/alerts" aria-label={t('alerts')} className="relative inline-flex size-11 items-center justify-center">
+          <Link href="/alerts" aria-label={t('alerts')} data-tour="alerts" className="relative inline-flex size-11 items-center justify-center">
             <IconLike />
             {!!alerts?.unread && <span className="absolute right-2 top-2 size-2.5 rounded-full border-2 border-bg bg-danger" aria-label={t('unread', { n: alerts.unread })} />}
           </Link>

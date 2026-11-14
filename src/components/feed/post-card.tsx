@@ -18,7 +18,7 @@ export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | '
   const seen = useUi((s) => s.seenStories.includes(item.object.id))
   const openStory = useUi((s) => s.openStory)
   return (
-    <div className="flex h-[54px] items-center gap-[6px] pl-[6px] pr-1">
+    <div className="flex h-[54px] items-center gap-[6px] pl-[6px] pr-1" data-tour="post-head">
       <button type="button" onClick={() => openStory(item.object.id)} aria-label={t('openStory', { name: item.object.name })} className="rounded-full">
         <ObjectAvatar src={item.object.avatar} alt="" size={40} ring={seen ? 'seen' : 'new'} />
       </button>
@@ -29,9 +29,11 @@ export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | '
         </span>
         <span className="block truncate text-meta text-text-secondary">{item.object.official_target ? t('officialTarget') : t(`kinds.${item.object.kind}`)}</span>
       </Link>
-      <IconButton label={t('menuLabel')} onClick={onMore}>
-        <IconMore />
-      </IconButton>
+      <span data-tour="post-more">
+        <IconButton label={t('menuLabel')} onClick={onMore}>
+          <IconMore />
+        </IconButton>
+      </span>
     </div>
   )
 }
@@ -72,7 +74,7 @@ export function PostCard({ item, priority = false }: { item: FeedItem; priority?
   return (
     <article className="pb-4" aria-labelledby={`post-${post.id}`}>
       <PostHeader item={item} onMore={() => setMore(true)} />
-      <Link href={`/p/${post.id}`} aria-label={t('open', { title: post.title })}>
+      <Link href={`/p/${post.id}`} aria-label={t('open', { title: post.title })} data-tour="post-media" className="block">
         <PostMedia post={post} priority={priority} />
       </Link>
       <ActionRow

@@ -5,13 +5,13 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
-import { IconDownload, IconFlask, IconLayers } from '@/components/icons'
+import { IconColours, IconCompare, IconCrosshair, IconDownload, IconLayers, IconMore, IconMoves, IconNote, IconSearch, IconSpectrum, IconStepBack, IconStepForward } from '@/components/icons'
 import { ShiftAddPanel } from '@/components/lab/shift-add-panel'
 import { CatalogLinks } from '@/components/ui/catalog-links'
-import { Button, Chip, EmptyState, Notice, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
+import { Button, Chip, EmptyState, IconButton, Notice, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
 import { useObject, useObjectPosts } from '@/lib/api/hooks'
 import { yearsSpanned } from '@/lib/long-baseline'
-import { BAND_HUE, BANDS, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
+import { BAND_HUE, BANDS, cx, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { download, labNotes, saveLabNote, type LabNote } from '@/lib/notes'
 import { decodeSxq, FLAG_LAYERS, flagNames, lambdaAt, makeWcs, measureStar, percentileOf, unpack, type Decoded, type Pack, type PackEpoch } from '@/lib/sky/lab'
 
@@ -79,6 +79,47 @@ function draw(canvas: HTMLCanvasElement, d: Decoded, nx: number, ny: number) {
   ctx.putImageData(img, 0, 0)
 }
 
+const TOOLS = [
+  { key: 'date', icon: <IconCompare size={22} /> },
+  { key: 'colour', icon: <IconColours size={22} /> },
+  { key: 'zoom', icon: <IconSearch size={22} /> },
+  { key: 'layers', icon: <IconLayers size={22} /> },
+  { key: 'pixel', icon: <IconCrosshair size={22} /> },
+  { key: 'motion', icon: <IconMoves size={22} /> },
+  { key: 'spectrum', icon: <IconSpectrum size={22} /> },
+  { key: 'notes', icon: <IconNote size={22} /> },
+  { key: 'more', icon: <IconMore size={22} /> },
+] as const
+
+type Tool = (typeof TOOLS)[number]['key']
+
+function Toolbar({ value, onChange }: { value: Tool; onChange: (t: Tool) => void }) {
+  const t = useTranslations('lab.tools')
+  return (
+    <div role="tablist" aria-label={t('label')} className="no-scrollbar flex overflow-x-auto border-b-[0.5px] border-divider px-1">
+      {TOOLS.map((tool) => {
+        const on = tool.key === value
+        return (
+          <button
+            key={tool.key}
+            id={`lab-tab-${tool.key}`}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            aria-controls="lab-panel"
+            onClick={() => onChange(tool.key)}
+            className={cx('relative flex min-h-14 min-w-[60px] flex-1 shrink-0 flex-col items-center justify-center gap-0.5 px-1', on ? 'text-text' : 'text-icon-muted')}
+          >
+            {tool.icon}
+            <span className="text-micro font-medium">{t(tool.key)}</span>
+            {on && <span className="absolute bottom-0 h-[2px] w-8 rounded-full bg-text" />}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export function LabView({ id }: { id: string }) {
   const locale = useLocale()
   const t = useTranslations('lab')
@@ -103,6 +144,7 @@ export function LabView({ id }: { id: string }) {
   const [notes, setNotes] = useState<LabNote[]>([])
   const [hypothesis, setHypothesis] = useState<(typeof HYPOTHESES)[number]>('moving_object')
   const [noteText, setNoteText] = useState('')
+  const [tool, setTool] = useState<Tool>('date')
   const canvas = useRef<HTMLCanvasElement>(null)
 
   const epochs = useMemo(() => (pack.data?.epochs ?? []).filter((e) => e.band === band).sort((a, b) => a.mjd - b.mjd), [pack.data, band])
@@ -228,99 +270,117 @@ export function LabView({ id }: { id: string }) {
     <main className="pb-8">
       <TopBar
         title={t('title')}
+        actions={
+          <Link href={`/o/${profile.id}`} aria-label={profile.name} className="inline-flex size-11 items-center justify-center">
+            <ObjectAvatar src={profile.avatar} alt="" size={32} />
+          </Link>
+        }
       />
-      <Link href={`/o/${profile.id}`} className="flex items-center gap-3 px-4 pb-3">
-        <ObjectAvatar src={profile.avatar} alt="" size={44} />
-        <span className="min-w-0">
-          <span className="block truncate font-semibold">{profile.name}</span>
-          <span className="block text-note text-text-secondary">{t('subtitle', { name: profile.handle })}</span>
-        </span>
-        <IconFlask size={28} className="ml-auto text-text-secondary" />
-      </Link>
 
       {!profile.pack ? (
         <EmptyState title={t('noPack')} />
       ) : pack.isLoading ? (
         <p className="px-4 text-text-secondary">{t('loading')}</p>
       ) : pack.data ? (
-        <div className="space-y-4">
-          <div className="no-scrollbar flex gap-1.5 overflow-x-auto px-4" role="group" aria-label={t('band')}>
-            {BANDS.filter((b) => pack.data?.bands[b]).map((b) => (
-              <Chip
-                key={b}
-                active={band === b}
-                onClick={() => {
-                  setBand(b)
-                  setEpochIdx(0)
-                  setDecoded(null)
-                }}
-              >
-                <span className="size-2 rounded-full" style={{ background: BAND_HUE[b] }} />
-                {b}
-              </Chip>
-            ))}
-          </div>
-
-          <div className="relative mx-auto w-full overflow-hidden bg-media-bg" style={{ aspectRatio: ep ? `${ep.nx} / ${ep.ny}` : '1 / 1' }}>
-            <div className="absolute inset-0 origin-center transition-transform" style={{ transform: `scale(${zoom})` }}>
-              <canvas
-                ref={canvas}
-                className="pixelated size-full"
-                onPointerMove={(e) => {
-                  if (!ep || e.pointerType !== 'mouse') return
-                  const r = e.currentTarget.getBoundingClientRect()
-                  setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
-                }}
-                onClick={(e) => {
-                  if (!ep) return
-                  const r = e.currentTarget.getBoundingClientRect()
-                  setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
-                }}
-                onWheel={(e) => setZoom((z) => Math.min(8, Math.max(1, z * (e.deltaY < 0 ? 1.2 : 1 / 1.2))))}
-                aria-label={t('pixelHint')}
-              />
-              {flagPixels.map((p, i) => (
-                <span key={i} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ ...toPct(p.x, p.y), width: `${100 / (ep?.nx ?? 1)}%`, height: `${100 / (ep?.ny ?? 1)}%`, background: LAYER_COLOR[p.k] }} />
-              ))}
-              <svg className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${ep?.nx ?? 1} ${ep?.ny ?? 1}`} preserveAspectRatio="none" aria-hidden="true">
-                {layers.gaia &&
-                  gaiaMarks.map((s) => (
-                    <g key={s.id} stroke={LAYER_COLOR.gaia} strokeWidth={0.18} fill="none">
-                      <circle cx={s.x + 0.5} cy={s.y + 0.5} r={Math.max(0.5, 2.2 - s.g / 10)} />
-                      <line x1={s.x + 0.5} y1={s.y + 0.5} x2={s.x2 + 0.5} y2={s.y2 + 0.5} />
+        <>
+          <div className="sticky top-[var(--height-topbar)] z-20 bg-bg">
+            <div className="relative mx-auto overflow-hidden bg-media-bg" style={{ aspectRatio: ep ? `${ep.nx} / ${ep.ny}` : '1 / 1', width: ep ? `min(100%, calc(42dvh * ${ep.nx / ep.ny}))` : 'min(100%, 42dvh)' }}>
+              <div className="absolute inset-0 origin-center transition-transform" style={{ transform: `scale(${zoom})` }}>
+                <canvas
+                  ref={canvas}
+                  className="pixelated size-full"
+                  onPointerMove={(e) => {
+                    if (!ep || e.pointerType !== 'mouse') return
+                    const r = e.currentTarget.getBoundingClientRect()
+                    setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
+                  }}
+                  onClick={(e) => {
+                    if (!ep) return
+                    if (tool !== 'notes') setTool('pixel')
+                    const r = e.currentTarget.getBoundingClientRect()
+                    setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
+                  }}
+                  onWheel={(e) => setZoom((z) => Math.min(8, Math.max(1, z * (e.deltaY < 0 ? 1.2 : 1 / 1.2))))}
+                  aria-label={t('pixelHint')}
+                />
+                {flagPixels.map((p, i) => (
+                  <span key={i} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ ...toPct(p.x, p.y), width: `${100 / (ep?.nx ?? 1)}%`, height: `${100 / (ep?.ny ?? 1)}%`, background: LAYER_COLOR[p.k] }} />
+                ))}
+                <svg className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${ep?.nx ?? 1} ${ep?.ny ?? 1}`} preserveAspectRatio="none" aria-hidden="true">
+                  {layers.gaia &&
+                    gaiaMarks.map((s) => (
+                      <g key={s.id} stroke={LAYER_COLOR.gaia} strokeWidth={0.18} fill="none">
+                        <circle cx={s.x + 0.5} cy={s.y + 0.5} r={Math.max(0.5, 2.2 - s.g / 10)} />
+                        <line x1={s.x + 0.5} y1={s.y + 0.5} x2={s.x2 + 0.5} y2={s.y2 + 0.5} />
+                      </g>
+                    ))}
+                  {layers.wise &&
+                    wiseMarks.map((s) => (
+                      <path key={s.i} d={`M${s.xy[0]} ${s.xy[1]}l1 1M${s.xy[0] + 1} ${s.xy[1]}l-1 1`} stroke={LAYER_COLOR.wise} strokeWidth={0.18} />
+                    ))}
+                  {layers.target && ep && (
+                    <g stroke={LAYER_COLOR.target} strokeWidth={0.25} fill="none">
+                      <circle cx={ep.target_xy[0] + 0.5} cy={ep.target_xy[1] + 0.5} r={2} />
+                      <path d={`M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] - 3}v1.5M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] + 2.5}v1.5M${ep.target_xy[0] - 3} ${ep.target_xy[1] + 0.5}h1.5M${ep.target_xy[0] + 2.5} ${ep.target_xy[1] + 0.5}h1.5`} />
                     </g>
-                  ))}
-                {layers.wise &&
-                  wiseMarks.map((s) => (
-                    <path key={s.i} d={`M${s.xy[0]} ${s.xy[1]}l1 1M${s.xy[0] + 1} ${s.xy[1]}l-1 1`} stroke={LAYER_COLOR.wise} strokeWidth={0.18} />
-                  ))}
-                {layers.target && ep && (
-                  <g stroke={LAYER_COLOR.target} strokeWidth={0.25} fill="none">
-                    <circle cx={ep.target_xy[0] + 0.5} cy={ep.target_xy[1] + 0.5} r={2} />
-                    <path d={`M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] - 3}v1.5M${ep.target_xy[0] + 0.5} ${ep.target_xy[1] + 2.5}v1.5M${ep.target_xy[0] - 3} ${ep.target_xy[1] + 0.5}h1.5M${ep.target_xy[0] + 2.5} ${ep.target_xy[1] + 0.5}h1.5`} />
-                  </g>
-                )}
-                {pixel && <rect x={pixel.x} y={pixel.y} width={1} height={1} fill="none" stroke="var(--color-mark-outline)" strokeWidth={0.15} />}
-              </svg>
+                  )}
+                  {pixel && <rect x={pixel.x} y={pixel.y} width={1} height={1} fill="none" stroke="var(--color-mark-outline)" strokeWidth={0.15} />}
+                </svg>
+              </div>
+              {!decoded && <span className="absolute inset-0 flex items-center justify-center text-note text-on-media-muted">{t('loading')}</span>}
+              <span className="absolute bottom-2 left-2 rounded bg-media-scrim px-2 py-0.5 text-meta text-on-media">{tcom('falseColour')}</span>
             </div>
-            {!decoded && <span className="absolute inset-0 flex items-center justify-center text-note text-white/70">{t('loading')}</span>}
-            <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-meta text-white">{tcom('falseColour')}</span>
+            {ep && (
+              <div className="flex items-center gap-1 px-2 pt-1">
+                <IconButton label={t('tools.prev')} onClick={() => setEpochIdx((i) => Math.max(0, i - 1))} disabled={epochIdx <= 0}>
+                  <IconStepBack size={22} />
+                </IconButton>
+                <label className="min-w-0 flex-1">
+                  <span className="sr-only">{t('epoch')}</span>
+                  <input type="range" min={0} max={Math.max(0, epochs.length - 1)} value={Math.min(epochIdx, epochs.length - 1)} onChange={(e) => setEpochIdx(Number(e.target.value))} className="h-11 w-full" />
+                </label>
+                <IconButton label={t('tools.next')} onClick={() => setEpochIdx((i) => Math.min(epochs.length - 1, i + 1))} disabled={epochIdx >= epochs.length - 1}>
+                  <IconStepForward size={22} />
+                </IconButton>
+              </div>
+            )}
+            <Toolbar value={tool} onChange={setTool} />
           </div>
 
-          {ep && (
-            <div className="px-4">
-              <label className="block text-note text-text-secondary">
-                {t('epoch')}, {t('epochInfo', { date: formatShortDate(ep.iso, locale), release: ep.release.toUpperCase(), lam: ep.lam_um.toFixed(3) })}
-                <input type="range" min={0} max={Math.max(0, epochs.length - 1)} value={Math.min(epochIdx, epochs.length - 1)} onChange={(e) => setEpochIdx(Number(e.target.value))} className="mt-1 h-11 w-full" />
-              </label>
-              <p className="text-meta text-text-secondary">{t('pack', { n: epochs.length, bytes: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
-            </div>
-          )}
+          <div id="lab-panel" role="tabpanel" aria-labelledby={`lab-tab-${tool}`} className="space-y-3 px-4 pt-3">
+            {tool === 'date' && ep && (
+              <>
+                <p className="text-body">{t('epochInfo', { date: formatShortDate(ep.iso, locale), release: ep.release.toUpperCase(), lam: ep.lam_um.toFixed(3) })}</p>
+                <p className="text-meta text-text-secondary">{t('pack', { n: epochs.length, bytes: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
+                <p className="text-meta text-text-secondary">{t('tools.dateHint')}</p>
+              </>
+            )}
 
-          <div className="space-y-3 px-4">
-                          <section className="rounded-2xl bg-surface p-3">
-                <h3 className="text-ui font-semibold">{t('zoom')}</h3>
-                <div className="mt-2 flex items-center gap-2">
+            {tool === 'colour' && (
+              <>
+                <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('band')}>
+                  {BANDS.filter((b) => pack.data?.bands[b]).map((b) => (
+                    <Chip
+                      key={b}
+                      active={band === b}
+                      onClick={() => {
+                        setBand(b)
+                        setEpochIdx(0)
+                        setDecoded(null)
+                      }}
+                    >
+                      <span className="size-2 rounded-full" style={{ background: BAND_HUE[b] }} />
+                      {b}
+                    </Chip>
+                  ))}
+                </div>
+                <p className="text-meta text-text-secondary">{t('tools.colourHint')}</p>
+              </>
+            )}
+
+            {tool === 'zoom' && (
+              <>
+                <div className="flex items-center gap-2">
                   {[1, 2, 4, 8].map((z) => (
                     <Chip key={z} active={Math.abs(zoom - z) < 0.01} onClick={() => setZoom(z)}>
                       {z}x
@@ -328,16 +388,12 @@ export function LabView({ id }: { id: string }) {
                   ))}
                   <span className="ml-auto text-meta text-text-secondary">{tcom('arcmin', { n: (((pack.data.field.fov_deg ?? 0.1) * 60) / zoom).toFixed(1) })}</span>
                 </div>
-                <p className="mt-2 text-meta text-text-secondary">{t('zoomHint', { size: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
-              </section>
-            
+                <p className="text-meta text-text-secondary">{t('zoomHint', { size: formatBytes(pack.data.bands[band]?.bytes ?? 0) })}</p>
+              </>
+            )}
 
-            <section className="rounded-2xl bg-surface p-3">
-              <h3 className="flex items-center gap-2 text-ui font-semibold">
-                <IconLayers size={22} />
-                {t('layers')}
-              </h3>
-              <ul className="mt-2 space-y-1">
+            {tool === 'layers' && (
+              <ul className="space-y-1">
                 {(Object.keys(layers) as LayerKey[]).map((k) => {
                   return (
                     <li key={k}>
@@ -355,20 +411,10 @@ export function LabView({ id }: { id: string }) {
                   )
                 })}
               </ul>
-            </section>
-
-            {ep && (
-              <ShiftAddPanel
-                key={band}
-                epochs={epochs}
-                parts={parts.data}
-                refEpoch={ep}
-                catalog={profile.pm_ra_cosdec !== null && profile.pm_dec !== null ? { pmra: profile.pm_ra_cosdec, pmdec: profile.pm_dec } : null}
-              />
             )}
 
-                          <section className="rounded-2xl bg-surface p-3" aria-live="polite">
-                <h3 className="text-ui font-semibold">{t('pixel')}</h3>
+            {tool === 'pixel' && (
+              <div aria-live="polite">
                 {readout ? (
                   <dl className="mt-1 space-y-0.5 font-mono text-note">
                     <dt className="sr-only">{t('pixel')}</dt>
@@ -383,13 +429,26 @@ export function LabView({ id }: { id: string }) {
                 ) : (
                   <p className="mt-1 text-note text-text-secondary">{t('pixelHint')}</p>
                 )}
-              </section>
-            
+              </div>
+            )}
 
-            <QrWarning />
+            {tool === 'motion' && (
+              <>
+            {ep && (
+              <ShiftAddPanel
+                key={band}
+                epochs={epochs}
+                parts={parts.data}
+                refEpoch={ep}
+                catalog={profile.pm_ra_cosdec !== null && profile.pm_dec !== null ? { pmra: profile.pm_ra_cosdec, pmdec: profile.pm_dec } : null}
+              />
+            )}
+              </>
+            )}
 
-                          <section className="rounded-2xl bg-surface p-3">
-                <h3 className="text-ui font-semibold">{t('spectrum')}</h3>
+            {tool === 'spectrum' && (
+              <>
+                <QrWarning />
                 {spectra.data && <SpectrumChart data={spectra.data} />}
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <Button onClick={() => void measureLive()} disabled={!!live && live.done < live.total}>
@@ -399,19 +458,17 @@ export function LabView({ id }: { id: string }) {
                 {live && live.points.length > 0 && (
                   <SpectrumChart data={{ passes: [{ pass: 0, t: live.points[0]?.iso ?? '', points: live.points.map((p) => ({ wavelength_um: p.lam, flux_mjy: p.flux, err: p.err, saturated: false })) }] }} />
                 )}
-              </section>
-            
-
             {profile.measurements.lightcurve && (
                 <section className="rounded-2xl bg-surface p-3">
                   <h3 className="text-ui font-semibold">{t('lightcurve')}</h3>
                   <KitChart kind="lightcurve" url={profile.measurements.lightcurve} />
                 </section>
               )}
-            
+              </>
+            )}
 
-                          <section className="rounded-2xl bg-surface p-3">
-                <h3 className="text-ui font-semibold">{t('notes')}</h3>
+            {tool === 'notes' && (
+              <>
                 <p className="mt-1 text-meta text-text-secondary">
                   {t('noteFields', {
                     ra: readout ? formatRa(readout.ra) : '-',
@@ -470,11 +527,13 @@ export function LabView({ id }: { id: string }) {
                     </li>
                   ))}
                 </ul>
-              </section>
-            
+              </>
+            )}
 
-                          <section className="rounded-2xl bg-surface p-3">
-                <h3 className="text-ui font-semibold">{t('export')}</h3>
+            {tool === 'more' && (
+              <>
+                <section>
+                  <h3 className="text-ui font-semibold">{t('export')}</h3>
                 <div className="mt-2 flex gap-2">
                   <Button onClick={csv} disabled={!spectra.data && !live?.points.length}>
                     <IconDownload size={20} />
@@ -485,13 +544,8 @@ export function LabView({ id }: { id: string }) {
                     {t('exportJson')}
                   </Button>
                 </div>
-              </section>
-            
-
-            <section className="rounded-2xl bg-surface p-3">
-              <CatalogLinks ra={profile.ra} dec={profile.dec} />
-            </section>
-
+                </section>
+                <CatalogLinks ra={profile.ra} dec={profile.dec} />
             <Notice>
               <p>{t('sources')}</p>
               {flipbook && (
@@ -500,8 +554,10 @@ export function LabView({ id }: { id: string }) {
                 </Link>
               )}
             </Notice>
+              </>
+            )}
           </div>
-        </div>
+        </>
       ) : (
         <EmptyState title={t('noPack')} />
       )}

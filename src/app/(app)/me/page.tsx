@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { IconFollow, IconHighlight, IconNote, IconSave, IconSettings, IconStar } from '@/components/icons'
+import { IconFollow, IconHighlight, IconMap, IconNote, IconSave, IconSettings, IconStar } from '@/components/icons'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { ExploredSkyCard } from '@/components/me/explored-sky'
 import { BadgeDetail, BadgeGrid, BadgeHighlights, FollowingList, GoalsCard, HistoryList, LevelRing, ProgressBar, SavedGrid, useAgo } from '@/components/me/profile-parts'
@@ -15,7 +15,7 @@ import { useMe, useSession } from '@/lib/api/hooks'
 import { formatNumber } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 
-type Tab = 'history' | 'badges' | 'notes' | 'saved' | 'following'
+type Tab = 'history' | 'badges' | 'community' | 'notes' | 'saved' | 'following'
 
 const SECONDARY_LINK = 'inline-flex h-8 flex-1 items-center justify-center rounded-[var(--radius-button)] bg-surface px-3 text-body font-semibold active:bg-surface-pressed'
 
@@ -109,6 +109,7 @@ function Profile({ me }: { me: Me }) {
   const tabs: { key: Tab; icon: React.ReactNode; label: string }[] = [
     { key: 'history', icon: <IconHighlight size={24} />, label: t('tabs.history') },
     { key: 'badges', icon: <IconStar size={26} />, label: t('tabs.badges') },
+    { key: 'community', icon: <IconMap size={26} />, label: t('tabs.community') },
     { key: 'notes', icon: <IconNote size={26} />, label: t('tabs.notes') },
     { key: 'saved', icon: <IconSave size={24} />, label: t('tabs.saved') },
     { key: 'following', icon: <IconFollow size={32} />, label: t('tabs.following') },
@@ -139,8 +140,8 @@ function Profile({ me }: { me: Me }) {
             {', '}
             {next && me.level.next_min_xp !== null ? t('toNext', { xp: formatNumber(me.level.next_min_xp - me.xp, locale), name: tl(next.key) }) : t('maxLevel')}
           </p>
-          {me.streak > 0 && <p className="mt-0.5">{t('streak', { n: me.streak })}</p>}
-          <p className="mt-0.5 text-text-secondary">{t('today', { xp: me.xp_today, cap: me.daily_cap })}</p>
+          {me.streak > 1 && <p className="mt-0.5">{t('streak', { n: me.streak })}</p>}
+          {me.xp_today >= me.daily_cap * 0.8 && <p className="mt-0.5 text-text-secondary">{t('today', { xp: me.xp_today, cap: me.daily_cap })}</p>}
         </div>
 
         <div className="mt-3 flex gap-1.5">
@@ -158,15 +159,18 @@ function Profile({ me }: { me: Me }) {
         <BadgeHighlights badges={me.badges} onOpen={setBadge} />
       </div>
 
-      <GoalsCard />
-      <ExploredSkyCard />
-
       <div className="sticky top-[var(--height-topbar)] z-20 mt-5 bg-bg">
         <IconTabs tabs={tabs} value={tab} onChange={setTab} label={t('tabs.label')} />
       </div>
       <div role="tabpanel" aria-label={tabs.find((x) => x.key === tab)?.label} className="min-h-[60dvh]">
         {tab === 'history' && <HistoryList items={me.history} />}
         {tab === 'badges' && <BadgeGrid badges={me.badges} onOpen={setBadge} />}
+        {tab === 'community' && (
+          <div className="pb-6">
+            <GoalsCard />
+            <ExploredSkyCard />
+          </div>
+        )}
         {tab === 'notes' && <NotesPanel />}
         {tab === 'saved' && <SavedGrid ids={saved} />}
         {tab === 'following' && <FollowingList objects={me.following} />}

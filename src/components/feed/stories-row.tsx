@@ -46,7 +46,7 @@ export function StoriesRow() {
   const open = useUi((s) => s.openStory)
   const [spot, setSpot] = useState(false)
   return (
-    <section aria-label={t('title')}>
+    <section aria-label={t('title')} data-tour="stories">
       <ul className="no-scrollbar flex gap-[14px] overflow-x-auto px-[7px] pb-2">
         <SpotBubble onClick={() => setSpot(true)} />
         {isLoading &&

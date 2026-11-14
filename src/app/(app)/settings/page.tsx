@@ -1,12 +1,12 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState, type ReactNode } from 'react'
-import { IconCheck, IconLink, IconQuestion } from '@/components/icons'
+import { IconCheck, IconChevronRight, IconLink, IconMap, IconNote, IconQuestion, IconSun } from '@/components/icons'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { LoginForm } from '@/components/shell/login-sheet'
-import { Onboarding } from '@/components/shell/onboarding'
-import { Button, Skeleton, TopBar } from '@/components/ui/primitives'
+import { Skeleton, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { locales } from '@/i18n/locales'
 import { useHealth, useLogout, useSession } from '@/lib/api/hooks'
@@ -18,16 +18,28 @@ import { useSwitchLocale } from '@/lib/use-switch-locale'
 const THEMES: ThemePref[] = ['system', 'dark', 'light']
 const API_DOCS_URL = process.env.NEXT_PUBLIC_API_DOCS_URL ?? 'http://localhost:4000/docs'
 
-function Section({ id, title, children }: { id: string; title?: string; children: ReactNode }) {
+function Group({ id, title, children }: { id: string; title?: string; children: ReactNode }) {
   return (
-    <section aria-labelledby={title ? id : undefined} className="border-b-[0.5px] border-divider py-4">
+    <section aria-labelledby={title ? id : undefined} className="mt-6 px-4">
       {title && (
-        <h2 id={id} className="px-4 pb-2 text-body font-semibold text-text-secondary">
+        <h2 id={id} className="px-1 pb-2 text-meta font-semibold uppercase tracking-wide text-text-secondary">
           {title}
         </h2>
       )}
-      {children}
+      <div className="overflow-hidden rounded-2xl bg-surface ring-[0.5px] ring-divider">{children}</div>
     </section>
+  )
+}
+
+function RowHead({ icon, title, hint }: { icon: ReactNode; title: string; hint?: ReactNode }) {
+  return (
+    <span className="flex min-w-0 flex-1 items-center gap-3">
+      <span className="inline-flex size-6 shrink-0 items-center justify-center text-text">{icon}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-ui">{title}</span>
+        {hint && <span className="block text-note text-text-secondary">{hint}</span>}
+      </span>
+    </span>
   )
 }
 
@@ -35,13 +47,18 @@ function LanguageControl() {
   const t = useTranslations('settings')
   const { current, change, pending } = useSwitchLocale()
   return (
-    <div role="radiogroup" aria-label={t('language')} aria-busy={pending}>
-      {locales.map((l) => (
-        <button key={l} type="button" role="radio" aria-checked={current === l} lang={l} onClick={() => change(l)} className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-ui active:bg-surface">
-          <span className="flex-1">{t(`languages.${l}`)}</span>
-          {current === l && <IconCheck size={24} className="text-accent" />}
-        </button>
-      ))}
+    <div className="px-4 py-3">
+      <RowHead icon={<IconMap size={24} />} title={t('language')} hint={t('languageHint')} />
+      <div role="radiogroup" aria-label={t('language')} aria-busy={pending} className="mt-2 pl-9">
+        {locales.map((l) => (
+          <button key={l} type="button" role="radio" aria-checked={current === l} lang={l} onClick={() => change(l)} className="flex min-h-11 w-full items-center gap-3 text-left text-ui">
+            <span className="flex-1">{t(`languages.${l}`)}</span>
+            <span className={cx('inline-flex size-5 items-center justify-center rounded-full border-2', current === l ? 'border-accent bg-accent text-on-accent' : 'border-ring-seen')} aria-hidden="true">
+              {current === l && <IconCheck size={14} />}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
@@ -53,7 +70,9 @@ function ThemeControl() {
   const [ready, setReady] = useState(false)
   useEffect(() => setReady(true), [])
   return (
-    <div role="radiogroup" aria-label={t('appearance')} className="mx-4 flex rounded-[10px] bg-surface p-[3px]">
+    <div className="px-4 py-3">
+      <RowHead icon={<IconSun size={24} />} title={t('appearance')} />
+      <div role="radiogroup" aria-label={t('appearance')} className="mt-3 flex rounded-[10px] bg-bg p-[3px]">
       {THEMES.map((k) => {
         const on = ready && theme === k
         return (
@@ -63,12 +82,13 @@ function ThemeControl() {
             role="radio"
             aria-checked={on}
             onClick={() => setTheme(k)}
-            className={cx('h-11 flex-1 rounded-[8px] text-body font-semibold motion-safe:transition-colors', on ? 'bg-bg text-text shadow-[0_1px_4px_rgb(0_0_0/0.15)]' : 'text-text-secondary')}
+            className={cx('h-10 flex-1 rounded-[8px] text-body font-semibold motion-safe:transition-colors', on ? 'bg-surface-pressed text-text' : 'text-text-secondary')}
           >
             {t(`theme.${k}`)}
           </button>
         )
       })}
+      </div>
     </div>
   )
 }
@@ -76,24 +96,37 @@ function ThemeControl() {
 function Account() {
   const t = useTranslations('settings')
   const { data: user, isLoading } = useSession()
-  const logout = useLogout()
-  if (isLoading) return <Skeleton className="mx-4 h-12" />
+  if (isLoading) return <Skeleton className="m-4 h-14" />
   if (!user)
     return (
-      <>
+      <div className="pt-3">
         <p className="px-4 text-body text-text-secondary">{t('loggedOut')}</p>
         <div className="-mx-2">
           <LoginForm />
         </div>
-      </>
+      </div>
     )
   return (
-    <div className="flex items-center gap-3 px-4">
-      <UserAvatar nickname={user.nickname} size={44} />
-      <p className="min-w-0 flex-1 truncate text-ui">{t('nickname', { name: user.nickname })}</p>
-      <Button variant="danger" disabled={logout.isPending} onClick={() => logout.mutate()}>
+    <div className="flex items-center gap-3 p-4">
+      <UserAvatar nickname={user.nickname} size={56} />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-title-sm font-semibold">{user.nickname}</span>
+        <span className="block text-note text-text-secondary">{t('signedIn')}</span>
+      </span>
+    </div>
+  )
+}
+
+function Logout() {
+  const t = useTranslations('settings')
+  const { data: user } = useSession()
+  const logout = useLogout()
+  if (!user) return null
+  return (
+    <div className="mt-6 px-4">
+      <button type="button" disabled={logout.isPending} onClick={() => logout.mutate()} className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-surface text-ui font-semibold text-danger active:bg-surface-pressed disabled:opacity-50">
         {t('logout')}
-      </Button>
+      </button>
     </div>
   )
 }
@@ -102,11 +135,9 @@ function Notes() {
   const t = useTranslations('settings')
   const { notes, reload } = usePrivateNotes()
   return (
-    <div className="flex flex-col gap-3 px-4">
-      <p className="text-note text-text-secondary">
-        {t('notesHint')} {notes && t('notesCount', { n: notes.length })}
-      </p>
-      <NotesActions notes={notes} onImported={() => void reload()} />
+    <div className="px-4 py-3">
+      <RowHead icon={<IconNote size={24} />} title={t('notes')} hint={notes ? `${t('notesHint')} ${t('notesCount', { n: notes.length })}` : t('notesHint')} />
+      <NotesActions notes={notes} onImported={() => void reload()} className="mt-3 flex gap-2 pl-9 [&_button]:h-10 [&_button]:whitespace-nowrap [&_button]:bg-bg" />
     </div>
   )
 }
@@ -115,51 +146,54 @@ export default function SettingsPage() {
   const t = useTranslations('settings')
   const fmt = useFmt()
   const health = useHealth()
-  const [tutorial, setTutorial] = useState(false)
+  const router = useRouter()
   const resetOnboarding = useUi((s) => s.resetOnboarding)
   return (
-    <main className="pb-6">
+    <main className="pb-10">
       <TopBar title={t('title')} />
 
-      <Section id="s-account" title={t('account')}>
+      <Group id="s-account" title={t('account')}>
         <Account />
-      </Section>
+      </Group>
 
-      <Section id="s-appearance" title={t('appearance')}>
+      <Group id="s-preferences" title={t('preferences')}>
         <ThemeControl />
-      </Section>
-
-      <Section id="s-language" title={t('language')}>
+        <div className="mx-4 border-t-[0.5px] border-divider" />
         <LanguageControl />
-        <p className="px-4 pt-1 text-note text-text-secondary">{t('languageHint')}</p>
-      </Section>
+      </Group>
 
-      <Section id="s-notes" title={t('notes')}>
+      <Group id="s-yours" title={t('yourData')}>
         <Notes />
-      </Section>
+      </Group>
 
-      <Section id="s-help">
-        <button type="button" onClick={() => {
+      <Group id="s-help" title={t('help')}>
+        <button
+          type="button"
+          onClick={() => {
             resetOnboarding()
-            setTutorial(true)
-          }} className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-ui active:bg-surface">
-          <IconQuestion size={24} />
-          <span className="flex-1">{t('tutorial')}</span>
+            router.push('/')
+          }}
+          className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-pressed"
+        >
+          <RowHead icon={<IconQuestion size={24} />} title={t('tutorial')} hint={t('tutorialHint')} />
+          <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
         </button>
-      </Section>
-
-      <Section id="s-data" title={t('data')}>
-        <p className="px-4 text-body leading-relaxed">
-          {health.data ? t('dataBody', { version: health.data.version, images: fmt.number(health.data.images_indexed) }) : <Skeleton className="h-10 w-full" />}
-        </p>
-        <p className="mt-3 px-4 text-note leading-relaxed text-text-secondary">{t('about')}</p>
-        <a href={API_DOCS_URL} target="_blank" rel="noreferrer" className="mt-2 flex min-h-12 items-center gap-3 px-4 text-ui text-link active:bg-surface">
-          <IconLink size={24} />
-          <span className="flex-1">{t('api')}</span>
+        <div className="mx-4 border-t-[0.5px] border-divider" />
+        <a href={API_DOCS_URL} target="_blank" rel="noreferrer" className="flex min-h-14 w-full items-center gap-3 px-4 py-3 active:bg-surface-pressed">
+          <RowHead icon={<IconLink size={24} />} title={t('api')} />
+          <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
         </a>
-      </Section>
+      </Group>
 
-      {tutorial && <Onboarding force onClose={() => setTutorial(false)} />}
+      <Group id="s-data" title={t('data')}>
+        <div className="px-4 py-3 text-note leading-relaxed">
+          {health.data ? t('dataBody', { version: health.data.version, images: fmt.number(health.data.images_indexed) }) : <Skeleton className="h-10 w-full" />}
+        </div>
+      </Group>
+
+      <Logout />
+
+      <p className="mt-8 px-8 text-center text-meta leading-relaxed text-text-secondary">{t('about')}</p>
     </main>
   )
 }
