@@ -75,6 +75,7 @@ export function PhotoViewer({
   caption,
   onPlayingChange,
   onLocate,
+  fit = false,
 }: {
   sprite: string
   img: HTMLImageElement | null
@@ -84,6 +85,7 @@ export function PhotoViewer({
   caption?: (panel: number) => ReactNode
   onPlayingChange?: (playing: boolean) => void
   onLocate?: (frame: number, x: number, y: number) => void
+  fit?: boolean
 }) {
   const t = useTranslations('classify')
   const locale = useLocale()
@@ -159,10 +161,10 @@ export function PhotoViewer({
   const frame = reveal?.frames[panel]
   const current = label(offsets[panel] ?? 0)
 
-  return (
-    <div>
+  const stage = (
       <div
-        className={cx('relative select-none', onLocate && 'cursor-crosshair')}
+        className={cx('relative select-none', onLocate && 'cursor-crosshair', fit && 'mx-auto aspect-square')}
+        style={fit ? { width: 'min(100cqw, 100cqh)' } : undefined}
         onPointerDown={(e) => {
           swipe.current = { x: e.clientX, y: e.clientY }
         }}
@@ -213,8 +215,13 @@ export function PhotoViewer({
           </>
         )}
       </div>
+  )
 
-      <div className="px-3 pt-3">
+  return (
+    <div className={fit ? 'flex min-h-0 flex-1 flex-col' : undefined}>
+      {fit ? <div className="flex min-h-0 flex-1 items-center justify-center [container-type:size]">{stage}</div> : stage}
+
+      <div className={cx('px-3', fit ? 'pt-1' : 'pt-3')}>
         <FrameTimeline
           positions={pos}
           current={panel}
@@ -255,7 +262,7 @@ export function PhotoViewer({
           )}
         </div>
         {caption?.(panel)}
-        {frame && <p className="pb-2 text-meta text-text-muted">{t('frameWhen', { date: formatDateTime(frame.t, locale), wavelength: formatWavelength([frame.wl_min, frame.wl_max]) })}</p>}
+        {frame && !fit && <p className="pb-2 text-meta text-text-muted">{t('frameWhen', { date: formatDateTime(frame.t, locale), wavelength: formatWavelength([frame.wl_min, frame.wl_max]) })}</p>}
       </div>
     </div>
   )

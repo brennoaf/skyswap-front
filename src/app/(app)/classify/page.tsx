@@ -87,22 +87,41 @@ function ChoiceButton({ label, onClick, disabled, pressed, primary, children }: 
       disabled={disabled}
       aria-pressed={pressed}
       onClick={onClick}
-      className="group flex min-w-24 flex-col items-center gap-2 rounded-2xl px-2 py-1 disabled:opacity-50"
+      className={cx(
+        'inline-flex min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-2xl border-[0.5px] font-semibold motion-safe:transition-transform active:scale-[0.98] disabled:opacity-50',
+        primary ? 'h-[52px] flex-1 text-ui' : 'h-10 flex-1 text-note',
+        pressed ? 'border-accent bg-accent text-on-accent' : primary ? 'border-divider bg-bg-elevated text-text' : 'border-transparent bg-transparent text-text-secondary',
+      )}
     >
-      <span className="flex h-16 items-center">
-        <span
-          className={cx(
-            'inline-flex items-center justify-center rounded-full border-[0.5px] motion-safe:transition-transform group-active:scale-95',
-            primary ? 'size-16' : 'size-12',
-            pressed ? 'border-accent bg-accent text-on-accent' : 'border-divider bg-bg-elevated text-text',
-          )}
-        >
-          {children}
-        </span>
-      </span>
-      <span className={cx('text-note font-semibold', primary ? 'text-text' : 'text-text-secondary')}>{label}</span>
+      {children}
+      {label}
     </button>
   )
+}
+
+function CardHeader({ title, sub, actions }: { title: ReactNode; sub?: ReactNode; actions?: ReactNode }) {
+  return (
+    <header className="flex min-h-[var(--height-topbar)] shrink-0 items-center gap-1 pl-4 pr-1">
+      <div className="min-w-0 flex-1">
+        <h1 className="line-clamp-2 font-[family-name:var(--font-display)] text-handle font-bold leading-tight">{title}</h1>
+        {sub && <p className="truncate text-meta text-text-secondary">{sub}</p>}
+      </div>
+      {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
+    </header>
+  )
+}
+
+function HelpButton({ onClick }: { onClick: () => void }) {
+  const t = useTranslations('classify')
+  return (
+    <IconButton label={t('help.open')} onClick={onClick}>
+      <IconQuestion size={26} />
+    </IconButton>
+  )
+}
+
+function Fill({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cx('flex min-h-0 flex-1 flex-col', className)}>{children}</div>
 }
 
 function GuideArrow({ marks, panel }: { marks: Mark[]; panel: number }) {
@@ -185,7 +204,7 @@ function CardFrame({ children, x, y }: { children: ReactNode; x?: MotionValue<nu
   const still = useTransform(mx, [-SWIPE, -24], [1, 0])
   const unsure = useTransform(my, [-SWIPE, -24], [1, 0])
   return (
-    <div className="relative overflow-hidden rounded-2xl border-[0.5px] border-divider bg-bg-elevated">
+    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border-[0.5px] border-divider bg-bg-elevated">
       {children}
       {x && (
         <>
@@ -309,11 +328,15 @@ function VoteCard({
   return (
     <>
       {locating ? (
-        <div className="flex min-h-16 items-center gap-2 pb-2" role="status" aria-live="polite">
-          <h2 className="min-w-0 flex-1 font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">{t('locate.prompt')}</h2>
-          <Button variant="ghost" className="h-11 text-link" onClick={() => void commit('moves')} disabled={pending}>
-            {t('locate.skip')}
-          </Button>
+        <div role="status" aria-live="polite" className="shrink-0">
+          <CardHeader
+            title={t('locate.prompt')}
+            actions={
+              <Button variant="ghost" className="h-11 text-link" onClick={() => void commit('moves')} disabled={pending}>
+                {t('locate.skip')}
+              </Button>
+            }
+          />
         </div>
       ) : (
         header
@@ -325,18 +348,18 @@ function VoteCard({
         style={{ x, y, rotate, touchAction: playing && !locating ? 'none' : 'pan-y' }}
         initial={reduce ? false : { opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
-        className={cx('relative', playing && !locating && 'cursor-grab active:cursor-grabbing')}
+        className={cx('relative flex min-h-0 flex-1 flex-col px-3', playing && !locating && 'cursor-grab active:cursor-grabbing')}
       >
         <Stamp label={t('moves')} tone="moves" style={{ opacity: movesOpacity }} className="left-4 top-4" />
         <Stamp label={t('still')} tone="still" style={{ opacity: stillOpacity }} className="right-4 top-4" />
         <Stamp label={t('unsure')} tone="unsure" style={{ opacity: unsureOpacity }} className="left-1/2 top-4 -translate-x-1/2" />
         <CardFrame x={x} y={y}>
-          <PhotoViewer sprite={card.sprite} img={img} offsets={card.offsets_s} onPlayingChange={setPlaying} overlay={viewerOverlay} caption={caption} onLocate={locating && !pending ? locate : undefined} />
+          <PhotoViewer fit sprite={card.sprite} img={img} offsets={card.offsets_s} onPlayingChange={setPlaying} overlay={viewerOverlay} caption={caption} onLocate={locating && !pending ? locate : undefined} />
         </CardFrame>
       </motion.div>
 
       {guide && (
-        <div className="relative mt-3 flex items-center gap-2 rounded-2xl bg-accent py-2 pl-4 pr-1 text-on-accent" role="note">
+        <div className="relative mx-3 mt-2 flex shrink-0 items-center gap-2 rounded-2xl bg-accent py-1 pl-4 pr-1 text-on-accent" role="note">
           <span className="absolute -top-1.5 left-8 size-3 rotate-45 bg-accent" aria-hidden="true" />
           <p className="flex-1 text-note font-medium leading-snug">{t('guide.body')}</p>
           <button type="button" onClick={onSkipGuide} className="min-h-11 shrink-0 rounded-full px-3 text-note font-semibold underline underline-offset-2">
@@ -345,22 +368,22 @@ function VoteCard({
         </div>
       )}
 
-      <div className="mt-4 flex items-start justify-center gap-3">
-        <ChoiceButton label={t('still')} onClick={() => choose('still')} disabled={pending || !img} primary>
-          <IconStill size={30} />
-        </ChoiceButton>
-        <ChoiceButton label={t('unsure')} onClick={() => choose('unsure')} disabled={pending || !img}>
-          <IconQuestion size={24} />
-        </ChoiceButton>
-        <ChoiceButton label={t('moves')} onClick={() => (locating ? void commit('moves') : choose('moves'))} disabled={pending || !img} pressed={locating} primary>
-          <IconMoves size={32} />
-        </ChoiceButton>
-      </div>
-      {((showHints && !guide) || locating) && (
-        <div className="mt-3">
-          <p className="text-center text-meta text-text-secondary">{locating ? t('locate.hint') : playing ? t('hints.swipe') : t('hints.paused')}</p>
+      {((showHints && !guide) || locating) && <p className="shrink-0 truncate px-3 pt-1 text-center text-meta text-text-secondary">{locating ? t('locate.hint') : playing ? t('hints.swipe') : t('hints.paused')}</p>}
+      <div className="shrink-0 px-3 pb-2 pt-2">
+        <div className="flex gap-2">
+          <ChoiceButton label={t('still')} onClick={() => choose('still')} disabled={pending || !img} primary>
+            <IconStill size={24} />
+          </ChoiceButton>
+          <ChoiceButton label={t('moves')} onClick={() => (locating ? void commit('moves') : choose('moves'))} disabled={pending || !img} pressed={locating} primary>
+            <IconMoves size={24} />
+          </ChoiceButton>
         </div>
-      )}
+        <div className="mt-1 flex">
+          <ChoiceButton label={t('unsure')} onClick={() => choose('unsure')} disabled={pending || !img}>
+            <IconQuestion size={20} />
+          </ChoiceButton>
+        </div>
+      </div>
     </>
   )
 }
@@ -539,13 +562,13 @@ function RevealPanel({ cardId, choice, result, pacing }: { cardId: string; choic
 
 function DeckSkeleton() {
   return (
-    <div aria-hidden="true">
-      <Skeleton className="aspect-[0.82] w-full rounded-2xl" />
-      <div className="mt-4 flex justify-center gap-6">
-        <Skeleton className="size-16 rounded-full" />
-        <Skeleton className="mt-2 size-12 rounded-full" />
-        <Skeleton className="size-16 rounded-full" />
+    <div aria-hidden="true" className="flex min-h-0 flex-1 flex-col px-3 pb-2">
+      <Skeleton className="min-h-0 w-full flex-1 rounded-2xl" />
+      <div className="mt-2 flex gap-2">
+        <Skeleton className="h-[52px] flex-1 rounded-2xl" />
+        <Skeleton className="h-[52px] flex-1 rounded-2xl" />
       </div>
+      <Skeleton className="mt-2 h-8 w-full rounded-2xl" />
     </div>
   )
 }
@@ -637,14 +660,14 @@ function PauseCard({ looks, onContinue }: { looks: number; onContinue: () => voi
 function Searching() {
   const t = useTranslations('classify')
   return (
-    <div aria-live="polite">
+    <div aria-live="polite" className="flex min-h-0 flex-1 flex-col">
+      <p className="pb-2 text-center text-note text-text-secondary">{t('searching')}</p>
       <DeckSkeleton />
-      <p className="mt-3 text-center text-note text-text-secondary">{t('searching')}</p>
     </div>
   )
 }
 
-function Deck() {
+function Deck({ onHelp }: { onHelp: () => void }) {
   const t = useTranslations('classify')
   const tc = useTranslations('common')
   const reduce = useReducedMotion()
@@ -712,12 +735,19 @@ function Deck() {
     void flow.reload()
   }, [flow, guiding, pause])
 
-  if (pause) return <PauseCard looks={sessionLooks} onContinue={loadNext} />
-  if (guideActive && guideQuery.isLoading) return <DeckSkeleton />
-  if (!guiding && flow.status === 'searching') return <Searching />
-  if (!guiding && flow.status === 'loading' && !result) return <DeckSkeleton />
+  const help = <HelpButton onClick={onHelp} />
+  const plain = (body: ReactNode) => (
+    <Fill>
+      <CardHeader title={t('question')} actions={help} />
+      {body}
+    </Fill>
+  )
+  if (pause) return plain(<div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4"><PauseCard looks={sessionLooks} onContinue={loadNext} /></div>)
+  if (guideActive && guideQuery.isLoading) return plain(<DeckSkeleton />)
+  if (!guiding && flow.status === 'searching') return plain(<Searching />)
+  if (!guiding && flow.status === 'loading' && !result) return plain(<DeckSkeleton />)
   if (!guiding && flow.status === 'error')
-    return (
+    return plain(
       <EmptyState
         title={tc('retry')}
         action={
@@ -725,25 +755,28 @@ function Deck() {
             {tc('retry')}
           </Button>
         }
-      />
+      />,
     )
-  if (!card) return <EmptyState art={<IconCards size={56} className="text-accent" />} title={t('done')} body={t('doneBody')} />
+  if (!card) return plain(<EmptyState art={<IconCards size={56} className="text-accent" />} title={t('done')} body={t('doneBody')} />)
 
   const sky = isSkyCard(card)
   const header = (
-    <div className="flex min-h-16 items-center gap-2 pb-2">
-      <div className="min-w-0 flex-1">
-        <h2 className="font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">{t('question')}</h2>
-        {sky && <p className="text-meta text-text-secondary">{t('sky.label')}</p>}
-      </div>
-      {sky && <FlashlightButton on={hintsOn} onChange={setHintsOn} />}
-    </div>
+    <CardHeader
+      title={t('question')}
+      sub={sky ? t('sky.label') : undefined}
+      actions={
+        <>
+          {sky && <FlashlightButton on={hintsOn} onChange={setHintsOn} />}
+          {help}
+        </>
+      }
+    />
   )
   const hints = sky && hintsOn ? card.hints : null
 
   if (result && result.cardId === card.id)
     return (
-      <motion.div initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+      <motion.div initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="min-h-0 flex-1 overflow-y-auto px-3">
         {header}
         <CardFrame>
           <PhotoViewer sprite={card.sprite} img={img} offsets={card.offsets_s} reveal={result.data.reveal} overlay={(panel) => (hints ? <HintRings hints={hints} panel={panel} /> : <MarksOverlay marks={result.data.reveal.marks} panel={panel} />)} caption={hints ? (panel) => <HintCaption hints={hints} panel={panel} /> : undefined} />
@@ -758,6 +791,7 @@ function Deck() {
     )
 
   return (
+    <Fill>
     <VoteCard
       key={card.id}
       card={card}
@@ -771,6 +805,7 @@ function Deck() {
       onStale={loadNext}
       onSkipGuide={endGuide}
     />
+    </Fill>
   )
 }
 
@@ -797,26 +832,19 @@ export default function ClassifyPage() {
   const { data: user, isLoading } = useSession()
   const [help, setHelp] = useState(false)
   return (
-    <main className="min-h-[calc(100dvh-var(--height-bottomnav))]">
-      <TopBar
-        title={t('title')}
-        back={false}
-        actions={
-          <IconButton label={t('help.open')} onClick={() => setHelp(true)}>
-            <IconQuestion size={26} />
-          </IconButton>
-        }
-      />
+    <main className="flex h-[calc(100dvh-var(--height-bottomnav)-env(safe-area-inset-bottom))] flex-col overflow-hidden">
       {isLoading ? (
-        <div className="px-4 pt-2">
+        <Fill>
+          <CardHeader title={t('question')} />
           <DeckSkeleton />
-        </div>
+        </Fill>
       ) : !user ? (
-        <LoginIntro />
-      ) : (
-        <div className="px-4 pb-6 pt-1">
-          <Deck />
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <TopBar title={t('title')} back={false} actions={<HelpButton onClick={() => setHelp(true)} />} />
+          <LoginIntro />
         </div>
+      ) : (
+        <Deck onHelp={() => setHelp(true)} />
       )}
       <HelpSheet open={help} onClose={() => setHelp(false)} />
     </main>
