@@ -108,7 +108,7 @@ function ChoiceButton({ label, onClick, disabled, pressed, primary, children }: 
 
 function CardHeader({ title, sub, actions, answer }: { title: ReactNode; sub?: ReactNode; actions?: ReactNode; answer?: boolean }) {
   return (
-    <header className="flex min-h-[var(--height-topbar)] shrink-0 items-center gap-1 py-1 pl-4 pr-1">
+    <header className="relative z-10 flex min-h-[var(--height-topbar)] shrink-0 items-center gap-1 bg-bg py-1 pl-4 pr-1">
       <div className="min-w-0 flex-1">
         <h1 className={cx('line-clamp-2 font-[family-name:var(--font-display)] font-bold leading-tight', answer ? 'text-title-sm' : 'text-handle')}>{title}</h1>
         {sub && <p className="truncate text-meta text-text-secondary">{sub}</p>}
@@ -194,6 +194,16 @@ function FlashlightButton({ on, onChange }: { on: boolean; onChange: (on: boolea
       <IconFlashlight size={20} />
       {t('button')}
     </button>
+  )
+}
+
+function GuideRing({ marks, panel }: { marks: Mark[]; panel: number }) {
+  const m = marks[panel]
+  if (!m) return null
+  return (
+    <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx={m.u * 100} cy={m.v * 100} r="7" fill="none" stroke="var(--color-on-media)" strokeWidth="0.9" strokeDasharray="3 2" />
+    </svg>
   )
 }
 
@@ -398,7 +408,7 @@ function VoteCard({
 
   const viewerOverlay = (panel: number) => (
     <>
-      {guide ? <GuideArrow marks={guide} panel={panel} /> : overlay?.(panel)}
+      {guide ? lesson === 'glitch' ? <GuideRing marks={guide} panel={panel} /> : <GuideArrow marks={guide} panel={panel} /> : overlay?.(panel)}
       {spot && <VoiceMark voice="you" u={spot.x} v={spot.y} faint={spot.frame !== panel} />}
     </>
   )
