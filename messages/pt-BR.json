@@ -85,7 +85,9 @@
     "errorTitle": "Não foi possível carregar o feed",
     "errorBody": "Verifique se a API do SkySwap está rodando.",
     "retry": "Tentar de novo",
-    "end": "Você já viu tudo"
+    "end": "Você já viu tudo",
+    "lab": "Lab",
+    "labOpen": "Abrir o Lab"
   },
   "stories": {
     "title": "Objetos com stories",
@@ -174,7 +176,9 @@
       "share": "Compartilhar"
     },
     "menuLabel": "Mais opções",
-    "yearsBadge": "{n} anos"
+    "yearsBadge": "{n} anos",
+    "lab": "Lab",
+    "labOpen": "Abrir {name} no Lab"
   },
   "tags": {
     "title": "O que você vê?",
@@ -295,9 +299,11 @@
       "colours": "Ver a foto em cada cor",
       "save": "Salvar para depois"
     },
-    "more": {
+    "where": {
       "title": "Onde fica o modo pro",
-      "body": "Os três pontinhos de qualquer post abrem este menu. A primeira opção, Lab, é o modo pro."
+      "post": "O Lab no post abre aquele objeto com as ferramentas pro",
+      "top": "O Lab no topo da tela inicial deixa você escolher qualquer objeto",
+      "dots": "Os três pontinhos têm o resto: comparar datas, marcar o ponto, copiar o link"
     },
     "lab": {
       "title": "O Lab: olhe como cientista",
@@ -322,7 +328,7 @@
     "finish": {
       "title": "Sua parte, e as ferramentas pro",
       "contribution": "Suas respostas se somam às de todo mundo. Quando muita gente concorda que um ponto se move, ele vira um candidato para cientistas conferirem. Você não consegue estragar nada.",
-      "pro": "Quer mais detalhes? Abra o perfil de qualquer objeto e toque em Lab para ver pixels, camadas, cores e curvas de luz.",
+      "pro": "Quer mais detalhes? Toque em Lab em qualquer post ou no topo da tela inicial para ver pixels, camadas, cores e curvas de luz.",
       "classify": "Tentar um primeiro cartão",
       "explore": "Explorar por conta própria"
     }
@@ -926,6 +932,10 @@
       "next": "Próxima foto",
       "dateHint": "Deslize ou use as setas para passar as fotos enquanto olha.",
       "colourHint": "Cada cor é uma faixa do infravermelho, mostrada em cor falsa."
+    },
+    "picker": {
+      "title": "Escolha um objeto",
+      "intro": "O modo pro: as mesmas fotos reais, com ferramentas para datas, cores, pixels, movimento e espectro. Nada do que você faz aqui muda os dados."
     }
   },
   "alerts": {

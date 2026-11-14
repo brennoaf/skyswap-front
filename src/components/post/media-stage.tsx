@@ -275,12 +275,6 @@ export function MediaStage({
           )}
         </div>
       )}
-
-      {mode === 'play' && !player.playing && length > 1 && (
-        <span className="pointer-events-none absolute left-1/2 top-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-media-scrim text-on-media">
-          <IconPlay size={40} />
-        </span>
-      )}
     </div>
   )
 }

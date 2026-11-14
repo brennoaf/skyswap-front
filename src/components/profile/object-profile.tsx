@@ -185,7 +185,8 @@ export function ObjectProfileView({ id }: { id: string }) {
         <Button className="h-8 flex-1 whitespace-nowrap px-2 text-body" onClick={() => setMap(true)}>
           {t('skyMap')}
         </Button>
-        <Link href={`/lab/${profile.id}`} className="inline-flex h-8 flex-1 items-center justify-center rounded-[var(--radius-button)] bg-surface text-ui font-medium active:bg-surface-pressed">
+        <Link href={`/lab/${profile.id}`} className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-[var(--radius-button)] bg-surface text-ui font-medium active:bg-surface-pressed">
+          <IconFlask size={18} />
           {t('lab')}
         </Link>
         {blink && (

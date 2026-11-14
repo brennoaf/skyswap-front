@@ -85,7 +85,9 @@
     "errorTitle": "Couldn't load the feed",
     "errorBody": "Check that the SkySwap API is running.",
     "retry": "Try again",
-    "end": "You're all caught up"
+    "end": "You're all caught up",
+    "lab": "Lab",
+    "labOpen": "Open the Lab"
   },
   "stories": {
     "title": "Objects with stories",
@@ -174,7 +176,9 @@
       "share": "Share"
     },
     "menuLabel": "More options",
-    "yearsBadge": "{n} yrs"
+    "yearsBadge": "{n} yrs",
+    "lab": "Lab",
+    "labOpen": "Open {name} in the Lab"
   },
   "tags": {
     "title": "What do you see?",
@@ -295,9 +299,11 @@
       "colours": "See the photo in each colour",
       "save": "Save it for later"
     },
-    "more": {
+    "where": {
       "title": "Where the pro mode is",
-      "body": "The three dots on any post open this menu. Its first option, Lab, is the pro mode."
+      "post": "Lab on a post opens that object with the pro tools",
+      "top": "Lab at the top of the home screen lets you pick any object",
+      "dots": "The three dots have the rest: compare dates, mark the dot, copy the link"
     },
     "lab": {
       "title": "The Lab: look like a scientist",
@@ -322,7 +328,7 @@
     "finish": {
       "title": "Your part, and the pro tools",
       "contribution": "Your answers are added to everyone else's. When many people agree that a dot moves, it becomes a candidate for scientists to check. You cannot break anything.",
-      "pro": "Want more detail? Open any object's profile and tap Lab for pixels, layers, colours and light curves.",
+      "pro": "Want more detail? Tap Lab on any post or at the top of the home screen for pixels, layers, colours and light curves.",
       "classify": "Try a first card",
       "explore": "Explore on my own"
     }
@@ -926,6 +932,10 @@
       "next": "Next photo",
       "dateHint": "Slide or use the arrows to step through the photos while you watch.",
       "colourHint": "Each colour is one infrared band, shown in false colour."
+    },
+    "picker": {
+      "title": "Pick an object",
+      "intro": "The pro mode: the same real photos, with tools for dates, colours, pixels, motion and spectrum. Nothing you do here changes the data."
     }
   },
   "alerts": {

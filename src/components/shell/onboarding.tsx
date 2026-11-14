@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
-import { IconCards, IconCheck, IconColours, IconComment, IconCompare, IconCrosshair, IconFlask, IconHome, IconMoves, IconReel, IconSave, IconSearch, IconSpectrum, IconTarget } from '@/components/icons'
+import { IconCards, IconCheck, IconColours, IconComment, IconCompare, IconCrosshair, IconFlask, IconHome, IconMore, IconMoves, IconReel, IconSave, IconSearch, IconSpectrum, IconTarget } from '@/components/icons'
 import { Button } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { defaultLocale, isLocale, type Locale } from '@/i18n/locales'
@@ -16,7 +16,7 @@ import { useSwitchLocale } from '@/lib/use-switch-locale'
 export type LanguageOption = { locale: Locale; name: string; greeting: string; title: string; body: string; pick: string; action: string }
 
 type Item = { icon: ReactNode; key: string }
-type Step = { id: string; target?: string; items?: Item[]; art?: 'sky' | 'blink' | 'menu' | 'lab'; note?: boolean }
+type Step = { id: string; target?: string; items?: Item[]; art?: 'sky' | 'blink' | 'lab'; note?: boolean }
 
 const STEPS: Step[] = [
   { id: 'language' },
@@ -35,7 +35,15 @@ const STEPS: Step[] = [
       { icon: <IconSave size={22} />, key: 'save' },
     ],
   },
-  { id: 'more', target: 'post-more', art: 'menu' },
+  {
+    id: 'where',
+    target: 'post-lab',
+    items: [
+      { icon: <IconFlask size={22} />, key: 'post' },
+      { icon: <IconFlask size={22} />, key: 'top' },
+      { icon: <IconMore size={22} />, key: 'dots' },
+    ],
+  },
   {
     id: 'lab',
     art: 'lab',
@@ -106,26 +114,6 @@ const LAB_TOOLS = [
   { key: 'spectrum', icon: <IconSpectrum size={20} /> },
 ] as const
 
-function MenuArt({ tick }: { tick: number }) {
-  const t = useTranslations('post.menu')
-  return (
-    <div className="overflow-hidden rounded-xl bg-bg pb-1 ring-[0.5px] ring-divider" aria-hidden="true">
-      <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-divider" />
-      <div className={cx('mx-2 mt-2 flex items-center gap-3 rounded-lg px-2 py-2 ring-2 ring-accent transition-colors duration-500', tick % 2 === 0 ? 'bg-surface-pressed' : 'bg-surface')}>
-        <IconFlask size={24} />
-        <span className="min-w-0 flex-1">
-          <span className="block text-ui font-semibold">{t('lab')}</span>
-          <span className="block text-meta text-text-secondary">{t('labHint')}</span>
-        </span>
-      </div>
-      <div className="mx-2 flex items-center gap-3 px-2 py-2 opacity-40">
-        <IconCompare size={24} />
-        <span className="text-ui">{t('compare')}</span>
-      </div>
-    </div>
-  )
-}
-
 function LabArt({ tick }: { tick: number }) {
   const t = useTranslations('lab.tools')
   const active = Math.floor(tick / 2) % LAB_TOOLS.length
@@ -152,8 +140,7 @@ function LabArt({ tick }: { tick: number }) {
   )
 }
 
-function Art({ kind, tick }: { kind: 'sky' | 'blink' | 'menu' | 'lab'; tick: number }) {
-  if (kind === 'menu') return <MenuArt tick={tick} />
+function Art({ kind, tick }: { kind: 'sky' | 'blink' | 'lab'; tick: number }) {
   if (kind === 'lab') return <LabArt tick={tick} />
   const on = tick % 2 === 0
   if (kind === 'sky')
@@ -276,10 +263,16 @@ function useTargetBox(target: string | undefined, reduce: boolean) {
     let raf = 0
     let tries = 0
     let el: HTMLElement | null = null
+    let lastScroll = 0
     const measure = () => {
       if (!el) return
       const r = el.getBoundingClientRect()
       setBox({ top: r.top, left: r.left, width: r.width, height: r.height })
+    }
+    const keepInView = () => {
+      if (!el || el.closest('header, nav')) return
+      const r = el.getBoundingClientRect()
+      if (r.top < 64 || r.bottom > window.innerHeight - 220) el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' })
     }
     const find = () => {
       el = findTarget(target)
@@ -288,19 +281,24 @@ function useTargetBox(target: string | undefined, reduce: boolean) {
         else raf = requestAnimationFrame(find)
         return
       }
-      const r = el.getBoundingClientRect()
-      const fixed = getComputedStyle(el).position === 'fixed' || !!el.closest('nav')
-      if (!fixed && (r.top < 64 || r.bottom > window.innerHeight - 220)) el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' })
+      keepInView()
+      measure()
+    }
+    const onScroll = () => {
+      lastScroll = performance.now()
       measure()
     }
     find()
-    window.addEventListener('scroll', measure, true)
+    window.addEventListener('scroll', onScroll, true)
     window.addEventListener('resize', measure)
-    const timer = setInterval(measure, 250)
+    const timer = setInterval(() => {
+      if (performance.now() - lastScroll > 400) keepInView()
+      measure()
+    }, 250)
     return () => {
       cancelAnimationFrame(raf)
       clearInterval(timer)
-      window.removeEventListener('scroll', measure, true)
+      window.removeEventListener('scroll', onScroll, true)
       window.removeEventListener('resize', measure)
     }
   }, [target, reduce])
@@ -431,7 +429,7 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
           <div className="pointer-events-none relative mx-auto h-full max-w-[var(--width-app)] px-4">
             <div
               className={cx('absolute inset-x-4', !spot && 'top-1/2 -translate-y-1/2')}
-              style={spot ? (below ? { top: Math.min(spot.top + spot.height + pad + 12, window.innerHeight - 300) } : { bottom: Math.min(window.innerHeight - spot.top + pad + 12, window.innerHeight - 300) }) : undefined}
+              style={spot ? (below ? { top: Math.max(12, Math.min(spot.top + spot.height + pad + 12, window.innerHeight - 300)) } : { bottom: Math.min(window.innerHeight - spot.top + pad + 12, window.innerHeight - 300) }) : undefined}
             >
               {(spot || !step.target) && card}
             </div>

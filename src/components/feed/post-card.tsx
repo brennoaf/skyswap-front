@@ -7,7 +7,7 @@ import { PostMedia } from '@/components/feed/post-media'
 import { IconCompare, IconFlask, IconLink, IconMore, IconTarget } from '@/components/icons'
 import { ActionRow } from '@/components/post/action-row'
 import { TagPanel } from '@/components/post/tag-panel'
-import { IconButton, isSaturated, isVerified, ObjectAvatar, ObjectBadges, Sheet, SheetRow } from '@/components/ui/primitives'
+import { IconButton, isSaturated, isVerified, LabChip, ObjectAvatar, ObjectBadges, Sheet, SheetRow } from '@/components/ui/primitives'
 import type { FeedItem } from '@/lib/api/client'
 import { formatDate } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
@@ -29,11 +29,10 @@ export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | '
         </span>
         <span className="block truncate text-meta text-text-secondary">{item.object.official_target ? t('officialTarget') : t(`kinds.${item.object.kind}`)}</span>
       </Link>
-      <span data-tour="post-more">
-        <IconButton label={t('menuLabel')} onClick={onMore}>
-          <IconMore />
-        </IconButton>
-      </span>
+      <LabChip href={`/lab/${item.object.id}`} label={t('lab')} description={t('labOpen', { name: item.object.name })} tour="post-lab" />
+      <IconButton label={t('menuLabel')} onClick={onMore}>
+        <IconMore />
+      </IconButton>
     </div>
   )
 }

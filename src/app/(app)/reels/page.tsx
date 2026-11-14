@@ -104,11 +104,9 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
       </button>
 
       {(paused || reduce) && n > 1 && (
-        <span className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 text-white" aria-hidden="true">
-          <span className="flex size-16 items-center justify-center rounded-full bg-black/50">
-            <IconPlay size={36} />
-          </span>
-          {paused && <span className="rounded-full bg-black/60 px-2.5 py-1 text-meta font-medium">{t('mute')}</span>}
+        <span className="pointer-events-none absolute right-3 top-14 z-10 flex items-center gap-1 rounded-full bg-media-scrim py-1 pl-1.5 pr-2.5 text-meta font-medium text-on-media" aria-hidden="true">
+          <IconPlay size={16} />
+          {paused && t('mute')}
         </span>
       )}
 

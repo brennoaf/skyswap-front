@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
-import { IconBack, IconSaturated, IconVerified } from '@/components/icons'
+import { IconBack, IconFlask, IconSaturated, IconVerified } from '@/components/icons'
 import { cx } from '@/lib/format'
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -24,6 +24,17 @@ export function Button({ variant = 'secondary', className, full, ...rest }: Butt
         className,
       )}
     />
+  )
+}
+
+export function LabChip({ href, label, description, tour }: { href: string; label: string; description: string; tour?: string }) {
+  return (
+    <Link href={href} aria-label={description} data-tour={tour} className="inline-flex h-11 shrink-0 items-center">
+      <span className="inline-flex h-8 items-center gap-1 rounded-full bg-surface pl-2 pr-3 text-body font-semibold active:bg-surface-pressed">
+        <IconFlask size={18} />
+        {label}
+      </span>
+    </Link>
   )
 }
 

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { PostCard } from '@/components/feed/post-card'
 import { StoriesRow } from '@/components/feed/stories-row'
 import { IconCheck, IconChevronDown, IconDirect, IconLike } from '@/components/icons'
-import { Button, EmptyState, Sheet, Skeleton, Wordmark } from '@/components/ui/primitives'
+import { Button, EmptyState, LabChip, Sheet, Skeleton, Wordmark } from '@/components/ui/primitives'
 import { useAlerts, useFeed, useSession, type FeedTab } from '@/lib/api/hooks'
 import { useShare } from '@/lib/share'
 
@@ -55,6 +55,7 @@ export default function HomePage() {
           <IconChevronDown className="mb-0.5" />
         </button>
         <div className="flex items-center">
+          <LabChip href="/lab" label={t('lab')} description={t('labOpen')} />
           <Link href="/alerts" aria-label={t('alerts')} data-tour="alerts" className="relative inline-flex size-11 items-center justify-center">
             <IconLike />
             {!!alerts?.unread && <span className="absolute right-2 top-2 size-2.5 rounded-full border-2 border-bg bg-danger" aria-label={t('unread', { n: alerts.unread })} />}
