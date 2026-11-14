@@ -409,7 +409,12 @@ function Deck() {
       </motion.div>
     )
 
-  return <VoteCard key={card.id} card={card} img={img} guide={guiding ? (guideQuery.data?.marks ?? []) : null} onVoted={onVoted} onStale={loadNext} onSkipGuide={endGuide} />
+  return (
+    <>
+      {!guiding && <p className="mb-3 text-note leading-snug text-text-secondary">{t('intro')}</p>}
+      <VoteCard key={card.id} card={card} img={img} guide={guiding ? (guideQuery.data?.marks ?? []) : null} onVoted={onVoted} onStale={loadNext} onSkipGuide={endGuide} />
+    </>
+  )
 }
 
 function LoginIntro() {
@@ -444,7 +449,6 @@ export default function ClassifyPage() {
         <LoginIntro />
       ) : (
         <div className="px-4 pb-6">
-          <p className="mb-3 text-note leading-snug text-text-secondary">{t('intro')}</p>
           <Deck />
         </div>
       )}
