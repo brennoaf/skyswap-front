@@ -1340,13 +1340,7 @@ export interface paths {
                             card: {
                                 id: string;
                                 sprite: string;
-                                tile: number;
                                 n_frames: number;
-                                frames: {
-                                    t: string;
-                                    mjd: number;
-                                    n_exp: number;
-                                }[];
                             } | null;
                         };
                     };
@@ -1413,8 +1407,12 @@ export interface paths {
                                 kind: string;
                                 band: string;
                                 size_arcmin: number;
+                                tile: number;
+                                size_px: number;
                                 frames: {
                                     t: string;
+                                    mjd: number;
+                                    n_exp: number;
                                     wl_min: number;
                                     wl_max: number;
                                 }[];
@@ -1640,8 +1638,12 @@ export interface components {
             kind: string;
             band: string;
             size_arcmin: number;
+            tile: number;
+            size_px: number;
             frames: {
                 t: string;
+                mjd: number;
+                n_exp: number;
                 wl_min: number;
                 wl_max: number;
             }[];
@@ -1672,13 +1674,7 @@ export interface components {
         DeckCard: {
             id: string;
             sprite: string;
-            tile: number;
             n_frames: number;
-            frames: {
-                t: string;
-                mjd: number;
-                n_exp: number;
-            }[];
         };
         Spot: {
             name: string | null;

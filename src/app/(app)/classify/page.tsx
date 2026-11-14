@@ -45,6 +45,7 @@ function Viewer({ card, img, marks, reveal }: { card: DeckCard; img: HTMLImageEl
   const [panel, setPanel] = useState(0)
   const [playing, setPlaying] = useState(true)
   const n = card.n_frames
+  const tile = img ? Math.round(img.naturalHeight / 2) : 1
   const running = playing && !reduce && n > 1
 
   useEffect(() => {
@@ -59,10 +60,10 @@ function Viewer({ card, img, marks, reveal }: { card: DeckCard; img: HTMLImageEl
     if (!c || !ctx || !img) return
     ctx.imageSmoothingEnabled = false
     ctx.clearRect(0, 0, c.width, c.height)
-    ctx.drawImage(img, panel * card.tile, row * card.tile, card.tile, card.tile, 0, 0, card.tile, card.tile)
-  }, [img, panel, row, card.tile])
+    ctx.drawImage(img, panel * tile, row * tile, tile, tile, 0, 0, tile, tile)
+  }, [img, panel, row, tile])
 
-  const frame = card.frames[panel]
+  const frame = reveal?.frames[panel]
   const mark = marks?.[panel]
 
   return (
@@ -70,8 +71,8 @@ function Viewer({ card, img, marks, reveal }: { card: DeckCard; img: HTMLImageEl
       <div className="relative">
         <canvas
           ref={canvas}
-          width={card.tile}
-          height={card.tile}
+          width={tile}
+          height={tile}
           role="img"
           aria-label={t('cardAlt', { n: panel + 1, total: n })}
           className="pixelated block aspect-square w-full bg-media-bg"
@@ -117,8 +118,7 @@ function Viewer({ card, img, marks, reveal }: { card: DeckCard; img: HTMLImageEl
       </div>
       {frame && (
         <p className="px-3 pb-3 pt-1 text-meta text-text-muted">
-          {formatDateTime(frame.t, locale)}
-          {reveal?.frames[panel] && ` · ${formatWavelength([reveal.frames[panel].wl_min, reveal.frames[panel].wl_max])}`}
+          {formatDateTime(frame.t, locale)} · {formatWavelength([frame.wl_min, frame.wl_max])}
         </p>
       )}
     </div>
