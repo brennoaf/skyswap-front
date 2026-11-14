@@ -164,7 +164,7 @@ export function SheetRow({ icon, label, hint, onClick, href, danger }: { icon?: 
 }
 
 export function Skeleton({ className, style }: { className?: string; style?: React.CSSProperties }) {
-  return <span aria-hidden="true" className={cx('skeleton block rounded-md', className)} style={style} />
+  return <span aria-hidden="true" className={cx('skeleton block', !className?.includes('rounded') && 'rounded-md', className)} style={style} />
 }
 
 export function EmptyState({ art, title, body, action }: { art?: ReactNode; title: ReactNode; body?: ReactNode; action?: ReactNode }) {

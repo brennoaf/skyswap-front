@@ -8,9 +8,10 @@ import { UserAvatar } from '@/components/ui/user-avatar'
 import { useAlerts, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
 
-export function BottomNav({ overlay = false }: { overlay?: boolean }) {
+export function BottomNav() {
   const t = useTranslations('nav')
   const path = usePathname()
+  const overlay = path.startsWith('/reels')
   const { data: user } = useSession()
   const { data: alerts } = useAlerts(!!user)
   const personal = alerts?.alerts.some((a) => !a.read && (a.type === 'badge' || a.type === 'level')) ?? false
