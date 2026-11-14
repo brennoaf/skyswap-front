@@ -7,12 +7,14 @@ import { Crosshair } from '@/components/feed/post-media'
 import { skyHref } from '@/components/feed/spot-sheet'
 import { IconCrosshair, IconPause, IconPlay, IconStepBack, IconStepForward, IconWarning } from '@/components/icons'
 import { dotPositions, FrameTimeline } from '@/components/classify/photo-viewer'
+import { SkyLocator } from '@/components/sky/sky-locator'
+import { BandTile } from '@/components/ui/band-tile'
 import { CatalogLinks } from '@/components/ui/catalog-links'
 import { Button, Chip, EmptyState, IconButton, Notice, ObjectAvatar, Segmented, Skeleton, useLoopRestart } from '@/components/ui/primitives'
 import { QrWarning } from '@/components/charts/charts'
 import type { SkyResult } from '@/lib/api/client'
 import { useObject, useSky } from '@/lib/api/hooks'
-import { BAND_HUE, BANDS, cssColor, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
+import { BAND_HUE, BANDS, cssColor, formatBytes, formatShortDate } from '@/lib/format'
 import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch, type IndexRow } from '@/lib/sky'
 import { pointHits, askServer } from '@/lib/explore/lookup'
 import { differenceGrey, differenceImages, differenceScale } from '@/lib/explore/sky-card'
@@ -296,12 +298,13 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
       {frame && (
         <>
           <span className="absolute left-2 top-2 rounded-md bg-media-scrim px-2 py-1 text-meta font-medium">{date}</span>
-          <span className="absolute bottom-2 left-2 rounded-md bg-media-scrim px-2 py-1 text-meta">{t('frameTags', { band: frame.band, release: frame.release.toUpperCase(), colours: diff ? t('viewChanges') : tc('falseColour') })}</span>
+          <span className="absolute bottom-2 left-2 rounded-md bg-media-scrim px-2 py-1 text-meta">{t('frameTags', { band: frame.band, release: frame.release.toUpperCase(), colours: diff ? t('viewChanges') : colormap === 'band' ? tc('falseColour') : t('grey') })}</span>
           {n > 1 && <span className="absolute right-2 top-2 rounded-full bg-media-scrim px-2 py-0.5 text-meta font-medium">{t('frameOf', { n: Math.min(cur, n - 1) + 1, total: n })}</span>}
         </>
       )}
       {b.status === 'idle' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-8 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-reels-bg px-6 text-center text-spot-star">
+          <SkyLocator ra={params.ra} dec={params.dec} name={params.name ?? t('thisSpot')} className="w-full" />
           {canBuild ? (
             <>
               <Button variant="primary" className="h-11 px-5" onClick={() => void b.start()}>
@@ -440,15 +443,17 @@ function Player({ sky, params, compact, target }: { sky: SkyResult; params: SkyP
           <Chip active={colormap === 'band'} onClick={() => setColormap('band')}>
             {t('bandHue')}
           </Chip>
-          {b.status === 'ready' && (
-            <Button variant="ghost" className="ml-auto h-9 text-link" onClick={() => void b.start()}>
-              {t('rebuild')}
-            </Button>
-          )}
         </div>
       )}
       {crosshair && n > 0 && <p className="px-4 pt-1 text-meta text-text-secondary">{target ? t('crosshairMoving') : t('crosshairCentre')}</p>}
-      {b.status === 'ready' && b.bytes !== null && <p className="px-4 pt-1 text-meta text-text-secondary">{t('downloaded', { size: formatBytes(b.bytes) })}</p>}
+      {b.status === 'ready' && (
+        <div className="flex items-center justify-between gap-3 px-4">
+          <p className="min-w-0 text-meta text-text-secondary">{b.bytes !== null && t('downloaded', { size: formatBytes(b.bytes) })}</p>
+          <button type="button" onClick={() => void b.start()} className="inline-flex min-h-11 shrink-0 items-center text-note font-semibold text-link">
+            {t('rebuild')}
+          </button>
+        </div>
+      )}
       {new Set(b.frames.map((f) => f.release)).size > 1 && (
         <div className="px-4 pt-2">
           <QrWarning />
@@ -539,20 +544,17 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
 
   return (
     <div className="pb-6">
-      <section className="px-4 pb-3 pt-1">
-        <p className="text-note text-text-secondary">
-          {t('coordinates', { ra: formatRa(ra), dec: formatDec(dec) })}
-        </p>
-        <p className="mt-0.5 text-body">
-          {d.source === 'none' ? t('none') : t('images', { n: d.total })}
-        </p>
-        <p className="text-note text-text-secondary">
-          {t(`source.${d.source === 'sia' || d.source === 'fragment' ? d.source : 'none'}`)}
-        </p>
+      {d.source === 'none' ? <EmptyState title={t('none')} /> : <Player key={`${playerKey}|${target ? 'pm' : 'fixed'}`} sky={d} params={params} target={target} compact={false} />}
+
+      <section className="flex items-center gap-3 px-4 pt-3">
+        <div className="min-w-0 flex-1 leading-tight">
+          <p className="text-body font-medium">{d.source === 'none' ? t('none') : t('images', { n: d.total })}</p>
+          <p className="text-meta text-text-secondary">{t(`source.${d.source === 'sia' || d.source === 'fragment' ? d.source : 'none'}`)}</p>
+        </div>
         {d.releases.length > 0 && (
-          <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-label={t('releases')}>
+          <div className="flex shrink-0 gap-1.5" aria-label={t('releases')}>
             {d.releases.map((r) => (
-              <span key={r} className="rounded-full border-[0.5px] border-divider bg-surface px-2.5 py-0.5 text-meta font-medium">
+              <span key={r} className="rounded-full bg-surface px-2.5 py-0.5 text-meta font-medium">
                 {r.toUpperCase()}
               </span>
             ))}
@@ -561,38 +563,33 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
       </section>
 
       {!name && (
-        <div className="px-4 pb-3">
+        <div className="px-4 pt-3">
           <Notice icon={<IconWarning size={20} />}>{t('staleTyped')}</Notice>
         </div>
       )}
 
-      {d.source === 'none' ? <EmptyState title={t('none')} /> : <Player key={`${playerKey}|${target ? 'pm' : 'fixed'}`} sky={d} params={params} target={target} compact={false} />}
+      <section className="pt-5">
+        <h2 className="px-4 text-ui font-semibold">{t('band')}</h2>
+        <div className="grid grid-cols-4 gap-2 px-4 pt-2" role="group" aria-label={t('band')}>
+          <BandTile label={t('allBands')} hue="var(--gradient-bands)" detail={String(allCount)} on={!band} onClick={() => onChange?.({ band: null })} />
+          {BANDS.map((k) => (
+            <BandTile key={k} label={k} hue={BAND_HUE[k] ?? ''} detail={String(d.bands[k] ?? 0)} on={band === k} onClick={() => onChange?.({ band: k })} />
+          ))}
+        </div>
+        <p className="px-4 pt-2 text-meta text-text-secondary">{t('bandHint')}</p>
+      </section>
 
-      <section className="pt-4">
+      <section className="pt-5">
         <h2 className="px-4 text-ui font-semibold">{t('fov')}</h2>
-        <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pt-2">
+        <div className="grid grid-cols-4 gap-2 px-4 pt-2" role="group" aria-label={t('fov')}>
           {FOVS.map((f) => (
-            <Chip key={f} active={f === fov} onClick={() => onChange?.({ fov: f })}>
+            <Chip key={f} active={f === fov} onClick={() => onChange?.({ fov: f })} className="min-h-12 w-full justify-center px-1 text-center">
               {t('fovValue', { arcmin: +(f * 60).toFixed(1) })}
             </Chip>
           ))}
         </div>
+        <p className="px-4 pt-2 text-meta text-text-secondary">{t('fovHint')}</p>
         <DataSize sky={d} fov={fov} />
-      </section>
-
-      <section className="pt-4">
-        <h2 className="px-4 text-ui font-semibold">{t('band')}</h2>
-        <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pt-2">
-          <Chip active={!band} onClick={() => onChange?.({ band: null })}>
-            {t('allBands')} <span className="opacity-70">{allCount}</span>
-          </Chip>
-          {BANDS.map((k) => (
-            <Chip key={k} active={band === k} onClick={() => onChange?.({ band: k })}>
-              <span className="size-2.5 rounded-full" style={{ background: BAND_HUE[k] }} aria-hidden="true" />
-              {k} <span className="opacity-70">{d.bands[k] ?? 0}</span>
-            </Chip>
-          ))}
-        </div>
       </section>
 
       {d.source === 'sia' && <SiaList sky={d} />}
@@ -613,7 +610,7 @@ export function SkyViewer({ params, compact = false, onChange }: { params: SkyPa
         </section>
       )}
 
-      <CatalogLinks ra={ra} dec={dec} skyLink={false} className="px-4 pt-5" />
+      <CatalogLinks ra={ra} dec={dec} skyLink={false} className="mx-4 mt-5 rounded-2xl bg-surface p-3" />
     </div>
   )
 }

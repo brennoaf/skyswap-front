@@ -151,11 +151,11 @@ export function ShiftAddPanel({ epochs, parts, refEpoch, catalog }: { epochs: Pa
       <p className="mt-2 text-meta leading-snug text-text-secondary">{t('unit')}</p>
       <div className="mt-2 flex gap-2">
         {catalog && (
-          <Button className="h-10 flex-1 bg-bg px-2 text-body" onClick={() => setMotion(catalog)}>
+          <Button variant="ghost" className="h-10 flex-1 bg-bg px-2 text-body" onClick={() => setMotion(catalog)}>
             {t('useCatalog')}
           </Button>
         )}
-        <Button className="h-10 flex-1 bg-bg px-2 text-body" onClick={() => setMotion({ pmra: 0, pmdec: 0 })}>
+        <Button variant="ghost" className="h-10 flex-1 bg-bg px-2 text-body" onClick={() => setMotion({ pmra: 0, pmdec: 0 })}>
           {t('zero')}
         </Button>
       </div>

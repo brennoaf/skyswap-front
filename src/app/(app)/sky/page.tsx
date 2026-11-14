@@ -6,6 +6,7 @@ import { Suspense, useCallback } from 'react'
 import { skyHref } from '@/components/feed/spot-sheet'
 import { parseSkyParams, SkyViewer, skyTitle, type SkyParams } from '@/components/sky/sky-viewer'
 import { EmptyState, Skeleton, TopBar } from '@/components/ui/primitives'
+import { formatDec, formatRa } from '@/lib/format'
 
 function SkyScreen() {
   const t = useTranslations('sky')
@@ -31,7 +32,14 @@ function SkyScreen() {
 
   return (
     <main>
-      <TopBar title={skyTitle(params)} />
+      <TopBar
+        title={
+          <span className="block leading-tight">
+            <span className="block truncate">{skyTitle(params)}</span>
+            <span className="block truncate font-sans text-meta font-normal tabular-nums text-text-secondary">{t('coordinates', { ra: formatRa(params.ra), dec: formatDec(params.dec) })}</span>
+          </span>
+        }
+      />
       <SkyViewer params={params} onChange={onChange} />
     </main>
   )

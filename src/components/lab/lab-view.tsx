@@ -6,9 +6,10 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
-import { IconCheck, IconCrosshair, IconDownload, IconExpand, IconEye, IconEyeOff, IconQuestion, IconShrink, IconStepBack, IconStepForward } from '@/components/icons'
+import { IconCrosshair, IconDownload, IconExpand, IconEye, IconEyeOff, IconQuestion, IconShrink, IconStepBack, IconStepForward } from '@/components/icons'
 import { TOOLS, type Tool } from '@/components/lab/lab-intro'
 import { ShiftAddPanel } from '@/components/lab/shift-add-panel'
+import { BandTile } from '@/components/ui/band-tile'
 import { CatalogLinks } from '@/components/ui/catalog-links'
 import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
 import { useObject, useObjectPosts } from '@/lib/api/hooks'
@@ -441,7 +442,7 @@ export function LabView({ id }: { id: string }) {
                   {pixel && <rect x={pixel.x} y={pixel.y} width={1} height={1} fill="none" stroke="var(--color-mark-outline)" strokeWidth={0.15} />}
                 </svg>
               </div>
-              {!decoded && <span className="absolute inset-0 flex items-center justify-center text-note text-on-media-muted">{t('loading')}</span>}
+              {!decoded && <span className="absolute inset-0 flex items-center justify-center text-note text-text-secondary">{t('loading')}</span>}
               <span className="absolute bottom-2 left-2 rounded bg-media-scrim px-2 py-0.5 text-meta text-on-media">{tcom('falseColour')}</span>
             </div>
             {ep && (
@@ -481,19 +482,7 @@ export function LabView({ id }: { id: string }) {
                 <div className="grid grid-cols-3 gap-2" role="group" aria-label={t('band')}>
                   {BANDS.filter((b) => pack.data?.bands[b]).map((b) => {
                     const info = bandInfo[b]
-                    const on = band === b
-                    return (
-                      <button key={b} type="button" aria-pressed={on} onClick={() => pickBand(b)} className={cx('overflow-hidden rounded-xl bg-surface text-left transition-transform active:scale-95', on && 'ring-2 ring-text')}>
-                        <span className="block h-4" style={{ background: BAND_HUE[b] }} />
-                        <span className="block px-2.5 pb-2 pt-1.5">
-                          <span className="flex h-6 items-center justify-between text-ui font-semibold">
-                            {b}
-                            {on && <IconCheck size={20} />}
-                          </span>
-                          {info && <span className="block text-meta tabular-nums text-text-secondary">{t('tools.bandWave', { min: info.min.toFixed(1), max: info.max.toFixed(1) })}</span>}
-                        </span>
-                      </button>
-                    )
+                    return <BandTile key={b} label={b} hue={BAND_HUE[b] ?? ''} detail={info ? t('tools.bandWave', { min: info.min.toFixed(1), max: info.max.toFixed(1) }) : undefined} on={band === b} onClick={() => pickBand(b)} />
                   })}
                 </div>
                 <div>
@@ -611,7 +600,7 @@ export function LabView({ id }: { id: string }) {
                       <SpectrumChart data={spectra.data} />
                     </div>
                   )}
-                  <Button className="mt-2 h-11 w-full bg-bg" onClick={() => void measureLive()} disabled={!!live && live.done < live.total}>
+                  <Button variant="ghost" className="mt-2 h-11 w-full bg-bg" onClick={() => void measureLive()} disabled={!!live && live.done < live.total}>
                     {live && live.done < live.total ? t('spectrumMeasuring', { done: live.done, total: live.total }) : t('spectrumLive')}
                   </Button>
                   {live && live.points.length > 0 && (

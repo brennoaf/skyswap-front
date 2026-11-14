@@ -310,6 +310,13 @@ export const IconEyeOff = (p: IconProps) => (
   </Svg>
 )
 
+export const IconCopy = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M11.5 11.5H26.5V26.5H11.5Z" {...LINE} />
+    <path d="M20.5 11.5V5.5H5.5V20.5H11.5" {...LINE} />
+  </Svg>
+)
+
 export const IconFlask = (p: IconProps) => (
   <Svg {...p}>
     <path d="M13 5.5H19M14 5.5V12.5L7.6 23.2C6.8 24.6 7.8 26.5 9.4 26.5H22.6C24.2 26.5 25.2 24.6 24.4 23.2L18 12.5V5.5" {...LINE} />

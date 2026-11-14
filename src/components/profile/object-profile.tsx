@@ -12,6 +12,7 @@ import { useFollow, useLearn, useObject, useObjectPosts, useSession } from '@/li
 import { BAND_HUE, BANDS, compactNumber, cx, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
+import { SkyMapSheet } from '@/components/sky/sky-map-sheet'
 
 type Tab = 'photos' | 'spectrum' | 'timelapses' | 'measurements'
 type Highlight = 'why' | 'colours' | 'sources' | 'position'
@@ -80,6 +81,7 @@ export function ObjectProfileView({ id }: { id: string }) {
   const [highlight, setHighlight] = useState<Highlight | null>(null)
   const [more, setMore] = useState(false)
   const [map, setMap] = useState(false)
+  const tsky = useTranslations('sky.map')
   const [bioOpen, setBioOpen] = useState(false)
 
   const learnRef = useRef(learn.mutate)
@@ -325,7 +327,7 @@ export function ObjectProfileView({ id }: { id: string }) {
                 {profile.ra.toFixed(5)}°, {profile.dec.toFixed(5)}°
               </p>
               <Link href={`/sky?ra=${profile.ra.toFixed(5)}&dec=${profile.dec.toFixed(5)}&fov=0.1&name=${encodeURIComponent(profile.name)}&obj=${profile.id}`} className="inline-flex h-9 items-center rounded-[var(--radius-button)] bg-accent px-4 font-medium text-on-accent">
-                {t('skyMap')}
+                {tsky('watch')}
               </Link>
             </>
           )}
@@ -351,22 +353,7 @@ export function ObjectProfileView({ id }: { id: string }) {
         </div>
       </Sheet>
 
-      <Sheet open={map} onClose={() => setMap(false)} title={t('skyMapTitle')}>
-        <div className="px-4 py-3">
-          <div className="aspect-square w-full overflow-hidden rounded-xl bg-media-bg">
-            {map && (
-              <iframe
-                title={t('skyMapTitle')}
-                className="size-full"
-                loading="lazy"
-                src={`https://aladin.cds.unistra.fr/AladinLite/?target=${encodeURIComponent(`${profile.ra} ${profile.dec}`)}&fov=0.25&survey=CDS%2FP%2FDSS2%2Fcolor`}
-              />
-            )}
-          </div>
-          <p className="mt-2 text-meta text-text-secondary">{t('skyMapHint')}</p>
-          <p className="text-meta text-text-secondary">{t('skyMapCredit')}</p>
-        </div>
-      </Sheet>
+      <SkyMapSheet open={map} onClose={() => setMap(false)} object={profile} />
     </main>
   )
 }
