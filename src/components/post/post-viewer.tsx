@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { KitChart } from '@/components/charts/charts'
 import { PostHeader } from '@/components/feed/post-card'
 import { ActionRow } from '@/components/post/action-row'
+import { EraTimeline } from '@/components/post/era-timeline'
 import { MediaStage, usePlayer, type Point, type StageMode } from '@/components/post/media-stage'
 import { AboutSheet, ColoursSheet, MoreSheet, NotesSheet, TagSheet } from '@/components/post/post-sheets'
 import { buildSequences, centre, framePool, nearestByWavelength, type FilterKey, type Sequence } from '@/components/post/sequences'
@@ -16,6 +17,7 @@ import { useLearn, useObject, useObjectPosts, usePost, useSaveMarks, useSession 
 import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
+import { hasWise, LONG_BASELINE_FPS } from '@/lib/long-baseline'
 
 const CHART_KIND = { spectrum: 'spectrum', lightcurve: 'lightcurve', motion: 'motion' } as const
 const PASS_GAP_DAYS = 20
@@ -57,6 +59,7 @@ export function PostViewer({ id }: { id: string }) {
   const [mode, setMode] = useState<StageMode>(params.get('mark') ? 'mark' : params.get('compare') ? 'compare' : 'play')
   const [draft, setDraft] = useState<Point[]>([])
   const [expanded, setExpanded] = useState(false)
+  const [path, setPath] = useState(false)
   const bandsSeen = useRef(new Set<string>())
 
   const sequences = useMemo(() => (data ? buildSequences(data.post, objectPosts ?? []) : null), [data, objectPosts])
@@ -72,7 +75,8 @@ export function PostViewer({ id }: { id: string }) {
     [sequences, filter, sliderFrame],
   )
   const frames = useMemo(() => seq?.frames ?? [], [seq])
-  const player = usePlayer(frames.length, mode === 'play')
+  const longBaseline = data?.post.type === 'long_baseline' && filter === 'original'
+  const player = usePlayer(frames.length, mode === 'play', longBaseline ? LONG_BASELINE_FPS : undefined, longBaseline ? LONG_BASELINE_FPS : undefined)
   const current = frames[player.index]
   const groups = useMemo(() => groupsOf(filter === 'original' ? (data?.post.type ?? '') : 'timelapse', frames), [filter, data?.post.type, frames])
   const activeGroup = Math.max(0, groups.findLastIndex((g) => g <= player.index))
@@ -183,6 +187,7 @@ export function PostViewer({ id }: { id: string }) {
           compareFrames={compareFrames}
           markBar={markBar}
           saturated={object.saturation === 'heavy'}
+          path={longBaseline && path ? post.marks.map((m) => ({ x: m.x, y: m.y })) : null}
           onSwipe={(dir) => pickGroup(activeGroup + dir)}
           onMark={(p) => {
             setDraft((d) => [...d.filter((x) => x.frame !== p.frame), p])
@@ -191,6 +196,8 @@ export function PostViewer({ id }: { id: string }) {
         />
       )}
 
+      {longBaseline && !isChart && <EraTimeline frames={frames} index={player.index} onPick={(i) => player.setIndex(i)} path={path} onPath={setPath} />}
+
       <ActionRow
         tag={{ onClick: () => setSheet('tags') }}
         mark={{ onClick: startMark, active: mode === 'mark' }}
@@ -198,7 +205,7 @@ export function PostViewer({ id }: { id: string }) {
         save={{ onClick: () => toggleSaved(post.id) }}
         saved={saved}
         tagCount={data.tags.counts ? totalTags : null}
-        dots={!isChart && groups.length > 1 ? { count: groups.length, active: activeGroup, onPick: pickGroup } : null}
+        dots={!isChart && !longBaseline && groups.length > 1 ? { count: groups.length, active: activeGroup, onPick: pickGroup } : null}
       />
 
       <div className="px-3">
@@ -257,7 +264,7 @@ export function PostViewer({ id }: { id: string }) {
         }}
         labHref={`/lab/${object.id}`}
       />
-      <AboutSheet open={sheet === 'about'} onClose={() => setSheet(null)} data={data} profile={profile} frame={current} />
+      <AboutSheet open={sheet === 'about'} onClose={() => setSheet(null)} data={data} profile={profile} frame={current} wise={hasWise(post.frames)} />
       <TagSheet open={sheet === 'tags'} onClose={() => setSheet(null)} postId={post.id} tags={data.tags} />
       <NotesSheet open={sheet === 'notes'} onClose={() => setSheet(null)} postId={post.id} objectId={object.id} title={post.title} />
       <ColoursSheet

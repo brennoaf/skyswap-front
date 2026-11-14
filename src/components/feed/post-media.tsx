@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { IconCarousel, IconReel } from '@/components/icons'
 import type { Post } from '@/lib/api/client'
 import { formatShortDate, formatWavelength } from '@/lib/format'
+import { frameYear, isLongBaseline, LONG_BASELINE_FPS, PLAYABLE, telescopeOf, yearsSpanned } from '@/lib/long-baseline'
 import { useUi } from '@/lib/state/ui'
 
 export function Crosshair({ x, y, size = 34, color = 'var(--color-warning)' }: { x: number; y: number; size?: number; color?: string }) {
@@ -42,18 +43,19 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
   const [frame, setFrame] = useState(0)
   const [slide, setSlide] = useState(0)
   const scroller = useRef<HTMLDivElement>(null)
-  const isTimelapse = post.type === 'timelapse' && post.frames.length > 1
+  const isTimelapse = PLAYABLE.has(post.type) && post.frames.length > 1
+  const longBaseline = isLongBaseline(post)
   const isMulti = MULTI.has(post.type) && post.frames.length > 1
 
   useEffect(() => {
     if (!isTimelapse || !inView || matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const timer = setInterval(() => setFrame((f) => (f + 1) % post.frames.length), 160)
+    const timer = setInterval(() => setFrame((f) => (f + 1) % post.frames.length), longBaseline ? 1000 / LONG_BASELINE_FPS : 160)
     return () => clearInterval(timer)
-  }, [isTimelapse, inView, post.frames.length])
+  }, [isTimelapse, inView, post.frames.length, longBaseline])
 
   const shown = isTimelapse ? post.frames[frame] : isMulti ? post.frames[slide] : post.frames[0]
   const mark = post.marks.find((m) => m.frame === (isTimelapse ? frame : isMulti ? slide : 0))
-  const caption = shown ? `${shown.band} · ${formatWavelength(shown.wavelength_um)}` : post.band ? `${post.band} · ${formatWavelength(post.wavelength_um)}` : null
+  const caption = shown && longBaseline ? `${frameYear(shown)} · ${telescopeOf(shown)}` : shown ? `${shown.band} · ${formatWavelength(shown.wavelength_um)}` : post.band ? `${post.band} · ${formatWavelength(post.wavelength_um)}` : null
   const isChart = !post.frames.length
 
   return (
@@ -89,9 +91,13 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
           <Crosshair x={mark.x} y={mark.y} />
         </div>
       )}
-      <span className="absolute right-2 top-2 flex size-8 items-center justify-center text-white drop-shadow">
-        {isTimelapse ? <IconReel size={26} /> : isMulti ? <IconCarousel size={26} /> : null}
-      </span>
+      {longBaseline ? (
+        <span className="absolute right-2 top-2 rounded-full bg-media-scrim px-2 py-0.5 text-meta font-semibold text-on-media">{t('yearsBadge', { n: yearsSpanned(post) })}</span>
+      ) : (
+        <span className="absolute right-2 top-2 flex size-8 items-center justify-center text-white drop-shadow">
+          {isTimelapse ? <IconReel size={26} /> : isMulti ? <IconCarousel size={26} /> : null}
+        </span>
+      )}
       {isMulti && (
         <span className="absolute right-3 top-11 rounded-full bg-black/60 px-2 py-0.5 text-meta font-medium text-white">
           {slide + 1}/{post.frames.length}

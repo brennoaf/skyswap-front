@@ -7,7 +7,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
 import { IconDownload, IconFlask, IconLayers } from '@/components/icons'
 import { Button, Chip, EmptyState, Notice, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
-import { useObject } from '@/lib/api/hooks'
+import { useObject, useObjectPosts } from '@/lib/api/hooks'
+import { yearsSpanned } from '@/lib/long-baseline'
 import { BAND_HUE, BANDS, formatBytes, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { download, labNotes, saveLabNote, type LabNote } from '@/lib/notes'
 import { decodeSxq, FLAG_LAYERS, flagNames, lambdaAt, makeWcs, measureStar, percentileOf, unpack, type Decoded, type Pack, type PackEpoch } from '@/lib/sky/lab'
@@ -82,6 +83,8 @@ export function LabView({ id }: { id: string }) {
   const tl = useTranslations('lab.layerItems')
   const tcom = useTranslations('common')
   const { data: profile } = useObject(id)
+  const { data: objectPosts } = useObjectPosts(id)
+  const flipbook = objectPosts?.find((p) => p.type === 'long_baseline')
   const pack = useKitJson<Pack>(profile?.pack)
   const gaia = useKitJson<GaiaStar[]>(profile?.overlays.gaia)
   const wise = useKitJson<WiseSource[]>(profile?.overlays.wise)
@@ -473,7 +476,14 @@ export function LabView({ id }: { id: string }) {
               </section>
             
 
-            <Notice>{t('sources')}</Notice>
+            <Notice>
+              <p>{t('sources')}</p>
+              {flipbook && (
+                <Link href={`/p/${flipbook.id}`} className="mt-1 inline-block text-link">
+                  {t('longBaseline', { n: yearsSpanned(flipbook), title: flipbook.title })}
+                </Link>
+              )}
+            </Notice>
           </div>
         </div>
       ) : (

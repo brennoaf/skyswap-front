@@ -100,7 +100,8 @@
     "openPost": "Open post",
     "frameAlt": "{name} in band {band} on {date}",
     "frameLabel": "{band} · frame {n} of {total}",
-    "falseColour": "False colours"
+    "falseColour": "False colours",
+    "yearLabel": "{year} · {telescope} · {n} of {total}"
   },
   "spot": {
     "title": "My sky spot",
@@ -135,7 +136,8 @@
       "composite": "False-colour",
       "spectrum": "Spectrum",
       "lightcurve": "Light curve",
-      "motion": "Motion"
+      "motion": "Motion",
+      "long_baseline": "Years of motion"
     },
     "title": "Post",
     "more": "more",
@@ -170,7 +172,8 @@
       "notesHint": "Only in this browser",
       "share": "Share"
     },
-    "menuLabel": "More options"
+    "menuLabel": "More options",
+    "yearsBadge": "{n} yrs"
   },
   "tags": {
     "title": "What do you see?",
@@ -444,6 +447,18 @@
       "exposure": "Single exposure",
       "coadd": "Stack of exposures",
       "difference": "Difference image"
+    },
+    "longBaseline": {
+      "pill": "{year} · {telescope}",
+      "timeline": "When each photo was taken, 2010 to today",
+      "frame": "{year}, {telescope}",
+      "asleep": "WISE asleep",
+      "now": "{year} · {telescope} · photo {n} of {total}",
+      "path": "Show path",
+      "telescope": "Telescope",
+      "exposures": "Exposures combined",
+      "honest": "WISE pixels are 2.75″ and SPHEREx pixels 6.15″, so SPHEREx frames look blurrier. Brightness is scaled per telescope; compare positions, not brightness. Empty corners on SPHEREx frames mean no data there.",
+      "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
     }
   },
   "search": {
@@ -755,7 +770,8 @@
       "artifact": "Detector artifact",
       "saturation": "Saturation effect",
       "unknown": "Unknown"
-    }
+    },
+    "longBaseline": "{n}-year flipbook: {title}"
   },
   "alerts": {
     "title": "Alerts",

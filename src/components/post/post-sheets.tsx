@@ -139,7 +139,7 @@ export function MoreSheet({
   )
 }
 
-export function AboutSheet({ open, onClose, data, profile, frame }: { open: boolean; onClose: () => void; data: PostDetail; profile: ObjectProfile | undefined; frame: Frame | undefined }) {
+export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open: boolean; onClose: () => void; data: PostDetail; profile: ObjectProfile | undefined; frame: Frame | undefined; wise?: boolean }) {
   const t = useTranslations('viewer')
   const tp = useTranslations('post')
   const fmt = useFmt()
@@ -162,6 +162,18 @@ export function AboutSheet({ open, onClose, data, profile, frame }: { open: bool
             <dd>{frame.release ? frame.release.toUpperCase().replace('+', ' + ') : releases.join(' + ') || '—'}</dd>
             <dt className="text-text-secondary">{t('aboutKind')}</dt>
             <dd>{t(`kinds.${frame.kind}`)}</dd>
+            {frame.telescope && (
+              <>
+                <dt className="text-text-secondary">{t('longBaseline.telescope')}</dt>
+                <dd>{frame.telescope}</dd>
+              </>
+            )}
+            {frame.n_exp !== null && (
+              <>
+                <dt className="text-text-secondary">{t('longBaseline.exposures')}</dt>
+                <dd>{frame.n_exp}</dd>
+              </>
+            )}
             <dt className="text-text-secondary">{t('aboutFov')}</dt>
             <dd>{frame.fov_deg ? `${fmt.fixed(frame.fov_deg * 60, 1)}′` : '—'}</dd>
           </dl>
@@ -191,7 +203,12 @@ export function AboutSheet({ open, onClose, data, profile, frame }: { open: bool
             </ul>
           </section>
         )}
-        {releases.length > 1 && <QrWarning />}
+        {wise && (
+          <Notice icon={<IconWarning size={20} />}>
+            <p>{t('longBaseline.honest')}</p>
+          </Notice>
+        )}
+        {releases.filter((r) => r.startsWith('QR')).length > 1 && <QrWarning />}
         {profile && profile.sources.length > 0 && (
           <section aria-labelledby="sources-title">
             <h3 id="sources-title" className="mb-2 text-ui font-semibold">
@@ -209,6 +226,7 @@ export function AboutSheet({ open, onClose, data, profile, frame }: { open: bool
           </section>
         )}
         <p className="text-meta text-text-secondary">{t('dataNotice')}</p>
+        {wise && <p className="text-meta text-text-secondary">{t('longBaseline.credit')}</p>}
       </div>
     </Sheet>
   )

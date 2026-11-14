@@ -9,6 +9,7 @@ import { IconClose, IconPause, IconPlay } from '@/components/icons'
 import { IconButton, ObjectAvatar } from '@/components/ui/primitives'
 import { useStories } from '@/lib/api/hooks'
 import { formatShortDate } from '@/lib/format'
+import { frameYear, LONG_BASELINE_FPS, telescopeOf } from '@/lib/long-baseline'
 import { useUi } from '@/lib/state/ui'
 
 const FPS = 8
@@ -59,7 +60,7 @@ export function StoryViewer() {
         }
         return f + 1
       })
-    }, 1000 / FPS)
+    }, 1000 / (story.frames[0]?.telescope && story.frames[0].telescope !== 'SPHEREx' ? LONG_BASELINE_FPS : FPS))
     return () => clearInterval(timer)
   }, [story, paused, go])
 
@@ -150,7 +151,9 @@ export function StoryViewer() {
               <Image src={current.src} alt={t('frameAlt', { name: story.object.name, band: current.band, date: formatShortDate(current.t, locale) })} fill sizes="470px" className="pixelated object-contain" priority />
             </div>
             <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2 py-1 text-meta">
-              {t('frameLabel', { band: current.band, n: frame + 1, total: story.frames.length })}
+              {current.telescope && current.telescope !== 'SPHEREx' || story.frames.some((f) => f.telescope && f.telescope !== 'SPHEREx')
+                ? t('yearLabel', { year: frameYear(current), telescope: telescopeOf({ telescope: current.telescope, release: '' }), n: frame + 1, total: story.frames.length })
+                : t('frameLabel', { band: current.band, n: frame + 1, total: story.frames.length })}
             </span>
             <span className="absolute bottom-3 right-3 rounded-md bg-black/60 px-2 py-1 text-meta">{t('falseColour')}</span>
           </div>

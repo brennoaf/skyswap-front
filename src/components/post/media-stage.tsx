@@ -8,6 +8,7 @@ import { IconCrosshair, IconPause, IconPlay, IconStepBack, IconStepForward } fro
 import type { Frame } from '@/lib/api/client'
 import { cx, formatWavelength } from '@/lib/format'
 import { useFmt } from '@/lib/use-fmt'
+import { frameYear, telescopeOf, TIMELAPSE_FPS } from '@/lib/long-baseline'
 import { useUi } from '@/lib/state/ui'
 
 export type Point = { frame: number; x: number; y: number }
@@ -15,16 +16,16 @@ export type StageMode = 'play' | 'mark' | 'compare'
 
 const SPEEDS = [0.5, 1, 2]
 
-export function usePlayer(length: number, enabled: boolean) {
+export function usePlayer(length: number, enabled: boolean, fps = TIMELAPSE_FPS, maxFps = Infinity) {
   const speed = useUi((s) => s.speed)
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(false)
   useEffect(() => setIndex((i) => Math.min(i, Math.max(0, length - 1))), [length])
   useEffect(() => {
     if (!playing || !enabled || length < 2) return
-    const timer = setInterval(() => setIndex((i) => (i + 1) % length), 1000 / (6 * speed))
+    const timer = setInterval(() => setIndex((i) => (i + 1) % length), 1000 / Math.min(fps * speed, maxFps))
     return () => clearInterval(timer)
-  }, [playing, enabled, length, speed])
+  }, [playing, enabled, length, speed, fps, maxFps])
   return { index, setIndex, playing, setPlaying, speed }
 }
 
@@ -56,6 +57,7 @@ export function MediaStage({
   markBar,
   onSwipe,
   saturated,
+  path,
 }: {
   frames: Frame[]
   player: Player
@@ -69,6 +71,7 @@ export function MediaStage({
   markBar?: ReactNode
   onSwipe?: (dir: 1 | -1) => void
   saturated?: boolean
+  path?: { x: number; y: number }[] | null
 }) {
   const t = useTranslations('viewer')
   const fmt = useFmt()
@@ -177,7 +180,14 @@ export function MediaStage({
             }}
           />
         )}
-        {mode !== 'compare' && crosshair && pred && <Crosshair x={pred.x} y={pred.y} size={mode === 'mark' ? 44 : 34} />}
+        {mode !== 'compare' && path && (
+          <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {path.map((m, i) => (
+              <circle key={i} cx={m.x * 100} cy={m.y * 100} r="0.9" fill="var(--color-crosshair)" opacity="0.55" />
+            ))}
+          </svg>
+        )}
+        {mode !== 'compare' && (crosshair || path) && pred && <Crosshair x={pred.x} y={pred.y} size={mode === 'mark' ? 44 : 34} />}
         {mode !== 'compare' && avg && <Dot x={avg.x} y={avg.y} tone="community" />}
         {mode !== 'compare' && mine && <Dot x={mine.x} y={mine.y} tone="mine" />}
       </div>
@@ -194,7 +204,11 @@ export function MediaStage({
           </>
         ) : (
           <>
-            <Pill>{frame.band ? `${frame.band} · ${formatWavelength(frame.wavelength_um)}` : t('falseColourShort')}</Pill>
+            {frame.telescope || frame.release === 'wise' || frame.release === 'neowise' ? (
+              <Pill className="text-note">{t('longBaseline.pill', { year: frameYear(frame), telescope: telescopeOf(frame) })}</Pill>
+            ) : (
+              <Pill>{frame.band ? `${frame.band} · ${formatWavelength(frame.wavelength_um)}` : t('falseColourShort')}</Pill>
+            )}
             {length > 1 && <Pill>{`${player.index + 1}/${length}`}</Pill>}
           </>
         )}

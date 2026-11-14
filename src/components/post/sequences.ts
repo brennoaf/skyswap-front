@@ -25,6 +25,8 @@ function coverFrame(post: Post): Frame {
     fov_deg: 0,
     kind: 'coadd',
     flags: { saturated_frac: 0, cosmic_ray: false, satellite: false, persistence: false },
+    telescope: null,
+    n_exp: null,
   }
 }
 

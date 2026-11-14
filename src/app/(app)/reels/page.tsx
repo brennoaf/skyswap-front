@@ -12,6 +12,7 @@ import type { FeedItem } from '@/lib/api/client'
 import { useFeed } from '@/lib/api/hooks'
 import { formatDateTime, formatShortDate, formatWavelength } from '@/lib/format'
 import { useShare } from '@/lib/share'
+import { frameYear, isLongBaseline, LONG_BASELINE_FPS, telescopeOf } from '@/lib/long-baseline'
 import { useUi } from '@/lib/state/ui'
 
 const REEL_H = 'h-[calc(100dvh-var(--height-bottomnav))]'
@@ -30,6 +31,7 @@ function useReducedMotionPref() {
 }
 
 function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; index: number; active: boolean; onVisible: (i: number) => void; onTags: (postId: string) => void }) {
+  const tv = useTranslations('viewer.longBaseline')
   const locale = useLocale()
   const t = useTranslations('reels')
   const tp = useTranslations('post')
@@ -66,9 +68,9 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
 
   useEffect(() => {
     if (!playing) return
-    const timer = setInterval(() => setFrame((f) => (f + 1) % n), 125)
+    const timer = setInterval(() => setFrame((f) => (f + 1) % n), isLongBaseline(post) ? 1000 / LONG_BASELINE_FPS : 125)
     return () => clearInterval(timer)
-  }, [playing, n])
+  }, [playing, n, post])
 
   const shown = post.frames[frame]
   const mark = post.marks.find((m) => m.frame === frame)
@@ -77,6 +79,11 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
 
   return (
     <section ref={ref} aria-label={`${object.handle} · ${post.title}`} className={`relative w-full shrink-0 snap-start snap-always overflow-hidden bg-reels-bg ${REEL_H}`}>
+      {shown && isLongBaseline(post) && (
+        <span className="pointer-events-none absolute left-3 top-14 z-10 rounded-full bg-media-scrim px-2.5 py-1 text-note font-semibold text-on-media">
+          {tv('pill', { year: frameYear(shown), telescope: telescopeOf(shown) })}
+        </span>
+      )}
       <button type="button" className="absolute inset-0 block size-full" aria-label={paused ? t('play') : t('pause')} aria-pressed={paused} onClick={() => setPaused((p) => !p)}>
         {shown && (
           <Image
@@ -121,7 +128,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
         <p className="mt-1.5 text-meta text-[color:var(--color-text-secondary)]">{t('frames', { n, from: formatShortDate(from, locale), to: formatShortDate(to, locale) })}</p>
         {shown && (
           <p className="mt-0.5 text-meta tabular-nums text-[color:var(--color-text-secondary)]">
-            {shown.band} · {formatWavelength(shown.wavelength_um)} · {formatDateTime(shown.t, locale)} · {tp('falseColour')}
+            {isLongBaseline(post) ? telescopeOf(shown) : `${shown.band} · ${formatWavelength(shown.wavelength_um)}`} · {formatDateTime(shown.t, locale)} · {tp('falseColour')}
           </p>
         )}
       </div>
@@ -164,7 +171,7 @@ export default function ReelsPage() {
   const [tagsFor, setTagsFor] = useState<string | null>(null)
   const items = useMemo(() => feed.data?.pages.flatMap((p) => p.items) ?? [], [feed.data])
   const reels = useMemo(() => {
-    const lapses = items.filter((i) => i.post.type === 'timelapse' && i.post.frames.length > 1)
+    const lapses = items.filter((i) => (i.post.type === 'timelapse' || i.post.type === 'long_baseline') && i.post.frames.length > 1)
     return lapses.length ? lapses : items.filter((i) => i.post.type === 'pass_blink' && i.post.frames.length > 1)
   }, [items])
   const tagItem = reels.find((r) => r.post.id === tagsFor) ?? null

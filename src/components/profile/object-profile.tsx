@@ -249,7 +249,7 @@ export function ObjectProfileView({ id }: { id: string }) {
         </>
       )}
 
-      {tab === 'timelapses' && <PostGrid tiles={tilesFromPosts((posts ?? []).filter((p) => p.type === 'timelapse' || p.type === 'pass_blink'))} />}
+      {tab === 'timelapses' && <PostGrid tiles={tilesFromPosts((posts ?? []).filter((p) => p.type === 'long_baseline' || p.type === 'timelapse' || p.type === 'pass_blink'))} />}
 
       {tab === 'spectrum' && (
         <section className="space-y-3 px-4 py-4">

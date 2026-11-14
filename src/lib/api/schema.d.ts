@@ -95,6 +95,8 @@ export interface paths {
                                             satellite: boolean;
                                             persistence: boolean;
                                         };
+                                        telescope: string | null;
+                                        n_exp: number | null;
                                     }[];
                                     chart: string | null;
                                     marks: {
@@ -185,6 +187,7 @@ export interface paths {
                                     src: string;
                                     t: string;
                                     band: string;
+                                    telescope: string | null;
                                 }[];
                             }[];
                         };
@@ -403,6 +406,8 @@ export interface paths {
                                         satellite: boolean;
                                         persistence: boolean;
                                     };
+                                    telescope: string | null;
+                                    n_exp: number | null;
                                 }[];
                                 chart: string | null;
                                 marks: {
@@ -489,6 +494,8 @@ export interface paths {
                                         satellite: boolean;
                                         persistence: boolean;
                                     };
+                                    telescope: string | null;
+                                    n_exp: number | null;
                                 }[];
                                 chart: string | null;
                                 marks: {
@@ -1642,6 +1649,8 @@ export interface components {
                 satellite: boolean;
                 persistence: boolean;
             };
+            telescope: string | null;
+            n_exp: number | null;
         };
         TagSummary: {
             mine: string[];
@@ -1674,6 +1683,8 @@ export interface components {
                     satellite: boolean;
                     persistence: boolean;
                 };
+                telescope: string | null;
+                n_exp: number | null;
             }[];
             chart: string | null;
             marks: {
@@ -1714,6 +1725,8 @@ export interface components {
                         satellite: boolean;
                         persistence: boolean;
                     };
+                    telescope: string | null;
+                    n_exp: number | null;
                 }[];
                 chart: string | null;
                 marks: {
