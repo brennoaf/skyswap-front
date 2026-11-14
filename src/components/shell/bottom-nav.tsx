@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { IconAdd, IconHome, IconReel, IconSearch } from '@/components/icons'
+import { IconCards, IconHome, IconReel, IconSearch } from '@/components/icons'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { useAlerts, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
@@ -38,7 +38,7 @@ export function BottomNav() {
         </li>
         <li>
           <Link href="/classify" aria-label={t('classify')} aria-current={is('/classify') ? 'page' : undefined} className={item}>
-            <IconAdd />
+            <IconCards filled={is('/classify')} />
           </Link>
         </li>
         <li>

@@ -1,4 +1,4 @@
-import type { SVGProps } from 'react'
+import { useId, type SVGProps } from 'react'
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number }
 
@@ -421,3 +421,32 @@ export const IconColours = (p: IconProps) => (
     <circle cx="16" cy="19" r="6.5" {...LINE} />
   </Svg>
 )
+
+export const IconCards = ({ filled, ...p }: IconProps & { filled?: boolean }) => {
+  const id = useId().replace(/:/g, '')
+  const front = { x: 12.5, y: 6.5, width: 13, height: 18.5, rx: 3, transform: 'rotate(8 19 15.75)' }
+  const sparkle = 'M19 11.6L19.95 14.8L23.1 15.75L19.95 16.7L19 19.9L18.05 16.7L14.9 15.75L18.05 14.8Z'
+  return (
+    <Svg {...p}>
+      <defs>
+        <mask id={`${id}-back`} maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+          <rect width="32" height="32" fill="#fff" />
+          <rect {...front} fill="#000" stroke="#000" strokeWidth={5.5} />
+        </mask>
+        <mask id={`${id}-front`} maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+          <rect width="32" height="32" fill="#fff" />
+          <path d={sparkle} fill="#000" />
+        </mask>
+      </defs>
+      <rect x={6.5} y={8} width={13} height={18.5} rx={3} transform="rotate(-12 13 17.25)" {...LINE} strokeWidth={2.1} mask={`url(#${id}-back)`} />
+      {filled ? (
+        <rect {...front} fill="currentColor" stroke="currentColor" strokeWidth={2.1} strokeLinejoin="round" mask={`url(#${id}-front)`} />
+      ) : (
+        <>
+          <rect {...front} {...LINE} strokeWidth={2.1} />
+          <path d={sparkle} fill="currentColor" />
+        </>
+      )}
+    </Svg>
+  )
+}
