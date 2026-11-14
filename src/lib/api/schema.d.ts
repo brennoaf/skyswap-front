@@ -1904,10 +1904,392 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/community/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    tab?: "new";
+                    cursor?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                id: string;
+                                kind: "sky" | "deck";
+                                state: string;
+                                reason: string | null;
+                                example: boolean;
+                                ra: number;
+                                dec: number;
+                                band: string;
+                                sprite: string | null;
+                                passes: number;
+                                first_t: string | null;
+                                last_t: string | null;
+                                updated_at: number;
+                                checks_done: number;
+                                checks_total: number;
+                                credit_names: string[];
+                                credit_others: number;
+                            }[];
+                            next_cursor: number | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/findings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            kind: "sky" | "deck";
+                            state: string;
+                            reason: string | null;
+                            example: boolean;
+                            ra: number;
+                            dec: number;
+                            band: string;
+                            sprite: string | null;
+                            passes: number;
+                            first_t: string | null;
+                            last_t: string | null;
+                            updated_at: number;
+                            checks_done: number;
+                            checks_total: number;
+                            credit_names: string[];
+                            credit_others: number;
+                            fov_deg: number;
+                            offsets_s: number[];
+                            checks: {
+                                service: string;
+                                result: string | null;
+                                names: string[];
+                                note: string | null;
+                                checked_at: number | null;
+                            }[];
+                            events: {
+                                state: string;
+                                reason: string | null;
+                                source: string;
+                                url: string | null;
+                                data_version: string;
+                                created_at: number;
+                            }[];
+                            credits: string[];
+                            credits_anonymous: number;
+                            first_vote: {
+                                nickname: string | null;
+                                at: number;
+                            } | null;
+                            data_version: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    cursor?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                card_id: string;
+                                label: string;
+                                created_at: number;
+                                practice: boolean;
+                                finding: string | null;
+                                status: string;
+                            }[];
+                            next_cursor: number | null;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/credit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            visible: boolean;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        visible: boolean;
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            visible: boolean;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        FindingSummary: {
+            id: string;
+            kind: "sky" | "deck";
+            state: string;
+            reason: string | null;
+            example: boolean;
+            ra: number;
+            dec: number;
+            band: string;
+            sprite: string | null;
+            passes: number;
+            first_t: string | null;
+            last_t: string | null;
+            updated_at: number;
+            checks_done: number;
+            checks_total: number;
+            credit_names: string[];
+            credit_others: number;
+        };
+        CommunityFeed: {
+            items: {
+                id: string;
+                kind: "sky" | "deck";
+                state: string;
+                reason: string | null;
+                example: boolean;
+                ra: number;
+                dec: number;
+                band: string;
+                sprite: string | null;
+                passes: number;
+                first_t: string | null;
+                last_t: string | null;
+                updated_at: number;
+                checks_done: number;
+                checks_total: number;
+                credit_names: string[];
+                credit_others: number;
+            }[];
+            next_cursor: number | null;
+        };
+        FindingDetail: {
+            id: string;
+            kind: "sky" | "deck";
+            state: string;
+            reason: string | null;
+            example: boolean;
+            ra: number;
+            dec: number;
+            band: string;
+            sprite: string | null;
+            passes: number;
+            first_t: string | null;
+            last_t: string | null;
+            updated_at: number;
+            checks_done: number;
+            checks_total: number;
+            credit_names: string[];
+            credit_others: number;
+            fov_deg: number;
+            offsets_s: number[];
+            checks: {
+                service: string;
+                result: string | null;
+                names: string[];
+                note: string | null;
+                checked_at: number | null;
+            }[];
+            events: {
+                state: string;
+                reason: string | null;
+                source: string;
+                url: string | null;
+                data_version: string;
+                created_at: number;
+            }[];
+            credits: string[];
+            credits_anonymous: number;
+            first_vote: {
+                nickname: string | null;
+                at: number;
+            } | null;
+            data_version: string;
+        };
+        MyCards: {
+            items: {
+                card_id: string;
+                label: string;
+                created_at: number;
+                practice: boolean;
+                finding: string | null;
+                status: string;
+            }[];
+            next_cursor: number | null;
+        };
+        CreditResponse: {
+            visible: boolean;
+        };
         Error: {
             error: string;
         };

@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState, type ReactNode } from 'react'
-import { IconCheck, IconChevronDownSmall, IconChevronRight, IconLink, IconMap, IconMore, IconNote, IconQuestion, IconSun } from '@/components/icons'
+import { IconCheck, IconChevronDownSmall, IconChevronRight, IconFollow, IconLink, IconMap, IconMore, IconNote, IconQuestion, IconSun } from '@/components/icons'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Skeleton, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { locales } from '@/i18n/locales'
-import { useHealth, useLogout, useSession } from '@/lib/api/hooks'
+import { useCredit, useHealth, useLogout, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
 import { useUi, type ThemePref } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
@@ -40,6 +40,23 @@ function RowHead({ icon, title, hint }: { icon: ReactNode; title: string; hint?:
         {hint && <span className="block text-note text-text-secondary">{hint}</span>}
       </span>
     </span>
+  )
+}
+
+function CreditControl() {
+  const t = useTranslations('settings')
+  const { data: user } = useSession()
+  const { visible, set } = useCredit(!!user)
+  if (!user) return null
+  return (
+    <>
+      <div className="mx-4 border-t-[0.5px] border-divider" />
+      <label className="flex items-center gap-3 px-4 py-3">
+        <RowHead icon={<IconFollow size={24} />} title={t('credit')} hint={t('creditHint')} />
+        <input type="checkbox" role="switch" checked={visible} disabled={set.isPending} onChange={(e) => set.mutate(e.target.checked)} className="peer sr-only" />
+        <span aria-hidden="true" className="relative h-6 w-10 shrink-0 rounded-full bg-surface-pressed transition-colors after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-on-accent after:transition-transform peer-checked:bg-accent peer-checked:after:translate-x-4" />
+      </label>
+    </>
   )
 }
 
@@ -186,6 +203,7 @@ export default function SettingsPage() {
         <ThemeControl />
         <div className="mx-4 border-t-[0.5px] border-divider" />
         <LanguageControl />
+        <CreditControl />
       </Group>
 
       <Group id="s-yours" title={t('yourData')}>

@@ -14,6 +14,616 @@
       }
     },
     "schemas": {
+      "FindingSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "state",
+          "reason",
+          "example",
+          "ra",
+          "dec",
+          "band",
+          "sprite",
+          "passes",
+          "first_t",
+          "last_t",
+          "updated_at",
+          "checks_done",
+          "checks_total",
+          "credit_names",
+          "credit_others"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "sky"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "deck"
+                ]
+              }
+            ]
+          },
+          "state": {
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "example": {
+            "type": "boolean"
+          },
+          "ra": {
+            "type": "number"
+          },
+          "dec": {
+            "type": "number"
+          },
+          "band": {
+            "type": "string"
+          },
+          "sprite": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "passes": {
+            "type": "integer"
+          },
+          "first_t": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_t": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "type": "number"
+          },
+          "checks_done": {
+            "type": "integer"
+          },
+          "checks_total": {
+            "type": "integer"
+          },
+          "credit_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "credit_others": {
+            "type": "integer"
+          }
+        }
+      },
+      "CommunityFeed": {
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "kind",
+                "state",
+                "reason",
+                "example",
+                "ra",
+                "dec",
+                "band",
+                "sprite",
+                "passes",
+                "first_t",
+                "last_t",
+                "updated_at",
+                "checks_done",
+                "checks_total",
+                "credit_names",
+                "credit_others"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "kind": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "sky"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "enum": [
+                        "deck"
+                      ]
+                    }
+                  ]
+                },
+                "state": {
+                  "type": "string"
+                },
+                "reason": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "example": {
+                  "type": "boolean"
+                },
+                "ra": {
+                  "type": "number"
+                },
+                "dec": {
+                  "type": "number"
+                },
+                "band": {
+                  "type": "string"
+                },
+                "sprite": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "passes": {
+                  "type": "integer"
+                },
+                "first_t": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "last_t": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "updated_at": {
+                  "type": "number"
+                },
+                "checks_done": {
+                  "type": "integer"
+                },
+                "checks_total": {
+                  "type": "integer"
+                },
+                "credit_names": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "credit_others": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "FindingDetail": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "state",
+          "reason",
+          "example",
+          "ra",
+          "dec",
+          "band",
+          "sprite",
+          "passes",
+          "first_t",
+          "last_t",
+          "updated_at",
+          "checks_done",
+          "checks_total",
+          "credit_names",
+          "credit_others",
+          "fov_deg",
+          "offsets_s",
+          "checks",
+          "events",
+          "credits",
+          "credits_anonymous",
+          "first_vote",
+          "data_version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "sky"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "deck"
+                ]
+              }
+            ]
+          },
+          "state": {
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "example": {
+            "type": "boolean"
+          },
+          "ra": {
+            "type": "number"
+          },
+          "dec": {
+            "type": "number"
+          },
+          "band": {
+            "type": "string"
+          },
+          "sprite": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "passes": {
+            "type": "integer"
+          },
+          "first_t": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_t": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "type": "number"
+          },
+          "checks_done": {
+            "type": "integer"
+          },
+          "checks_total": {
+            "type": "integer"
+          },
+          "credit_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "credit_others": {
+            "type": "integer"
+          },
+          "fov_deg": {
+            "type": "number"
+          },
+          "offsets_s": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "service",
+                "result",
+                "names",
+                "note",
+                "checked_at"
+              ],
+              "properties": {
+                "service": {
+                  "type": "string"
+                },
+                "result": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "names": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "note": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "checked_at": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "state",
+                "reason",
+                "source",
+                "url",
+                "data_version",
+                "created_at"
+              ],
+              "properties": {
+                "state": {
+                  "type": "string"
+                },
+                "reason": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "source": {
+                  "type": "string"
+                },
+                "url": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "data_version": {
+                  "type": "string"
+                },
+                "created_at": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "credits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "credits_anonymous": {
+            "type": "integer"
+          },
+          "first_vote": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "nickname",
+                  "at"
+                ],
+                "properties": {
+                  "nickname": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "at": {
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_version": {
+            "type": "string"
+          }
+        }
+      },
+      "MyCards": {
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "card_id",
+                "label",
+                "created_at",
+                "practice",
+                "finding",
+                "status"
+              ],
+              "properties": {
+                "card_id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "created_at": {
+                  "type": "number"
+                },
+                "practice": {
+                  "type": "boolean"
+                },
+                "finding": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "status": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "CreditResponse": {
+        "type": "object",
+        "required": [
+          "visible"
+        ],
+        "properties": {
+          "visible": {
+            "type": "boolean"
+          }
+        }
+      },
       "Error": {
         "type": "object",
         "required": [
@@ -5906,6 +6516,720 @@
                           }
                         }
                       }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/community/feed": {
+      "get": {
+        "tags": [
+          "community"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "new"
+              ]
+            },
+            "in": "query",
+            "name": "tab",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "in": "query",
+            "name": "cursor",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "kind",
+                          "state",
+                          "reason",
+                          "example",
+                          "ra",
+                          "dec",
+                          "band",
+                          "sprite",
+                          "passes",
+                          "first_t",
+                          "last_t",
+                          "updated_at",
+                          "checks_done",
+                          "checks_total",
+                          "credit_names",
+                          "credit_others"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "sky"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "deck"
+                                ]
+                              }
+                            ]
+                          },
+                          "state": {
+                            "type": "string"
+                          },
+                          "reason": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "example": {
+                            "type": "boolean"
+                          },
+                          "ra": {
+                            "type": "number"
+                          },
+                          "dec": {
+                            "type": "number"
+                          },
+                          "band": {
+                            "type": "string"
+                          },
+                          "sprite": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "passes": {
+                            "type": "integer"
+                          },
+                          "first_t": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "last_t": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "updated_at": {
+                            "type": "number"
+                          },
+                          "checks_done": {
+                            "type": "integer"
+                          },
+                          "checks_total": {
+                            "type": "integer"
+                          },
+                          "credit_names": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "credit_others": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "next_cursor": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/community/findings/{id}": {
+      "get": {
+        "tags": [
+          "community"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "kind",
+                    "state",
+                    "reason",
+                    "example",
+                    "ra",
+                    "dec",
+                    "band",
+                    "sprite",
+                    "passes",
+                    "first_t",
+                    "last_t",
+                    "updated_at",
+                    "checks_done",
+                    "checks_total",
+                    "credit_names",
+                    "credit_others",
+                    "fov_deg",
+                    "offsets_s",
+                    "checks",
+                    "events",
+                    "credits",
+                    "credits_anonymous",
+                    "first_vote",
+                    "data_version"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "sky"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "deck"
+                          ]
+                        }
+                      ]
+                    },
+                    "state": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "example": {
+                      "type": "boolean"
+                    },
+                    "ra": {
+                      "type": "number"
+                    },
+                    "dec": {
+                      "type": "number"
+                    },
+                    "band": {
+                      "type": "string"
+                    },
+                    "sprite": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "passes": {
+                      "type": "integer"
+                    },
+                    "first_t": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "last_t": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "updated_at": {
+                      "type": "number"
+                    },
+                    "checks_done": {
+                      "type": "integer"
+                    },
+                    "checks_total": {
+                      "type": "integer"
+                    },
+                    "credit_names": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "credit_others": {
+                      "type": "integer"
+                    },
+                    "fov_deg": {
+                      "type": "number"
+                    },
+                    "offsets_s": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "checks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "service",
+                          "result",
+                          "names",
+                          "note",
+                          "checked_at"
+                        ],
+                        "properties": {
+                          "service": {
+                            "type": "string"
+                          },
+                          "result": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "names": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "note": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "checked_at": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "state",
+                          "reason",
+                          "source",
+                          "url",
+                          "data_version",
+                          "created_at"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string"
+                          },
+                          "reason": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "source": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "data_version": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    },
+                    "credits": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "credits_anonymous": {
+                      "type": "integer"
+                    },
+                    "first_vote": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "nickname",
+                            "at"
+                          ],
+                          "properties": {
+                            "nickname": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "at": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data_version": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/cards": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "in": "query",
+            "name": "cursor",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "card_id",
+                          "label",
+                          "created_at",
+                          "practice",
+                          "finding",
+                          "status"
+                        ],
+                        "properties": {
+                          "card_id": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "number"
+                          },
+                          "practice": {
+                            "type": "boolean"
+                          },
+                          "finding": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "next_cursor": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/credit": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "visible"
+                  ],
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "me"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "visible"
+                ],
+                "properties": {
+                  "visible": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "visible"
+                  ],
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
                     }
                   }
                 }

@@ -851,7 +851,9 @@
       "alt": "Mapa do céu inteiro. {cells} de {indexed} pedaços já foram olhados.",
       "empty": "Ninguém explorou ainda. Sua primeira olhada vai acender um pedaço."
     },
-    "intro": "Como seu perfil funciona"
+    "intro": "Como seu perfil funciona",
+    "allAnswers": "Todas as minhas respostas",
+    "allAnswersHint": "E o que aconteceu com cada uma"
   },
   "lab": {
     "title": "Lab",
@@ -1005,7 +1007,15 @@
       "badge": "Você conquistou o selo \"{badge}\".",
       "level": "Você chegou ao nível {level}: {name}.",
       "goal": "A comunidade bateu a meta: {target} {goal} neste mês.",
-      "candidate": "Um pedaço do céu que você olhou agora é candidato: várias pessoas viram algo se mover ali."
+      "finding": {
+        "candidate": "Um pedaço do céu que você respondeu virou candidato. Sua resposta contou.",
+        "known": "Um pedaço do céu que você respondeu já era conhecido. Sua resposta contou.",
+        "likely_artifact": "Um pedaço do céu que você respondeu é provavelmente defeito. Sua resposta contou.",
+        "package_ready": "Um pedaço do céu que você respondeu passou nas checagens automáticas.",
+        "in_review": "Um pedaço do céu que você respondeu está em revisão.",
+        "published": "Um pedaço do céu que você respondeu foi publicado.",
+        "discarded": "Um pedaço do céu que você respondeu foi deixado de lado. Sua resposta contou."
+      }
     }
   },
   "settings": {
@@ -1039,7 +1049,9 @@
     "help": "Ajuda",
     "tutorialHint": "Um tour rápido por cada parte da tela",
     "details": "Detalhes",
-    "detailsHint": "Dados, documentação da API e o projeto"
+    "detailsHint": "Dados, documentação da API e o projeto",
+    "credit": "Mostrar meu apelido nos créditos",
+    "creditHint": "Quando um achado lista quem encontrou. Se desligar, você conta como anônimo."
   },
   "catalogs": {
     "title": "Consultar catálogos",
@@ -1096,5 +1108,105 @@
     "limitsTitle": "Limites por dia",
     "limitsBody": "Até {cap} pontos por dia. Passando dos limites suas respostas continuam contando. Só os pontos param.",
     "action": "Entendi"
+  },
+  "community": {
+    "switchLabel": "Escolha o que ver",
+    "switchPosts": "Posts",
+    "switchCommunity": "Comunidade",
+    "lead": "Cada item veio de respostas às cegas das pessoas. Um candidato não é uma descoberta até alguém conferir.",
+    "skyPatch": "Pedaço do céu",
+    "patchTitle": "Céu em {coords}",
+    "postTitle": "Achado",
+    "example": "Exemplo",
+    "exampleNotice": "Isto é um exemplo para testes. Não é um achado de verdade.",
+    "passes": "{n, plural, one {Visto # vez} other {Visto # vezes}}",
+    "period": "{from} a {to}",
+    "foundBy": "Encontrado por {names}",
+    "foundByMore": "Encontrado por {names} e mais {n}",
+    "foundByAnonymous": "Encontrado por {n, plural, one {# pessoa anônima} other {# pessoas anônimas}}",
+    "firstVote": "Primeira resposta que viu mexer, de {name}",
+    "firstVoteAnonymous": "Primeira resposta que viu mexer",
+    "checksTitle": "Checagens automáticas",
+    "checks": {
+      "gaia": "Estrelas rápidas no Gaia, movidas até esta data",
+      "simbad": "Objetos conhecidos no SIMBAD",
+      "asteroids": "Asteroides conhecidos nesta data",
+      "quality": "Marcas de qualidade da imagem"
+    },
+    "checkResults": {
+      "found": "Encontrado",
+      "nothing": "Nada encontrado",
+      "unavailable": "Ainda não deu para checar",
+      "waiting": "Checando",
+      "not_applicable": "Não disponível para esta foto"
+    },
+    "timelineTitle": "O que aconteceu",
+    "sources": {
+      "votes": "pelas respostas",
+      "check": "por uma checagem",
+      "human": "por uma pessoa",
+      "example": "exemplo"
+    },
+    "dataVersion": "dados {version}",
+    "source": "Fonte",
+    "namingNote": "Se confirmado, o objeto ganha um nome de catálogo e crédito para quem achou, não o direito de batizar.",
+    "share": "Compartilhar",
+    "notFound": "Este achado não existe",
+    "backToCommunity": "Voltar para a Comunidade",
+    "errorTitle": "Não foi possível carregar a comunidade",
+    "retry": "Tentar de novo",
+    "emptyTitle": "Ainda não há candidatos",
+    "emptyBody": "Um pedaço do céu aparece aqui quando pelo menos 5 respostas cuidadosas concordam que algo se move. Suas respostas ajudam a chegar lá.",
+    "emptyAction": "Responder um conjunto de fotos",
+    "states": {
+      "candidate": {
+        "label": "Candidato",
+        "body": "Respostas cuidadosas dizem que algo se move aqui. Ninguém confirmou ainda."
+      },
+      "known": {
+        "label": "Já conhecido",
+        "body": "As pessoas reencontraram {name}. Isso mostra que o método funciona, então suas respostas contaram."
+      },
+      "likely_artifact": {
+        "label": "Provável defeito",
+        "body": "Respostas cuidadosas agora dizem que nada se move aqui. Suas respostas contaram."
+      },
+      "package_ready": {
+        "label": "Pronto para conferir",
+        "body": "Passou nas checagens automáticas. Ninguém revisou ainda."
+      },
+      "in_review": {
+        "label": "Em revisão",
+        "body": "Uma pessoa está olhando."
+      },
+      "published": {
+        "label": "Publicado",
+        "body": "Uma pessoa confirmou e publicou a fonte."
+      },
+      "discarded": {
+        "label": "Deixado de lado",
+        "body": "Uma pessoa olhou e deixou de lado. Suas respostas contaram."
+      }
+    },
+    "myCards": {
+      "title": "Todas as minhas respostas",
+      "lead": "Cada conjunto de fotos que você respondeu e o que aconteceu depois. Nada aqui expira.",
+      "answers": {
+        "real": "Você disse que se move",
+        "artifact": "Você disse que não se move",
+        "unsure": "Você disse que não tinha certeza"
+      },
+      "status": {
+        "practice": "Treino",
+        "open": "Ainda em aberto",
+        "artifact": "Nada se movendo",
+        "inconclusive": "Sem acordo",
+        "real": "Candidato",
+        "gold": "Treino"
+      },
+      "emptyTitle": "Você ainda não respondeu nenhuma foto",
+      "emptyAction": "Responder um conjunto de fotos"
+    },
+    "checksDone": "{done} de {total} checagens feitas"
   }
 }

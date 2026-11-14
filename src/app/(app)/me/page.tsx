@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { IconFollow, IconHighlight, IconMap, IconNote, IconQuestion, IconSave, IconSettings } from '@/components/icons'
+import { IconChevronRight, IconFollow, IconHighlight, IconMap, IconNote, IconQuestion, IconSave, IconSettings } from '@/components/icons'
 import { MeIntro } from '@/components/me/me-intro'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { ExploredSkyCard } from '@/components/me/explored-sky'
@@ -167,7 +167,18 @@ function Profile({ me }: { me: Me }) {
         <IconTabs tabs={tabs} value={tab} onChange={setTab} label={t('tabs.label')} />
       </div>
       <div role="tabpanel" aria-label={tabs.find((x) => x.key === tab)?.label} className="min-h-[60dvh]">
-        {tab === 'activity' && <HistoryList items={me.history} />}
+        {tab === 'activity' && (
+          <>
+            <Link href="/me/cards" className="flex min-h-14 items-center gap-3 px-4 py-2 active:bg-surface">
+              <span className="min-w-0 flex-1 leading-tight">
+                <span className="block text-body font-medium">{t('allAnswers')}</span>
+                <span className="block text-meta text-text-secondary">{t('allAnswersHint')}</span>
+              </span>
+              <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
+            </Link>
+            <HistoryList items={me.history} />
+          </>
+        )}
         {tab === 'community' && (
           <div className="pb-6">
             <GoalsCard />

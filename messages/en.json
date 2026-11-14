@@ -851,7 +851,9 @@
       "alt": "Map of the whole sky. {cells} of {indexed} patches have been looked at.",
       "empty": "Nobody has explored yet. Your first look will light up a patch."
     },
-    "intro": "How your profile works"
+    "intro": "How your profile works",
+    "allAnswers": "All my answers",
+    "allAnswersHint": "And what happened with each one"
   },
   "lab": {
     "title": "Lab",
@@ -1005,7 +1007,15 @@
       "badge": "You earned the badge \"{badge}\".",
       "level": "You reached level {level}: {name}.",
       "goal": "The community reached its goal: {target} {goal} this month.",
-      "candidate": "A patch of sky you looked at is now a candidate: several people saw something move there."
+      "finding": {
+        "candidate": "A patch of sky you answered is now a candidate. Your answer counted.",
+        "known": "A patch of sky you answered turned out to be already known. Your answer counted.",
+        "likely_artifact": "A patch of sky you answered is probably a glitch. Your answer counted.",
+        "package_ready": "A patch of sky you answered passed the automatic checks.",
+        "in_review": "A patch of sky you answered is being reviewed.",
+        "published": "A patch of sky you answered was published.",
+        "discarded": "A patch of sky you answered was set aside. Your answer counted."
+      }
     }
   },
   "settings": {
@@ -1039,7 +1049,9 @@
     "help": "Help",
     "tutorialHint": "A quick tour of each part of the screen",
     "details": "Details",
-    "detailsHint": "Data, API docs and project info"
+    "detailsHint": "Data, API docs and project info",
+    "credit": "Show my nickname in credits",
+    "creditHint": "When a finding lists who found it. If off, you count as anonymous."
   },
   "catalogs": {
     "title": "Check catalogs",
@@ -1096,5 +1108,105 @@
     "limitsTitle": "Daily limits",
     "limitsBody": "Up to {cap} points a day. Past the limits your answers still count. Only the points stop.",
     "action": "Got it"
+  },
+  "community": {
+    "switchLabel": "Choose what to see",
+    "switchPosts": "Posts",
+    "switchCommunity": "Community",
+    "lead": "Every item came from people's blind answers. A candidate is not a discovery until someone checks it.",
+    "skyPatch": "Patch of sky",
+    "patchTitle": "Sky at {coords}",
+    "postTitle": "Finding",
+    "example": "Example",
+    "exampleNotice": "This is an example for testing. It is not a real finding.",
+    "passes": "{n, plural, one {Seen # time} other {Seen # times}}",
+    "period": "{from} to {to}",
+    "foundBy": "Found by {names}",
+    "foundByMore": "Found by {names} and {n} more",
+    "foundByAnonymous": "Found by {n, plural, one {# anonymous person} other {# anonymous people}}",
+    "firstVote": "First answer that saw it move, by {name}",
+    "firstVoteAnonymous": "First answer that saw it move",
+    "checksTitle": "Automatic checks",
+    "checks": {
+      "gaia": "Fast stars in Gaia, moved to this date",
+      "simbad": "Known objects in SIMBAD",
+      "asteroids": "Known asteroids on this date",
+      "quality": "Image quality marks"
+    },
+    "checkResults": {
+      "found": "Found",
+      "nothing": "Nothing found",
+      "unavailable": "Couldn't check yet",
+      "waiting": "Checking",
+      "not_applicable": "Not available for this photo"
+    },
+    "timelineTitle": "What happened",
+    "sources": {
+      "votes": "from answers",
+      "check": "from a check",
+      "human": "by a person",
+      "example": "example"
+    },
+    "dataVersion": "data {version}",
+    "source": "Source",
+    "namingNote": "If confirmed, the object gets a catalogue name and credit for those who found it, not the right to name it.",
+    "share": "Share",
+    "notFound": "This finding does not exist",
+    "backToCommunity": "Back to Community",
+    "errorTitle": "Couldn't load the community",
+    "retry": "Try again",
+    "emptyTitle": "No candidates yet",
+    "emptyBody": "A patch of sky appears here when at least 5 careful answers agree that something moves. Your answers help get there.",
+    "emptyAction": "Answer a photo set",
+    "states": {
+      "candidate": {
+        "label": "Candidate",
+        "body": "Careful answers say something moves here. Nobody has confirmed it."
+      },
+      "known": {
+        "label": "Already known",
+        "body": "People found {name} again. That shows the method works, so your answers counted."
+      },
+      "likely_artifact": {
+        "label": "Probably a glitch",
+        "body": "Careful answers now say nothing moves here. Your answers counted."
+      },
+      "package_ready": {
+        "label": "Ready to check",
+        "body": "It passed the automatic checks. Nobody has reviewed it yet."
+      },
+      "in_review": {
+        "label": "In review",
+        "body": "A person is looking at it."
+      },
+      "published": {
+        "label": "Published",
+        "body": "A person confirmed it and published the source."
+      },
+      "discarded": {
+        "label": "Set aside",
+        "body": "A person looked at it and set it aside. Your answers counted."
+      }
+    },
+    "myCards": {
+      "title": "All my answers",
+      "lead": "Every photo set you answered and what happened next. Nothing here expires.",
+      "answers": {
+        "real": "You said it moves",
+        "artifact": "You said it doesn't move",
+        "unsure": "You said you were not sure"
+      },
+      "status": {
+        "practice": "Practice",
+        "open": "Still open",
+        "artifact": "Nothing moving",
+        "inconclusive": "No agreement",
+        "real": "Candidate",
+        "gold": "Practice"
+      },
+      "emptyTitle": "You haven't answered any photos yet",
+      "emptyAction": "Answer a photo set"
+    },
+    "checksDone": "{done} of {total} checks done"
   }
 }

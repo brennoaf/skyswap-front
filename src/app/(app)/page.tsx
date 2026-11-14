@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { PostCard } from '@/components/feed/post-card'
+import { CommunitySwitch } from '@/components/community/community-switch'
 import { StoriesRow } from '@/components/feed/stories-row'
 import { IconCheck, IconChevronDown, IconClose, IconDirect, IconLike } from '@/components/icons'
 import { Button, EmptyState, IconButton, LabChip, Sheet, Skeleton, Wordmark } from '@/components/ui/primitives'
@@ -90,6 +91,7 @@ export default function HomePage() {
       </header>
 
       <StoriesRow />
+      <CommunitySwitch />
       <HomeHint />
 
       {tab !== 'for_you' && (

@@ -177,6 +177,44 @@ export function useExploreCells() {
   return useQuery({ queryKey: keys.exploreCells, queryFn: async () => unwrap(await api.GET('/api/explore/cells')).cells, staleTime: Infinity })
 }
 
+export function useCommunityFeed() {
+  return useInfiniteQuery({
+    queryKey: ['community', 'feed'],
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => unwrap(await api.GET('/api/community/feed', { params: { query: { tab: 'new', cursor: pageParam } } })),
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+  })
+}
+
+export function useFinding(id: string) {
+  return useQuery({
+    queryKey: ['community', 'finding', id],
+    retry: false,
+    refetchInterval: 30_000,
+    queryFn: async () => unwrap(await api.GET('/api/community/findings/{id}', { params: { path: { id } } })),
+  })
+}
+
+export function useMyCards(enabled: boolean) {
+  return useInfiniteQuery({
+    queryKey: ['me', 'cards'],
+    enabled,
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => unwrap(await api.GET('/api/me/cards', { params: { query: { cursor: pageParam } } })),
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+  })
+}
+
+export function useCredit(enabled: boolean) {
+  const qc = useQueryClient()
+  const credit = useQuery({ queryKey: ['me', 'credit'], enabled, queryFn: async () => unwrap(await api.GET('/api/me/credit')) })
+  const set = useMutation({
+    mutationFn: async (visible: boolean) => unwrap(await api.PUT('/api/me/credit', { body: { visible } })),
+    onSuccess: (r) => qc.setQueryData(['me', 'credit'], r),
+  })
+  return { visible: credit.data?.visible ?? true, set }
+}
+
 export function useGoals() {
   return useQuery({ queryKey: keys.goals, queryFn: async () => unwrap(await api.GET('/api/community/goals')).goals, staleTime: 60_000 })
 }
