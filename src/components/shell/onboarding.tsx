@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
-import { IconCards, IconCheck, IconColours, IconComment, IconHome, IconMore, IconReel, IconSave, IconSearch, IconTarget } from '@/components/icons'
+import { IconCards, IconCheck, IconColours, IconComment, IconCompare, IconCrosshair, IconFlask, IconHome, IconMoves, IconReel, IconSave, IconSearch, IconSpectrum, IconTarget } from '@/components/icons'
 import { Button } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { defaultLocale, isLocale, type Locale } from '@/i18n/locales'
@@ -16,7 +16,7 @@ import { useSwitchLocale } from '@/lib/use-switch-locale'
 export type LanguageOption = { locale: Locale; name: string; greeting: string; title: string; body: string; pick: string; action: string }
 
 type Item = { icon: ReactNode; key: string }
-type Step = { id: string; target?: string; items?: Item[]; art?: 'sky' | 'blink' }
+type Step = { id: string; target?: string; items?: Item[]; art?: 'sky' | 'blink' | 'menu' | 'lab'; note?: boolean }
 
 const STEPS: Step[] = [
   { id: 'language' },
@@ -35,7 +35,18 @@ const STEPS: Step[] = [
       { icon: <IconSave size={22} />, key: 'save' },
     ],
   },
-  { id: 'more', target: 'post-more', items: [{ icon: <IconMore size={22} />, key: 'lab' }] },
+  { id: 'more', target: 'post-more', art: 'menu' },
+  {
+    id: 'lab',
+    art: 'lab',
+    note: true,
+    items: [
+      { icon: <IconCompare size={22} />, key: 'date' },
+      { icon: <IconCrosshair size={22} />, key: 'pixel' },
+      { icon: <IconMoves size={22} />, key: 'motion' },
+      { icon: <IconSpectrum size={22} />, key: 'spectrum' },
+    ],
+  },
   { id: 'alerts', target: 'alerts' },
   {
     id: 'nav',
@@ -87,7 +98,63 @@ function SkyField({ reduce }: { reduce: boolean }) {
   )
 }
 
-function Art({ kind, tick }: { kind: 'sky' | 'blink'; tick: number }) {
+const LAB_TOOLS = [
+  { key: 'date', icon: <IconCompare size={20} /> },
+  { key: 'colour', icon: <IconColours size={20} /> },
+  { key: 'pixel', icon: <IconCrosshair size={20} /> },
+  { key: 'motion', icon: <IconMoves size={20} /> },
+  { key: 'spectrum', icon: <IconSpectrum size={20} /> },
+] as const
+
+function MenuArt({ tick }: { tick: number }) {
+  const t = useTranslations('post.menu')
+  return (
+    <div className="overflow-hidden rounded-xl bg-bg pb-1 ring-[0.5px] ring-divider" aria-hidden="true">
+      <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-divider" />
+      <div className={cx('mx-2 mt-2 flex items-center gap-3 rounded-lg px-2 py-2 ring-2 ring-accent transition-colors duration-500', tick % 2 === 0 ? 'bg-surface-pressed' : 'bg-surface')}>
+        <IconFlask size={24} />
+        <span className="min-w-0 flex-1">
+          <span className="block text-ui font-semibold">{t('lab')}</span>
+          <span className="block text-meta text-text-secondary">{t('labHint')}</span>
+        </span>
+      </div>
+      <div className="mx-2 flex items-center gap-3 px-2 py-2 opacity-40">
+        <IconCompare size={24} />
+        <span className="text-ui">{t('compare')}</span>
+      </div>
+    </div>
+  )
+}
+
+function LabArt({ tick }: { tick: number }) {
+  const t = useTranslations('lab.tools')
+  const active = Math.floor(tick / 2) % LAB_TOOLS.length
+  const step = tick % 4
+  return (
+    <div className="overflow-hidden rounded-xl bg-bg ring-[0.5px] ring-divider" aria-hidden="true">
+      <svg viewBox="0 0 240 84" className="block w-full bg-media-bg">
+        {[[24, 18, 1.4], [60, 64, 1], [98, 30, 1.8], [150, 16, 1], [196, 58, 1.5], [222, 24, 1], [130, 72, 1.2]].map(([x, y, r]) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r={r} fill="var(--color-spot-star)" opacity="0.7" />
+        ))}
+        <circle cx={104 + step * 10} cy={50 - step * 4} r="4" fill="var(--color-crosshair)" />
+        <path d="M92 32H86V38M136 32H142V38M92 66H86V60M136 66H142V60" stroke="var(--color-accent)" strokeWidth="2" fill="none" />
+      </svg>
+      <div className="flex">
+        {LAB_TOOLS.map((tool, i) => (
+          <span key={tool.key} className={cx('relative flex flex-1 flex-col items-center gap-0.5 py-2 transition-colors', i === active ? 'text-text' : 'text-icon-muted')}>
+            {tool.icon}
+            <span className="text-micro font-medium">{t(tool.key)}</span>
+            {i === active && <span className="absolute bottom-0 h-[2px] w-6 rounded-full bg-text" />}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Art({ kind, tick }: { kind: 'sky' | 'blink' | 'menu' | 'lab'; tick: number }) {
+  if (kind === 'menu') return <MenuArt tick={tick} />
+  if (kind === 'lab') return <LabArt tick={tick} />
   const on = tick % 2 === 0
   if (kind === 'sky')
     return (
@@ -306,6 +373,7 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
                   <span>{t(`${step.id}.${it.key}`)}</span>
                 </li>
               ))}
+              {step.note && <li className="pt-1 text-note leading-relaxed text-text-secondary">{t(`${step.id}.note`)}</li>}
             </ul>
           ) : step.id === 'finish' ? (
             <div className="mt-2 flex flex-col gap-2 text-body leading-relaxed text-text-secondary">

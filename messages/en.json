@@ -296,8 +296,16 @@
       "save": "Save it for later"
     },
     "more": {
-      "title": "More tools",
-      "lab": "Open the Lab, compare two dates and see where the photo came from"
+      "title": "Where the pro mode is",
+      "body": "The three dots on any post open this menu. Its first option, Lab, is the pro mode."
+    },
+    "lab": {
+      "title": "The Lab: look like a scientist",
+      "date": "Step through the dates while you watch the photo",
+      "pixel": "Tap a spot to read its brightness",
+      "motion": "Stack the photos along a motion to find faint movers",
+      "spectrum": "See the light split by colour",
+      "note": "Every object profile also has a Lab button. Nothing you do there changes the data."
     },
     "alerts": {
       "title": "Alerts",

@@ -296,8 +296,16 @@
       "save": "Salvar para depois"
     },
     "more": {
-      "title": "Mais ferramentas",
-      "lab": "Abrir o Lab, comparar duas datas e ver de onde veio a foto"
+      "title": "Onde fica o modo pro",
+      "body": "Os três pontinhos de qualquer post abrem este menu. A primeira opção, Lab, é o modo pro."
+    },
+    "lab": {
+      "title": "O Lab: olhe como cientista",
+      "date": "Passe pelas datas enquanto olha a foto",
+      "pixel": "Toque num ponto para ler o brilho dele",
+      "motion": "Empilhe as fotos seguindo um movimento para achar objetos fracos",
+      "spectrum": "Veja a luz separada por cor",
+      "note": "O perfil de cada objeto também tem um botão Lab. Nada do que você faz lá muda os dados."
     },
     "alerts": {
       "title": "Alertas",
