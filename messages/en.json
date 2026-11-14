@@ -783,7 +783,8 @@
       "show": "Show",
       "hide": "Hide"
     },
-    "newBadge": "New badge: {name}."
+    "newBadge": "New badge: {name}.",
+    "changesShort": "Changes"
   },
   "reels": {
     "title": "Reels",
@@ -1280,5 +1281,27 @@
     "tabNew": "Latest",
     "tabPopular": "Popular",
     "popularNote": "Popular shows what people are looking at, not what is right. Check the status on each item."
+  },
+  "player": {
+    "counter": "Photo {n} of {total}",
+    "counterAfter": "{counter}, {gap} later",
+    "gaps": {
+      "seconds": "{n} s",
+      "minutes": "{n} min",
+      "hours": "{h} h",
+      "hoursMinutes": "{h} h {m} min",
+      "days": "{n, plural, one {# day} other {# days}}",
+      "years": "{n, plural, one {# year} other {# years}}"
+    },
+    "strip": "Photos, drag to pass one by one",
+    "speed": "Speed {value}x",
+    "speedValue": "{value}x",
+    "blink": "Blink",
+    "blinkHint": "Hold to blink between the first and last photo",
+    "play": "Play",
+    "pause": "Pause",
+    "prev": "Previous photo",
+    "next": "Next photo",
+    "outside": "Black area may be outside what was photographed"
   }
 }

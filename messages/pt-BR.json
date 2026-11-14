@@ -644,7 +644,7 @@
       "days": "+{n, plural, one {# dia} other {# dias}}"
     },
     "hints": {
-      "swipe": "Direita: se move. Esquerda: não se move. Para cima: não sei."
+      "swipe": "Direita: se move. Esquerda: não. Cima: não sei."
     },
     "guide": {
       "body": "Viu como ele pula entre as fotos? Isso é movimento. Deslize para a direita.",
@@ -783,7 +783,8 @@
       "show": "Mostrar",
       "hide": "Ocultar"
     },
-    "newBadge": "Selo novo: {name}."
+    "newBadge": "Selo novo: {name}.",
+    "changesShort": "Mudanças"
   },
   "reels": {
     "title": "Reels",
@@ -1280,5 +1281,27 @@
     "tabNew": "Novidades",
     "tabPopular": "Popular",
     "popularNote": "Popular mostra o que as pessoas estão olhando, não o que está certo. Confira a situação em cada item."
+  },
+  "player": {
+    "counter": "Foto {n} de {total}",
+    "counterAfter": "{counter}, {gap} depois",
+    "gaps": {
+      "seconds": "{n} s",
+      "minutes": "{n} min",
+      "hours": "{h} h",
+      "hoursMinutes": "{h} h {m} min",
+      "days": "{n, plural, one {# dia} other {# dias}}",
+      "years": "{n, plural, one {# ano} other {# anos}}"
+    },
+    "strip": "Fotos, arraste para passar uma a uma",
+    "speed": "Velocidade {value}x",
+    "speedValue": "{value}x",
+    "blink": "Piscar",
+    "blinkHint": "Segure para piscar entre a primeira e a última foto",
+    "play": "Reproduzir",
+    "pause": "Pausar",
+    "prev": "Foto anterior",
+    "next": "Próxima foto",
+    "outside": "Área preta pode estar fora do que foi fotografado"
   }
 }

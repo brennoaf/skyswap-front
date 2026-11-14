@@ -1,15 +1,20 @@
 'use client'
 
 import { useMotionValue, useReducedMotion, type MotionValue } from 'framer-motion'
-import { useLocale, useTranslations } from 'next-intl'
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useTranslations } from 'next-intl'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useCardGestures } from '@/components/classify/card-gestures'
-import { IconChevronLeft, IconChevronRight, IconPause, IconPlay } from '@/components/icons'
-import { Segmented, Skeleton, useLoopRestart } from '@/components/ui/primitives'
+import { IconChevronLeft, IconChevronRight } from '@/components/icons'
+import { PlayerBar } from '@/components/player/player-bar'
+import { usePlayback } from '@/components/player/use-playback'
+import { Skeleton } from '@/components/ui/primitives'
 import type { Reveal } from '@/lib/api/client'
-import { cx, formatDateTime, formatWavelength } from '@/lib/format'
+import { cx } from '@/lib/format'
+import { hasOutsideArea } from '@/lib/out-of-field'
 
 export type PhotoRow = 0 | 1
+
+const FRAME_MS = 700
 
 export type CardSwipe = {
   x: MotionValue<number>
@@ -85,12 +90,12 @@ export function PhotoViewer({
   reveal,
   overlay,
   caption,
-  onPlayingChange,
   onLocate,
   fit = false,
   swipe,
   hold = false,
   onTouchPhoto,
+  compact = false,
 }: {
   sprite: string
   img: HTMLImageElement | null
@@ -98,21 +103,18 @@ export function PhotoViewer({
   reveal?: Reveal
   overlay?: (panel: number) => ReactNode
   caption?: (panel: number) => ReactNode
-  onPlayingChange?: (playing: boolean) => void
   onLocate?: (frame: number, x: number, y: number) => void
   fit?: boolean
   swipe?: CardSwipe
   hold?: boolean
   onTouchPhoto?: () => void
+  compact?: boolean
 }) {
   const t = useTranslations('classify')
-  const locale = useLocale()
   const reduce = useReducedMotion()
   const label = useOffsetLabel()
   const canvas = useRef<HTMLCanvasElement>(null)
   const [row, setRow] = useState<PhotoRow>(0)
-  const [panel, setPanel] = useState(0)
-  const [playing, setPlaying] = useState(!reduce)
   const [chevrons, setChevrons] = useState(false)
   const [frozen, setFrozen] = useState(false)
   const inner = useRef<HTMLDivElement>(null)
@@ -122,17 +124,10 @@ export function PhotoViewer({
   const hide = useRef<ReturnType<typeof setTimeout> | null>(null)
   const n = Math.max(1, offsets.length)
   const tile = img ? Math.round(img.naturalHeight / 2) : 1
-  const running = playing && n > 1 && !frozen && !hold
-  const paused = !playing
-  const restart = useLoopRestart(panel, running)
-
-  useEffect(() => onPlayingChange?.(running), [running, onPlayingChange])
-
-  useEffect(() => {
-    if (!running) return
-    const timer = setInterval(() => setPanel((p) => (p + 1) % n), 700)
-    return () => clearInterval(timer)
-  }, [running, n])
+  const playback = usePlayback(n, { baseMs: FRAME_MS, autoplay: !reduce, frozen: frozen || hold })
+  const panel = playback.index
+  const { running } = playback
+  const outside = useMemo(() => (img ? offsets.map((_, i) => hasOutsideArea(img, i * tile, 0, tile)) : []), [img, offsets, tile])
 
   useEffect(() => {
     const c = canvas.current
@@ -155,30 +150,12 @@ export function PhotoViewer({
 
   const step = useCallback(
     (d: number) => {
-      setPlaying(false)
-      setPanel((p) => (p + d + n) % n)
+      playback.setPlaying(false)
+      playback.setIndex((p) => p + d)
       flash()
     },
-    [n, flash],
+    [playback, flash],
   )
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.shiftKey || e.metaKey || e.ctrlKey || e.altKey || document.querySelector('[role="dialog"]')) return
-      const el = e.target as HTMLElement | null
-      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        e.preventDefault()
-        step(e.key === 'ArrowLeft' ? -1 : 1)
-      } else if (e.key === ' ') {
-        e.preventDefault()
-        setPlaying((p) => !p)
-        flash()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [step, flash])
 
   const gestures = useCardGestures({
     box: inner,
@@ -196,140 +173,95 @@ export function PhotoViewer({
         }
       : undefined,
   })
-  const pos = dotPositions(offsets)
-  const frame = reveal?.frames[panel]
   const current = label(offsets[panel] ?? 0)
+  const seconds = offsets
+  const dates = reveal?.frames.map((f) => f.t)
+  const thumb = (i: number) => (
+    <span
+      className="pixelated mx-auto block aspect-square h-full bg-no-repeat"
+      style={{ backgroundImage: `url(${sprite})`, backgroundSize: `${n * 100}% 200%`, backgroundPosition: `${n > 1 ? (i / (n - 1)) * 100 : 0}% ${row * 100}%` }}
+    />
+  )
 
   const stage = (
-      <div
-        className={cx('relative select-none overflow-hidden', onLocate && 'cursor-crosshair', fit && 'mx-auto aspect-square', swipe && 'touch-none')}
-        style={fit ? { width: 'min(100cqw, 100cqh)' } : undefined}
-        {...(swipe ? gestures.bind : {})}
-        onPointerDownCapture={onTouchPhoto}
-        onPointerDown={swipe ? gestures.bind.onPointerDown : (e) => {
-          drag.current = { x: e.clientX, y: e.clientY }
-        }}
-        onPointerUp={swipe ? gestures.bind.onPointerUp : (e) => {
-          const start = drag.current
-          drag.current = null
-          if (!start) return
-          const dx = e.clientX - start.x
-          const dy = e.clientY - start.y
-          if (!running && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
-            step(dx < 0 ? 1 : -1)
-            return
-          }
-          if (Math.abs(dx) > 8 || Math.abs(dy) > 8) return
-          const r = e.currentTarget.getBoundingClientRect()
-          const x = (e.clientX - r.left) / r.width
-          if (onLocate) {
-            onLocate(panel, Math.min(1, Math.max(0, x)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)))
-            return
-          }
-          if (x < 1 / 3) step(-1)
-          else if (x > 2 / 3) step(1)
-          else {
-            setPlaying((p) => !p)
-            flash()
-          }
-        }}
-      >
-        <div ref={inner} className="relative origin-center" style={gestures.zoom.scale > 1 ? { transform: `translate(${gestures.zoom.x}px, ${gestures.zoom.y}px) scale(${gestures.zoom.scale})` } : undefined}>
-          <canvas
-            ref={canvas}
-            width={tile}
-            height={tile}
-            role="img"
-            aria-label={t('photoAlt', { n: panel + 1, total: n, when: current })}
-            className="pixelated block aspect-square w-full bg-media-bg"
-            data-sprite={sprite}
-            data-frame={panel}
-          />
-          {!img && <Skeleton className="absolute inset-0 rounded-none" />}
-          {overlay?.(panel)}
-        </div>
-        {n > 1 && !swipe && (
-          <>
-            <span className={cx('pointer-events-none absolute left-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-media-scrim text-on-media transition-opacity duration-300', chevrons && !running ? 'opacity-100' : 'opacity-0')} aria-hidden="true">
-              <IconChevronLeft size={26} />
-            </span>
-            <span className={cx('pointer-events-none absolute right-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-media-scrim text-on-media transition-opacity duration-300', chevrons && !running ? 'opacity-100' : 'opacity-0')} aria-hidden="true">
-              <IconChevronRight size={26} />
-            </span>
-          </>
-        )}
+    <div
+      className={cx('relative select-none overflow-hidden', onLocate && 'cursor-crosshair', fit && 'mx-auto aspect-square', swipe && 'touch-none')}
+      style={fit ? { width: 'min(100cqw, 100cqh)' } : undefined}
+      {...(swipe ? gestures.bind : {})}
+      onPointerDownCapture={onTouchPhoto}
+      onPointerDown={swipe ? gestures.bind.onPointerDown : (e) => {
+        drag.current = { x: e.clientX, y: e.clientY }
+      }}
+      onPointerUp={swipe ? gestures.bind.onPointerUp : (e) => {
+        const start = drag.current
+        drag.current = null
+        if (!start) return
+        const dx = e.clientX - start.x
+        const dy = e.clientY - start.y
+        if (!running && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+          step(dx < 0 ? 1 : -1)
+          return
+        }
+        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) return
+        const r = e.currentTarget.getBoundingClientRect()
+        const x = (e.clientX - r.left) / r.width
+        if (onLocate) {
+          onLocate(panel, Math.min(1, Math.max(0, x)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)))
+          return
+        }
+        if (x < 1 / 3) step(-1)
+        else if (x > 2 / 3) step(1)
+        else {
+          playback.setPlaying(!playback.playing)
+          flash()
+        }
+      }}
+    >
+      <div ref={inner} className="relative origin-center" style={gestures.zoom.scale > 1 ? { transform: `translate(${gestures.zoom.x}px, ${gestures.zoom.y}px) scale(${gestures.zoom.scale})` } : undefined}>
+        <canvas
+          ref={canvas}
+          width={tile}
+          height={tile}
+          role="img"
+          aria-label={t('photoAlt', { n: panel + 1, total: n, when: current })}
+          className="pixelated block aspect-square w-full bg-media-bg"
+          data-sprite={sprite}
+          data-frame={panel}
+        />
+        {!img && <Skeleton className="absolute inset-0 rounded-none" />}
+        {overlay?.(panel)}
       </div>
+      {n > 1 && !swipe && (
+        <>
+          <span className={cx('pointer-events-none absolute left-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-media-scrim text-on-media transition-opacity duration-300', chevrons && !running ? 'opacity-100' : 'opacity-0')} aria-hidden="true">
+            <IconChevronLeft size={26} />
+          </span>
+          <span className={cx('pointer-events-none absolute right-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-media-scrim text-on-media transition-opacity duration-300', chevrons && !running ? 'opacity-100' : 'opacity-0')} aria-hidden="true">
+            <IconChevronRight size={26} />
+          </span>
+        </>
+      )}
+    </div>
   )
 
   return (
     <div className={fit ? 'flex min-h-0 flex-1 flex-col' : undefined}>
       {fit ? <div className="flex min-h-0 flex-1 items-center justify-center [container-type:size]">{stage}</div> : stage}
-
-      <div className={cx('px-3', fit ? 'pt-1' : 'pt-3')}>
-        <FrameTimeline
-          positions={pos}
-          current={panel}
-          restart={restart}
-          label={t('timeline')}
-          dotLabel={(i) => t('photoAt', { n: i + 1, when: label(offsets[i] ?? 0) })}
-          onPick={(i) => {
-            setPlaying(false)
-            setPanel(i)
-            flash()
-          }}
-        />
-        {swipe ? (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pb-1">
-            <p className="min-w-0 truncate text-note font-medium text-text-secondary first-letter:uppercase" aria-live="off">
-              {current}
-            </p>
-            {n > 1 ? (
-              <button
-                type="button"
-                aria-label={paused ? t('play') : t('pause')}
-                onClick={() => setPlaying((p) => !p)}
-                className="inline-flex size-14 items-center justify-center rounded-full bg-surface text-text active:bg-surface-pressed"
-              >
-                {paused ? <IconPlay size={30} /> : <IconPause size={30} />}
-              </button>
-            ) : (
-              <span className="size-14" />
-            )}
-            <button type="button" aria-pressed={row === 1} onClick={() => setRow(row === 0 ? 1 : 0)} className={cx('h-10 justify-self-end whitespace-nowrap rounded-full px-3 text-note font-semibold', row === 1 ? 'bg-text text-bg' : 'bg-surface text-text')}>
-              {t('changes')}
+      <div className="px-2 pb-1 pt-1">
+        <PlayerBar
+          playback={playback}
+          seconds={seconds}
+          dates={dates}
+          thumb={thumb}
+          compact={compact}
+          outside={!!outside[panel]}
+          extra={
+            <button type="button" aria-label={t('changes')} aria-pressed={row === 1} onClick={() => setRow(row === 0 ? 1 : 0)} className={cx('h-10 whitespace-nowrap rounded-full px-2.5 text-note font-semibold', row === 1 ? 'bg-text text-bg' : 'bg-surface text-text')}>
+              {t('changesShort')}
             </button>
-          </div>
-        ) : (
-          <div className="mt-1 flex items-center gap-2">
-            <p className="min-w-0 flex-1 text-note font-medium text-text-secondary first-letter:uppercase" aria-live="off">
-              {current}
-            </p>
-            <Segmented
-              label={t('view')}
-              value={row === 0 ? 'photos' : 'changes'}
-              onChange={(v) => setRow(v === 'photos' ? 0 : 1)}
-              options={[
-                { value: 'photos', label: t('photos') },
-                { value: 'changes', label: t('changes') },
-              ]}
-            />
-            {n > 1 && (
-              <button
-                type="button"
-                aria-label={running ? t('pause') : t('play')}
-                onClick={() => {
-                  setPlaying((p) => !p)
-                  flash()
-                }}
-                className="-mr-1 inline-flex size-11 items-center justify-center rounded-full text-text active:scale-90"
-              >
-                {running ? <IconPause size={24} /> : <IconPlay size={24} />}
-              </button>
-            )}
-          </div>
-        )}
+          }
+        />
         {caption?.(panel)}
-        {frame && !fit && <p className="pb-2 text-meta text-text-muted">{t('frameWhen', { date: formatDateTime(frame.t, locale), wavelength: formatWavelength([frame.wl_min, frame.wl_max]) })}</p>}
       </div>
     </div>
   )

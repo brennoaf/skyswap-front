@@ -5,7 +5,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { IconClose, IconPause, IconPlay } from '@/components/icons'
+import { IconClose } from '@/components/icons'
+import { PlayerBar } from '@/components/player/player-bar'
+import { usePlayback } from '@/components/player/use-playback'
 import { IconButton, ObjectAvatar } from '@/components/ui/primitives'
 import { useStories } from '@/lib/api/hooks'
 import { formatShortDate } from '@/lib/format'
@@ -24,16 +26,13 @@ export function StoryViewer() {
   const reduce = useReducedMotion()
   const list = useMemo(() => (stories ?? []).filter((s) => s.frames.length > 0), [stories])
   const [index, setIndex] = useState(0)
-  const [frame, setFrame] = useState(0)
-  const [paused, setPaused] = useState(false)
+  const [held, setHeld] = useState(false)
   const holdRef = useRef(false)
 
   useEffect(() => {
     if (!start) return
     const i = list.findIndex((s) => s.object.id === start)
     setIndex(Math.max(0, i))
-    setFrame(0)
-    setPaused(false)
   }, [start, list])
 
   const story = start ? list[index] : undefined
@@ -45,24 +44,25 @@ export function StoryViewer() {
       const next = index + delta
       if (next < 0 || next >= list.length) return close()
       setIndex(next)
-      setFrame(0)
     },
     [story, index, list.length, markSeen, close],
   )
 
+  const playback = usePlayback(story?.frames.length ?? 0, {
+    baseMs: 1000 / (story?.frames[0]?.telescope && story.frames[0].telescope !== 'SPHEREx' ? LONG_BASELINE_FPS : FPS),
+    autoplay: true,
+    enabled: !!story,
+    frozen: held,
+    loop: false,
+    onEnd: () => go(1),
+  })
+  const frame = playback.index
+  const { setIndex: setFrame, setPlaying } = playback
+
   useEffect(() => {
-    if (!story || paused) return
-    const timer = setInterval(() => {
-      setFrame((f) => {
-        if (f + 1 >= story.frames.length) {
-          queueMicrotask(() => go(1))
-          return f
-        }
-        return f + 1
-      })
-    }, 1000 / (story.frames[0]?.telescope && story.frames[0].telescope !== 'SPHEREx' ? LONG_BASELINE_FPS : FPS))
-    return () => clearInterval(timer)
-  }, [story, paused, go])
+    setFrame(0)
+    setPlaying(true)
+  }, [story?.object.id, setFrame, setPlaying])
 
   useEffect(() => {
     if (!story) return
@@ -70,10 +70,6 @@ export function StoryViewer() {
       if (e.key === 'Escape') close()
       if (e.key === 'ArrowRight') go(1)
       if (e.key === 'ArrowLeft') go(-1)
-      if (e.key === ' ') {
-        e.preventDefault()
-        setPaused((p) => !p)
-      }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
@@ -122,9 +118,6 @@ export function StoryViewer() {
               </Link>
               <span className="truncate text-note text-white/70">{formatShortDate(current.t, locale)}</span>
               <span className="ml-auto flex">
-                <IconButton label={paused ? t('play') : t('pause')} onClick={() => setPaused((p) => !p)} className="text-white">
-                  {paused ? <IconPlay size={26} /> : <IconPause size={26} />}
-                </IconButton>
                 <IconButton label={t('close')} onClick={close} className="text-white">
                   <IconClose size={28} />
                 </IconButton>
@@ -137,12 +130,12 @@ export function StoryViewer() {
             onPointerDown={() => {
               holdRef.current = false
               setTimeout(() => (holdRef.current = true), 250)
-              setPaused(true)
+              setHeld(true)
             }}
             onPointerUp={(e) => {
-              const held = holdRef.current
-              setPaused(false)
-              if (held) return
+              const long = holdRef.current
+              setHeld(false)
+              if (long) return
               const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
               go(e.clientX - rect.left < rect.width / 3 ? -1 : 1)
             }}
@@ -158,6 +151,18 @@ export function StoryViewer() {
             <span className="absolute bottom-3 right-3 rounded-md bg-black/60 px-2 py-1 text-meta">{t('infrared')}</span>
           </div>
 
+          <div className="px-3 pt-2">
+            <PlayerBar
+              tone="media"
+              playback={playback}
+              seconds={story.frames.map((f) => (Date.parse(f.t) - Date.parse(story.frames[0]?.t ?? f.t)) / 1000)}
+              dates={story.frames.map((f) => f.t)}
+              thumb={(i) => {
+                const f = story.frames[i]
+                return f ? <Image src={f.src} alt="" fill sizes="56px" className="pixelated object-contain" unoptimized /> : null
+              }}
+            />
+          </div>
           <div className="flex items-center gap-2 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-3">
             <Link href={`/o/${story.object.id}`} onClick={close} className="flex h-11 flex-1 items-center justify-center rounded-full border border-white/40 text-body font-semibold">
               {t('profile')}

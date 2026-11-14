@@ -5,7 +5,9 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
-import { IconDirect, IconMore, IconPlay, IconSave, IconTag, IconTarget } from '@/components/icons'
+import { IconDirect, IconMore, IconSave, IconTag, IconTarget } from '@/components/icons'
+import { PlayerBar } from '@/components/player/player-bar'
+import { usePlayback } from '@/components/player/use-playback'
 import { TagPanel } from '@/components/post/tag-panel'
 import { Button, IconButton, ObjectAvatar, Sheet, Skeleton } from '@/components/ui/primitives'
 import type { FeedItem } from '@/lib/api/client'
@@ -16,6 +18,8 @@ import { frameYear, isLongBaseline, LONG_BASELINE_FPS, telescopeOf } from '@/lib
 import { useUi } from '@/lib/state/ui'
 
 const REEL_H = 'h-[calc(100dvh-var(--height-bottomnav))]'
+const REEL_CAPTION = 88
+const REEL_BAR = 228
 const ON_BLACK = '[--color-text:var(--color-on-media)] [--color-text-secondary:var(--color-on-media-muted)]'
 
 function useReducedMotionPref() {
@@ -42,12 +46,11 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
   const toggleSaved = useUi((s) => s.toggleSaved)
   const seen = useUi((s) => s.seenStories.includes(item.object.id))
   const share = useShare()
-  const [frame, setFrame] = useState(0)
-  const [paused, setPaused] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const { post, object } = item
   const n = post.frames.length
-  const playing = active && !paused && !reduce && n > 1
+  const playback = usePlayback(n, { baseMs: isLongBaseline(post) ? 1000 / LONG_BASELINE_FPS : 125, autoplay: true, enabled: active && !reduce })
+  const frame = playback.index
   const total = item.tags.counts ? Object.values(item.tags.counts).reduce((a, b) => a + b, 0) : 0
 
   useEffect(() => {
@@ -66,12 +69,6 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
     }
   }, [active, post.frames])
 
-  useEffect(() => {
-    if (!playing) return
-    const timer = setInterval(() => setFrame((f) => (f + 1) % n), isLongBaseline(post) ? 1000 / LONG_BASELINE_FPS : 125)
-    return () => clearInterval(timer)
-  }, [playing, n, post])
-
   const shown = post.frames[frame]
   const mark = post.marks.find((m) => m.frame === frame)
 
@@ -82,7 +79,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
           {tv('pill', { year: frameYear(shown), telescope: telescopeOf(shown) })}
         </span>
       )}
-      <button type="button" className="absolute inset-0 block size-full" aria-label={paused ? t('play') : t('pause')} aria-pressed={paused} onClick={() => setPaused((p) => !p)}>
+      <button type="button" className="absolute inset-x-0 top-0 block" style={{ bottom: n > 1 ? REEL_BAR : REEL_CAPTION }} aria-label={playback.playing ? t('pause') : t('play')} aria-pressed={!playback.playing} onClick={() => playback.setPlaying(!playback.playing)}>
         {shown && (
           <Image
             src={shown.src}
@@ -101,16 +98,20 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
         )}
       </button>
 
-      {(paused || reduce) && n > 1 && (
-        <span className="pointer-events-none absolute right-3 top-14 z-10 flex items-center gap-1 rounded-full bg-media-scrim py-1 pl-1.5 pr-2.5 text-meta font-medium text-on-media" aria-hidden="true">
-          <IconPlay size={16} />
-          {paused && t('mute')}
-        </span>
-      )}
+      <div className="absolute inset-x-0 z-10 px-2" style={{ bottom: REEL_CAPTION }}>
+        <PlayerBar
+          tone="media"
+          playback={playback}
+          seconds={post.frames.map((f) => (Date.parse(f.t) - Date.parse(post.frames[0]?.t ?? f.t)) / 1000)}
+          dates={post.frames.map((f) => f.t)}
+          thumb={(i) => {
+            const f = active ? post.frames[i] : null
+            return f ? <Image src={f.src} alt="" fill sizes="56px" className="pixelated object-contain" unoptimized /> : null
+          }}
+        />
+      </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-linear-to-t from-black/80 via-black/35 to-transparent" aria-hidden="true" />
-
-      <div className={`absolute bottom-3 left-3 right-[68px] text-[color:var(--color-text)] ${ON_BLACK}`}>
+      <div className={`absolute bottom-3 left-3 right-3 z-20 text-[color:var(--color-text)] ${ON_BLACK}`}>
         <div className="flex items-center gap-2">
           <Link href={`/o/${object.id}`} className="flex min-w-0 items-center gap-2" aria-label={t('profile')}>
             <ObjectAvatar src={object.avatar} alt="" size={34} ring={seen ? 'seen' : 'new'} />
@@ -122,7 +123,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
         </button>
       </div>
 
-      <div className={`absolute bottom-3 right-1 flex flex-col items-center gap-1 drop-shadow ${ON_BLACK}`}>
+      <div className={`absolute right-1 flex flex-col items-center gap-1 drop-shadow ${ON_BLACK}`} style={{ bottom: n > 1 ? REEL_BAR : REEL_CAPTION }}>
         <div className="flex flex-col items-center">
           <IconButton label={tp('actions.tag')} onClick={() => onTags(post.id)}>
             <IconTag />

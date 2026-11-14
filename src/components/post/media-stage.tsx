@@ -4,29 +4,21 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
-import { IconCrosshair, IconPause, IconPlay, IconStepBack, IconStepForward } from '@/components/icons'
+import { IconCrosshair } from '@/components/icons'
+import { PlayerBar } from '@/components/player/player-bar'
+import { usePlayback } from '@/components/player/use-playback'
 import type { Frame } from '@/lib/api/client'
 import { cx, formatWavelength } from '@/lib/format'
 import { useFmt } from '@/lib/use-fmt'
 import { frameYear, telescopeOf, TIMELAPSE_FPS } from '@/lib/long-baseline'
+import { hasOutsideArea } from '@/lib/out-of-field'
 import { useUi } from '@/lib/state/ui'
 
 export type Point = { frame: number; x: number; y: number }
 export type StageMode = 'play' | 'mark' | 'compare'
 
-const SPEEDS = [0.5, 1, 2]
-
 export function usePlayer(length: number, enabled: boolean, fps = TIMELAPSE_FPS, maxFps = Infinity) {
-  const speed = useUi((s) => s.speed)
-  const [index, setIndex] = useState(0)
-  const [playing, setPlaying] = useState(false)
-  useEffect(() => setIndex((i) => Math.min(i, Math.max(0, length - 1))), [length])
-  useEffect(() => {
-    if (!playing || !enabled || length < 2) return
-    const timer = setInterval(() => setIndex((i) => (i + 1) % length), 1000 / Math.min(fps * speed, maxFps))
-    return () => clearInterval(timer)
-  }, [playing, enabled, length, speed, fps, maxFps])
-  return { index, setIndex, playing, setPlaying, speed }
+  return usePlayback(length, { baseMs: 1000 / fps, minMs: 1000 / maxFps, enabled })
 }
 
 export type Player = ReturnType<typeof usePlayer>
@@ -79,24 +71,12 @@ export function MediaStage({
   const fmt = useFmt()
   const crosshair = useUi((s) => s.crosshair)
   const setCrosshair = useUi((s) => s.setCrosshair)
-  const setSpeed = useUi((s) => s.setSpeed)
-  const [controls, setControls] = useState(true)
+  const [outside, setOutside] = useState<Record<string, boolean>>({})
   const [compare, setCompare] = useState(50)
   const [aspect, setAspect] = useState(1)
-  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const swipe = useRef<{ x: number; y: number } | null>(null)
   const frame = frames[player.index]
   const length = frames.length
-
-  const poke = () => {
-    setControls(true)
-    if (hideTimer.current) clearTimeout(hideTimer.current)
-    hideTimer.current = setTimeout(() => setControls(false), 2500)
-  }
-
-  useEffect(() => () => {
-    if (hideTimer.current) clearTimeout(hideTimer.current)
-  }, [])
 
   useEffect(() => {
     for (const f of frames.slice(player.index + 1, player.index + 8)) {
@@ -106,7 +86,7 @@ export function MediaStage({
   }, [frames, player.index])
 
   const go = (i: number) => player.setIndex(((i % length) + length) % length)
-  const visible = controls || !player.playing
+  const seconds = frames.map((f) => (Date.parse(f.t) - Date.parse(frames[0]?.t ?? f.t)) / 1000)
   const pred = predicted.get(player.index)
   const mine = draftMarks.find((m) => m.frame === player.index) ?? myMarks.find((m) => m.frame === player.index)
   const avg = community?.find((c) => c.frame === player.index)
@@ -115,10 +95,8 @@ export function MediaStage({
   if (!frame) return <div className="aspect-[4/5] w-full bg-media-bg" />
 
   return (
-    <div
-      className="relative flex aspect-[4/5] w-full select-none items-center justify-center overflow-hidden bg-media-bg"
-      onPointerMove={(e) => e.pointerType === 'mouse' && mode === 'play' && poke()}
-    >
+    <div>
+    <div className="relative flex aspect-[4/5] w-full select-none items-center justify-center overflow-hidden bg-media-bg">
       <div
         className={cx('relative', mode === 'mark' && 'cursor-crosshair')}
         style={boxStyle}
@@ -140,7 +118,6 @@ export function MediaStage({
             return
           }
           player.setPlaying(!player.playing)
-          poke()
         }}
         role="button"
         tabIndex={0}
@@ -180,6 +157,7 @@ export function MediaStage({
             onLoad={(e) => {
               const img = e.currentTarget
               if (img.naturalWidth && img.naturalHeight) setAspect(img.naturalWidth / img.naturalHeight)
+              if (!(frame.src in outside) && img.naturalWidth === img.naturalHeight) setOutside((o) => ({ ...o, [frame.src]: hasOutsideArea(img, 0, 0, img.naturalWidth) }))
             }}
           />
         )}
@@ -226,61 +204,26 @@ export function MediaStage({
 
       {mode === 'mark' && markBar && <div className="absolute inset-x-2 bottom-1">{markBar}</div>}
 
-      {mode !== 'compare' && (
-        <div className={cx('pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-300', visible || mode === 'mark' ? 'opacity-100' : 'opacity-0')}>
-          {length > 1 && mode === 'play' && (
-            <div className="pointer-events-auto flex items-center gap-0.5 bg-gradient-to-t from-media-scrim to-transparent px-1 pb-1 pt-4 text-on-media">
-              <button type="button" aria-label={player.playing ? t('pause') : t('play')} onClick={() => player.setPlaying(!player.playing)} className="inline-flex size-11 items-center justify-center">
-                {player.playing ? <IconPause size={26} /> : <IconPlay size={26} />}
-              </button>
-              <button type="button" aria-label={t('prev')} onClick={() => { go(player.index - 1); poke() }} className="inline-flex size-11 items-center justify-center">
-                <IconStepBack size={26} />
-              </button>
-              <label className="flex min-w-0 flex-1 items-center">
-                <span className="sr-only">{t('frame', { n: player.index + 1, total: length })}</span>
-                <input
-                  type="range"
-                  min={0}
-                  max={length - 1}
-                  value={player.index}
-                  onChange={(e) => {
-                    go(Number(e.target.value))
-                    poke()
-                  }}
-                  className="h-11 w-full accent-[var(--color-on-media)]"
-                />
-              </label>
-              <button type="button" aria-label={t('next')} onClick={() => { go(player.index + 1); poke() }} className="inline-flex size-11 items-center justify-center">
-                <IconStepForward size={26} />
-              </button>
-              <button
-                type="button"
-                aria-label={`${t('speed')} ${player.speed}x`}
-                onClick={() => {
-                  setSpeed(SPEEDS[(SPEEDS.indexOf(player.speed) + 1) % SPEEDS.length] ?? 1)
-                  poke()
-                }}
-                className="h-11 min-w-11 px-1 text-body font-semibold"
-              >
-                {player.speed}x
-              </button>
-              <button
-                type="button"
-                aria-label={t('crosshair')}
-                title={t('crosshairHint')}
-                aria-pressed={crosshair}
-                onClick={() => {
-                  setCrosshair(!crosshair)
-                  poke()
-                }}
-                className={cx('inline-flex size-11 items-center justify-center', crosshair ? 'text-crosshair' : 'text-on-media-muted')}
-              >
-                <IconCrosshair size={26} />
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+    </div>
+    {mode === 'play' && length > 1 && (
+      <div className="px-3 pb-1 pt-2">
+        <PlayerBar
+          playback={player}
+          seconds={seconds}
+          dates={frames.map((f) => f.t)}
+          outside={!!outside[frame.src]}
+          thumb={(i) => {
+            const f = frames[i]
+            return f ? <Image src={f.src} alt="" fill sizes="56px" className="pixelated object-contain" unoptimized /> : null
+          }}
+          extra={
+            <button type="button" aria-label={t('crosshair')} title={t('crosshairHint')} aria-pressed={crosshair} onClick={() => setCrosshair(!crosshair)} className={cx('inline-flex size-10 items-center justify-center rounded-full', crosshair ? 'text-warning' : 'text-icon-muted')}>
+              <IconCrosshair size={26} />
+            </button>
+          }
+        />
+      </div>
+    )}
     </div>
   )
 }

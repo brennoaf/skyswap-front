@@ -547,7 +547,7 @@ function Understand({ card, img, answer, result, spot, pacing, hints, help, onNe
       />
       <div className="flex min-h-[190px] flex-1 flex-col px-3">
         <CardFrame>
-          <PhotoViewer fit sprite={card.sprite} img={img} offsets={card.offsets_s} reveal={reveal} swipe={{ x, y, enabled: false, threshold: SWIPE, onRelease: () => undefined, onCancel: () => undefined }} overlay={overlay} caption={hints ? (panel) => <HintCaption hints={hints} panel={panel} /> : undefined} />
+          <PhotoViewer fit compact sprite={card.sprite} img={img} offsets={card.offsets_s} reveal={reveal} swipe={{ x, y, enabled: false, threshold: SWIPE, onRelease: () => undefined, onCancel: () => undefined }} overlay={overlay} caption={hints ? (panel) => <HintCaption hints={hints} panel={panel} /> : undefined} />
         </CardFrame>
       </div>
       <section aria-labelledby="reveal-title" className="max-h-[38%] shrink-0 overflow-y-auto px-4 pt-1.5">
