@@ -145,7 +145,7 @@ export function AboutSheet({ open, onClose, data, profile, frame }: { open: bool
   const fmt = useFmt()
   const { post, object } = data
   const fs = post.flags_summary
-  const releases = [...new Set(post.frames.map((f) => f.release.toUpperCase()))]
+  const releases = [...new Set(post.frames.flatMap((f) => f.release.split('+')).map((r) => r.trim().toUpperCase()))].filter(Boolean)
   const c = frame ? centre(frame) : null
   return (
     <Sheet open={open} onClose={onClose} title={tp('menu.about')}>
@@ -159,7 +159,7 @@ export function AboutSheet({ open, onClose, data, profile, frame }: { open: bool
             <dt className="text-text-secondary">{t('aboutDate')}</dt>
             <dd>{frame.t ? fmt.dateTime(frame.t) : '—'}</dd>
             <dt className="text-text-secondary">{t('aboutRelease')}</dt>
-            <dd>{frame.release ? frame.release.toUpperCase() : releases.join(' + ') || '—'}</dd>
+            <dd>{frame.release ? frame.release.toUpperCase().replace('+', ' + ') : releases.join(' + ') || '—'}</dd>
             <dt className="text-text-secondary">{t('aboutKind')}</dt>
             <dd>{t(`kinds.${frame.kind}`)}</dd>
             <dt className="text-text-secondary">{t('aboutFov')}</dt>
