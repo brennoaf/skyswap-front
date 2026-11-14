@@ -36,7 +36,7 @@ function FilterCarousel({ sequences, active, onPick }: { sequences: Record<Filte
               <button type="button" aria-pressed={on} disabled={!thumb} onClick={() => onPick(k)} title={t(`filterHints.${k}`)} className="flex w-[76px] flex-col items-center gap-1 disabled:opacity-35">
                 <span className={cx('text-[12px]', on ? 'font-semibold text-text' : 'text-text-secondary')}>{t(`filterNames.${k}`)}</span>
                 <span className={cx('relative block size-[76px] overflow-hidden rounded-[4px] bg-media-bg', on && 'ring-2 ring-text ring-offset-2 ring-offset-bg')}>
-                  {thumb && <Image src={thumb.src} alt="" fill sizes="76px" className="pixelated object-cover" unoptimized />}
+                  {thumb && <Image src={thumb.src} alt="" fill sizes="76px" className="pixelated object-contain" unoptimized />}
                 </span>
               </button>
             </li>

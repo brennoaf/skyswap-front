@@ -70,7 +70,9 @@ export function ObjectAvatar({ src, alt, size, ring = 'none', className }: { src
           style={{ WebkitMask: `radial-gradient(farthest-side, transparent calc(100% - ${stroke}px), #000 calc(100% - ${stroke}px))`, mask: `radial-gradient(farthest-side, transparent calc(100% - ${stroke}px), #000 calc(100% - ${stroke}px))` }}
         />
       )}
-      <Image src={src} alt={alt} width={inner} height={inner} className="rounded-full bg-media-bg object-cover" style={{ width: inner, height: inner }} />
+      <span className="flex items-center justify-center overflow-hidden rounded-full bg-media-bg ring-[0.5px] ring-divider" style={{ width: inner, height: inner }}>
+        <Image src={src} alt={alt} width={Math.round(inner / Math.SQRT2)} height={Math.round(inner / Math.SQRT2)} className="pixelated object-contain" style={{ width: inner / Math.SQRT2, height: inner / Math.SQRT2 }} />
+      </span>
     </span>
   )
 }

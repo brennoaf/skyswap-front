@@ -187,7 +187,7 @@ export function HistoryList({ items }: { items: Me['history'] }) {
         const text = item.type === 'mark' ? t('historyItems.mark', { n: Number(item.detail), title }) : t('historyItems.tag', { title, tag: tt(item.detail) })
         const body = (
           <>
-            <span className="relative h-[58px] w-11 shrink-0 overflow-hidden rounded-md bg-media-bg">{item.post && <Image src={item.post.cover} alt="" fill sizes="44px" className="object-cover" />}</span>
+            <span className="relative h-[58px] w-11 shrink-0 overflow-hidden rounded-md bg-media-bg">{item.post && <Image src={item.post.cover} alt="" fill sizes="44px" className="pixelated object-contain" />}</span>
             <p className="min-w-0 flex-1 text-[14px] leading-snug">
               {text}
               {time}
@@ -234,7 +234,7 @@ function SavedTile({ id }: { id: string }) {
   return (
     <li>
       <Link href={`/p/${id}`} className="relative block aspect-[3/4] overflow-hidden bg-media-bg" aria-label={data?.post.title ?? id}>
-        {data ? <Image src={data.post.cover} alt={data.post.title} fill sizes="(max-width: 470px) 33vw, 157px" className="object-cover" /> : <Skeleton className="absolute inset-0 rounded-none" />}
+        {data ? <Image src={data.post.cover} alt={data.post.title} fill sizes="(max-width: 470px) 33vw, 157px" className="pixelated object-contain" /> : <Skeleton className="absolute inset-0 rounded-none" />}
       </Link>
     </li>
   )

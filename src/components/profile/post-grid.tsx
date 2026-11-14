@@ -36,7 +36,7 @@ export function PostGrid({ tiles }: { tiles: GridTile[] }) {
       {tiles.map((tile) => (
         <li key={tile.key}>
           <Link href={tile.href} className="relative block aspect-[3/4] overflow-hidden bg-media-bg" aria-label={tile.alt}>
-            <Image src={tile.src} alt="" fill sizes="157px" className={tile.pixelated ? 'pixelated object-cover' : 'object-cover'} />
+            <Image src={tile.src} alt="" fill sizes="157px" className={tile.pixelated ? 'pixelated object-contain' : 'object-contain'} />
             {tile.badge && (
               <span className="absolute right-1 top-1 text-white drop-shadow">{tile.badge === 'reel' ? <IconReel size={24} /> : <IconCarousel size={24} />}</span>
             )}

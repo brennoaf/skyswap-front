@@ -174,7 +174,7 @@ function ExploreGrid() {
         {tiles.map((it) => (
           <li key={it.post.id}>
             <Link href={`/p/${it.post.id}`} aria-label={t('exploreTile', { name: it.object.name })} className="relative block aspect-[3/4] overflow-hidden bg-media-bg">
-              <Image src={it.post.cover} alt="" fill sizes="(max-width: 470px) 33vw, 157px" className="pixelated object-cover" unoptimized />
+              <Image src={it.post.cover} alt="" fill sizes="(max-width: 470px) 33vw, 157px" className="pixelated object-contain" unoptimized />
               {it.post.type === 'timelapse' && (
                 <span className="absolute right-1 top-1 text-white drop-shadow" aria-hidden="true">
                   <IconReel size={22} />
