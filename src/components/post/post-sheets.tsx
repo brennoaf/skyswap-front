@@ -56,7 +56,7 @@ export function ColoursSheet({
           )
         })}
       </ul>
-      <p className="px-4 pt-2 text-meta text-text-secondary">{active === 'slider' ? (sliderFrame ? `${sliderFrame.band}, ${formatWavelength(sliderFrame.wavelength_um)}, ${fmt.shortDate(sliderFrame.t)}` : t('filterEmpty')) : sequences[active as FilterKey]?.frames.length ? t(`filterHints.${active}`) : t('filterEmpty')}</p>
+      <p className="px-4 pt-2 text-meta text-text-secondary">{active === 'slider' ? (sliderFrame ? `${sliderFrame.band}, ${formatWavelength(sliderFrame.wavelength_um, fmt.locale)}, ${fmt.shortDate(sliderFrame.t)}` : t('filterEmpty')) : sequences[active as FilterKey]?.frames.length ? t(`filterHints.${active}`) : t('filterEmpty')}</p>
       <div className="px-4 pb-2 pt-4">
         <div className="flex items-baseline justify-between">
           <label htmlFor="wavelength" className="text-body font-semibold">
@@ -157,7 +157,7 @@ export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open
             <dt className="text-text-secondary">{t('aboutBand')}</dt>
             <dd>{frame.band || '-'}</dd>
             <dt className="text-text-secondary">{t('wavelength')}</dt>
-            <dd>{c !== null ? `${formatWavelength(frame.wavelength_um)}` : '-'}</dd>
+            <dd>{c !== null ? `${formatWavelength(frame.wavelength_um, fmt.locale)}` : '-'}</dd>
             <dt className="text-text-secondary">{t('aboutDate')}</dt>
             <dd>{frame.t ? fmt.dateTime(frame.t) : '-'}</dd>
             <dt className="text-text-secondary">{t('aboutRelease')}</dt>

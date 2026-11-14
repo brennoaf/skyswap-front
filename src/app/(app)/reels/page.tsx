@@ -16,6 +16,7 @@ import { formatShortDate } from '@/lib/format'
 import { useShare } from '@/lib/share'
 import { frameYear, isLongBaseline, LONG_BASELINE_FPS, telescopeOf } from '@/lib/long-baseline'
 import { useUi } from '@/lib/state/ui'
+import { postCaption, postTitle } from '@/lib/post-text'
 
 const REEL_H = 'h-[calc(100dvh-var(--height-bottomnav))]'
 const REEL_CAPTION = 88
@@ -119,7 +120,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
           </Link>
         </div>
         <button type="button" onClick={() => setExpanded((e) => !e)} className={expanded ? 'mt-2 block text-left text-body' : 'mt-2 line-clamp-2 text-left text-body'}>
-          <span className="font-semibold">{post.title}.</span> {post.caption}
+          <span className="font-semibold">{postTitle(post.title, locale)}.</span> {postCaption(post.caption, locale)}
         </button>
       </div>
 

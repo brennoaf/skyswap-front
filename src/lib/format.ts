@@ -40,10 +40,11 @@ export function compactNumber(n: number, locale: string): string {
   return n.toLocaleString(locale, { notation: 'compact', maximumFractionDigits: 1 })
 }
 
-export function formatWavelength(range: readonly number[] | null | undefined): string {
+export function formatWavelength(range: readonly number[] | null | undefined, locale = 'en'): string {
   if (!range || range.length < 2) return ''
   const [a, b] = range as [number, number]
-  return Math.abs(a - b) < 0.005 ? `${a.toFixed(2)} µm` : `${a.toFixed(2)}-${b.toFixed(2)} µm`
+  const n = (v: number) => v.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return Math.abs(a - b) < 0.005 ? `${n(a)} µm` : `${n(a)} ${locale.startsWith('pt') ? 'a' : 'to'} ${n(b)} µm`
 }
 
 export function formatRa(deg: number): string {

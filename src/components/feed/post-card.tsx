@@ -12,6 +12,7 @@ import type { FeedItem } from '@/lib/api/client'
 import { formatDate } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 import { useShare } from '@/lib/share'
+import { postCaption, postTitle } from '@/lib/post-text'
 
 export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | 'post'>; onMore: () => void }) {
   const t = useTranslations('post')
@@ -87,7 +88,7 @@ export function PostCard({ item, priority = false }: { item: FeedItem; priority?
           <Link href={`/o/${object.id}`} className="font-semibold">
             {object.name}
           </Link>{' '}
-          <span className="font-semibold">{post.title}.</span> {post.caption}
+          <span className="font-semibold">{postTitle(post.title, locale)}.</span> {postCaption(post.caption, locale)}
         </p>
         {!expanded && post.caption.length > 70 && (
           <button type="button" className="text-body text-text-muted" onClick={() => setExpanded(true)}>

@@ -3,7 +3,7 @@
 import { IconCrosshair, IconStepBack, IconStepForward } from '@/components/icons'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { KitChart, QrWarning } from '@/components/charts/charts'
 import { PostHeader } from '@/components/feed/post-card'
@@ -20,6 +20,7 @@ import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
 import { hasWise, LONG_BASELINE_FPS } from '@/lib/long-baseline'
 import { MarkResult, PredictionHelp } from '@/components/post/marking-help'
+import { postCaption, postTitle } from '@/lib/post-text'
 
 const CHART_KIND = { spectrum: 'spectrum', lightcurve: 'lightcurve', motion: 'motion' } as const
 const PASS_GAP_DAYS = 20
@@ -151,6 +152,7 @@ export function PostViewer({ id }: { id: string }) {
     setMode(mode === 'mark' ? 'play' : 'mark')
   }
   const pickGroup = (i: number) => player.setIndex(groups[Math.max(0, Math.min(groups.length - 1, i))] ?? 0)
+  const locale = useLocale()
   const shareIt = () => void share({ title: post.title, path: `/p/${post.id}` })
 
   const finishMarking = () => {
@@ -252,7 +254,7 @@ export function PostViewer({ id }: { id: string }) {
           <Link href={`/o/${object.id}`} className="font-semibold">
             {object.name}
           </Link>{' '}
-          <span className="font-semibold">{post.title}.</span> {post.caption}
+          <span className="font-semibold">{postTitle(post.title, locale)}.</span> {postCaption(post.caption, locale)}
         </p>
         {!expanded && post.caption.length > 70 && (
           <button type="button" className="text-body text-text-muted" onClick={() => setExpanded(true)}>

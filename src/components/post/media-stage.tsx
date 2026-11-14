@@ -148,7 +148,7 @@ export function MediaStage({
         ) : (
           <Image
             src={frame.src}
-            alt={t('frameInfo', { band: frame.band, wavelength: formatWavelength(frame.wavelength_um), date: fmt.shortDate(frame.t), release: frame.release.toUpperCase() })}
+            alt={t('frameInfo', { band: frame.band, wavelength: formatWavelength(frame.wavelength_um, fmt.locale), date: fmt.shortDate(frame.t), release: frame.release.toUpperCase() })}
             fill
             sizes="470px"
             className="pixelated object-contain"

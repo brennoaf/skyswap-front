@@ -637,11 +637,11 @@
     "photoAlt": "Sky photo {n} of {total}, {when}",
     "time": {
       "first": "first photo",
-      "seconds": "+{n} s",
-      "minutes": "+{n} min",
-      "hours": "+{h} h",
-      "hoursMinutes": "+{h} h {m} min",
-      "days": "+{n, plural, one {# day} other {# days}}"
+      "seconds": "{n} s after the first photo",
+      "minutes": "{n} min after the first photo",
+      "hours": "{h} h after the first photo",
+      "hoursMinutes": "{h} h {m} min after the first photo",
+      "days": "{n, plural, one {# day} other {# days}} after the first photo"
     },
     "hints": {
       "swipe": "Right: it moves. Left: it doesn't. Up: not sure."
@@ -656,12 +656,11 @@
     "yourVote": "Your vote: {choice}",
     "known": "It's a known asteroid: {name}.",
     "checks": {
-      "same": "Same as the known answer",
-      "different": "Different from the known answer. It takes practice.",
-      "unsure": "That's the known answer."
+      "same": "Same as yours.",
+      "different": "Different from yours. See why."
     },
     "nobodyKnows": "Nobody knows yet.",
-    "guess": "Our program's guess: {guess}",
+    "guess": "thinks it is {guess}.",
     "outcome": {
       "open": "{n, plural, one {# person} other {# people}} looked so far. Still early, so your look matters.",
       "moves": "Most likely a moving object",
@@ -686,9 +685,9 @@
     },
     "glitch": "Camera glitch",
     "tooFast": "That was quick. Answers in under a second don't count, so take a closer look next time.",
-    "next": "Next photo set",
+    "next": "Next",
     "voteFailed": "Couldn't save your answer. Try again.",
-    "done": "You've looked at every set",
+    "done": "You've seen all the cards",
     "doneBody": "New photos arrive when NASA releases new data.",
     "loginTitle": "Help spot what moves in the sky",
     "loginBody": "Pick a nickname to start. Your answers help everyone figure out what each dot is.",
@@ -698,7 +697,7 @@
       "chance": "Estimated chance it moves: {pct}%",
       "chanceHint": "Our program's running estimate, which updates as more people answer. It starts low because most dots turn out not to move.",
       "photos": "When and in which colour each photo was taken",
-      "field": "Each photo shows {size} arcmin of sky, in colour band {band} (infrared, shown in grey).",
+      "field": "Each photo shows {size} arcminutes of sky (arcmin, 1/60 of a degree), in colour band {band} (infrared, shown in grey).",
       "where": "Where in the sky",
       "whereBody": "Right ascension {ra}°, declination {dec}°.",
       "whereSky": "Right ascension {ra}°, declination {dec}°. Picked at random among the parts of the sky SkySwap can read."
@@ -712,13 +711,13 @@
       "candidate": "Candidate: several people saw it move"
     },
     "sky": {
-      "label": "Random patch of sky",
-      "reveal": "This patch was picked at random. If enough people see something move here, it joins a list of candidates. Nobody reviews that list yet."
+      "label": "Random sky card",
+      "reveal": "This card was drawn at random. If enough people see something move here, it joins a list of candidates. Nobody reviews that list yet."
     },
-    "searching": "Finding a fresh patch of sky",
+    "searching": "Looking for a new card",
     "pause": "Pause",
     "rest": {
-      "title": "You've looked at {n} patches of sky",
+      "title": "You looked at {n} cards",
       "body": "Rest your eyes for a minute. Look at something far away, blink, then come back.",
       "continue": "Keep exploring",
       "map": "See the sky we've explored together"
@@ -731,10 +730,10 @@
         "flash": "A dot in one photo only. Often a camera glitch."
       },
       "elsewhere": "Hints are on other photos: step through them",
-      "none": "No hints for this patch. Trust your own eyes."
+      "none": "No hints for this card. Trust your eyes."
     },
     "frameWhen": "{date}, {wavelength}",
-    "pacing": "Most photo sets have nothing new. That's normal, and every look still counts.",
+    "pacing": "Most cards have nothing new. That's normal, and every look still counts.",
     "help": {
       "open": "How to look",
       "title": "How to look",
@@ -745,7 +744,7 @@
       "glitchTitle": "What is not real",
       "glitchBody": "Something real shows up in most of the photos. A dot in only one photo is usually a camera glitch.",
       "emptyTitle": "Most sets are empty",
-      "emptyBody": "Most photo sets have nothing new. That's normal, and every look still counts.",
+      "emptyBody": "Most cards have nothing new. That's normal, and every look still counts.",
       "gesturesBody": "Swipe right: it moves. Left: it does not. Up: not sure. Hold to freeze. Double tap or pinch to zoom. Hold Blink to jump between the first and last photo.",
       "gesturesTitle": "The gestures"
     },
@@ -794,7 +793,8 @@
       "swipeUp": "Not sure? Swipe up.",
       "hold": "You can also hold the photo to freeze it, and let go to play again.",
       "short": "Drag a little further to answer."
-    }
+    },
+    "infrared": "Infrared, {range}"
   },
   "reels": {
     "title": "Reels",
@@ -843,14 +843,14 @@
       "artifact": "it doesn't move",
       "unsure": "not sure"
     },
-    "noActivity": "Nothing yet. Answer a photo set, mark or tag to see your activity.",
+    "noActivity": "Nothing yet. Answer a card, mark or tag to see your activity.",
     "noNotes": "No private notes yet.",
     "noSaved": "Nothing saved yet. Tap the bookmark on a post.",
     "noFollowing": "You don't follow any object yet.",
     "goals": "Community goals this month",
     "goalItems": {
       "motions": "Posts marked",
-      "classifications": "Photo sets looked at",
+      "classifications": "Cards looked at",
       "tags": "Posts tagged"
     },
     "goalProgress": "{count} of {target}",
@@ -1182,7 +1182,7 @@
     "retry": "Try again",
     "emptyTitle": "No candidates yet",
     "emptyBody": "A patch of sky appears here when at least 5 careful answers agree that something moves. Your answers help get there.",
-    "emptyAction": "Answer a photo set",
+    "emptyAction": "Answer a card",
     "states": {
       "candidate": {
         "label": "Candidate",
@@ -1215,7 +1215,7 @@
     },
     "myCards": {
       "title": "All my answers",
-      "lead": "Every photo set you answered and what happened next. Nothing here expires.",
+      "lead": "Every card you answered and what happened next. Nothing here expires.",
       "answers": {
         "real": "You said it moves",
         "artifact": "You said it doesn't move",
@@ -1230,7 +1230,7 @@
         "gold": "Practice"
       },
       "emptyTitle": "You haven't answered any photos yet",
-      "emptyAction": "Answer a photo set"
+      "emptyAction": "Answer a card"
     },
     "checksDone": "{done} of {total} checks done",
     "actionsLabel": "What you can do",
@@ -1284,9 +1284,9 @@
       "unsure": "not sure"
     },
     "lookSaved": "Saved apart from the answers that count. You can change it.",
-    "lookVoted": "You already answered this photo set: {answer}.",
+    "lookVoted": "You already answered this card: {answer}.",
     "openCards": "{n, plural, one {# open card waiting for a look} other {# open cards waiting for a look}}",
-    "goalLine": "This month's goal: {count} of {target} photo sets looked at",
+    "goalLine": "This month's goal: {count} of {target} cards looked at",
     "tabsLabel": "Order",
     "tabNew": "Latest",
     "tabPopular": "Popular",

@@ -229,7 +229,7 @@
     "items": {
       "first_vote": {
         "name": "Primeira olhada",
-        "how": "Responda \"Algo se move?\" para um conjunto de fotos."
+        "how": "Responda \"Algo se move?\" para um cartão."
       },
       "first_motion": {
         "name": "Primeiro movimento marcado",
@@ -637,11 +637,11 @@
     "photoAlt": "Foto do céu {n} de {total}, {when}",
     "time": {
       "first": "primeira foto",
-      "seconds": "+{n} s",
-      "minutes": "+{n} min",
-      "hours": "+{h} h",
-      "hoursMinutes": "+{h} h {m} min",
-      "days": "+{n, plural, one {# dia} other {# dias}}"
+      "seconds": "{n} s depois da 1ª foto",
+      "minutes": "{n} min depois da 1ª foto",
+      "hours": "{h} h depois da 1ª foto",
+      "hoursMinutes": "{h} h {m} min depois da 1ª foto",
+      "days": "{n, plural, one {# dia} other {# dias}} depois da 1ª foto"
     },
     "hints": {
       "swipe": "Direita: se move. Esquerda: não. Cima: não sei."
@@ -656,12 +656,11 @@
     "yourVote": "Seu voto: {choice}",
     "known": "É um asteroide conhecido: {name}.",
     "checks": {
-      "same": "Igual à resposta conhecida",
-      "different": "Diferente da resposta conhecida. Isso pede prática.",
-      "unsure": "Essa é a resposta conhecida."
+      "same": "Igual à sua.",
+      "different": "Diferente da sua. Veja por quê."
     },
     "nobodyKnows": "Ninguém sabe ainda.",
-    "guess": "O palpite do nosso programa: {guess}",
+    "guess": "acha que é {guess}.",
     "outcome": {
       "open": "{n, plural, one {# pessoa olhou} other {# pessoas olharam}} até agora. Ainda é cedo, então sua olhada importa.",
       "moves": "Provavelmente um objeto em movimento",
@@ -686,9 +685,9 @@
     },
     "glitch": "Falha da câmera",
     "tooFast": "Foi rápido. Respostas em menos de um segundo não contam, então olhe com mais calma da próxima vez.",
-    "next": "Próximo conjunto de fotos",
+    "next": "Próximo",
     "voteFailed": "Não foi possível salvar sua resposta. Tente de novo.",
-    "done": "Você já viu todos os conjuntos",
+    "done": "Você já viu todos os cartões",
     "doneBody": "Novas fotos chegam quando a NASA publica dados novos.",
     "loginTitle": "Ajude a achar o que se move no céu",
     "loginBody": "Escolha um apelido para começar. Suas respostas ajudam todo mundo a descobrir o que é cada ponto.",
@@ -698,7 +697,7 @@
       "chance": "Chance estimada de se mover: {pct}%",
       "chanceHint": "A estimativa do nosso programa, que muda conforme mais pessoas respondem. Ela começa baixa porque a maioria dos pontos acaba não se movendo.",
       "photos": "Quando e em qual cor cada foto foi feita",
-      "field": "Cada foto mostra {size} arcmin de céu, na banda de cor {band} (infravermelho, mostrado em cinza).",
+      "field": "Cada foto mostra {size} minutos de arco de céu (arcmin, 1/60 de grau), na banda de cor {band} (infravermelho, mostrado em cinza).",
       "where": "Onde no céu",
       "whereBody": "Ascensão reta {ra}°, declinação {dec}°.",
       "whereSky": "Ascensão reta {ra}°, declinação {dec}°. Sorteado entre as partes do céu que o SkySwap consegue ler."
@@ -712,13 +711,13 @@
       "candidate": "Candidato: várias pessoas viram se mover"
     },
     "sky": {
-      "label": "Pedaço do céu sorteado",
-      "reveal": "Este pedaço foi sorteado. Se pessoas suficientes virem algo se mover aqui, ele entra numa lista de candidatos. Ninguém revisa essa lista ainda."
+      "label": "Cartão de céu sorteado",
+      "reveal": "Este cartão foi sorteado. Se pessoas suficientes virem algo se mover aqui, ele entra numa lista de candidatos. Ninguém revisa essa lista ainda."
     },
-    "searching": "Procurando um pedaço novo do céu",
+    "searching": "Procurando um cartão novo",
     "pause": "Pausar",
     "rest": {
-      "title": "Você olhou {n} pedaços do céu",
+      "title": "Você olhou {n} cartões",
       "body": "Descanse os olhos por um minuto. Olhe para algo distante, pisque e depois volte.",
       "continue": "Continuar explorando",
       "map": "Ver o céu que exploramos juntos"
@@ -731,10 +730,10 @@
         "flash": "Um ponto em só uma foto. Muitas vezes é uma falha da câmera."
       },
       "elsewhere": "As dicas estão em outras fotos: passe por elas",
-      "none": "Sem dicas para este pedaço. Confie nos seus olhos."
+      "none": "Sem dicas para este cartão. Confie nos seus olhos."
     },
     "frameWhen": "{date}, {wavelength}",
-    "pacing": "A maioria dos conjuntos de fotos não tem nada novo. Isso é normal, e cada olhada conta.",
+    "pacing": "A maioria dos cartões não tem nada novo. Isso é normal, e cada olhada conta.",
     "help": {
       "open": "Como olhar",
       "title": "Como olhar",
@@ -744,8 +743,8 @@
       "slowBody": "Em O que mudou eles aparecem como uma mancha escura encostada numa clara. Isso também conta como movimento.",
       "glitchTitle": "O que não é real",
       "glitchBody": "Algo real aparece na maioria das fotos. Um ponto em só uma foto normalmente é uma falha da câmera.",
-      "emptyTitle": "A maioria dos conjuntos está vazia",
-      "emptyBody": "A maioria dos conjuntos de fotos não tem nada novo. Isso é normal, e cada olhada conta.",
+      "emptyTitle": "A maioria dos cartões está vazia",
+      "emptyBody": "A maioria dos cartões não tem nada novo. Isso é normal, e cada olhada conta.",
       "gesturesBody": "Deslize para a direita: se move. Para a esquerda: não se move. Para cima: não sei. Segure para congelar. Toque duplo ou pinça aproximam. Segure Piscar para alternar entre a primeira e a última foto.",
       "gesturesTitle": "Os gestos"
     },
@@ -794,7 +793,8 @@
       "swipeUp": "Não sabe? Deslize para cima.",
       "hold": "Você também pode segurar a foto para congelar, e soltar para voltar a rodar.",
       "short": "Arraste um pouco mais para responder."
-    }
+    },
+    "infrared": "Infravermelho, {range}"
   },
   "reels": {
     "title": "Reels",
@@ -834,7 +834,7 @@
       "following": "Seguindo"
     },
     "historyItems": {
-      "vote": "Você olhou um conjunto de fotos: \"{label}\"",
+      "vote": "Você olhou um cartão: \"{label}\"",
       "mark": "Você marcou {n, plural, one {# foto} other {# fotos}} em {title}",
       "tag": "Você etiquetou {title}: {tag}"
     },
@@ -843,7 +843,7 @@
       "artifact": "não se move",
       "unsure": "não tenho certeza"
     },
-    "noActivity": "Nada ainda. Responda um conjunto de fotos, marque ou etiquete para ver sua atividade.",
+    "noActivity": "Nada ainda. Responda um cartão, marque ou etiquete para ver sua atividade.",
     "noNotes": "Ainda não há notas privadas.",
     "noSaved": "Nada salvo ainda. Toque no marcador de um post.",
     "noFollowing": "Você ainda não segue nenhum objeto.",
@@ -1182,7 +1182,7 @@
     "retry": "Tentar de novo",
     "emptyTitle": "Ainda não há candidatos",
     "emptyBody": "Um pedaço do céu aparece aqui quando pelo menos 5 respostas cuidadosas concordam que algo se move. Suas respostas ajudam a chegar lá.",
-    "emptyAction": "Responder um conjunto de fotos",
+    "emptyAction": "Responder um cartão",
     "states": {
       "candidate": {
         "label": "Candidato",
@@ -1215,7 +1215,7 @@
     },
     "myCards": {
       "title": "Todas as minhas respostas",
-      "lead": "Cada conjunto de fotos que você respondeu e o que aconteceu depois. Nada aqui expira.",
+      "lead": "Cada cartão que você respondeu e o que aconteceu depois. Nada aqui expira.",
       "answers": {
         "real": "Você disse que se move",
         "artifact": "Você disse que não se move",
@@ -1230,7 +1230,7 @@
         "gold": "Treino"
       },
       "emptyTitle": "Você ainda não respondeu nenhuma foto",
-      "emptyAction": "Responder um conjunto de fotos"
+      "emptyAction": "Responder um cartão"
     },
     "checksDone": "{done} de {total} checagens feitas",
     "actionsLabel": "O que você pode fazer",
@@ -1284,9 +1284,9 @@
       "unsure": "não sei"
     },
     "lookSaved": "Guardado à parte das respostas que contam. Você pode mudar.",
-    "lookVoted": "Você já respondeu este conjunto de fotos: {answer}.",
+    "lookVoted": "Você já respondeu este cartão: {answer}.",
     "openCards": "{n, plural, one {# cartão em aberto esperando olhares} other {# cartões em aberto esperando olhares}}",
-    "goalLine": "Meta do mês: {count} de {target} conjuntos de fotos olhados",
+    "goalLine": "Meta do mês: {count} de {target} cartões olhados",
     "tabsLabel": "Ordem",
     "tabNew": "Novidades",
     "tabPopular": "Popular",

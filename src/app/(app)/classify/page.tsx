@@ -536,7 +536,7 @@ function AboutCardSheet({ open, onClose, reveal }: { open: boolean; onClose: () 
                 <span>{label((f.mjd - first) * 86400)}</span>
                 <span className="text-right text-text-secondary">
                   <span className="block">{fmt.dateTime(f.t)}</span>
-                  <span className="block">{formatWavelength([f.wl_min, f.wl_max])}</span>
+                  <span className="block">{t('infrared', { range: formatWavelength([f.wl_min, f.wl_max], fmt.locale) })}</span>
                 </span>
               </li>
             ))}
