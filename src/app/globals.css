@@ -77,6 +77,10 @@
   --color-mark-community: #ff00d7;
   --color-mark-outline: #ffffff;
   --color-mark-halo: #000000;
+  --color-voice-you: var(--color-mark-mine);
+  --color-voice-program: #ffc800;
+  --color-voice-known: #00d68f;
+  --color-voice-others: var(--color-mark-community);
   --color-on-media: #f8f8f9;
   --color-on-media-muted: rgb(248 248 249 / 0.75);
   --color-media-scrim: rgb(0 0 0 / 0.55);

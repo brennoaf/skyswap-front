@@ -776,7 +776,19 @@
       "saving": "Saving",
       "failed": "Couldn't save your answer.",
       "retry": "Try again"
-    }
+    },
+    "voices": {
+      "youName": "You",
+      "programName": "Program",
+      "knownName": "Known answer",
+      "othersName": "Other people",
+      "others": "{n, plural, one {# person looked} other {# people looked}}: {moves} it moves, {still} it does not",
+      "hints": "these are the hints it marked.",
+      "none": "it marked nothing here.",
+      "show": "Show",
+      "hide": "Hide"
+    },
+    "newBadge": "New badge: {name}."
   },
   "reels": {
     "title": "Reels",

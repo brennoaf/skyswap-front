@@ -776,7 +776,19 @@
       "saving": "Salvando",
       "failed": "Não foi possível salvar sua resposta.",
       "retry": "Tentar de novo"
-    }
+    },
+    "voices": {
+      "youName": "Você",
+      "programName": "Programa",
+      "knownName": "Resposta conhecida",
+      "othersName": "Outras pessoas",
+      "others": "{n, plural, one {# pessoa olhou} other {# pessoas olharam}}: {moves} se move, {still} não se move",
+      "hints": "estas são as dicas que ele marcou.",
+      "none": "ele não marcou nada aqui.",
+      "show": "Mostrar",
+      "hide": "Ocultar"
+    },
+    "newBadge": "Selo novo: {name}."
   },
   "reels": {
     "title": "Reels",
