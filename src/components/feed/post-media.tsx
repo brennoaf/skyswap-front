@@ -2,10 +2,10 @@
 
 import Image from 'next/image'
 import { useTranslations, useLocale } from 'next-intl'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { IconCarousel, IconReel } from '@/components/icons'
 import type { Post } from '@/lib/api/client'
-import { formatShortDate, formatWavelength } from '@/lib/format'
+import { cx, formatShortDate, formatWavelength } from '@/lib/format'
 import { frameYear, isLongBaseline, LONG_BASELINE_FPS, PLAYABLE, telescopeOf, yearsSpanned } from '@/lib/long-baseline'
 import { useUi } from '@/lib/state/ui'
 
@@ -34,6 +34,8 @@ function useInView<T extends Element>(threshold = 0.6) {
 }
 
 const MULTI = new Set(['band_compare', 'pass_blink'])
+const DRAG_START = 8
+const SNAP_SHARE = 0.18
 
 export function PostMedia({ post, priority = false }: { post: Post; priority?: boolean }) {
   const locale = useLocale()
@@ -42,35 +44,91 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
   const { ref, inView } = useInView<HTMLDivElement>()
   const [frame, setFrame] = useState(0)
   const [slide, setSlide] = useState(0)
-  const scroller = useRef<HTMLDivElement>(null)
+  const [offset, setOffset] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const drag = useRef<{ x: number; y: number; frame: number; active: boolean } | null>(null)
+  const dragged = useRef(false)
   const isTimelapse = PLAYABLE.has(post.type) && post.frames.length > 1
   const longBaseline = isLongBaseline(post)
   const isMulti = MULTI.has(post.type) && post.frames.length > 1
 
   useEffect(() => {
-    if (!isTimelapse || !inView || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!inView) setPaused(false)
+  }, [inView])
+
+  useEffect(() => {
+    if (!isTimelapse || !inView || paused || matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const timer = setInterval(() => setFrame((f) => (f + 1) % post.frames.length), longBaseline ? 1000 / LONG_BASELINE_FPS : 160)
     return () => clearInterval(timer)
-  }, [isTimelapse, inView, post.frames.length, longBaseline])
+  }, [isTimelapse, inView, paused, post.frames.length, longBaseline])
 
   const shown = isTimelapse ? post.frames[frame] : isMulti ? post.frames[slide] : post.frames[0]
   const mark = post.marks.find((m) => m.frame === (isTimelapse ? frame : isMulti ? slide : 0))
   const caption = shown && longBaseline ? `${frameYear(shown)}, ${telescopeOf(shown)}` : shown ? `${shown.band}, ${formatWavelength(shown.wavelength_um)}` : post.band ? `${post.band}, ${formatWavelength(post.wavelength_um)}` : null
   const isChart = !post.frames.length
+  const n = post.frames.length
+  const swipeable = isTimelapse || isMulti
+
+  const move = (e: PointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    if (!d) return
+    const dx = e.clientX - d.x
+    const dy = e.clientY - d.y
+    if (!d.active) {
+      if (Math.abs(dx) < DRAG_START && Math.abs(dy) < DRAG_START) return
+      if (Math.abs(dy) > Math.abs(dx)) {
+        drag.current = null
+        return
+      }
+      d.active = true
+      dragged.current = true
+      e.currentTarget.setPointerCapture(e.pointerId)
+      if (isTimelapse) setPaused(true)
+    }
+    if (isMulti) {
+      const atEnd = (dx > 0 && slide === 0) || (dx < 0 && slide === n - 1)
+      setOffset(atEnd ? dx / 3 : dx)
+    } else {
+      const step = Math.min(40, Math.max(8, e.currentTarget.clientWidth / n))
+      setFrame((((d.frame - Math.round(dx / step)) % n) + n) % n)
+    }
+  }
+  const end = (e: PointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    drag.current = null
+    if (!d?.active || !isMulti) return
+    const dx = e.clientX - d.x
+    if (Math.abs(dx) > e.currentTarget.clientWidth * SNAP_SHARE) setSlide((v) => Math.max(0, Math.min(n - 1, v + (dx < 0 ? 1 : -1))))
+    setOffset(0)
+  }
+  const cancel = () => {
+    drag.current = null
+    setOffset(0)
+  }
 
   return (
-    <div ref={ref} className="relative aspect-[4/5] w-full overflow-hidden bg-media-bg">
+    <div
+      ref={ref}
+      className={cx('relative aspect-[4/5] w-full overflow-hidden bg-media-bg', swipeable && 'touch-pan-y select-none')}
+      onPointerDown={swipeable ? (e) => {
+        drag.current = { x: e.clientX, y: e.clientY, frame, active: false }
+        dragged.current = false
+      } : undefined}
+      onPointerMove={swipeable ? move : undefined}
+      onPointerUp={swipeable ? end : undefined}
+      onPointerCancel={swipeable ? cancel : undefined}
+      onDragStart={swipeable ? (e) => e.preventDefault() : undefined}
+      onClickCapture={(e) => {
+        if (!dragged.current) return
+        dragged.current = false
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+    >
       {isMulti ? (
-        <div
-          ref={scroller}
-          className="no-scrollbar flex h-full snap-x snap-mandatory overflow-x-auto"
-          onScroll={(e) => {
-            const el = e.currentTarget
-            setSlide(Math.round(el.scrollLeft / el.clientWidth))
-          }}
-        >
+        <div className={cx('flex h-full', !offset && 'motion-safe:transition-transform motion-safe:duration-200')} style={{ transform: `translateX(calc(${-slide * 100}% + ${offset}px))` }}>
           {post.frames.map((f, i) => (
-            <div key={f.src} className="relative h-full w-full shrink-0 snap-center">
+            <div key={f.src} className="relative h-full w-full shrink-0">
               <Image src={f.src} alt={t('frameAlt', { band: f.band, date: formatShortDate(f.t, locale) })} fill sizes="(max-width: 470px) 100vw, 470px" className="pixelated object-contain" priority={priority && i === 0} />
             </div>
           ))}
@@ -98,9 +156,9 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
           {isTimelapse ? <IconReel size={26} /> : isMulti ? <IconCarousel size={26} /> : null}
         </span>
       )}
-      {isMulti && (
+      {(isMulti || (isTimelapse && paused)) && (
         <span className="absolute right-3 top-11 rounded-full bg-black/60 px-2 py-0.5 text-meta font-medium text-white">
-          {slide + 1}/{post.frames.length}
+          {(isMulti ? slide : frame) + 1}/{n}
         </span>
       )}
       {caption && !isChart && (
