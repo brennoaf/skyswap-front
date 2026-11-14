@@ -217,7 +217,8 @@
   "xp": {
     "gained": "+{xp} XP",
     "gainedStreak": "+{xp} XP, streak bonus",
-    "tooFast": "That was very fast. Quick votes don't count, so take a closer look."
+    "tooFast": "That was very fast. Quick votes don't count, so take a closer look.",
+    "limit": "No more points for this today. Your answers still count."
   },
   "badges": {
     "earned": "New badge",
@@ -290,7 +291,7 @@
     },
     "photo": {
       "title": "Real telescope photos",
-      "body": "These are infrared photos, painted in false colours because our eyes cannot see infrared. Tap the photo to open it and play the dates one after another. Swipe sideways to go through its photos."
+      "body": "Real infrared photos, which our eyes can't see. The yellow cross shows where the object should be. Swipe sideways to go through the photos, or tap to open."
     },
     "actions": {
       "title": "What the icons mean",
@@ -327,7 +328,7 @@
     },
     "finish": {
       "title": "Your part, and the pro tools",
-      "contribution": "Your answers are added to everyone else's. When many people agree that a dot moves, it becomes a candidate for scientists to check. You cannot break anything.",
+      "contribution": "Your answers add up with everyone else's. When enough careful answers say a patch of sky has something moving, it joins a list of candidates. You can't break anything.",
       "pro": "Want more detail? Tap Lab on any post or at the top of the home screen for pixels, layers, colours and light curves.",
       "classify": "Try a first card",
       "explore": "Explore on my own"
@@ -459,13 +460,10 @@
     "compareB": "Later",
     "mark": "Mark",
     "markTitle": "Mark the moving dot",
-    "markHint": "Tap the dot on each frame. We move to the next frame for you.",
-    "markProgress": "{n} of {total} frames marked",
-    "markSave": "Save marks",
+    "markHint": "Tap the dot you see in each photo",
+    "markProgress": "Photo {n} of {total}, {marked} marked",
     "markSaving": "Saving",
-    "markClear": "Clear",
-    "markDone": "Done marking",
-    "markSaved": "Your marks are saved.",
+    "markDone": "Done",
     "markCompare": "{people, plural, one {# person} other {# people}} marked this post. Yellow = predicted, blue = you, pink = community average.",
     "notes": "Private notes",
     "notesHint": "Notes stay in this browser. Nobody else can see them.",
@@ -514,7 +512,8 @@
       "exposures": "Exposures combined",
       "honest": "WISE pixels are 2.75 arcsec and SPHEREx pixels 6.15 arcsec, so SPHEREx frames look blurrier. Brightness is scaled per telescope: compare positions, not brightness. Empty corners on SPHEREx frames mean no data there.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
-    }
+    },
+    "predictionRow": "Yellow cross: the prediction. Why mark it?"
   },
   "search": {
     "title": "Search",
@@ -843,12 +842,12 @@
     "noFollowing": "You don't follow any object yet.",
     "goals": "Community goals this month",
     "goalItems": {
-      "motions": "Motions measured",
+      "motions": "Posts marked",
       "classifications": "Photo sets looked at",
       "tags": "Posts tagged"
     },
     "goalProgress": "{count} of {target}",
-    "noLeaderboard": "No rankings here: everyone's careful work counts the same.",
+    "noLeaderboard": "No rankings here. You aren't competing with anyone.",
     "settings": "Settings",
     "statusOpen": "open",
     "statusReal": "community: real",
@@ -868,7 +867,8 @@
       "mine": "You: {looks, plural, one {# look} other {# looks}} in {cells, plural, one {# patch} other {# patches}}",
       "alt": "Map of the whole sky. {cells} of {indexed} patches have been looked at.",
       "empty": "Nobody has explored yet. Your first look will light up a patch."
-    }
+    },
+    "intro": "How your profile works"
   },
   "lab": {
     "title": "Lab",
@@ -1073,5 +1073,43 @@
       "irsa": "Older sky surveys: DSS, 2MASS, WISE",
       "sky": "Every SPHEREx photo of this spot"
     }
+  },
+  "marking": {
+    "helpTitle": "The yellow cross",
+    "yellowTitle": "Yellow cross: the prediction",
+    "yellowBody": "Where star catalogues say this object should be on this date. It is a calculation, not a measurement.",
+    "youTitle": "Blue dot: you",
+    "youBody": "Where you saw it. The cross stays hidden while you mark, so it cannot influence you.",
+    "othersTitle": "Pink dot: everyone",
+    "othersBody": "The average of everyone who marked this post. You only see it after marking.",
+    "whyTitle": "Why mark it yourself?",
+    "whyBody": "Predictions can be off, and your eyes don't know what the prediction says. If what people see lands away from the cross, that is worth a closer look.",
+    "whyHonest": "For now, marks are compared and shown here, and they do not change any \"Does it move?\" result.",
+    "markNow": "Mark it myself",
+    "resultTitle": "{n, plural, one {# photo marked} other {# photos marked}}",
+    "result": {
+      "close": "Very close to the prediction",
+      "near": "Near the prediction",
+      "far": "Away from the prediction"
+    },
+    "resultGap": "Typically {pct}% of the photo's width from the yellow cross. Bright stars are wide and tap targets are big, so small gaps are normal.",
+    "gotIt": "Got it"
+  },
+  "meIntro": {
+    "title": "How your profile works",
+    "lead": "Points, levels and badges only mark your path. What helps is your answers.",
+    "helpTitle": "What your answers do",
+    "helpBody": "Practice sets with a known answer show how far to trust your eyes. After that, your answers change the chance that something moves.",
+    "pointsTitle": "Points (XP)",
+    "pointsBody": "Answer: 2. Mark a post: 5. Tag or follow: 1. Right, wrong and \"Not sure\" earn the same, so never guess.",
+    "levelsTitle": "Levels",
+    "levelsBody": "{ladder}. They never go down and unlock nothing.",
+    "badgesTitle": "Badges",
+    "badgesBody": "Tap one to see how to earn it. Some give 10 points. Exploring ones are just for fun.",
+    "daysTitle": "Days in a row",
+    "daysBody": "Your first action of the day adds 5, then 10 the next day, up to 30. Miss a day and the count restarts. You keep your points.",
+    "limitsTitle": "Daily limits",
+    "limitsBody": "Up to {cap} points a day. Past the limits your answers still count. Only the points stop.",
+    "action": "Got it"
   }
 }

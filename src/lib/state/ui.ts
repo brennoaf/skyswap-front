@@ -16,6 +16,7 @@ interface PersistedUi {
   languageChosen: boolean
   onboardingDone: boolean
   labIntroDone: boolean
+  meIntroDone: boolean
   classifyGuideDone: boolean
   classifyPacingSeen: boolean
   saved: string[]
@@ -35,6 +36,8 @@ interface UiState extends PersistedUi {
   resetOnboarding: () => void
   finishLabIntro: () => void
   showLabIntro: () => void
+  finishMeIntro: () => void
+  showMeIntro: () => void
   finishClassifyGuide: () => void
   markPacingSeen: () => void
   toggleSaved: (postId: string) => void
@@ -59,6 +62,7 @@ export const useUi = create<UiState>()(
       languageChosen: false,
       onboardingDone: false,
       labIntroDone: false,
+      meIntroDone: false,
       classifyGuideDone: false,
       classifyPacingSeen: false,
       saved: [],
@@ -72,9 +76,11 @@ export const useUi = create<UiState>()(
       markStorySeen: (id) => set((s) => (s.seenStories.includes(id) ? s : { seenStories: [...s.seenStories, id] })),
       chooseLanguage: () => set({ languageChosen: true }),
       finishOnboarding: () => set({ onboardingDone: true }),
-      resetOnboarding: () => set({ onboardingDone: false, labIntroDone: false, classifyGuideDone: false }),
+      resetOnboarding: () => set({ onboardingDone: false, labIntroDone: false, meIntroDone: false, classifyGuideDone: false }),
       finishLabIntro: () => set({ labIntroDone: true }),
       showLabIntro: () => set({ labIntroDone: false }),
+      finishMeIntro: () => set({ meIntroDone: true }),
+      showMeIntro: () => set({ meIntroDone: false }),
       finishClassifyGuide: () => set({ classifyGuideDone: true }),
       markPacingSeen: () => set({ classifyPacingSeen: true }),
       toggleSaved: (postId) => set((s) => ({ saved: s.saved.includes(postId) ? s.saved.filter((p) => p !== postId) : [postId, ...s.saved] })),
@@ -97,6 +103,7 @@ export const useUi = create<UiState>()(
         languageChosen: s.languageChosen,
         onboardingDone: s.onboardingDone,
         labIntroDone: s.labIntroDone,
+        meIntroDone: s.meIntroDone,
         classifyGuideDone: s.classifyGuideDone,
         classifyPacingSeen: s.classifyPacingSeen,
         saved: s.saved,

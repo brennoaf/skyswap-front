@@ -3,12 +3,13 @@
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { IconFollow, IconHighlight, IconMap, IconNote, IconSave, IconSettings, IconStar } from '@/components/icons'
+import { IconFollow, IconHighlight, IconMap, IconNote, IconQuestion, IconSave, IconSettings, IconStar } from '@/components/icons'
+import { MeIntro } from '@/components/me/me-intro'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { ExploredSkyCard } from '@/components/me/explored-sky'
 import { BadgeDetail, BadgeGrid, BadgeHighlights, FollowingList, GoalsCard, HistoryList, LevelRing, ProgressBar, SavedGrid, useAgo } from '@/components/me/profile-parts'
 import { LoginForm } from '@/components/shell/login-sheet'
-import { Button, EmptyState, IconTabs, Notice, Sheet, Skeleton, Stat, TopBar } from '@/components/ui/primitives'
+import { Button, EmptyState, IconButton, IconTabs, Notice, Sheet, Skeleton, Stat, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { ApiError, type Me } from '@/lib/api/client'
 import { useMe, useSession } from '@/lib/api/hooks'
@@ -101,6 +102,7 @@ function Profile({ me }: { me: Me }) {
   const tl = useTranslations('levels')
   const tn = useTranslations('nav')
   const saved = useUi((s) => s.saved)
+  const showIntro = useUi((s) => s.showMeIntro)
   const [tab, setTab] = useState<Tab>('history')
   const [badge, setBadge] = useState<string | null>(null)
   const next = me.levels.find((l) => l.level === me.level.level + 1)
@@ -117,7 +119,19 @@ function Profile({ me }: { me: Me }) {
 
   return (
     <main>
-      <TopBar back={false} title={me.user.nickname} actions={<SettingsLink />} />
+      <TopBar
+        back={false}
+        title={me.user.nickname}
+        actions={
+          <>
+            <IconButton label={t('intro')} onClick={showIntro}>
+              <IconQuestion size={26} />
+            </IconButton>
+            <SettingsLink />
+          </>
+        }
+      />
+      <MeIntro levels={me.levels} dailyCap={me.daily_cap} />
 
       <section className="px-4 pt-1" aria-label={tn('me')}>
         <div className="flex items-center gap-5">

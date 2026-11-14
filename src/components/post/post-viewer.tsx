@@ -1,5 +1,6 @@
 'use client'
 
+import { IconCrosshair, IconStepBack, IconStepForward } from '@/components/icons'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -18,6 +19,7 @@ import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
 import { hasWise, LONG_BASELINE_FPS } from '@/lib/long-baseline'
+import { MarkResult, PredictionHelp } from '@/components/post/marking-help'
 
 const CHART_KIND = { spectrum: 'spectrum', lightcurve: 'lightcurve', motion: 'motion' } as const
 const PASS_GAP_DAYS = 20
@@ -58,6 +60,8 @@ export function PostViewer({ id }: { id: string }) {
   const [wave, setWave] = useState<number | null>(null)
   const [mode, setMode] = useState<StageMode>(params.get('mark') ? 'mark' : params.get('compare') ? 'compare' : 'play')
   const [draft, setDraft] = useState<Point[]>([])
+  const [result, setResult] = useState<Point[] | null>(null)
+  const [prediction, setPrediction] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [path, setPath] = useState(false)
   const bandsSeen = useRef(new Set<string>())
@@ -137,31 +141,39 @@ export function PostViewer({ id }: { id: string }) {
     if (!user) return ask('mark')
     setFilter('original')
     setWave(null)
+    if (mode !== 'mark') {
+      player.setPlaying(false)
+      player.setIndex(0)
+      setResult(null)
+    }
     setMode(mode === 'mark' ? 'play' : 'mark')
   }
   const pickGroup = (i: number) => player.setIndex(groups[Math.max(0, Math.min(groups.length - 1, i))] ?? 0)
   const shareIt = () => void share({ title: post.title, path: `/p/${post.id}` })
 
+  const finishMarking = () => {
+    if (!draft.length) return setMode('play')
+    const saved = draft
+    save.mutate(saved, {
+      onSuccess: () => {
+        setDraft([])
+        setMode('play')
+        setResult(saved)
+      },
+    })
+  }
+
   const markBar = (
-    <div className="flex items-center gap-1.5 rounded-full bg-media-scrim py-1 pl-3 pr-1 text-meta text-on-media backdrop-blur-sm" aria-live="polite">
-      <span className="min-w-0 flex-1 truncate">{t('markProgress', { n: markedCount, total: post.frames.length })}</span>
-      <button
-        type="button"
-        disabled={!draft.length || save.isPending}
-        onClick={() =>
-          save.mutate(draft, {
-            onSuccess: () => {
-              setDraft([])
-              toast({ kind: 'info', key: 'viewer.markSaved' })
-            },
-          })
-        }
-        className="h-8 rounded-full bg-accent px-3 font-semibold text-on-accent disabled:opacity-50"
-      >
-        {save.isPending ? t('markSaving') : t('markSave')}
+    <div className="flex items-center gap-1 rounded-full bg-media-scrim py-0.5 pl-0.5 pr-1 text-meta text-on-media backdrop-blur-sm" aria-live="polite">
+      <button type="button" aria-label={t('prev')} disabled={player.index <= 0} onClick={() => player.setIndex(player.index - 1)} className="inline-flex size-10 shrink-0 items-center justify-center disabled:opacity-40">
+        <IconStepBack size={22} />
       </button>
-      <button type="button" onClick={() => setMode('play')} className="h-8 rounded-full px-3 font-semibold">
-        {t('markDone')}
+      <span className="min-w-0 flex-1 truncate text-center">{t('markProgress', { n: player.index + 1, total: post.frames.length, marked: markedCount })}</span>
+      <button type="button" aria-label={t('next')} disabled={player.index >= post.frames.length - 1} onClick={() => player.setIndex(player.index + 1)} className="inline-flex size-10 shrink-0 items-center justify-center disabled:opacity-40">
+        <IconStepForward size={22} />
+      </button>
+      <button type="button" disabled={save.isPending} onClick={finishMarking} className="h-9 shrink-0 rounded-full bg-accent px-4 font-semibold text-on-accent disabled:opacity-50">
+        {save.isPending ? t('markSaving') : t('markDone')}
       </button>
     </div>
   )
@@ -180,6 +192,7 @@ export function PostViewer({ id }: { id: string }) {
           frames={frames}
           player={player}
           predicted={seq?.predicted ?? new Map()}
+          revealPrediction={!!result}
           mode={mode}
           myMarks={filter === 'original' ? data.my_marks : []}
           draftMarks={filter === 'original' ? draft : []}
@@ -209,6 +222,12 @@ export function PostViewer({ id }: { id: string }) {
       />
 
       <div className="px-3">
+        {!isChart && (seq?.predicted.size ?? 0) > 0 && (
+          <button type="button" onClick={() => setPrediction(true)} className="mb-1 inline-flex min-h-9 items-center gap-1.5 text-note text-text-secondary">
+            <IconCrosshair size={16} className="shrink-0 text-crosshair" />
+            {t('predictionRow')}
+          </button>
+        )}
         <p className="text-body">
           {data.tags.counts ? (
             <button type="button" className="font-semibold" onClick={() => setSheet('tags')}>
@@ -288,6 +307,15 @@ export function PostViewer({ id }: { id: string }) {
         }}
         sliderFrame={sliderFrame}
       />
+      <PredictionHelp
+        open={prediction}
+        onClose={() => setPrediction(false)}
+        onMark={() => {
+          setPrediction(false)
+          startMark()
+        }}
+      />
+      <MarkResult marks={result && !prediction ? result : null} predicted={seq?.predicted ?? new Map()} onClose={() => setResult(null)} />
     </main>
   )
 }

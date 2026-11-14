@@ -45,7 +45,7 @@ export function LabIntro() {
           </li>
         ))}
       </ul>
-      <div className="sticky bottom-0 bg-sheet px-4 pt-3">
+      <div className="sticky bottom-0 -mb-[max(var(--space-gutter),env(safe-area-inset-bottom))] bg-sheet px-4 pb-[max(var(--space-gutter),env(safe-area-inset-bottom))] pt-3">
         <Button variant="primary" className="h-12 w-full" onClick={finish}>
           {t('action')}
         </Button>

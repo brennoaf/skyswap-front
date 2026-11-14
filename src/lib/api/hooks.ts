@@ -91,6 +91,7 @@ export function useCelebrate() {
     for (const b of badges) toast({ kind: 'badge', badge: b })
     if (xp && xp.xp + xp.streakBonus > 0) toast({ kind: 'xp', xp: xp.xp + xp.streakBonus, streak: xp.streakBonus > 0 })
     else if (xp && xp.reason === 'too_fast') toast({ kind: 'info', key: 'xp.tooFast' })
+    else if (xp && (xp.reason === 'daily_cap' || xp.reason === 'diminished')) toast({ kind: 'info', key: 'xp.limit' })
   }
 }
 
@@ -143,15 +144,11 @@ export function useFollow(objectId: string) {
 
 export function useLearn() {
   const qc = useQueryClient()
-  const celebrate = useCelebrate()
   const { data: user } = useSession()
   return useMutation({
     mutationFn: async ({ event, ref }: { event: LearnEvent; ref: string }) => (user ? unwrap(await api.POST('/api/learn', { body: { event, ref } })) : { new_badges: [] as string[] }),
     onSuccess: (r) => {
-      if (r.new_badges.length) {
-        celebrate(null, r.new_badges)
-        qc.invalidateQueries({ queryKey: keys.me })
-      }
+      if (r.new_badges.length) qc.invalidateQueries({ queryKey: keys.me })
     },
   })
 }

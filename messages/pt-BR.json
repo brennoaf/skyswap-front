@@ -217,7 +217,8 @@
   "xp": {
     "gained": "+{xp} XP",
     "gainedStreak": "+{xp} XP, bônus de sequência",
-    "tooFast": "Foi muito rápido. Votos apressados não contam, então olhe com mais calma."
+    "tooFast": "Foi muito rápido. Votos apressados não contam, então olhe com mais calma.",
+    "limit": "Sem mais pontos por isso hoje. Suas respostas continuam contando."
   },
   "badges": {
     "earned": "Novo selo",
@@ -290,7 +291,7 @@
     },
     "photo": {
       "title": "Fotos reais de telescópio",
-      "body": "São fotos em infravermelho, pintadas com cores falsas porque nossos olhos não enxergam infravermelho. Toque na foto para abrir e passar as datas uma depois da outra. Deslize para o lado para passar as fotos."
+      "body": "Fotos reais em infravermelho, que nossos olhos não enxergam. A cruz amarela mostra onde o objeto deveria estar. Deslize para o lado para passar as fotos, ou toque para abrir."
     },
     "actions": {
       "title": "O que cada ícone faz",
@@ -327,7 +328,7 @@
     },
     "finish": {
       "title": "Sua parte, e as ferramentas pro",
-      "contribution": "Suas respostas se somam às de todo mundo. Quando muita gente concorda que um ponto se move, ele vira um candidato para cientistas conferirem. Você não consegue estragar nada.",
+      "contribution": "Suas respostas se somam às de todo mundo. Quando respostas cuidadosas suficientes dizem que algo se move numa região do céu, ela entra numa lista de candidatos. Você não consegue estragar nada.",
       "pro": "Quer mais detalhes? Toque em Lab em qualquer post ou no topo da tela inicial para ver pixels, camadas, cores e curvas de luz.",
       "classify": "Tentar um primeiro cartão",
       "explore": "Explorar por conta própria"
@@ -459,13 +460,10 @@
     "compareB": "Depois",
     "mark": "Marcar",
     "markTitle": "Marque o ponto que se move",
-    "markHint": "Toque no ponto em cada quadro. Nós passamos para o próximo quadro para você.",
-    "markProgress": "{n} de {total} quadros marcados",
-    "markSave": "Salvar marcações",
+    "markHint": "Toque no ponto que você vê em cada foto",
+    "markProgress": "Foto {n} de {total}, {marked} marcadas",
     "markSaving": "Salvando",
-    "markClear": "Limpar",
-    "markDone": "Terminar de marcar",
-    "markSaved": "Suas marcações foram salvas.",
+    "markDone": "Pronto",
     "markCompare": "{people, plural, one {# pessoa marcou} other {# pessoas marcaram}} este post. Amarelo = previsto, azul = você, rosa = média da comunidade.",
     "notes": "Notas privadas",
     "notesHint": "As notas ficam neste navegador. Ninguém mais consegue vê-las.",
@@ -514,7 +512,8 @@
       "exposures": "Exposições combinadas",
       "honest": "Os pixels do WISE têm 2.75 arcsec e os do SPHEREx 6.15 arcsec, então os quadros do SPHEREx parecem mais borrados. O brilho é ajustado por telescópio: compare posições, não brilho. Cantos vazios nos quadros do SPHEREx significam que não há dados ali.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
-    }
+    },
+    "predictionRow": "Cruz amarela: a previsão. Por que marcar?"
   },
   "search": {
     "title": "Pesquisar",
@@ -843,12 +842,12 @@
     "noFollowing": "Você ainda não segue nenhum objeto.",
     "goals": "Metas da comunidade neste mês",
     "goalItems": {
-      "motions": "Movimentos medidos",
+      "motions": "Posts marcados",
       "classifications": "Conjuntos de fotos vistos",
       "tags": "Posts etiquetados"
     },
     "goalProgress": "{count} de {target}",
-    "noLeaderboard": "Sem ranking aqui: o trabalho cuidadoso de todo mundo conta igual.",
+    "noLeaderboard": "Sem ranking aqui. Você não está competindo com ninguém.",
     "settings": "Configurações",
     "statusOpen": "aberto",
     "statusReal": "comunidade: real",
@@ -868,7 +867,8 @@
       "mine": "Você: {looks, plural, one {# olhada} other {# olhadas}} em {cells, plural, one {# pedaço} other {# pedaços}}",
       "alt": "Mapa do céu inteiro. {cells} de {indexed} pedaços já foram olhados.",
       "empty": "Ninguém explorou ainda. Sua primeira olhada vai acender um pedaço."
-    }
+    },
+    "intro": "Como seu perfil funciona"
   },
   "lab": {
     "title": "Lab",
@@ -1073,5 +1073,43 @@
       "irsa": "Levantamentos antigos do céu: DSS, 2MASS, WISE",
       "sky": "Todas as fotos do SPHEREx deste ponto"
     }
+  },
+  "marking": {
+    "helpTitle": "A cruz amarela",
+    "yellowTitle": "Cruz amarela: a previsão",
+    "yellowBody": "Onde os catálogos de estrelas dizem que este objeto deveria estar nesta data. É um cálculo, não uma medida.",
+    "youTitle": "Ponto azul: você",
+    "youBody": "Onde você viu. A cruz fica escondida enquanto você marca, para não influenciar você.",
+    "othersTitle": "Ponto rosa: todo mundo",
+    "othersBody": "A média de todos que marcaram este post. Você só vê depois de marcar.",
+    "whyTitle": "Por que marcar você mesmo?",
+    "whyBody": "Previsões podem errar, e seus olhos não sabem o que a previsão diz. Se o que as pessoas veem cai longe da cruz, vale olhar com mais calma.",
+    "whyHonest": "Por enquanto, as marcações são comparadas e mostradas aqui, e não mudam nenhum resultado de \"Algo se move?\".",
+    "markNow": "Marcar eu mesmo",
+    "resultTitle": "{n, plural, one {# foto marcada} other {# fotos marcadas}}",
+    "result": {
+      "close": "Bem perto da previsão",
+      "near": "Perto da previsão",
+      "far": "Longe da previsão"
+    },
+    "resultGap": "Em geral a {pct}% da largura da foto em relação à cruz amarela. Estrelas brilhantes são largas e o dedo é grande, então pequenas diferenças são normais.",
+    "gotIt": "Entendi"
+  },
+  "meIntro": {
+    "title": "Como seu perfil funciona",
+    "lead": "Pontos, níveis e selos só marcam o seu caminho. O que ajuda são as suas respostas.",
+    "helpTitle": "O que suas respostas fazem",
+    "helpBody": "Conjuntos de treino, com resposta conhecida, mostram o quanto confiar nos seus olhos. Depois, suas respostas mudam a chance de algo se mover.",
+    "pointsTitle": "Pontos (XP)",
+    "pointsBody": "Responder: 2. Marcar um post: 5. Etiquetar ou seguir: 1. Certo, errado e \"Não sei\" valem o mesmo, então nunca chute.",
+    "levelsTitle": "Níveis",
+    "levelsBody": "{ladder}. Eles nunca caem e não liberam nada.",
+    "badgesTitle": "Selos",
+    "badgesBody": "Toque em um para ver como ganhar. Alguns dão 10 pontos. Os de exploração são só diversão.",
+    "daysTitle": "Dias seguidos",
+    "daysBody": "Sua primeira ação do dia soma 5, depois 10 no dia seguinte, até 30. Se faltar um dia a contagem recomeça. Você mantém seus pontos.",
+    "limitsTitle": "Limites por dia",
+    "limitsBody": "Até {cap} pontos por dia. Passando dos limites suas respostas continuam contando. Só os pontos param.",
+    "action": "Entendi"
   }
 }

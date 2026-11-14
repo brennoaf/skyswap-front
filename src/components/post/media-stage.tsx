@@ -48,6 +48,7 @@ export function MediaStage({
   frames,
   player,
   predicted,
+  revealPrediction = false,
   mode,
   myMarks,
   draftMarks,
@@ -62,6 +63,7 @@ export function MediaStage({
   frames: Frame[]
   player: Player
   predicted: Map<number, { x: number; y: number }>
+  revealPrediction?: boolean
   mode: StageMode
   myMarks: Point[]
   draftMarks: Point[]
@@ -132,6 +134,7 @@ export function MediaStage({
             return
           }
           if (mode === 'mark') {
+            if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 12) return
             const r = e.currentTarget.getBoundingClientRect()
             onMark({ frame: player.index, x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) })
             return
@@ -187,13 +190,15 @@ export function MediaStage({
             ))}
           </svg>
         )}
-        {mode !== 'compare' && (crosshair || path) && pred && <Crosshair x={pred.x} y={pred.y} size={mode === 'mark' ? 44 : 34} />}
-        {mode !== 'compare' && avg && <Dot x={avg.x} y={avg.y} tone="community" />}
+        {mode === 'play' && (crosshair || path || revealPrediction) && pred && <Crosshair x={pred.x} y={pred.y} />}
+        {mode === 'play' && avg && <Dot x={avg.x} y={avg.y} tone="community" />}
         {mode !== 'compare' && mine && <Dot x={mine.x} y={mine.y} tone="mine" />}
       </div>
 
       <div className="pointer-events-none absolute inset-x-2 top-2 flex items-start justify-between gap-2">
-        {mode === 'compare' && compareFrames ? (
+        {mode === 'mark' ? (
+          <Pill className="mx-auto">{t('markHint')}</Pill>
+        ) : mode === 'compare' && compareFrames ? (
           <>
             <Pill>
               {t('compareA')}, {fmt.shortDate(compareFrames[0].t)}
@@ -214,11 +219,11 @@ export function MediaStage({
         )}
       </div>
 
-      {mode === 'mark' && markBar && <div className="absolute inset-x-2 top-10">{markBar}</div>}
+      {mode === 'mark' && markBar && <div className="absolute inset-x-2 bottom-1">{markBar}</div>}
 
       {mode !== 'compare' && (
         <div className={cx('pointer-events-none absolute inset-x-0 bottom-0 transition-opacity duration-300', visible || mode === 'mark' ? 'opacity-100' : 'opacity-0')}>
-          <div className="flex items-end justify-between px-2 pb-1">
+          <div className={cx('flex items-end justify-between px-2 pb-1', mode === 'mark' && 'invisible')}>
             <Pill>{t('falseColourShort')}</Pill>
             {saturated && <Pill className="bg-warning text-on-warning">{t('saturatedPill')}</Pill>}
           </div>
