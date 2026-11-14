@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:sky": "node --test src/lib/sky/sci/test/unit.test.mjs && node src/lib/sky/web/pack_check.mjs ../data/objects/eps-indi-b/science src/lib/sky/results/skyswap/pack_reference_eps-indi-b_pack.json && node src/lib/sky/web/index_check.mjs ../data/index",
     "test:e2e": "playwright test",
-    "api:types": "npm --prefix ../api run openapi -- ../web/src/lib/api/openapi.json && openapi-typescript src/lib/api/openapi.json -o src/lib/api/schema.d.ts"
+    "api:types": "npm --prefix ../api run openapi -- ../web/src/lib/api/openapi.json && openapi-typescript src/lib/api/openapi.json -o src/lib/api/schema.d.ts && node scripts/clean-types.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.105.0",
