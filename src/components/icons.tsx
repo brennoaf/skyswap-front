@@ -450,3 +450,30 @@ export const IconCards = ({ filled, ...p }: IconProps & { filled?: boolean }) =>
     </Svg>
   )
 }
+
+export const IconMoves = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="9.5" cy="20.5" r="2.4" fill="currentColor" opacity="0.35" />
+    <circle cx="22.5" cy="11.5" r="3.4" fill="currentColor" />
+    <path d="M12.5 18.4L18.6 14.2M18.6 14.2H14.9M18.6 14.2V17.8" {...LINE} strokeWidth={2.2} />
+  </Svg>
+)
+
+export const IconStill = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="16" cy="16" r="3.4" fill="currentColor" />
+    <circle cx="16" cy="16" r="9" {...LINE} strokeWidth={2} strokeDasharray="2.6 3" />
+  </Svg>
+)
+
+export const IconChevronLeft = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M19 8L11 16L19 24" {...LINE} strokeWidth={2.6} />
+  </Svg>
+)
+
+export const IconChevronRight = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M13 8L21 16L13 24" {...LINE} strokeWidth={2.6} />
+  </Svg>
+)

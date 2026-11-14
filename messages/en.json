@@ -201,7 +201,7 @@
       "tag": "Pick a nickname to tag posts.",
       "mark": "Pick a nickname to save your marks.",
       "follow": "Pick a nickname to follow objects.",
-      "classify": "Pick a nickname to classify candidates.",
+      "classify": "Pick a nickname to help spot what moves.",
       "me": "Pick a nickname to keep your progress.",
       "alerts": "Pick a nickname to get alerts."
     }
@@ -216,8 +216,8 @@
     "locked": "Not earned yet",
     "items": {
       "first_vote": {
-        "name": "First classification",
-        "how": "Classify one candidate."
+        "name": "First look",
+        "how": "Answer “Does it move?” for one set of photos."
       },
       "first_motion": {
         "name": "First motion marked",
@@ -539,54 +539,97 @@
   },
   "classify": {
     "title": "Classify",
-    "intro": "Is this a real moving object or an artifact? Blink the panels and decide.",
-    "real": "Real",
-    "artifact": "Artifact",
+    "intro": "Our program spotted something in these photos of the sky. Your eyes help decide what it is.",
+    "question": "Does it move?",
+    "moves": "It moves",
+    "still": "It doesn't move",
     "unsure": "Not sure",
-    "keys": "Keys: ← artifact · ↑ not sure · → real",
-    "blink": "Blink",
-    "difference": "Difference",
-    "panel": "Panel {n} of {total}",
-    "cardInfo": "{band} · {size}′ wide · {n, plural, one {# visit} other {# visits}}",
-    "done": "You’ve seen every card",
-    "doneBody": "Thanks! New candidates arrive with new SPHEREx data.",
-    "loginTitle": "Help sort real objects from glitches",
-    "loginBody": "Pick a nickname to start. Your votes help the community decide.",
-    "revealTitle": "What was it?",
-    "control": "This was a practice card with a known answer.",
-    "correct": "You got it right.",
-    "wrong": "Not this time — that’s how we all learn.",
-    "truth": "Experts say: {label}",
-    "consensus": "Community so far: {pct}% think it’s real ({n, plural, one {# vote} other {# votes}})",
-    "status": {
-      "open": "Still open",
-      "real": "Community says real — sent for expert review",
-      "artifact": "Community says artifact",
-      "inconclusive": "Community couldn’t decide",
-      "gold": "Practice card"
+    "photos": "Photos",
+    "changes": "What changed",
+    "view": "What to show",
+    "play": "Play",
+    "pause": "Pause",
+    "timeline": "When each photo was taken",
+    "photoAt": "Photo {n}, {when}",
+    "photoOf": "Photo {n} of {total}",
+    "photoAlt": "Sky photo {n} of {total}, {when}",
+    "time": {
+      "first": "first photo",
+      "seconds": "+{n} s",
+      "minutes": "+{n} min",
+      "hours": "+{h} h",
+      "hoursMinutes": "+{h} h {m} min",
+      "days": "+{n, plural, one {# day} other {# days}}"
+    },
+    "hints": {
+      "swipe": "Swipe the card: right if it moves, left if it doesn’t. Pause to step through the photos.",
+      "paused": "Paused: swipe or tap the sides of the photo to step. Press play to swipe the card again.",
+      "keys": "← → step through photos · Shift + → it moves · Shift + ← it doesn’t · ↑ not sure"
+    },
+    "guide": {
+      "body": "See? It jumped to a new spot between the photos. That’s what moving looks like — swipe right.",
+      "skip": "Skip"
+    },
+    "yourVote": "Your vote: {choice}",
+    "whatWasIt": "What was it?",
+    "known": "It’s a known asteroid: {name}.",
+    "checks": {
+      "same": "You saw it the same way our checks did.",
+      "different": "Our checks saw it differently — that’s why.",
+      "unsure": "That’s what our checks saw."
+    },
+    "nobodyKnows": "Nobody knows yet — you’re one of the first to look.",
+    "guess": "Our program’s guess: {guess}",
+    "outcome": {
+      "open": "{n, plural, one {# person looked} other {# people looked}} so far · still early",
+      "moves": "Most likely a moving object",
+      "still": "Most likely not moving",
+      "undecided": "People see this one differently"
     },
     "kinds": {
-      "mover": "A moving source: it sits in a different place on each visit.",
-      "residual": "A leftover from image subtraction, usually around a bright star.",
-      "single": "Seen on one visit only — often a cosmic ray or detector glitch.",
-      "trail": "A streak across the image, often a satellite or a fast object.",
-      "stationary": "Something that doesn’t move between visits.",
-      "orphan": "A detection with no partner on other visits."
+      "mover": "A moving object: it shows up in a different spot in each photo, like an asteroid crossing the sky.",
+      "residual": "A leftover around a bright star. When photos taken at different times are compared, bright stars leave rings and smudges that don’t move.",
+      "single": "A dot that shows up in only one photo — usually a tiny particle hitting the camera, not something in the sky.",
+      "trail": "A streak across the photo — often a satellite or a camera glitch.",
+      "stationary": "Something that stays in the same place in every photo.",
+      "orphan": "A dot with no match in the other photos, so nothing shows it moving."
     },
-    "known": "Matches known object {name}",
-    "knownV": "Matches known object {name} (brightness V {v})",
-    "rate": "Moving {rate}″ per hour",
-    "next": "Next card",
-    "tooFast": "Too quick! Votes under 1 second don’t count.",
-    "swipeHint": "Swipe right for real, left for artifact",
-    "yourVote": "Your vote: {label}",
-    "play": "Play blink",
-    "pause": "Pause blink",
-    "cardAlt": "Candidate image, panel {n} of {total}",
-    "marksHint": "Circles show where the pipeline found the source.",
-    "voteFailed": "Your vote didn’t go through. Try again.",
-    "view": "Image view",
-    "cardInfoBefore": "{n, plural, one {# visit} other {# visits}}"
+    "guesses": {
+      "mover": "a moving object",
+      "residual": "a leftover around a bright star",
+      "single": "a dot that flashes once",
+      "trail": "a streak",
+      "stationary": "something that stays put",
+      "orphan": "a lone dot with no match"
+    },
+    "glitch": {
+      "question": "Looks like a camera glitch? (a streak, a smudge, or a dot that flashes once)",
+      "yes": "Yes",
+      "skip": "Skip",
+      "thanks": "Thanks — noted."
+    },
+    "tooFast": "That was quick. Answers in under a second don’t count, so take a closer look next time.",
+    "next": "Next photo set",
+    "voteFailed": "Couldn’t save your answer. Try again.",
+    "done": "You’ve looked at every set",
+    "doneBody": "Thank you! New photos arrive when NASA releases new data.",
+    "loginTitle": "Help spot what moves in the sky",
+    "loginBody": "Pick a nickname to start. Your answers help everyone figure out what each dot is.",
+    "about": {
+      "open": "More about these photos",
+      "title": "About these photos",
+      "chance": "Estimated chance it moves: {pct}%",
+      "chanceHint": "Our program’s running estimate, which updates as more people answer. It starts low because most dots turn out not to move.",
+      "photos": "When and in which colour each photo was taken",
+      "field": "Each photo shows {size}′ of sky, in colour band {band} (false colours)."
+    },
+    "status": {
+      "open": "Still open",
+      "real": "Most likely a moving object",
+      "artifact": "Most likely not moving",
+      "inconclusive": "People see this one differently",
+      "gold": "Practice photos"
+    }
   },
   "reels": {
     "title": "Reels",
@@ -605,7 +648,7 @@
     "title": "My profile",
     "guestTitle": "Your citizen-science profile",
     "guestBody": "Pick a nickname to keep your classifications, marks, tags, level and badges.",
-    "classifications": "classifications",
+    "classifications": "photo sets",
     "marks": "marks",
     "tags": "tags",
     "level": "Level {n} · {name}",
@@ -628,13 +671,13 @@
       "following": "Following"
     },
     "historyItems": {
-      "vote": "You classified a candidate as “{label}”",
+      "vote": "You looked at a set of photos: “{label}”",
       "mark": "You marked {n} frames on {title}",
       "tag": "You tagged {title}: {tag}"
     },
     "labels": {
-      "real": "real",
-      "artifact": "artifact",
+      "real": "it moves",
+      "artifact": "it doesn’t move",
       "unsure": "not sure"
     },
     "noHistory": "Nothing yet. Classify, mark or tag to see your history.",
@@ -644,7 +687,7 @@
     "goals": "Community goals this month",
     "goalItems": {
       "motions": "Motions measured",
-      "classifications": "Candidates classified",
+      "classifications": "Photo sets looked at",
       "tags": "Posts tagged"
     },
     "goalProgress": "{count} of {target}",
@@ -724,7 +767,7 @@
     "markRead": "Mark all as read",
     "items": {
       "new_data": "{name} has new SPHEREx data from {date}.",
-      "consensus": "A candidate you voted on reached a decision: {status}.",
+      "consensus": "Photos you looked at now have an answer: {status}.",
       "badge": "You earned the badge “{badge}”.",
       "level": "You reached level {level}: {name}.",
       "goal": "The community reached its goal: {target} {goal} this month!"

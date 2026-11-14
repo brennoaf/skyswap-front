@@ -97,6 +97,7 @@ export default function SettingsPage() {
   const t = useTranslations('settings')
   const health = useHealth()
   const [tutorial, setTutorial] = useState(false)
+  const resetOnboarding = useUi((s) => s.resetOnboarding)
   return (
     <main className="pb-6">
       <TopBar title={t('title')} />
@@ -124,7 +125,10 @@ export default function SettingsPage() {
       </Section>
 
       <Section id="s-help">
-        <button type="button" onClick={() => setTutorial(true)} className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-ui active:bg-surface">
+        <button type="button" onClick={() => {
+            resetOnboarding()
+            setTutorial(true)
+          }} className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-ui active:bg-surface">
           <IconQuestion size={24} />
           <span className="flex-1">{t('tutorial')}</span>
         </button>

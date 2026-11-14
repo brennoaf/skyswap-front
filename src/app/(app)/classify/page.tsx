@@ -1,18 +1,20 @@
 'use client'
 
 import { animate, motion, useMotionValue, useReducedMotion, useTransform, type PanInfo } from 'framer-motion'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { IconCheck, IconClose, IconPause, IconPlay, IconQuestion } from '@/components/icons'
+import { PhotoViewer, useOffsetLabel } from '@/components/classify/photo-viewer'
+import { IconCards, IconMore, IconMoves, IconQuestion, IconStill } from '@/components/icons'
 import { LoginForm } from '@/components/shell/login-sheet'
-import { Button, EmptyState, Notice, Skeleton, TopBar } from '@/components/ui/primitives'
+import { Button, EmptyState, IconButton, Notice, Sheet, Skeleton, TopBar } from '@/components/ui/primitives'
 import { ApiError, type DeckCard, type Reveal } from '@/lib/api/client'
-import { useNextCard, useSession, useVote, type Label } from '@/lib/api/hooks'
-import { cx, formatDateTime, formatWavelength } from '@/lib/format'
+import { useGlitch, useGuideCard, useNextCard, useSession, useVote, type Choice } from '@/lib/api/hooks'
+import { cx, formatWavelength } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
+import { useFmt } from '@/lib/use-fmt'
 
 type VoteResult = NonNullable<ReturnType<typeof useVote>['data']>
-type Row = 0 | 1
+type Mark = { u: number; v: number }
 
 const SWIPE = 110
 
@@ -31,173 +33,84 @@ function useSprite(src: string | undefined) {
   return img && img.src === src ? img.el : null
 }
 
-function isTyping(e: KeyboardEvent) {
-  const el = e.target as HTMLElement | null
-  return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)
-}
-
-function Viewer({ card, img, marks, reveal }: { card: DeckCard; img: HTMLImageElement | null; marks?: { u: number; v: number }[]; reveal?: Reveal }) {
-  const locale = useLocale()
-  const t = useTranslations('classify')
-  const reduce = useReducedMotion()
-  const canvas = useRef<HTMLCanvasElement>(null)
-  const [row, setRow] = useState<Row>(0)
-  const [panel, setPanel] = useState(0)
-  const [playing, setPlaying] = useState(true)
-  const n = card.n_frames
-  const tile = img ? Math.round(img.naturalHeight / 2) : 1
-  const running = playing && !reduce && n > 1
-
-  useEffect(() => {
-    if (!running) return
-    const timer = setInterval(() => setPanel((p) => (p + 1) % n), 600)
-    return () => clearInterval(timer)
-  }, [running, n])
-
-  useEffect(() => {
-    const c = canvas.current
-    const ctx = c?.getContext('2d')
-    if (!c || !ctx || !img) return
-    ctx.imageSmoothingEnabled = false
-    ctx.clearRect(0, 0, c.width, c.height)
-    ctx.drawImage(img, panel * tile, row * tile, tile, tile, 0, 0, tile, tile)
-  }, [img, panel, row, tile])
-
-  const frame = reveal?.frames[panel]
-  const mark = marks?.[panel]
-
-  return (
-    <div>
-      <div className="relative">
-        <canvas
-          ref={canvas}
-          width={tile}
-          height={tile}
-          role="img"
-          aria-label={t('cardAlt', { n: panel + 1, total: n })}
-          className="pixelated block aspect-square w-full bg-media-bg"
-          onClick={() => setPanel((p) => (p + 1) % n)}
-        />
-        {!img && <Skeleton className="absolute inset-0 rounded-none" />}
-        {mark && (
-          <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden="true">
-            <circle cx={mark.u * 100} cy={mark.v * 100} r="7" fill="none" stroke="var(--color-warning)" strokeWidth="0.9" />
-            <circle cx={mark.u * 100} cy={mark.v * 100} r="9.5" fill="none" stroke="var(--color-mark-halo)" strokeOpacity="0.5" strokeWidth="0.6" />
-          </svg>
-        )}
-      </div>
-      <div className="flex items-center gap-2 px-3 pt-2.5">
-        <div role="radiogroup" aria-label={t('view')} className="flex rounded-[var(--radius-button)] bg-surface p-0.5">
-          {([0, 1] as Row[]).map((r) => (
-            <button
-              key={r}
-              type="button"
-              role="radio"
-              aria-checked={row === r}
-              onClick={() => setRow(r)}
-              className={cx('min-h-9 rounded-[6px] px-3 text-note font-semibold', row === r ? 'bg-bg text-text shadow-sm' : 'text-text-secondary')}
-            >
-              {r === 0 ? t('blink') : t('difference')}
-            </button>
-          ))}
-        </div>
-        <span className="min-w-0 flex-1 truncate text-right text-note text-text-secondary" aria-live="off">
-          {t('panel', { n: panel + 1, total: n })}
-        </span>
-        {n > 1 && !reduce && (
-          <button
-            type="button"
-            aria-label={playing ? t('pause') : t('play')}
-            title={playing ? t('pause') : t('play')}
-            onClick={() => setPlaying((p) => !p)}
-            className="-mr-1 inline-flex size-11 items-center justify-center rounded-full text-text active:scale-90"
-          >
-            {playing ? <IconPause size={24} /> : <IconPlay size={24} />}
-          </button>
-        )}
-      </div>
-      {frame && (
-        <p className="px-3 pb-3 pt-1 text-meta text-text-muted">
-          {formatDateTime(frame.t, locale)} · {formatWavelength([frame.wl_min, frame.wl_max])}
-        </p>
-      )}
-    </div>
-  )
-}
-
-function CardFrame({ card, reveal, children }: { card: DeckCard; reveal?: Reveal; children: ReactNode }) {
-  const t = useTranslations('classify')
-  return (
-    <div className="overflow-hidden rounded-2xl border-[0.5px] border-divider bg-bg-elevated shadow-[0_6px_24px_rgb(0_0_0/0.18)]">
-      <p className="px-3 py-2.5 text-note font-semibold">{reveal ? t('cardInfo', { band: reveal.band, size: reveal.size_arcmin, n: card.n_frames }) : t('cardInfoBefore', { n: card.n_frames })}</p>
-      {children}
-    </div>
-  )
-}
-
-function Stamp({ label, tone, className, style }: { label: string; tone: 'success' | 'danger' | 'warning'; className?: string; style: React.ComponentProps<typeof motion.span>['style'] }) {
+function Stamp({ label, className, style }: { label: string; className?: string; style: React.ComponentProps<typeof motion.span>['style'] }) {
   return (
     <motion.span
       aria-hidden="true"
       style={style}
-      className={cx(
-        'pointer-events-none absolute z-10 rounded-lg border-[3px] bg-black/40 px-3 py-1 font-[family-name:var(--font-display)] text-title-lg font-extrabold uppercase tracking-wide',
-        tone === 'success' && 'border-success text-success',
-        tone === 'danger' && 'border-danger text-danger',
-        tone === 'warning' && 'border-warning text-warning',
-        className,
-      )}
+      className={cx('pointer-events-none absolute z-10 rounded-full bg-sheet px-3.5 py-1.5 text-ui font-semibold text-text shadow-[0_6px_20px_rgb(0_0_0/0.25)] ring-1 ring-divider', className)}
     >
       {label}
     </motion.span>
   )
 }
 
-function VoteButton({ label, onClick, disabled, size, className, children }: { label: string; onClick: () => void; disabled: boolean; size: number; className: string; children: ReactNode }) {
+function ChoiceButton({ label, onClick, disabled, big, children }: { label: string; onClick: () => void; disabled: boolean; big?: boolean; children: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      <button
-        type="button"
-        aria-label={label}
-        disabled={disabled}
-        onClick={onClick}
-        className={cx('inline-flex items-center justify-center rounded-full border-[0.5px] border-divider bg-bg-elevated shadow-[0_4px_16px_rgb(0_0_0/0.18)] transition-transform active:scale-90 disabled:opacity-50', className)}
-        style={{ width: size, height: size }}
-      >
-        {children}
-      </button>
-      <span className="text-meta font-medium text-text-secondary" aria-hidden="true">
-        {label}
-      </span>
-    </div>
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={cx(
+        'flex flex-col items-center gap-1.5 rounded-2xl px-2 py-2 transition-transform active:scale-95 disabled:opacity-50',
+        big ? 'min-w-[112px]' : 'min-w-[84px]',
+      )}
+    >
+      <span className={cx('inline-flex items-center justify-center rounded-full border-[0.5px] border-divider bg-bg-elevated text-text shadow-[0_4px_16px_rgb(0_0_0/0.16)]', big ? 'size-16' : 'size-12')}>{children}</span>
+      <span className={cx('font-semibold', big ? 'text-body' : 'text-note text-text-secondary')}>{label}</span>
+    </button>
   )
 }
 
-function VoteCard({ card, img, onVoted, onStale }: { card: DeckCard; img: HTMLImageElement | null; onVoted: (label: Label, r: VoteResult) => void; onStale: () => void }) {
+function GuideArrow({ marks, panel }: { marks: Mark[]; panel: number }) {
+  const [a, b] = marks
+  if (!a || !b) return null
+  return (
+    <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <marker id="guide-head" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0 0L10 5L0 10Z" fill="var(--color-crosshair)" />
+        </marker>
+      </defs>
+      <line x1={a.u * 100} y1={a.v * 100} x2={a.u * 100 + (b.u - a.u) * 100 * 0.86} y2={a.v * 100 + (b.v - a.v) * 100 * 0.86} stroke="var(--color-crosshair)" strokeWidth="1.4" strokeDasharray="3 2.2" markerEnd="url(#guide-head)" />
+      <circle cx={a.u * 100} cy={a.v * 100} r="6" fill="none" stroke="var(--color-crosshair)" strokeWidth={panel === 0 ? 1.6 : 0.8} opacity={panel === 0 ? 1 : 0.55} />
+      <circle cx={b.u * 100} cy={b.v * 100} r="6" fill="none" stroke="var(--color-crosshair)" strokeWidth={panel === 1 ? 1.6 : 0.8} opacity={panel === 1 ? 1 : 0.55} />
+    </svg>
+  )
+}
+
+function MarksOverlay({ marks, panel }: { marks: Mark[]; panel: number }) {
+  const m = marks[panel]
+  if (!m) return null
+  return (
+    <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx={m.u * 100} cy={m.v * 100} r="7" fill="none" stroke="var(--color-crosshair)" strokeWidth="0.9" />
+      <circle cx={m.u * 100} cy={m.v * 100} r="9.5" fill="none" stroke="var(--color-mark-halo)" strokeOpacity="0.5" strokeWidth="0.6" />
+    </svg>
+  )
+}
+
+function VoteCard({ card, img, guide, onVoted, onStale, onSkipGuide }: { card: DeckCard; img: HTMLImageElement | null; guide: Mark[] | null; onVoted: (choice: Choice, r: VoteResult) => void; onStale: () => void; onSkipGuide: () => void }) {
   const t = useTranslations('classify')
   const reduce = useReducedMotion()
   const toast = useUi((s) => s.toast)
   const vote = useVote()
   const x = useMotionValue(0)
   const y = useMotionValue(0)
-  const rotate = useTransform(x, [-240, 240], [-14, 14])
-  const realOpacity = useTransform(x, [24, SWIPE], [0, 1])
-  const artOpacity = useTransform(x, [-SWIPE, -24], [1, 0])
+  const rotate = useTransform(x, [-240, 240], [-10, 10])
+  const movesOpacity = useTransform(x, [24, SWIPE], [0, 1])
+  const stillOpacity = useTransform(x, [-SWIPE, -24], [1, 0])
   const unsureOpacity = useTransform(y, [-SWIPE, -24], [1, 0])
-  const shownAt = useRef<number | null>(null)
   const busy = useRef(false)
   const [pending, setPending] = useState(false)
-
-  useEffect(() => {
-    if (img && shownAt.current === null) shownAt.current = performance.now()
-  }, [img])
+  const [playing, setPlaying] = useState(true)
 
   const commit = useCallback(
-    async (label: Label) => {
-      if (busy.current || shownAt.current === null) return
+    async (choice: Choice) => {
+      if (busy.current || !img) return
       busy.current = true
       setPending(true)
-      const target = label === 'real' ? { x: 520, y: 0 } : label === 'artifact' ? { x: -520, y: 0 } : { x: 0, y: -720 }
+      const target = choice === 'moves' ? { x: 520, y: 0 } : choice === 'still' ? { x: -520, y: 0 } : { x: 0, y: -720 }
       const fly = reduce
         ? Promise.resolve()
         : Promise.race([
@@ -205,10 +118,10 @@ function VoteCard({ card, img, onVoted, onStale }: { card: DeckCard; img: HTMLIm
             new Promise((resolve) => setTimeout(resolve, 400)),
           ])
       try {
-        const [r] = await Promise.all([vote.mutateAsync({ card_id: card.id, label }), fly])
-        onVoted(label, r)
+        const [r] = await Promise.all([vote.mutateAsync({ card_id: card.id, choice }), fly])
+        onVoted(choice, r)
       } catch (err) {
-        if (err instanceof ApiError && err.code === 'already_voted') {
+        if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) {
           onStale()
           return
         }
@@ -219,16 +132,18 @@ function VoteCard({ card, img, onVoted, onStale }: { card: DeckCard; img: HTMLIm
         setPending(false)
       }
     },
-    [card.id, onStale, onVoted, reduce, toast, vote, x, y],
+    [card.id, img, onStale, onVoted, reduce, toast, vote, x, y],
   )
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey || isTyping(e) || document.querySelector('[role="dialog"]')) return
-      const label: Label | null = e.key === 'ArrowLeft' ? 'artifact' : e.key === 'ArrowRight' ? 'real' : e.key === 'ArrowUp' ? 'unsure' : null
-      if (!label) return
+      if (e.metaKey || e.ctrlKey || e.altKey || document.querySelector('[role="dialog"]')) return
+      const el = e.target as HTMLElement | null
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return
+      const choice: Choice | null = e.key === 'ArrowUp' ? 'unsure' : e.shiftKey && e.key === 'ArrowRight' ? 'moves' : e.shiftKey && e.key === 'ArrowLeft' ? 'still' : null
+      if (!choice) return
       e.preventDefault()
-      void commit(label)
+      void commit(choice)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -237,8 +152,8 @@ function VoteCard({ card, img, onVoted, onStale }: { card: DeckCard; img: HTMLIm
   const onDragEnd = (_: unknown, info: PanInfo) => {
     const dx = info.offset.x
     const dy = info.offset.y
-    if (dx > SWIPE || info.velocity.x > 700) void commit('real')
-    else if (dx < -SWIPE || info.velocity.x < -700) void commit('artifact')
+    if (dx > SWIPE || info.velocity.x > 700) void commit('moves')
+    else if (dx < -SWIPE || info.velocity.x < -700) void commit('still')
     else if (dy < -SWIPE || info.velocity.y < -700) void commit('unsure')
     else {
       animate(x, 0, { type: 'spring', stiffness: 500, damping: 32 })
@@ -249,119 +164,174 @@ function VoteCard({ card, img, onVoted, onStale }: { card: DeckCard; img: HTMLIm
   return (
     <>
       <motion.div
-        drag={!pending}
+        drag={!pending && playing}
         dragMomentum={false}
         onDragEnd={onDragEnd}
-        style={{ x, y, rotate, touchAction: 'none' }}
+        style={{ x, y, rotate, touchAction: playing ? 'none' : 'pan-y' }}
         initial={reduce ? false : { opacity: 0, scale: 0.94 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative cursor-grab active:cursor-grabbing"
+        className={cx('relative', playing && 'cursor-grab active:cursor-grabbing')}
       >
-        <Stamp label={t('real')} tone="success" style={{ opacity: realOpacity, rotate: -14 }} className="left-4 top-14" />
-        <Stamp label={t('artifact')} tone="danger" style={{ opacity: artOpacity, rotate: 14 }} className="right-4 top-14" />
-        <Stamp label={t('unsure')} tone="warning" style={{ opacity: unsureOpacity }} className="bottom-28 left-1/2 -translate-x-1/2 whitespace-nowrap" />
-        <CardFrame card={card}>
-          <Viewer card={card} img={img} />
-        </CardFrame>
+        <Stamp label={t('moves')} style={{ opacity: movesOpacity, rotate: -8 }} className="left-4 top-16" />
+        <Stamp label={t('still')} style={{ opacity: stillOpacity, rotate: 8 }} className="right-4 top-16" />
+        <Stamp label={t('unsure')} style={{ opacity: unsureOpacity }} className="bottom-24 left-1/2 -translate-x-1/2 whitespace-nowrap" />
+        <div className="overflow-hidden rounded-2xl border-[0.5px] border-divider bg-bg-elevated pb-1 shadow-[0_6px_24px_rgb(0_0_0/0.18)]">
+          <h2 className="px-4 py-3 font-[family-name:var(--font-display)] text-title-md font-bold">{t('question')}</h2>
+          <PhotoViewer sprite={card.sprite} img={img} offsets={card.offsets_s} onPlayingChange={setPlaying} overlay={guide ? (panel) => <GuideArrow marks={guide} panel={panel} /> : undefined} />
+        </div>
       </motion.div>
-      <div className="mt-5 flex items-start justify-center gap-7">
-        <VoteButton label={t('artifact')} onClick={() => void commit('artifact')} disabled={pending || !img} size={64} className="text-danger">
-          <IconClose size={34} />
-        </VoteButton>
-        <VoteButton label={t('unsure')} onClick={() => void commit('unsure')} disabled={pending || !img} size={52} className="mt-1.5 text-warning">
-          <IconQuestion size={28} />
-        </VoteButton>
-        <VoteButton label={t('real')} onClick={() => void commit('real')} disabled={pending || !img} size={64} className="text-success">
-          <IconCheck size={36} />
-        </VoteButton>
+
+      {guide && (
+        <div className="relative mt-2.5 flex items-start gap-2 rounded-2xl bg-accent py-2.5 pl-3.5 pr-1.5 text-on-accent" role="note">
+          <span className="absolute -top-1.5 left-8 size-3 rotate-45 bg-accent" aria-hidden="true" />
+          <p className="flex-1 text-note font-medium leading-snug">{t('guide.body')}</p>
+          <button type="button" onClick={onSkipGuide} className="h-8 shrink-0 rounded-full px-2.5 text-note font-semibold underline underline-offset-2">
+            {t('guide.skip')}
+          </button>
+        </div>
+      )}
+
+      <div className="mt-3 flex items-start justify-center gap-2">
+        <ChoiceButton label={t('still')} onClick={() => void commit('still')} disabled={pending || !img} big>
+          <IconStill size={34} />
+        </ChoiceButton>
+        <ChoiceButton label={t('unsure')} onClick={() => void commit('unsure')} disabled={pending || !img}>
+          <IconQuestion size={26} />
+        </ChoiceButton>
+        <ChoiceButton label={t('moves')} onClick={() => void commit('moves')} disabled={pending || !img} big>
+          <IconMoves size={36} />
+        </ChoiceButton>
       </div>
-      <p className="mt-3 text-center text-meta text-text-muted">
-        <span className="[@media(pointer:fine)]:hidden">{t('swipeHint')}</span>
-        <span className="hidden [@media(pointer:fine)]:inline">{t('keys')}</span>
+      <p className="mt-2 text-center text-meta text-text-muted">
+        <span className="[@media(pointer:fine)]:hidden">{playing ? t('hints.swipe') : t('hints.paused')}</span>
+        <span className="hidden [@media(pointer:fine)]:inline">{t('hints.keys')}</span>
       </p>
     </>
   )
 }
 
-function RevealPanel({ label, result, onNext }: { label: Label; result: VoteResult; onNext: () => void }) {
+function AboutCardSheet({ open, onClose, reveal }: { open: boolean; onClose: () => void; reveal: Reveal }) {
+  const t = useTranslations('classify.about')
+  const fmt = useFmt()
+  const label = useOffsetLabel()
+  const first = reveal.frames[0]?.mjd ?? 0
+  return (
+    <Sheet open={open} onClose={onClose} title={t('title')}>
+      <div className="space-y-4 px-4 py-4 text-body">
+        {reveal.p_real !== null && (
+          <section>
+            <h3 className="font-semibold">{t('chance', { pct: Math.round(reveal.p_real * 100) })}</h3>
+            <p className="mt-1 text-note text-text-secondary">{t('chanceHint')}</p>
+          </section>
+        )}
+        <section>
+          <h3 className="font-semibold">{t('photos')}</h3>
+          <ul className="mt-1 divide-y-[0.5px] divide-divider">
+            {reveal.frames.map((f, i) => (
+              <li key={f.t + i} className="flex min-h-10 items-center justify-between gap-3 text-note">
+                <span>{label((f.mjd - first) * 86400)}</span>
+                <span className="text-right text-text-secondary">
+                  {fmt.dateTime(f.t)} · {formatWavelength([f.wl_min, f.wl_max])}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <p className="text-note text-text-secondary">{t('field', { size: fmt.fixed(reveal.size_arcmin, 1), band: reveal.band })}</p>
+      </div>
+    </Sheet>
+  )
+}
+
+function RevealPanel({ cardId, choice, result, onNext }: { cardId: string; choice: Choice; result: VoteResult; onNext: () => void }) {
   const t = useTranslations('classify')
-  const actions = useRef<HTMLDivElement>(null)
+  const glitch = useGlitch()
+  const [glitchState, setGlitchState] = useState<'ask' | 'yes' | 'skipped'>('ask')
+  const [about, setAbout] = useState(false)
   const panel = useRef<HTMLElement>(null)
-  const { reveal, counted } = result
-  const rate = reveal.rate_arcsec_h ?? reveal.known?.rate_arcsec_h ?? null
-  const total = reveal.votes.real + reveal.votes.artifact + reveal.votes.unsure
-  const pct = reveal.p_real === null ? null : Math.round(reveal.p_real * 100)
+  const { reveal, counted, guided } = result
   const control = reveal.control
+  const known = reveal.known
 
   useEffect(() => {
-    actions.current?.querySelector('button')?.focus({ preventScroll: true })
     const el = panel.current
     if (!el) return
     const timer = setTimeout(() => el.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }), 350)
     return () => clearTimeout(timer)
   }, [])
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && !document.querySelector('[role="dialog"]')) onNext()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onNext])
+
   return (
     <section ref={panel} aria-labelledby="reveal-title" className="mt-4 scroll-mb-[calc(var(--height-bottomnav)+12px)] rounded-2xl bg-surface px-4 py-4">
-      <div className="flex items-center justify-between gap-2">
-        <h2 id="reveal-title" className="text-title-sm font-semibold">
-          {t('revealTitle')}
-        </h2>
-        <span
-          className={cx(
-            'shrink-0 rounded-full px-2.5 py-1 text-meta font-semibold',
-            label === 'real' && 'bg-success/15 text-success',
-            label === 'artifact' && 'bg-danger/15 text-danger',
-            label === 'unsure' && 'bg-warning/15 text-warning',
-          )}
-        >
-          {t('yourVote', { label: t(label) })}
-        </span>
+      <div className="flex items-center gap-2">
+        <span className="rounded-full bg-bg-elevated px-3 py-1 text-meta font-semibold text-text-secondary ring-1 ring-divider">{t('yourVote', { choice: t(choice) })}</span>
+        <IconButton label={t('about.open')} onClick={() => setAbout(true)} className="ml-auto -mr-2">
+          <IconMore />
+        </IconButton>
       </div>
-      {!counted && (
+
+      {!counted && !guided && (
         <div className="mt-3">
-          <Notice tone="warning">{t('tooFast')}</Notice>
+          <Notice>{t('tooFast')}</Notice>
         </div>
       )}
-      <p className="mt-2 text-body leading-snug">{t(`kinds.${reveal.kind}`)}</p>
-      {(reveal.known || rate !== null) && (
-        <ul className="mt-2 space-y-0.5 text-note text-text-secondary">
-          {reveal.known && <li>{reveal.known.V !== null ? t('knownV', { name: reveal.known.name, v: reveal.known.V }) : t('known', { name: reveal.known.name })}</li>}
-          {rate !== null && <li>{t('rate', { rate })}</li>}
-        </ul>
-      )}
-      {reveal.marks.length > 0 && <p className="mt-2 text-meta text-text-muted">{t('marksHint')}</p>}
 
       {control ? (
-        <div className="mt-3 rounded-xl bg-bg-elevated px-3 py-3">
-          <p className="text-note text-text-secondary">{t('control')}</p>
-          {control.correct !== null && (
-            <p className="mt-1.5 flex items-center gap-1.5 text-body font-semibold">
-              <span className={control.correct ? 'text-success' : 'text-danger'}>{control.correct ? <IconCheck size={20} /> : <IconClose size={20} />}</span>
-              {control.correct ? t('correct') : t('wrong')}
-            </p>
-          )}
-          <p className="mt-1 text-body font-medium">{t('truth', { label: t(control.truth === 'real' ? 'real' : 'artifact') })}</p>
-        </div>
+        <>
+          <h2 id="reveal-title" className="mt-3 text-title-sm font-semibold">
+            {t('whatWasIt')}
+          </h2>
+          <p className="mt-1.5 text-body leading-snug">{t(`kinds.${reveal.kind}`)}</p>
+          {known && <p className="mt-1.5 text-note text-text-secondary">{t('known', { name: known.name })}</p>}
+          <p className="mt-3 text-body text-text-secondary">{control.correct === null ? t('checks.unsure') : control.correct ? t('checks.same') : t('checks.different')}</p>
+        </>
       ) : (
-        <div className="mt-3 rounded-xl bg-bg-elevated px-3 py-3">
-          {pct !== null && (
+        <>
+          <h2 id="reveal-title" className="mt-3 text-title-sm font-semibold">
+            {t('nobodyKnows')}
+          </h2>
+          <p className="mt-1.5 text-note text-text-muted">{t('guess', { guess: t(`guesses.${reveal.kind}`) })}</p>
+          <p className="mt-3 text-body">{reveal.outcome === 'moves' ? t('outcome.moves') : reveal.outcome === 'still' ? t('outcome.still') : reveal.outcome === 'undecided' ? t('outcome.undecided') : t('outcome.open', { n: reveal.looked })}</p>
+        </>
+      )}
+
+      {choice === 'still' && glitchState !== 'skipped' && (
+        <div className="mt-4 rounded-xl bg-bg-elevated px-3 py-3 ring-1 ring-divider">
+          {glitchState === 'yes' ? (
+            <p className="text-note text-text-secondary">{t('glitch.thanks')}</p>
+          ) : (
             <>
-              <div className="h-2 overflow-hidden rounded-full bg-surface" aria-hidden="true">
-                <div className="h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
+              <p className="text-note leading-snug">{t('glitch.question')}</p>
+              <div className="mt-2 flex gap-2">
+                <Button
+                  className="h-9"
+                  disabled={glitch.isPending}
+                  onClick={() => glitch.mutate({ cardId, glitch: true }, { onSuccess: () => setGlitchState('yes') })}
+                >
+                  {t('glitch.yes')}
+                </Button>
+                <Button variant="ghost" className="h-9 text-text-secondary" onClick={() => setGlitchState('skipped')}>
+                  {t('glitch.skip')}
+                </Button>
               </div>
-              <p className="mt-2 text-note">{t('consensus', { pct, n: total })}</p>
             </>
           )}
-          <p className="mt-1 text-note font-semibold">{t(`status.${reveal.status}`)}</p>
         </div>
       )}
 
-      <div ref={actions} className="mt-4">
+      <div className="mt-4">
         <Button variant="primary" full className="h-11" onClick={onNext}>
           {t('next')}
         </Button>
       </div>
+      <AboutCardSheet open={about} onClose={() => setAbout(false)} reveal={reveal} />
     </section>
   )
 }
@@ -369,10 +339,10 @@ function RevealPanel({ label, result, onNext }: { label: Label; result: VoteResu
 function DeckSkeleton() {
   return (
     <div aria-hidden="true">
-      <Skeleton className="aspect-[0.84] w-full rounded-2xl" />
-      <div className="mt-5 flex justify-center gap-7">
+      <Skeleton className="aspect-[0.82] w-full rounded-2xl" />
+      <div className="mt-5 flex justify-center gap-6">
         <Skeleton className="size-16 rounded-full" />
-        <Skeleton className="mt-1.5 size-[52px] rounded-full" />
+        <Skeleton className="mt-2 size-12 rounded-full" />
         <Skeleton className="size-16 rounded-full" />
       </div>
     </div>
@@ -382,23 +352,40 @@ function DeckSkeleton() {
 function Deck() {
   const t = useTranslations('classify')
   const tc = useTranslations('common')
-  const next = useNextCard(true)
-  const [result, setResult] = useState<{ cardId: string; label: Label; data: VoteResult } | null>(null)
-  const card = next.data?.card ?? null
-  const img = useSprite(card?.sprite)
   const reduce = useReducedMotion()
+  const guideDone = useUi((s) => s.classifyGuideDone)
+  const finishGuide = useUi((s) => s.finishClassifyGuide)
+  const [guideActive] = useState(!guideDone)
+  const guideQuery = useGuideCard(guideActive)
+  const [guideOver, setGuideOver] = useState(false)
+  const guiding = guideActive && !guideOver && !!guideQuery.data?.card
+  const next = useNextCard(!guideActive || guideOver || (guideQuery.isFetched && !guideQuery.data?.card))
+  const [result, setResult] = useState<{ cardId: string; choice: Choice; data: VoteResult } | null>(null)
+  const card = guiding ? (guideQuery.data?.card ?? null) : (next.data?.card ?? null)
+  const img = useSprite(card?.sprite)
 
-  const onVoted = useCallback((label: Label, data: VoteResult) => {
-    if (card) setResult({ cardId: card.id, label, data })
-  }, [card])
+  const endGuide = useCallback(() => {
+    finishGuide()
+    setGuideOver(true)
+  }, [finishGuide])
+
+  const onVoted = useCallback(
+    (choice: Choice, data: VoteResult) => {
+      if (card) setResult({ cardId: card.id, choice, data })
+      if (guiding) finishGuide()
+    },
+    [card, guiding, finishGuide],
+  )
   const loadNext = useCallback(() => {
     setResult(null)
     window.scrollTo({ top: 0 })
-    void next.refetch()
-  }, [next])
+    if (guiding) setGuideOver(true)
+    else void next.refetch()
+  }, [next, guiding])
 
-  if (next.isLoading || (next.isFetching && !result)) return <DeckSkeleton />
-  if (next.isError)
+  if (guideActive && guideQuery.isLoading) return <DeckSkeleton />
+  if (!guiding && (next.isLoading || (next.isFetching && !result))) return <DeckSkeleton />
+  if (!guiding && next.isError)
     return (
       <EmptyState
         title={tc('retry')}
@@ -409,19 +396,20 @@ function Deck() {
         }
       />
     )
-  if (next.data?.done || !card) return <EmptyState art={<IconCheck size={56} className="text-success" />} title={t('done')} body={t('doneBody')} />
+  if (!card) return <EmptyState art={<IconCards size={56} className="text-accent" />} title={t('done')} body={t('doneBody')} />
 
   if (result && result.cardId === card.id)
     return (
       <motion.div initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <CardFrame card={card} reveal={result.data.reveal}>
-          <Viewer card={card} img={img} marks={result.data.reveal.marks} reveal={result.data.reveal} />
-        </CardFrame>
-        <RevealPanel label={result.label} result={result.data} onNext={loadNext} />
+        <div className="overflow-hidden rounded-2xl border-[0.5px] border-divider bg-bg-elevated pb-1">
+          <h2 className="px-4 py-3 font-[family-name:var(--font-display)] text-title-md font-bold">{t('question')}</h2>
+          <PhotoViewer sprite={card.sprite} img={img} offsets={card.offsets_s} reveal={result.data.reveal} overlay={(panel) => <MarksOverlay marks={result.data.reveal.marks} panel={panel} />} />
+        </div>
+        <RevealPanel cardId={card.id} choice={result.choice} result={result.data} onNext={loadNext} />
       </motion.div>
     )
 
-  return <VoteCard key={card.id} card={card} img={img} onVoted={onVoted} onStale={loadNext} />
+  return <VoteCard key={card.id} card={card} img={img} guide={guiding ? (guideQuery.data?.marks ?? []) : null} onVoted={onVoted} onStale={loadNext} onSkipGuide={endGuide} />
 }
 
 function LoginIntro() {
@@ -429,17 +417,9 @@ function LoginIntro() {
   return (
     <div className="pt-6">
       <div className="flex flex-col items-center px-6 text-center">
-        <div className="mb-4 flex items-center gap-3" aria-hidden="true">
-          <span className="inline-flex size-12 items-center justify-center rounded-full border-[0.5px] border-divider bg-bg-elevated text-danger">
-            <IconClose size={26} />
-          </span>
-          <span className="inline-flex size-10 items-center justify-center rounded-full border-[0.5px] border-divider bg-bg-elevated text-warning">
-            <IconQuestion size={22} />
-          </span>
-          <span className="inline-flex size-12 items-center justify-center rounded-full border-[0.5px] border-divider bg-bg-elevated text-success">
-            <IconCheck size={28} />
-          </span>
-        </div>
+        <span className="mb-4 inline-flex size-16 items-center justify-center rounded-full border-[0.5px] border-divider bg-bg-elevated text-text" aria-hidden="true">
+          <IconMoves size={40} />
+        </span>
         <h2 className="font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">{t('loginTitle')}</h2>
         <p className="mt-2 max-w-[320px] text-text-secondary">{t('loginBody')}</p>
       </div>

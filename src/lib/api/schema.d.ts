@@ -1341,6 +1341,7 @@ export interface paths {
                                 id: string;
                                 sprite: string;
                                 n_frames: number;
+                                offsets_s: number[];
                             } | null;
                         };
                     };
@@ -1385,7 +1386,8 @@ export interface paths {
                 content: {
                     "application/json": {
                         card_id: string;
-                        label: "real" | "artifact" | "unsure";
+                        choice: "moves" | "still" | "unsure";
+                        glitch?: boolean | null;
                     };
                 };
             };
@@ -1397,6 +1399,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             counted: boolean;
+                            guided: boolean;
                             xp: {
                                 xp: number;
                                 streakBonus: number;
@@ -1404,6 +1407,9 @@ export interface paths {
                                 reason: string;
                             };
                             reveal: {
+                                your_choice: "moves" | "still" | "unsure";
+                                looked: number;
+                                outcome: ("open" | "moves" | "still" | "undecided") | null;
                                 kind: string;
                                 band: string;
                                 size_arcmin: number;
@@ -1476,6 +1482,125 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classify/votes/{id}/glitch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        glitch: boolean | null;
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            ok: boolean;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/classify/guide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            card: {
+                                id: string;
+                                sprite: string;
+                                n_frames: number;
+                                offsets_s: number[];
+                            } | null;
+                            marks: {
+                                u: number;
+                                v: number;
+                            }[];
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1635,6 +1760,9 @@ export interface components {
             created_at: number;
         };
         Reveal: {
+            your_choice: "moves" | "still" | "unsure";
+            looked: number;
+            outcome: ("open" | "moves" | "still" | "undecided") | null;
             kind: string;
             band: string;
             size_arcmin: number;
@@ -1675,6 +1803,7 @@ export interface components {
             id: string;
             sprite: string;
             n_frames: number;
+            offsets_s: number[];
         };
         Spot: {
             name: string | null;

@@ -196,11 +196,13 @@ export function useNextCard(enabled: boolean) {
   return useQuery({ queryKey: ['classify-next'], enabled, queryFn: async () => unwrap(await api.GET('/api/classify/next')), staleTime: Infinity, gcTime: 0 })
 }
 
+export type Choice = 'moves' | 'still' | 'unsure'
+
 export function useVote() {
   const qc = useQueryClient()
   const celebrate = useCelebrate()
   return useMutation({
-    mutationFn: async (body: { card_id: string; label: Label }) => unwrap(await api.POST('/api/classify/votes', { body })),
+    mutationFn: async (body: { card_id: string; choice: Choice; glitch?: boolean | null }) => unwrap(await api.POST('/api/classify/votes', { body })),
     onSuccess: (r) => {
       celebrate(r.xp, r.new_badges)
       qc.invalidateQueries({ queryKey: keys.me })
@@ -208,4 +210,14 @@ export function useVote() {
       qc.invalidateQueries({ queryKey: keys.goals })
     },
   })
+}
+
+export function useGlitch() {
+  return useMutation({
+    mutationFn: async ({ cardId, glitch }: { cardId: string; glitch: boolean | null }) => unwrap(await api.POST('/api/classify/votes/{id}/glitch', { params: { path: { id: cardId } }, body: { glitch } })),
+  })
+}
+
+export function useGuideCard(enabled: boolean) {
+  return useQuery({ queryKey: ['classify-guide'], enabled, queryFn: async () => unwrap(await api.GET('/api/classify/guide')), staleTime: Infinity, gcTime: 0 })
 }

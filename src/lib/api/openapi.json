@@ -713,6 +713,9 @@
       "Reveal": {
         "type": "object",
         "required": [
+          "your_choice",
+          "looked",
+          "outcome",
           "kind",
           "band",
           "size_arcmin",
@@ -730,6 +733,66 @@
           "status"
         ],
         "properties": {
+          "your_choice": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "moves"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "still"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "unsure"
+                ]
+              }
+            ]
+          },
+          "looked": {
+            "type": "integer"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "open"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "moves"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "still"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "undecided"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "kind": {
             "type": "string"
           },
@@ -917,7 +980,8 @@
         "required": [
           "id",
           "sprite",
-          "n_frames"
+          "n_frames",
+          "offsets_s"
         ],
         "properties": {
           "id": {
@@ -928,6 +992,12 @@
           },
           "n_frames": {
             "type": "integer"
+          },
+          "offsets_s": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
           }
         }
       },
@@ -4451,7 +4521,8 @@
                           "required": [
                             "id",
                             "sprite",
-                            "n_frames"
+                            "n_frames",
+                            "offsets_s"
                           ],
                           "properties": {
                             "id": {
@@ -4462,6 +4533,12 @@
                             },
                             "n_frames": {
                               "type": "integer"
+                            },
+                            "offsets_s": {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              }
                             }
                           }
                         },
@@ -4509,25 +4586,25 @@
                 "type": "object",
                 "required": [
                   "card_id",
-                  "label"
+                  "choice"
                 ],
                 "properties": {
                   "card_id": {
                     "type": "string",
                     "maxLength": 64
                   },
-                  "label": {
+                  "choice": {
                     "anyOf": [
                       {
                         "type": "string",
                         "enum": [
-                          "real"
+                          "moves"
                         ]
                       },
                       {
                         "type": "string",
                         "enum": [
-                          "artifact"
+                          "still"
                         ]
                       },
                       {
@@ -4535,6 +4612,16 @@
                         "enum": [
                           "unsure"
                         ]
+                      }
+                    ]
+                  },
+                  "glitch": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
                       }
                     ]
                   }
@@ -4552,12 +4639,16 @@
                   "type": "object",
                   "required": [
                     "counted",
+                    "guided",
                     "xp",
                     "reveal",
                     "new_badges"
                   ],
                   "properties": {
                     "counted": {
+                      "type": "boolean"
+                    },
+                    "guided": {
                       "type": "boolean"
                     },
                     "xp": {
@@ -4586,6 +4677,9 @@
                     "reveal": {
                       "type": "object",
                       "required": [
+                        "your_choice",
+                        "looked",
+                        "outcome",
                         "kind",
                         "band",
                         "size_arcmin",
@@ -4603,6 +4697,66 @@
                         "status"
                       ],
                       "properties": {
+                        "your_choice": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "moves"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "still"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "unsure"
+                              ]
+                            }
+                          ]
+                        },
+                        "looked": {
+                          "type": "integer"
+                        },
+                        "outcome": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "open"
+                                  ]
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "moves"
+                                  ]
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "still"
+                                  ]
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "undecided"
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "kind": {
                           "type": "string"
                         },
@@ -4833,6 +4987,199 @@
             }
           },
           "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classify/votes/{id}/glitch": {
+      "post": {
+        "tags": [
+          "classify"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "glitch"
+                ],
+                "properties": {
+                  "glitch": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/classify/guide": {
+      "get": {
+        "tags": [
+          "classify"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "card",
+                    "marks"
+                  ],
+                  "properties": {
+                    "card": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "sprite",
+                            "n_frames",
+                            "offsets_s"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "sprite": {
+                              "type": "string"
+                            },
+                            "n_frames": {
+                              "type": "integer"
+                            },
+                            "offsets_s": {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "marks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "u",
+                          "v"
+                        ],
+                        "properties": {
+                          "u": {
+                            "type": "number"
+                          },
+                          "v": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
             "description": "Default Response",
             "content": {
               "application/json": {
