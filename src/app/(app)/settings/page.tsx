@@ -8,10 +8,12 @@ import { LoginForm } from '@/components/shell/login-sheet'
 import { Onboarding } from '@/components/shell/onboarding'
 import { Button, Skeleton, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
+import { locales } from '@/i18n/locales'
 import { useHealth, useLogout, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
 import { useUi, type ThemePref } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
+import { useSwitchLocale } from '@/lib/use-switch-locale'
 
 const THEMES: ThemePref[] = ['system', 'dark', 'light']
 const API_DOCS_URL = process.env.NEXT_PUBLIC_API_DOCS_URL ?? 'http://localhost:4000/docs'
@@ -26,6 +28,21 @@ function Section({ id, title, children }: { id: string; title?: string; children
       )}
       {children}
     </section>
+  )
+}
+
+function LanguageControl() {
+  const t = useTranslations('settings')
+  const { current, change, pending } = useSwitchLocale()
+  return (
+    <div role="radiogroup" aria-label={t('language')} aria-busy={pending}>
+      {locales.map((l) => (
+        <button key={l} type="button" role="radio" aria-checked={current === l} lang={l} onClick={() => change(l)} className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-ui active:bg-surface">
+          <span className="flex-1">{t(`languages.${l}`)}</span>
+          {current === l && <IconCheck size={24} className="text-accent" />}
+        </button>
+      ))}
+    </div>
   )
 }
 
@@ -113,13 +130,8 @@ export default function SettingsPage() {
       </Section>
 
       <Section id="s-language" title={t('language')}>
-        <div className="flex min-h-11 items-center gap-3 px-4">
-          <span className="flex-1 text-ui" lang="en">
-            {t('languageName')}
-          </span>
-          <IconCheck size={24} className="text-accent" />
-        </div>
-        <p className="px-4 text-note text-text-secondary">{t('languageHint')}</p>
+        <LanguageControl />
+        <p className="px-4 pt-1 text-note text-text-secondary">{t('languageHint')}</p>
       </Section>
 
       <Section id="s-notes" title={t('notes')}>

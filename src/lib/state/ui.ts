@@ -13,6 +13,7 @@ export type Toast =
 interface PersistedUi {
   theme: ThemePref
   seenStories: string[]
+  languageChosen: boolean
   onboardingDone: boolean
   classifyGuideDone: boolean
   classifyPacingSeen: boolean
@@ -28,6 +29,7 @@ interface UiState extends PersistedUi {
   storyStart: string | null
   setTheme: (t: ThemePref) => void
   markStorySeen: (id: string) => void
+  chooseLanguage: () => void
   finishOnboarding: () => void
   resetOnboarding: () => void
   finishClassifyGuide: () => void
@@ -51,6 +53,7 @@ export const useUi = create<UiState>()(
     (set) => ({
       theme: 'system',
       seenStories: [],
+      languageChosen: false,
       onboardingDone: false,
       classifyGuideDone: false,
       classifyPacingSeen: false,
@@ -63,6 +66,7 @@ export const useUi = create<UiState>()(
       storyStart: null,
       setTheme: (theme) => set({ theme }),
       markStorySeen: (id) => set((s) => (s.seenStories.includes(id) ? s : { seenStories: [...s.seenStories, id] })),
+      chooseLanguage: () => set({ languageChosen: true }),
       finishOnboarding: () => set({ onboardingDone: true }),
       resetOnboarding: () => set({ onboardingDone: false, classifyGuideDone: false }),
       finishClassifyGuide: () => set({ classifyGuideDone: true }),
@@ -84,6 +88,7 @@ export const useUi = create<UiState>()(
       partialize: (s): PersistedUi => ({
         theme: s.theme,
         seenStories: s.seenStories,
+        languageChosen: s.languageChosen,
         onboardingDone: s.onboardingDone,
         classifyGuideDone: s.classifyGuideDone,
         classifyPacingSeen: s.classifyPacingSeen,

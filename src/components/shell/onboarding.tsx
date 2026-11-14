@@ -63,6 +63,7 @@ function Art({ step, tick }: { step: (typeof STEPS)[number]; tick: number }) {
 export function Onboarding({ force, onClose }: { force?: boolean; onClose?: () => void }) {
   const t = useTranslations('onboarding')
   const done = useUi((s) => s.onboardingDone)
+  const language = useUi((s) => s.languageChosen)
   const finish = useUi((s) => s.finishOnboarding)
   const reduce = useReducedMotion()
   const [step, setStep] = useState(0)
@@ -74,7 +75,7 @@ export function Onboarding({ force, onClose }: { force?: boolean; onClose?: () =
     const timer = setInterval(() => setTick((x) => x + 1), 700)
     return () => clearInterval(timer)
   }, [reduce])
-  const visible = hydrated && (force || !done)
+  const visible = hydrated && (force || (language && !done))
   const close = () => {
     finish()
     setStep(0)

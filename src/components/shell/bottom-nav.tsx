@@ -47,7 +47,7 @@ export function BottomNav() {
           </Link>
         </li>
         <li>
-          <Link href="/me" aria-label={t('me')} aria-current={is('/me') ? 'page' : undefined} className={cx(item, 'flex-col gap-[3px] pt-[4px]')}>
+          <Link href="/me" aria-label={t('me')} aria-current={is('/me') ? 'page' : undefined} className={cx(item, 'flex-col gap-[5px] pt-[9px]')}>
             <UserAvatar nickname={user?.nickname ?? null} size={25} active={is('/me')} />
             <span className={cx('size-[4px] rounded-full', personal ? 'bg-danger' : 'bg-transparent')} />
           </Link>

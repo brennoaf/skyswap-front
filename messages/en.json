@@ -286,6 +286,14 @@
       "body": "Very bright stars overflow the detector, like a photo of the Sun. When that happens SkySwap says so instead of showing fake numbers."
     }
   },
+  "languageSetup": {
+    "name": "English",
+    "greeting": "Hello",
+    "title": "Choose your language",
+    "body": "You can change it any time in Settings.",
+    "pick": "Continue in English",
+    "action": "Continue"
+  },
   "profile": {
     "posts": "posts",
     "passes": "passes",
@@ -891,7 +899,7 @@
       "light": "Light"
     },
     "language": "Language",
-    "languageHint": "More languages can be added as files in messages/.",
+    "languageHint": "The app follows the language you pick here.",
     "tutorial": "Replay the tutorial",
     "notes": "Private notes",
     "notesHint": "Your notes live only in this browser.",
@@ -899,9 +907,12 @@
     "dataBody": "SkySwap shows real NASA SPHEREx images from public releases QR2 and QR3 (IRSA). Colours are false colours. The sky index lists {images} published images, so any spot can be opened. The first look at a deep-field spot, where SPHEREx returns again and again near the ecliptic poles, can take a few seconds while that part of the index downloads; after that it is kept in the browser. Data kit {version}.",
     "about": "SkySwap is a non-commercial study prototype for the NASA Space Apps 2026 challenge \"Planet X and SPHEREx\". It is not affiliated with NASA or Instagram.",
     "api": "API docs",
-    "languageName": "English",
     "notesCount": "{n, plural, =0 {No notes saved} one {# note saved} other {# notes saved}}",
-    "loggedOut": "Pick a nickname to keep your progress."
+    "loggedOut": "Pick a nickname to keep your progress.",
+    "languages": {
+      "en": "English",
+      "pt-BR": "Português (Brasil)"
+    }
   },
   "catalogs": {
     "title": "Check catalogs",

@@ -1,9 +1,9 @@
+import { cookies } from 'next/headers'
 import { getRequestConfig } from 'next-intl/server'
-
-export const locales = ['en'] as const
-export const defaultLocale = 'en'
+import { defaultLocale, isLocale, LOCALE_COOKIE } from './locales'
 
 export default getRequestConfig(async () => {
-  const locale = defaultLocale
+  const saved = (await cookies()).get(LOCALE_COOKIE)?.value
+  const locale = isLocale(saved) ? saved : defaultLocale
   return { locale, messages: (await import(`../../messages/${locale}.json`)).default, timeZone: 'UTC' }
 })

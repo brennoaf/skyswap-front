@@ -281,8 +281,8 @@ export function Chip({ active, children, onClick, className }: { active?: boolea
 
 export function Notice({ tone = 'info', icon, children }: { tone?: 'info' | 'warning'; icon?: ReactNode; children: ReactNode }) {
   return (
-    <div className={cx('flex gap-2 rounded-xl px-3 py-2.5 text-note leading-snug', tone === 'warning' ? 'bg-warning/15 text-text' : 'bg-surface text-text')}>
-      {icon && <span className={cx('mt-[1px] shrink-0', tone === 'warning' ? 'text-warning' : 'text-text-secondary')}>{icon}</span>}
+    <div className="flex gap-3 rounded-xl bg-surface px-3 py-3 text-note leading-snug text-text">
+      {icon && <span className={cx('shrink-0', tone === 'warning' ? 'text-warning' : 'text-text')}>{icon}</span>}
       <div className="min-w-0">{children}</div>
     </div>
   )
