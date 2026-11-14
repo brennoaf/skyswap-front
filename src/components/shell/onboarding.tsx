@@ -5,16 +5,21 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
-import { IconCards, IconColours, IconComment, IconHome, IconMore, IconReel, IconSave, IconSearch, IconTarget } from '@/components/icons'
+import { IconCards, IconCheck, IconColours, IconComment, IconHome, IconMore, IconReel, IconSave, IconSearch, IconTarget } from '@/components/icons'
 import { Button } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
+import { defaultLocale, isLocale, type Locale } from '@/i18n/locales'
 import { cx } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
+import { useSwitchLocale } from '@/lib/use-switch-locale'
+
+export type LanguageOption = { locale: Locale; name: string; greeting: string; title: string; body: string; pick: string; action: string }
 
 type Item = { icon: ReactNode; key: string }
 type Step = { id: string; target?: string; items?: Item[]; art?: 'sky' | 'blink' }
 
 const STEPS: Step[] = [
+  { id: 'language' },
   { id: 'welcome', art: 'sky' },
   { id: 'help', art: 'blink' },
   { id: 'stories', target: 'stories' },
@@ -46,7 +51,41 @@ const STEPS: Step[] = [
   { id: 'finish' },
 ]
 
+const STARS = [
+  [18, 22, 1.4, 'text'],
+  [64, 12, 1, 'text'],
+  [112, 30, 1.8, 'band-d2'],
+  [150, 14, 1, 'text'],
+  [196, 26, 1.3, 'text'],
+  [244, 10, 2, 'band-d5'],
+  [286, 34, 1, 'text'],
+  [40, 50, 1, 'text'],
+  [92, 46, 1.2, 'text'],
+  [176, 50, 1, 'band-d1'],
+  [226, 44, 1.4, 'text'],
+  [270, 52, 1, 'text'],
+] as const
+
 type Box = { top: number; left: number; width: number; height: number }
+
+function SkyField({ reduce }: { reduce: boolean }) {
+  return (
+    <svg viewBox="0 0 300 60" className="w-full" aria-hidden="true">
+      {STARS.map(([x, y, r, tone], i) => (
+        <motion.circle
+          key={i}
+          cx={x}
+          cy={y}
+          r={r * 1.8}
+          fill={`var(--color-${tone})`}
+          initial={{ opacity: 0.35 }}
+          animate={reduce ? { opacity: 0.6 } : { opacity: [0.25, 0.9, 0.25] }}
+          transition={reduce ? { duration: 0 } : { duration: 2.4 + (i % 4) * 0.7, repeat: Infinity, delay: (i % 5) * 0.4 }}
+        />
+      ))}
+    </svg>
+  )
+}
 
 function Art({ kind, tick }: { kind: 'sky' | 'blink'; tick: number }) {
   const on = tick % 2 === 0
@@ -71,6 +110,88 @@ function Art({ kind, tick }: { kind: 'sky' | 'blink'; tick: number }) {
       <circle cx={on ? 128 : 112} cy={on ? 56 : 64} r="6.5" fill="none" stroke="var(--color-crosshair)" strokeDasharray="3 3" opacity="0.6" />
       <path d="M100 44H92V52M140 44H148V52M100 76H92V68M140 76H148V68" stroke="var(--color-accent)" strokeWidth="2.5" fill="none" />
     </svg>
+  )
+}
+
+function LanguageStep({ options, reduce, onDone }: { options: LanguageOption[]; reduce: boolean; onDone: () => void }) {
+  const choose = useUi((s) => s.chooseLanguage)
+  const { current, change, pending } = useSwitchLocale()
+  const [selected, setSelected] = useState<Locale>(isLocale(current) ? current : defaultLocale)
+  const [greet, setGreet] = useState(0)
+  const [waiting, setWaiting] = useState(false)
+  useEffect(() => {
+    if (reduce || options.length < 2) return
+    const timer = setInterval(() => setGreet((g) => (g + 1) % options.length), 2200)
+    return () => clearInterval(timer)
+  }, [reduce, options.length])
+  useEffect(() => {
+    if (!waiting || pending || current !== selected) return
+    setWaiting(false)
+    choose()
+    onDone()
+  }, [waiting, pending, current, selected, choose, onDone])
+
+  const option = options.find((o) => o.locale === selected) ?? options[0]
+  const hello = options[greet] ?? option
+  if (!option || !hello) return null
+  const confirm = () => {
+    change(selected)
+    setWaiting(true)
+  }
+
+  return (
+    <div lang={selected}>
+      <SkyField reduce={reduce} />
+      <div className="relative mt-2 h-14 overflow-hidden" aria-hidden="true">
+        <AnimatePresence initial={false} mode="popLayout">
+          <motion.p
+            key={hello.locale}
+            lang={hello.locale}
+            initial={reduce ? false : { y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={reduce ? { opacity: 0 } : { y: -40, opacity: 0 }}
+            transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
+            className="absolute inset-x-0 font-[family-name:var(--font-wordmark)] text-wordmark-lg leading-[56px]"
+          >
+            {hello.greeting}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+      <h2 id="tour-title" className="mt-1 font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">
+        {option.title}
+      </h2>
+      <p className="mt-1 text-body leading-relaxed text-text-secondary">{option.body}</p>
+      <div role="radiogroup" aria-labelledby="tour-title" className="mt-4 flex flex-col gap-2">
+        {options.map((o) => {
+          const on = o.locale === selected
+          return (
+            <button
+              key={o.locale}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              lang={o.locale}
+              onClick={() => setSelected(o.locale)}
+              className={cx('flex min-h-14 items-center gap-3 rounded-xl border px-3 text-left transition-colors active:bg-surface-pressed', on ? 'border-text bg-surface' : 'border-divider')}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-ui font-semibold">{o.name}</span>
+                <span className="block text-note text-text-secondary">{o.pick}</span>
+              </span>
+              <span
+                className={cx('inline-flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors', on ? 'border-accent bg-accent text-on-accent' : 'border-ring-seen')}
+                aria-hidden="true"
+              >
+                {on && <IconCheck size={16} />}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+      <Button variant="primary" className="mt-5 h-12 w-full" disabled={waiting} aria-busy={waiting} onClick={confirm}>
+        {option.action}
+      </Button>
+    </div>
   )
 }
 
@@ -119,7 +240,7 @@ function useTargetBox(target: string | undefined, reduce: boolean) {
   return { box, missing }
 }
 
-export function Onboarding() {
+export function Onboarding({ options }: { options: LanguageOption[] }) {
   const t = useTranslations('onboarding')
   const path = usePathname()
   const done = useUi((s) => s.onboardingDone)
@@ -129,8 +250,11 @@ export function Onboarding() {
   const [index, setIndex] = useState(0)
   const [tick, setTick] = useState(0)
   const [hydrated, setHydrated] = useState(false)
-  useEffect(() => setHydrated(true), [])
-  const visible = hydrated && language && !done && path === '/'
+  useEffect(() => {
+    if (useUi.getState().languageChosen) setIndex(1)
+    setHydrated(true)
+  }, [])
+  const visible = hydrated && (!language || (!done && path === '/'))
   useEffect(() => {
     if (reduce || !visible) return
     const timer = setInterval(() => setTick((x) => x + 1), 700)
@@ -141,6 +265,7 @@ export function Onboarding() {
   const { box, missing } = useTargetBox(visible ? step.target : undefined, reduce)
   const last = index === STEPS.length - 1
   const go = useCallback((d: number) => setIndex((i) => Math.max(0, Math.min(STEPS.length - 1, i + d))), [])
+  const next = useCallback(() => go(1), [go])
   const close = () => {
     finish()
     setIndex(0)
@@ -160,56 +285,62 @@ export function Onboarding() {
       transition={{ duration: 0.25 }}
       className="pointer-events-auto rounded-2xl bg-sheet p-5 shadow-[0_12px_40px_rgb(0_0_0/0.35)] ring-1 ring-divider"
     >
-      {step.art && (
-        <div className="mb-4">
-          <Art kind={step.art} tick={tick} />
-        </div>
-      )}
-      <p className="text-meta font-semibold uppercase tracking-wide text-accent">{t('step', { n: index + 1, total: STEPS.length })}</p>
-      <h2 id="tour-title" className="mt-1 font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">
-        {t(`${step.id}.title`)}
-      </h2>
-      {step.items ? (
-        <ul className="mt-3 flex flex-col gap-2.5">
-          {step.items.map((it) => (
-            <li key={it.key} className="flex items-center gap-3 text-body">
-              <span className="inline-flex size-8 shrink-0 items-center justify-center">{it.icon}</span>
-              <span>{t(`${step.id}.${it.key}`)}</span>
-            </li>
-          ))}
-        </ul>
-      ) : step.id === 'finish' ? (
-        <div className="mt-2 flex flex-col gap-2 text-body leading-relaxed text-text-secondary">
-          <p>{t('finish.contribution')}</p>
-          <p>{t('finish.pro')}</p>
-        </div>
+      {step.id === 'language' ? (
+        <LanguageStep options={options} reduce={reduce} onDone={next} />
       ) : (
-        <p className="mt-2 text-body leading-relaxed text-text-secondary">{t(`${step.id}.body`)}</p>
-      )}
-      {last ? (
-        <div className="mt-5 flex flex-col gap-2">
-          <Link href="/classify" onClick={close} className="inline-flex h-12 items-center justify-center rounded-[var(--radius-button)] bg-accent text-ui font-semibold text-on-accent active:bg-accent-pressed">
-            {t('finish.classify')}
-          </Link>
-          <Button className="h-12" onClick={close}>
-            {t('finish.explore')}
-          </Button>
-        </div>
-      ) : (
-        <div className="mt-5 flex items-center gap-2">
-          <button type="button" onClick={close} className="h-11 px-1 text-ui font-semibold text-text-secondary">
-            {t('skip')}
-          </button>
-          <span className="flex-1" />
-          {index > 0 && (
-            <Button className="h-11 px-4" onClick={() => go(-1)}>
-              {t('back')}
-            </Button>
+        <>
+          {step.art && (
+            <div className="mb-4">
+              <Art kind={step.art} tick={tick} />
+            </div>
           )}
-          <Button variant="primary" className="h-11 px-5" onClick={() => go(1)}>
-            {t('next')}
-          </Button>
-        </div>
+          <p className="text-meta font-semibold uppercase tracking-wide text-accent">{t('step', { n: index, total: STEPS.length - 1 })}</p>
+          <h2 id="tour-title" className="mt-1 font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">
+            {t(`${step.id}.title`)}
+          </h2>
+          {step.items ? (
+            <ul className="mt-3 flex flex-col gap-2.5">
+              {step.items.map((it) => (
+                <li key={it.key} className="flex items-center gap-3 text-body">
+                  <span className="inline-flex size-8 shrink-0 items-center justify-center">{it.icon}</span>
+                  <span>{t(`${step.id}.${it.key}`)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : step.id === 'finish' ? (
+            <div className="mt-2 flex flex-col gap-2 text-body leading-relaxed text-text-secondary">
+              <p>{t('finish.contribution')}</p>
+              <p>{t('finish.pro')}</p>
+            </div>
+          ) : (
+            <p className="mt-2 text-body leading-relaxed text-text-secondary">{t(`${step.id}.body`)}</p>
+          )}
+          {last ? (
+            <div className="mt-5 flex flex-col gap-2">
+              <Link href="/classify" onClick={close} className="inline-flex h-12 items-center justify-center rounded-[var(--radius-button)] bg-accent text-ui font-semibold text-on-accent active:bg-accent-pressed">
+                {t('finish.classify')}
+              </Link>
+              <Button className="h-12" onClick={close}>
+                {t('finish.explore')}
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-5 flex items-center gap-2">
+              <button type="button" onClick={close} className="h-11 px-1 text-ui font-semibold text-text-secondary">
+                {t('skip')}
+              </button>
+              <span className="flex-1" />
+              {index > 0 && (
+                <Button className="h-11 px-4" onClick={() => go(-1)}>
+                  {t('back')}
+                </Button>
+              )}
+              <Button variant="primary" className="h-11 px-5" onClick={next}>
+                {t('next')}
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </motion.div>
   )

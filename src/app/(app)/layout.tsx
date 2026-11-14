@@ -1,7 +1,6 @@
 import { BottomNav } from '@/components/shell/bottom-nav'
-import { LanguageSetup, type LanguageOption } from '@/components/shell/language-setup'
 import { LoginSheet } from '@/components/shell/login-sheet'
-import { Onboarding } from '@/components/shell/onboarding'
+import { Onboarding, type LanguageOption } from '@/components/shell/onboarding'
 import { StoryViewer } from '@/components/shell/story-viewer'
 import { Toaster } from '@/components/shell/toaster'
 import { locales } from '@/i18n/locales'
@@ -18,8 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <BottomNav />
       <StoryViewer />
       <LoginSheet />
-      <LanguageSetup options={options} />
-      <Onboarding />
+      <Onboarding options={options} />
       <Toaster />
     </div>
   )
