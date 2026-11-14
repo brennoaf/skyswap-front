@@ -644,8 +644,7 @@
       "days": "+{n, plural, one {# day} other {# days}}"
     },
     "hints": {
-      "swipe": "Swipe right if it moves, left if it doesn't.",
-      "paused": "Paused. Tap the sides of the photo to step, or tap play to swipe again."
+      "swipe": "Right: it moves. Left: it doesn't. Up: not sure."
     },
     "guide": {
       "body": "See how it jumps between the photos? That's moving. Swipe right.",

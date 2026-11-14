@@ -644,8 +644,7 @@
       "days": "+{n, plural, one {# dia} other {# dias}}"
     },
     "hints": {
-      "swipe": "Deslize para a direita se ele se move, para a esquerda se não se move.",
-      "paused": "Pausado. Toque nas laterais da foto para avançar ou voltar, ou toque em reproduzir para deslizar de novo."
+      "swipe": "Direita: se move. Esquerda: não se move. Para cima: não sei."
     },
     "guide": {
       "body": "Viu como ele pula entre as fotos? Isso é movimento. Deslize para a direita.",

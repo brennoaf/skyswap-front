@@ -1,14 +1,26 @@
 'use client'
 
-import { useReducedMotion } from 'framer-motion'
+import { useReducedMotion, type MotionValue } from 'framer-motion'
 import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCardGestures } from '@/components/classify/card-gestures'
 import { IconChevronLeft, IconChevronRight, IconPause, IconPlay } from '@/components/icons'
 import { Segmented, Skeleton, useLoopRestart } from '@/components/ui/primitives'
 import type { Reveal } from '@/lib/api/client'
 import { cx, formatDateTime, formatWavelength } from '@/lib/format'
 
 export type PhotoRow = 0 | 1
+
+export type CardSwipe = {
+  x: MotionValue<number>
+  y: MotionValue<number>
+  enabled: boolean
+  threshold: number
+  onRelease: (dx: number, dy: number, vx: number, vy: number) => void
+  onCancel: () => void
+}
+
+const NO_SWIPE: CardSwipe['onCancel'] = () => undefined
 
 export function useOffsetLabel() {
   const t = useTranslations('classify.time')
@@ -76,6 +88,7 @@ export function PhotoViewer({
   onPlayingChange,
   onLocate,
   fit = false,
+  swipe,
 }: {
   sprite: string
   img: HTMLImageElement | null
@@ -86,6 +99,7 @@ export function PhotoViewer({
   onPlayingChange?: (playing: boolean) => void
   onLocate?: (frame: number, x: number, y: number) => void
   fit?: boolean
+  swipe?: CardSwipe
 }) {
   const t = useTranslations('classify')
   const locale = useLocale()
@@ -96,11 +110,14 @@ export function PhotoViewer({
   const [panel, setPanel] = useState(0)
   const [playing, setPlaying] = useState(!reduce)
   const [chevrons, setChevrons] = useState(false)
-  const swipe = useRef<{ x: number; y: number } | null>(null)
+  const [frozen, setFrozen] = useState(false)
+  const inner = useRef<HTMLDivElement>(null)
+  const drag = useRef<{ x: number; y: number } | null>(null)
   const hide = useRef<ReturnType<typeof setTimeout> | null>(null)
   const n = Math.max(1, offsets.length)
   const tile = img ? Math.round(img.naturalHeight / 2) : 1
-  const running = playing && n > 1
+  const running = playing && n > 1 && !frozen
+  const paused = !playing
   const restart = useLoopRestart(panel, running)
 
   useEffect(() => onPlayingChange?.(running), [running, onPlayingChange])
@@ -157,20 +174,38 @@ export function PhotoViewer({
     return () => window.removeEventListener('keydown', onKey)
   }, [step, flash])
 
+  const fallback = useRef<MotionValue<number> | null>(null)
+  const gestures = useCardGestures({
+    box: inner,
+    x: swipe?.x ?? (fallback.current as unknown as MotionValue<number>),
+    y: swipe?.y ?? (fallback.current as unknown as MotionValue<number>),
+    canSwipe: !!swipe?.enabled,
+    threshold: swipe?.threshold ?? 0,
+    onRelease: swipe?.onRelease ?? NO_SWIPE,
+    onCancel: swipe?.onCancel ?? NO_SWIPE,
+    onHold: setFrozen,
+    onTap: onLocate
+      ? (cx0, cy0) => {
+          const r = inner.current?.getBoundingClientRect()
+          if (r) onLocate(panel, Math.min(1, Math.max(0, (cx0 - r.left) / r.width)), Math.min(1, Math.max(0, (cy0 - r.top) / r.height)))
+        }
+      : undefined,
+  })
   const pos = dotPositions(offsets)
   const frame = reveal?.frames[panel]
   const current = label(offsets[panel] ?? 0)
 
   const stage = (
       <div
-        className={cx('relative select-none', onLocate && 'cursor-crosshair', fit && 'mx-auto aspect-square')}
+        className={cx('relative select-none overflow-hidden', onLocate && 'cursor-crosshair', fit && 'mx-auto aspect-square', swipe && 'touch-none')}
         style={fit ? { width: 'min(100cqw, 100cqh)' } : undefined}
-        onPointerDown={(e) => {
-          swipe.current = { x: e.clientX, y: e.clientY }
+        {...(swipe ? gestures.bind : {})}
+        onPointerDown={swipe ? gestures.bind.onPointerDown : (e) => {
+          drag.current = { x: e.clientX, y: e.clientY }
         }}
-        onPointerUp={(e) => {
-          const start = swipe.current
-          swipe.current = null
+        onPointerUp={swipe ? gestures.bind.onPointerUp : (e) => {
+          const start = drag.current
+          drag.current = null
           if (!start) return
           const dx = e.clientX - start.x
           const dy = e.clientY - start.y
@@ -193,18 +228,21 @@ export function PhotoViewer({
           }
         }}
       >
-        <canvas
-          ref={canvas}
-          width={tile}
-          height={tile}
-          role="img"
-          aria-label={t('photoAlt', { n: panel + 1, total: n, when: current })}
-          className="pixelated block aspect-square w-full bg-media-bg"
-          data-sprite={sprite}
-        />
-        {!img && <Skeleton className="absolute inset-0 rounded-none" />}
-        {overlay?.(panel)}
-        {n > 1 && (
+        <div ref={inner} className="relative origin-center" style={gestures.zoom.scale > 1 ? { transform: `translate(${gestures.zoom.x}px, ${gestures.zoom.y}px) scale(${gestures.zoom.scale})` } : undefined}>
+          <canvas
+            ref={canvas}
+            width={tile}
+            height={tile}
+            role="img"
+            aria-label={t('photoAlt', { n: panel + 1, total: n, when: current })}
+            className="pixelated block aspect-square w-full bg-media-bg"
+            data-sprite={sprite}
+            data-frame={panel}
+          />
+          {!img && <Skeleton className="absolute inset-0 rounded-none" />}
+          {overlay?.(panel)}
+        </div>
+        {n > 1 && !swipe && (
           <>
             <span className={cx('pointer-events-none absolute left-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-media-scrim text-on-media transition-opacity duration-300', chevrons && !running ? 'opacity-100' : 'opacity-0')} aria-hidden="true">
               <IconChevronLeft size={26} />
@@ -234,33 +272,56 @@ export function PhotoViewer({
             flash()
           }}
         />
-        <div className="mt-1 flex items-center gap-2">
-          <p className="min-w-0 flex-1 text-note font-medium text-text-secondary first-letter:uppercase" aria-live="off">
-            {current}
-          </p>
-          <Segmented
-            label={t('view')}
-            value={row === 0 ? 'photos' : 'changes'}
-            onChange={(v) => setRow(v === 'photos' ? 0 : 1)}
-            options={[
-              { value: 'photos', label: t('photos') },
-              { value: 'changes', label: t('changes') },
-            ]}
-          />
-          {n > 1 && (
-            <button
-              type="button"
-              aria-label={running ? t('pause') : t('play')}
-              onClick={() => {
-                setPlaying((p) => !p)
-                flash()
-              }}
-              className="-mr-1 inline-flex size-11 items-center justify-center rounded-full text-text active:scale-90"
-            >
-              {running ? <IconPause size={24} /> : <IconPlay size={24} />}
+        {swipe ? (
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pb-1">
+            <p className="min-w-0 truncate text-note font-medium text-text-secondary first-letter:uppercase" aria-live="off">
+              {current}
+            </p>
+            {n > 1 ? (
+              <button
+                type="button"
+                aria-label={paused ? t('play') : t('pause')}
+                onClick={() => setPlaying((p) => !p)}
+                className="inline-flex size-14 items-center justify-center rounded-full bg-surface text-text active:bg-surface-pressed"
+              >
+                {paused ? <IconPlay size={30} /> : <IconPause size={30} />}
+              </button>
+            ) : (
+              <span className="size-14" />
+            )}
+            <button type="button" aria-pressed={row === 1} onClick={() => setRow(row === 0 ? 1 : 0)} className={cx('h-10 justify-self-end whitespace-nowrap rounded-full px-3 text-note font-semibold', row === 1 ? 'bg-text text-bg' : 'bg-surface text-text')}>
+              {t('changes')}
             </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="mt-1 flex items-center gap-2">
+            <p className="min-w-0 flex-1 text-note font-medium text-text-secondary first-letter:uppercase" aria-live="off">
+              {current}
+            </p>
+            <Segmented
+              label={t('view')}
+              value={row === 0 ? 'photos' : 'changes'}
+              onChange={(v) => setRow(v === 'photos' ? 0 : 1)}
+              options={[
+                { value: 'photos', label: t('photos') },
+                { value: 'changes', label: t('changes') },
+              ]}
+            />
+            {n > 1 && (
+              <button
+                type="button"
+                aria-label={running ? t('pause') : t('play')}
+                onClick={() => {
+                  setPlaying((p) => !p)
+                  flash()
+                }}
+                className="-mr-1 inline-flex size-11 items-center justify-center rounded-full text-text active:scale-90"
+              >
+                {running ? <IconPause size={24} /> : <IconPlay size={24} />}
+              </button>
+            )}
+          </div>
+        )}
         {caption?.(panel)}
         {frame && !fit && <p className="pb-2 text-meta text-text-muted">{t('frameWhen', { date: formatDateTime(frame.t, locale), wavelength: formatWavelength([frame.wl_min, frame.wl_max]) })}</p>}
       </div>

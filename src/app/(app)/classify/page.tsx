@@ -1,6 +1,6 @@
 'use client'
 
-import { animate, motion, useMotionValue, useReducedMotion, useTransform, type MotionValue, type PanInfo } from 'framer-motion'
+import { animate, motion, useMotionValue, useReducedMotion, useTransform, type MotionValue } from 'framer-motion'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
@@ -252,7 +252,6 @@ function VoteCard({
   const unsureOpacity = useTransform(y, [-SWIPE, -24], [1, 0])
   const busy = useRef(false)
   const [pending, setPending] = useState(false)
-  const [playing, setPlaying] = useState(true)
   const [locating, setLocating] = useState(false)
   const [spot, setSpot] = useState<VotePosition | null>(null)
 
@@ -303,12 +302,11 @@ function VoteCard({
     [commit, guide, img, locating, settle],
   )
 
-  const onDragEnd = (_: unknown, info: PanInfo) => {
-    const dx = info.offset.x
-    const dy = info.offset.y
-    if (dx > SWIPE || info.velocity.x > 700) choose('moves')
-    else if (dx < -SWIPE || info.velocity.x < -700) choose('still')
-    else if (dy < -SWIPE || info.velocity.y < -700) choose('unsure')
+  const onRelease = (dx: number, dy: number, vx: number, vy: number) => {
+    const sideways = Math.abs(dx) >= Math.abs(dy)
+    if (sideways && (dx > SWIPE || vx > 700)) choose('moves')
+    else if (sideways && (dx < -SWIPE || vx < -700)) choose('still')
+    else if (!sideways && (dy < -SWIPE || vy < -700)) choose('unsure')
     else settle()
   }
 
@@ -342,19 +340,16 @@ function VoteCard({
         header
       )}
       <motion.div
-        drag={!pending && playing && !locating}
-        dragMomentum={false}
-        onDragEnd={onDragEnd}
-        style={{ x, y, rotate, touchAction: playing && !locating ? 'none' : 'pan-y' }}
+        style={{ x, y, rotate }}
         initial={reduce ? false : { opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
-        className={cx('relative flex min-h-0 flex-1 flex-col px-3', playing && !locating && 'cursor-grab active:cursor-grabbing')}
+        className="relative flex min-h-0 flex-1 flex-col px-3"
       >
         <Stamp label={t('moves')} tone="moves" style={{ opacity: movesOpacity }} className="left-4 top-4" />
         <Stamp label={t('still')} tone="still" style={{ opacity: stillOpacity }} className="right-4 top-4" />
         <Stamp label={t('unsure')} tone="unsure" style={{ opacity: unsureOpacity }} className="left-1/2 top-4 -translate-x-1/2" />
         <CardFrame x={x} y={y}>
-          <PhotoViewer fit sprite={card.sprite} img={img} offsets={card.offsets_s} onPlayingChange={setPlaying} overlay={viewerOverlay} caption={caption} onLocate={locating && !pending ? locate : undefined} />
+          <PhotoViewer fit swipe={{ x, y, enabled: !pending && !locating && !!img, threshold: SWIPE, onRelease, onCancel: settle }} sprite={card.sprite} img={img} offsets={card.offsets_s} overlay={viewerOverlay} caption={caption} onLocate={locating && !pending ? locate : undefined} />
         </CardFrame>
       </motion.div>
 
@@ -368,7 +363,7 @@ function VoteCard({
         </div>
       )}
 
-      {((showHints && !guide) || locating) && <p className="shrink-0 truncate px-3 pt-1 text-center text-meta text-text-secondary">{locating ? t('locate.hint') : playing ? t('hints.swipe') : t('hints.paused')}</p>}
+      {((showHints && !guide) || locating) && <p className="shrink-0 truncate px-3 pt-1 text-center text-meta text-text-secondary">{locating ? t('locate.hint') : t('hints.swipe')}</p>}
       <div className="shrink-0 px-3 pb-2 pt-2">
         <div className="flex gap-2">
           <ChoiceButton label={t('still')} onClick={() => choose('still')} disabled={pending || !img} primary>
