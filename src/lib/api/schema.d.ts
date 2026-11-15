@@ -1898,6 +1898,7 @@ export interface paths {
                         };
                         held_ms?: number;
                         hints?: boolean;
+                        note?: string;
                     };
                 };
             };
@@ -2240,6 +2241,11 @@ export interface paths {
                                 checks_total: number;
                                 credit_names: string[];
                                 credit_others: number;
+                                first_vote: {
+                                    nickname: string | null;
+                                    at: number;
+                                    note: string | null;
+                                } | null;
                                 social: {
                                     interesting: number;
                                     doubts: number;
@@ -2315,6 +2321,11 @@ export interface paths {
                             checks_total: number;
                             credit_names: string[];
                             credit_others: number;
+                            first_vote: {
+                                nickname: string | null;
+                                at: number;
+                                note: string | null;
+                            } | null;
                             social: {
                                 interesting: number;
                                 doubts: number;
@@ -2353,10 +2364,6 @@ export interface paths {
                             }[];
                             credits: string[];
                             credits_anonymous: number;
-                            first_vote: {
-                                nickname: string | null;
-                                at: number;
-                            } | null;
                             data_version: string;
                         };
                     };
@@ -2423,6 +2430,11 @@ export interface paths {
                                 checks_total: number;
                                 credit_names: string[];
                                 credit_others: number;
+                                first_vote: {
+                                    nickname: string | null;
+                                    at: number;
+                                    note: string | null;
+                                } | null;
                                 social: {
                                     interesting: number;
                                     doubts: number;
@@ -2902,6 +2914,8 @@ export interface paths {
                                 };
                                 status: string;
                             };
+                            note: string | null;
+                            note_editable: boolean;
                         };
                     };
                 };
@@ -2929,6 +2943,148 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/cards/{id}/note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        note: string | null;
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            note: string | null;
+                        };
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/findings/{id}/note-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            ok: boolean;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -3039,6 +3195,11 @@ export interface components {
             checks_total: number;
             credit_names: string[];
             credit_others: number;
+            first_vote: {
+                nickname: string | null;
+                at: number;
+                note: string | null;
+            } | null;
             social: {
                 interesting: number;
                 doubts: number;
@@ -3097,6 +3258,11 @@ export interface components {
                 checks_total: number;
                 credit_names: string[];
                 credit_others: number;
+                first_vote: {
+                    nickname: string | null;
+                    at: number;
+                    note: string | null;
+                } | null;
                 social: {
                     interesting: number;
                     doubts: number;
@@ -3137,6 +3303,11 @@ export interface components {
             checks_total: number;
             credit_names: string[];
             credit_others: number;
+            first_vote: {
+                nickname: string | null;
+                at: number;
+                note: string | null;
+            } | null;
             social: {
                 interesting: number;
                 doubts: number;
@@ -3175,10 +3346,6 @@ export interface components {
             }[];
             credits: string[];
             credits_anonymous: number;
-            first_vote: {
-                nickname: string | null;
-                at: number;
-            } | null;
             data_version: string;
         };
         MyCards: {

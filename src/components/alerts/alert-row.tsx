@@ -57,6 +57,14 @@ export function AlertRow({ alert, unread, now }: { alert: Alert; unread: boolean
     )
     text = t(`alerts.items.finding.${alert.detail}`)
     href = `/community/${encodeURIComponent(alert.ref)}`
+  } else if (alert.type === 'note') {
+    art = (
+      <RoundIcon tone="success">
+        <IconStar size={24} />
+      </RoundIcon>
+    )
+    text = t('alerts.items.note')
+    href = `/community/${encodeURIComponent(alert.ref)}`
   } else if (alert.type === 'finding_followed') {
     art = (
       <RoundIcon tone="muted">

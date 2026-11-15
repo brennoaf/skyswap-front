@@ -34,6 +34,7 @@
           "checks_total",
           "credit_names",
           "credit_others",
+          "first_vote",
           "social"
         ],
         "properties": {
@@ -131,6 +132,46 @@
           },
           "credit_others": {
             "type": "integer"
+          },
+          "first_vote": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "nickname",
+                  "at",
+                  "note"
+                ],
+                "properties": {
+                  "nickname": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "at": {
+                    "type": "number"
+                  },
+                  "note": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "social": {
             "type": "object",
@@ -369,6 +410,7 @@
                 "checks_total",
                 "credit_names",
                 "credit_others",
+                "first_vote",
                 "social"
               ],
               "properties": {
@@ -466,6 +508,46 @@
                 },
                 "credit_others": {
                   "type": "integer"
+                },
+                "first_vote": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "nickname",
+                        "at",
+                        "note"
+                      ],
+                      "properties": {
+                        "nickname": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "at": {
+                          "type": "number"
+                        },
+                        "note": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "social": {
                   "type": "object",
@@ -605,6 +687,7 @@
           "checks_total",
           "credit_names",
           "credit_others",
+          "first_vote",
           "social",
           "fov_deg",
           "offsets_s",
@@ -612,7 +695,6 @@
           "events",
           "credits",
           "credits_anonymous",
-          "first_vote",
           "data_version"
         ],
         "properties": {
@@ -710,6 +792,46 @@
           },
           "credit_others": {
             "type": "integer"
+          },
+          "first_vote": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "nickname",
+                  "at",
+                  "note"
+                ],
+                "properties": {
+                  "nickname": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "at": {
+                    "type": "number"
+                  },
+                  "note": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "social": {
             "type": "object",
@@ -933,35 +1055,6 @@
           },
           "credits_anonymous": {
             "type": "integer"
-          },
-          "first_vote": {
-            "anyOf": [
-              {
-                "type": "object",
-                "required": [
-                  "nickname",
-                  "at"
-                ],
-                "properties": {
-                  "nickname": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "at": {
-                    "type": "number"
-                  }
-                }
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "data_version": {
             "type": "string"
@@ -7011,6 +7104,10 @@
                   },
                   "hints": {
                     "type": "boolean"
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 600
                   }
                 }
               }
@@ -7861,6 +7958,7 @@
                           "checks_total",
                           "credit_names",
                           "credit_others",
+                          "first_vote",
                           "social"
                         ],
                         "properties": {
@@ -7958,6 +8056,46 @@
                           },
                           "credit_others": {
                             "type": "integer"
+                          },
+                          "first_vote": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "required": [
+                                  "nickname",
+                                  "at",
+                                  "note"
+                                ],
+                                "properties": {
+                                  "nickname": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "at": {
+                                    "type": "number"
+                                  },
+                                  "note": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           },
                           "social": {
                             "type": "object",
@@ -8124,6 +8262,7 @@
                     "checks_total",
                     "credit_names",
                     "credit_others",
+                    "first_vote",
                     "social",
                     "fov_deg",
                     "offsets_s",
@@ -8131,7 +8270,6 @@
                     "events",
                     "credits",
                     "credits_anonymous",
-                    "first_vote",
                     "data_version"
                   ],
                   "properties": {
@@ -8229,6 +8367,46 @@
                     },
                     "credit_others": {
                       "type": "integer"
+                    },
+                    "first_vote": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "nickname",
+                            "at",
+                            "note"
+                          ],
+                          "properties": {
+                            "nickname": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "at": {
+                              "type": "number"
+                            },
+                            "note": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "social": {
                       "type": "object",
@@ -8453,35 +8631,6 @@
                     "credits_anonymous": {
                       "type": "integer"
                     },
-                    "first_vote": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "required": [
-                            "nickname",
-                            "at"
-                          ],
-                          "properties": {
-                            "nickname": {
-                              "anyOf": [
-                                {
-                                  "type": "string"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "at": {
-                              "type": "number"
-                            }
-                          }
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
                     "data_version": {
                       "type": "string"
                     }
@@ -8558,6 +8707,7 @@
                             "checks_total",
                             "credit_names",
                             "credit_others",
+                            "first_vote",
                             "social"
                           ],
                           "properties": {
@@ -8655,6 +8805,46 @@
                             },
                             "credit_others": {
                               "type": "integer"
+                            },
+                            "first_vote": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "nickname",
+                                    "at",
+                                    "note"
+                                  ],
+                                  "properties": {
+                                    "nickname": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "at": {
+                                      "type": "number"
+                                    },
+                                    "note": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
                             },
                             "social": {
                               "type": "object",
@@ -9696,7 +9886,9 @@
                   "type": "object",
                   "required": [
                     "label",
-                    "reveal"
+                    "reveal",
+                    "note",
+                    "note_editable"
                   ],
                   "properties": {
                     "label": {
@@ -9966,6 +10158,237 @@
                           "type": "string"
                         }
                       }
+                    },
+                    "note": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "note_editable": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/cards/{id}/note": {
+      "put": {
+        "tags": [
+          "me"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "note"
+                ],
+                "properties": {
+                  "note": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 600
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "note"
+                  ],
+                  "properties": {
+                    "note": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 600
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/community/findings/{id}/note-report": {
+      "post": {
+        "tags": [
+          "community"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
                     }
                   }
                 }

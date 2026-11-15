@@ -8,7 +8,7 @@ import { useOffsetLabel } from '@/components/classify/photo-viewer'
 import { ANSWER_ICONS, AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapStage, SwapStamps, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
 import { KnownSheet, PhotoSourceSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
-import { IconArrowRight, IconBack, IconCards, IconCheck, IconClose, IconInfo, IconMoves, IconQuestion, IconShare, IconTarget, IconUndo, IconWarning } from '@/components/icons'
+import { IconArrowRight, IconBack, IconCards, IconCheck, IconClose, IconInfo, IconMoves, IconPencil, IconQuestion, IconShare, IconTarget, IconUndo, IconWarning } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { ScreenTour } from '@/components/shell/onboarding'
@@ -21,6 +21,7 @@ import { exploreQueue, isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
 import { hasOutsideArea } from '@/lib/out-of-field'
 import { knownName, verdictOf, type Answer } from '@/lib/swap-verdict'
 import { useUi } from '@/lib/state/ui'
+import { cleanNote, NOTE_MAX } from '@/lib/note'
 import { useShare } from '@/lib/share'
 import { useFmt } from '@/lib/use-fmt'
 
@@ -29,7 +30,7 @@ type Mark = { u: number; v: number }
 type PlayCard = DeckCard | SkyPlayCard
 type Lesson = 'moves' | 'still' | 'glitch'
 type Mode = 'look' | 'tools' | 'confirm' | 'sending' | 'sent' | 'past' | 'failed' | 'result'
-type Pending = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; hints: boolean }
+type Pending = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; hints: boolean; note: string | null }
 type GuideData = NonNullable<ReturnType<typeof useGuideCard>['data']>
 type WelcomeExample = GuideData['examples'][number]
 type WelcomeStepPlan = { key: 'intro' | 'still' | 'moves' | 'particle' | 'streak' | 'unsure'; example?: WelcomeExample['example']; swipe?: { x: number; up: boolean; arrow: string }; follow?: boolean; spot?: { u: number; v: number; r: number }; tap?: boolean; hold?: number }
@@ -376,16 +377,36 @@ function useOutside(img: HTMLImageElement | null, n: number) {
   return outside
 }
 
-function BottomSheet({ children, label, testId }: { children: ReactNode; label?: string; testId?: string }) {
+function useKeyboardInset() {
+  const [inset, setInset] = useState(0)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => setInset(Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)))
+    update()
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
+  }, [])
+  return inset
+}
+
+function BottomSheet({ children, label, testId, grow = false }: { children: ReactNode; label?: string; testId?: string; grow?: boolean }) {
   const reduce = useReducedMotion()
+  const keyboard = useKeyboardInset()
   return (
     <motion.section
+      style={keyboard ? { bottom: keyboard, maxHeight: `calc(100dvh - ${keyboard}px - env(safe-area-inset-top) - 12px)` } : undefined}
+      data-keyboard={keyboard || undefined}
       initial={reduce ? false : { y: '105%' }}
       animate={{ y: 0 }}
       transition={{ duration: 0.38, ease: [0.2, 0.9, 0.2, 1] }}
       aria-label={label}
       aria-labelledby={label ? undefined : 'confirm-title'}
-      className={cx('absolute inset-x-0 bottom-0 z-20 flex flex-col overflow-y-auto rounded-t-[26px] bg-sheet px-4 pb-[calc(16px+env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-12px_40px_rgb(0_0_0/0.45)]', SHEET_MAX)}
+      className={cx('absolute inset-x-0 bottom-0 z-[35] flex flex-col overflow-y-auto rounded-t-[26px] bg-sheet px-4 pb-[calc(16px+env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-12px_40px_rgb(0_0_0/0.45)]', !grow && SHEET_MAX)}
       data-testid={testId}
     >
       <span aria-hidden="true" className="mx-auto mb-4 block h-1 w-9 shrink-0 rounded-sm bg-divider" />
@@ -394,13 +415,53 @@ function BottomSheet({ children, label, testId }: { children: ReactNode; label?:
   )
 }
 
-function ConfirmSheet({ card, answer, busy, past, onUndo, onConfirm, onAbout, onShare, onSkip }: { card: PlayCard; answer: Answer; busy: boolean; past: boolean; onUndo: () => void; onConfirm: () => void; onAbout: () => void; onShare?: () => void; onSkip: () => void }) {
+function NoteField({ value, onChange }: { value: string | null; onChange: (v: string | null) => void }) {
+  const t = useTranslations('classify.note')
+  const length = value ? [...value].length : 0
+  const invalid = value !== null && cleanNote(value) === 'invalid'
+  if (value === null)
+    return (
+      <button type="button" onClick={() => onChange('')} className="flex h-11 w-full shrink-0 items-center gap-2.5 text-left text-ui font-semibold text-text" data-testid="note-open">
+        <IconPencil size={20} className="shrink-0 text-text-secondary" />
+        {t('open')}
+      </button>
+    )
+  return (
+    <div className="shrink-0 pb-1" data-testid="note-field">
+      <div className="field-focus flex h-11 items-center gap-2.5 rounded-xl bg-surface px-3">
+        <IconPencil size={20} className="shrink-0 text-text-secondary" />
+        <input
+          autoFocus
+          type="text"
+          enterKeyHint="done"
+          aria-label={t('label')}
+          aria-invalid={invalid || undefined}
+          maxLength={NOTE_MAX}
+          value={value}
+          placeholder={t('placeholder')}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') e.currentTarget.blur()
+          }}
+          className="min-w-0 flex-1 bg-transparent text-ui text-text outline-none placeholder:text-text-secondary"
+          data-testid="note-input"
+        />
+        {length >= NOTE_MAX - 20 && <span className="shrink-0 text-ui tabular-nums text-text-secondary" data-testid="note-count">{NOTE_MAX - length}</span>}
+      </div>
+      <p className={cx('mt-1 text-ui leading-snug', invalid ? 'text-danger' : 'text-text-secondary')} role={invalid ? 'alert' : undefined}>
+        {invalid ? t('invalid') : t('help')}
+      </p>
+    </div>
+  )
+}
+
+function ConfirmSheet({ card, answer, busy, past, note, onNote, onUndo, onConfirm, onAbout, onShare, onSkip }: { card: PlayCard; answer: Answer; busy: boolean; past: boolean; note?: string | null; onNote?: (v: string | null) => void; onUndo: () => void; onConfirm: () => void; onAbout: () => void; onShare?: () => void; onSkip: () => void }) {
   const t = useTranslations('classify')
   const fmt = useFmt()
   const Icon = ANSWER_ICONS[answer]
   const sky = isSkyCard(card) ? card : null
   return (
-    <BottomSheet testId="swap-confirm">
+    <BottomSheet testId="swap-confirm" grow={note !== null && note !== undefined}>
       <div className="flex shrink-0 items-center gap-3.5">
         <span className={cx('grid size-[52px] shrink-0 place-items-center rounded-full', answer === 'moves' ? 'bg-accent text-on-accent' : 'bg-text text-bg')} data-testid="confirm-badge">
           <Icon size={28} />
@@ -429,6 +490,7 @@ function ConfirmSheet({ card, answer, busy, past, onUndo, onConfirm, onAbout, on
           {sky && <span className="block truncate tabular-nums">{t('confirm.where', { ra: fmt.fixed(sky.ra, 4), dec: `${sky.dec >= 0 ? '+' : ''}${fmt.fixed(sky.dec, 4)}` })}</span>}
         </span>
       </button>
+      {onNote && <NoteField value={note ?? null} onChange={onNote} />}
       <div className="mt-2 flex shrink-0 gap-2.5">
         {past ? (
           <button type="button" onClick={onSkip} className="flex h-[54px] flex-1 items-center justify-center rounded-2xl bg-accent text-[17px] font-semibold text-on-accent active:bg-accent-pressed">
@@ -440,7 +502,7 @@ function ConfirmSheet({ card, answer, busy, past, onUndo, onConfirm, onAbout, on
               <IconUndo size={22} />
               {t('undo')}
             </button>
-            <button type="button" disabled={busy} aria-busy={busy} onClick={onConfirm} className="flex h-[54px] flex-[1.5] items-center justify-center rounded-2xl bg-accent text-[17px] font-semibold text-on-accent active:bg-accent-pressed disabled:opacity-45">
+            <button type="button" disabled={busy || (!!note && cleanNote(note) === 'invalid')} aria-busy={busy} onClick={onConfirm} className="flex h-[54px] flex-[1.5] items-center justify-center rounded-2xl bg-accent text-[17px] font-semibold text-on-accent active:bg-accent-pressed disabled:opacity-45">
               {t('confirm.confirm')}
             </button>
           </>
@@ -496,7 +558,7 @@ function SwapCard({
   onHelp: () => void
   onShare?: () => void
   onSkip?: () => void
-  onAnswer: (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => void
+  onAnswer: (answer: Answer, spot: VotePosition | null, at: number, hints: boolean, note: string | null) => void
   onLessonStale: () => void
   onLessonNext: () => void
 }) {
@@ -523,6 +585,7 @@ function SwapCard({
   const [retry, setRetry] = useState(false)
   const [swingOver, setSwingOver] = useState(false)
   const [leaving, setLeaving] = useState<Answer | null>(null)
+  const [noteText, setNoteText] = useState<string | null>(null)
   const sky = isSkyCard(card) ? card : null
   const [hintsOn, setHintsOn] = useState(false)
   const [hintsUsed, setHintsUsed] = useState(false)
@@ -548,6 +611,7 @@ function SwapCard({
 
   const undoChoice = () => {
     settle()
+    setNoteText(null)
     setAnswer(null)
     setSpot(null)
     setMode('look')
@@ -598,10 +662,12 @@ function SwapCard({
       void sendLesson(answer)
       return
     }
+    const kept = answer === 'moves' && noteText ? cleanNote(noteText) : null
+    if (kept === 'invalid') return
     sentOnce.current = true
     setMode('sent')
     setLeaving(answer)
-    onAnswer(answer, answer === 'moves' ? spot : null, chosenAt, hintsUsed)
+    onAnswer(answer, answer === 'moves' ? spot : null, chosenAt, hintsUsed, kept)
   }
 
   useEffect(() => {
@@ -772,7 +838,7 @@ function SwapCard({
           </div>
         </div>
       )}
-      {deciding && answer && !leaving && <ConfirmSheet card={card} answer={answer} busy={mode !== 'confirm'} past={mode === 'past'} onUndo={undoChoice} onConfirm={confirm} onAbout={() => setAboutOpen(true)} onShare={onShare} onSkip={() => onSkip?.()} />}
+      {deciding && answer && !leaving && <ConfirmSheet card={card} answer={answer} busy={mode !== 'confirm'} past={mode === 'past'} note={noteText} onNote={!lesson && answer === 'moves' && mode !== 'past' ? setNoteText : undefined} onUndo={undoChoice} onConfirm={confirm} onAbout={() => setAboutOpen(true)} onShare={onShare} onSkip={() => onSkip?.()} />}
       {mode === 'failed' && answer && (
         <BottomSheet label={t('failed')}>
           <p role="status" className="text-[16px] font-medium leading-snug text-danger">
@@ -1004,6 +1070,7 @@ function useDelayedVotes(onNotice: (strips: Strip[]) => void, onFailed: (answer:
           hints: p.hints,
           held_ms: Math.min(600000, Math.round(performance.now() - p.at)),
           ...(p.spot ? { position: p.spot } : {}),
+          ...(p.note ? { note: p.note } : {}),
         })
         exploreQueue.release(isSkyCard(p.card) ? p.card : null)
         const known = r.reveal.known
@@ -1143,10 +1210,10 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   }, [finishGuide, nothingToPractice, phase])
 
   const onAnswer = useCallback(
-    (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => {
+    (answer: Answer, spot: VotePosition | null, at: number, hints: boolean, note: string | null) => {
       if (!card) return
       retryFailed()
-      void send({ card, answer, spot, at, hints })
+      void send({ card, answer, spot, at, hints, note })
       setSavedAt(Date.now())
       sessionLooks++
       const after = (go: () => void) => {

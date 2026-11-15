@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { CommunitySwitch } from '@/components/community/community-switch'
 import { FindingActions, SocialFacts } from '@/components/community/finding-actions'
-import { ExamplePill, FindingFacts, FoundBy, stateBody, StatePill, useFindingTitle } from '@/components/community/finding-parts'
+import { ExamplePill, FindingFacts, FirstAnswer, FoundBy, stateBody, StatePill, useFindingTitle } from '@/components/community/finding-parts'
 import { IconCards, IconChevronRight, IconTarget } from '@/components/icons'
 import { SkyLocator } from '@/components/sky/sky-locator'
 import { Button, Chip, EmptyState, Skeleton, Wordmark } from '@/components/ui/primitives'
@@ -42,6 +42,9 @@ function FindingCard({ finding }: { finding: FindingSummary }) {
         <FindingFacts finding={finding} />
         <FoundBy names={finding.credit_names} others={finding.credit_others} />
       </Link>
+      <div className="px-3 pt-1">
+        <FirstAnswer id={finding.id} first={finding.first_vote} />
+      </div>
     </article>
   )
 }

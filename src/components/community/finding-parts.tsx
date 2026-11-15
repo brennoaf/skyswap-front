@@ -1,6 +1,9 @@
 'use client'
 
 import { useLocale, useTranslations } from 'next-intl'
+import { useState } from 'react'
+import { api } from '@/lib/api/client'
+import { useSession } from '@/lib/api/hooks'
 import { cx, formatShortDate } from '@/lib/format'
 import type { FindingSummary } from '@/lib/api/client'
 
@@ -53,6 +56,43 @@ export function FindingFacts({ finding }: { finding: FindingSummary }) {
       {dates && `, ${dates}`}
       {`. ${t('checksDone', { done: finding.checks_done, total: finding.checks_total })}`}
     </p>
+  )
+}
+
+export function FirstAnswer({ id, first }: { id: string; first: FindingSummary['first_vote'] }) {
+  const t = useTranslations('community')
+  const session = useSession()
+  const [reported, setReported] = useState(false)
+  if (!first) return null
+  return (
+    <div className="text-note leading-snug" data-testid="first-answer">
+      <p className="text-text-secondary">{first.nickname ? t('firstVote', { name: first.nickname }) : t('firstVoteAnonymous')}</p>
+      {first.note && !reported && (
+        <>
+          <blockquote className="mt-1 border-l-2 border-accent pl-2.5 text-body text-text" data-testid="first-note">
+            {`"${first.note}"`}
+          </blockquote>
+          {session.data && (
+            <button
+              type="button"
+              onClick={() => {
+                setReported(true)
+                void api.POST('/api/community/findings/{id}/note-report', { params: { path: { id } } })
+              }}
+              className="mt-0.5 min-h-8 text-note font-semibold text-text-secondary"
+              data-testid="note-report"
+            >
+              {t('noteReport')}
+            </button>
+          )}
+        </>
+      )}
+      {first.note && reported && (
+        <p role="status" className="mt-1 text-note text-text-secondary">
+          {t('noteReported')}
+        </p>
+      )}
+    </div>
   )
 }
 

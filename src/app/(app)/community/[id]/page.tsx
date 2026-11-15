@@ -5,7 +5,7 @@ import { use, useEffect, useState, type ReactNode } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { PhotoViewer } from '@/components/classify/photo-viewer'
 import { FindingActions, PeopleButton, SecondLookPanel, SocialFacts } from '@/components/community/finding-actions'
-import { ExamplePill, FindingFacts, FoundBy, stateBody, StatePill, useFindingTitle } from '@/components/community/finding-parts'
+import { ExamplePill, FindingFacts, FirstAnswer, FoundBy, stateBody, StatePill, useFindingTitle } from '@/components/community/finding-parts'
 import { IconLink } from '@/components/icons'
 import { SkyViewer } from '@/components/sky/sky-viewer'
 import { EmptyState, IconButton, Notice, Skeleton, TopBar } from '@/components/ui/primitives'
@@ -133,7 +133,7 @@ function Timeline({ finding }: { finding: FindingDetail }) {
       <ol className="mt-2 space-y-2 border-l-[1.5px] border-divider pl-3 text-body leading-snug">
         {finding.first_vote && (
           <li>
-            {finding.first_vote.nickname ? t('firstVote', { name: finding.first_vote.nickname }) : t('firstVoteAnonymous')}
+            <FirstAnswer id={finding.id} first={finding.first_vote} />
             <span className="block text-meta text-text-secondary">{formatDateTime(new Date(finding.first_vote.at).toISOString(), locale)}</span>
           </li>
         )}

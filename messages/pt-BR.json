@@ -864,6 +864,13 @@
       "more": "Continuar explorando",
       "back": "Voltar à Comunidade"
     },
+    "note": {
+      "open": "Escrever recado",
+      "label": "Recado",
+      "placeholder": "Ex.: o ponto andou para cima",
+      "help": "Se você foi a primeira pessoa a ver, o recado aparece no post.",
+      "invalid": "Só texto: sem links, e-mails ou @."
+    },
     "share": {
       "label": "Compartilhar cartão",
       "title": "Algo mudou de lugar? Me ajude a olhar este pedaço do céu.",
@@ -1138,6 +1145,7 @@
         "published": "Um pedaço do céu que você respondeu foi publicado.",
         "discarded": "Um pedaço do céu que você respondeu foi deixado de lado. Sua resposta contou."
       },
+      "note": "Seu recado foi para o post de um achado.",
       "findingFollowed": "Um pedaço do céu que você segue mudou: {state}."
     }
   },
@@ -1248,6 +1256,8 @@
     "foundBy": "Encontrado por {names}",
     "foundByMore": "Encontrado por {names} e mais {n}",
     "foundByAnonymous": "Encontrado por {n, plural, one {# pessoa anônima} other {# pessoas anônimas}}",
+    "noteReport": "Denunciar recado",
+    "noteReported": "Denúncia enviada",
     "firstVote": "Primeira resposta que viu mexer, de {name}",
     "firstVoteAnonymous": "Primeira resposta que viu mexer",
     "checksTitle": "Checagens automáticas",
@@ -1321,6 +1331,15 @@
       },
       "emptyTitle": "Você ainda não respondeu nenhuma foto",
       "emptyAction": "Responder um cartão",
+      "note": {
+        "title": "Seu recado",
+        "empty": "Sem recado",
+        "edit": "Editar",
+        "delete": "Apagar",
+        "save": "Salvar",
+        "cancel": "Cancelar",
+        "locked": "O cartão virou achado, então o recado não muda mais."
+      },
       "detail": {
         "title": "Sobre este cartão",
         "others": "Respostas até agora",

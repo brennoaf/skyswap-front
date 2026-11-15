@@ -3,14 +3,77 @@
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { TechnicalData } from '@/components/classify/swap-sheets'
 import { StatePill } from '@/components/community/finding-parts'
 import { IconChevronRight } from '@/components/icons'
 import { EmptyState, Sheet, Skeleton, TopBar } from '@/components/ui/primitives'
 import { api, unwrap, type MyCardItem } from '@/lib/api/client'
 import { useMyCards, useSession } from '@/lib/api/hooks'
-import { formatShortDate } from '@/lib/format'
+import { cx, formatShortDate } from '@/lib/format'
+import { cleanNote, NOTE_MAX } from '@/lib/note'
+
+function NoteBlock({ cardId, note, editable }: { cardId: string; note: string | null; editable: boolean }) {
+  const t = useTranslations('community.myCards.note')
+  const tn = useTranslations('classify.note')
+  const qc = useQueryClient()
+  const [draft, setDraft] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const invalid = draft !== null && cleanNote(draft) === 'invalid'
+  const save = async (value: string | null) => {
+    setSaving(true)
+    await api.PUT('/api/me/cards/{id}/note', { params: { path: { id: cardId } }, body: { note: value } })
+    await qc.invalidateQueries({ queryKey: ['my-card', cardId] })
+    setDraft(null)
+    setSaving(false)
+  }
+  return (
+    <div className="border-b-[0.5px] border-divider py-2.5 text-[16px] leading-snug" data-testid="my-note">
+      <b className="font-semibold">{t('title')}: </b>
+      {draft === null ? (
+        <>
+          <span className={cx(!note && 'text-text-secondary')}>{note ? `"${note}"` : t('empty')}</span>
+          {editable ? (
+            <span className="mt-1 flex gap-4">
+              <button type="button" onClick={() => setDraft(note ?? '')} className="min-h-10 text-ui font-semibold text-link">
+                {t('edit')}
+              </button>
+              {note && (
+                <button type="button" disabled={saving} onClick={() => void save(null)} className="min-h-10 text-ui font-semibold text-danger">
+                  {t('delete')}
+                </button>
+              )}
+            </span>
+          ) : (
+            note && <span className="mt-1 block text-ui text-text-secondary">{t('locked')}</span>
+          )}
+        </>
+      ) : (
+        <span className="mt-1 block">
+          <input
+            autoFocus
+            type="text"
+            aria-label={tn('label')}
+            maxLength={NOTE_MAX}
+            value={draft}
+            placeholder={tn('placeholder')}
+            onChange={(e) => setDraft(e.target.value)}
+            className="h-11 w-full rounded-xl bg-surface px-3 text-ui outline-none focus:ring-2 focus:ring-accent"
+          />
+          <span className={cx('mt-1 block text-ui', invalid ? 'text-danger' : 'text-text-secondary')}>{invalid ? tn('invalid') : tn('help')}</span>
+          <span className="mt-1 flex gap-4">
+            <button type="button" disabled={saving || invalid} onClick={() => void save(draft)} className="min-h-10 text-ui font-semibold text-link disabled:opacity-50">
+              {t('save')}
+            </button>
+            <button type="button" onClick={() => setDraft(null)} className="min-h-10 text-ui font-semibold text-text-secondary">
+              {t('cancel')}
+            </button>
+          </span>
+        </span>
+      )}
+    </div>
+  )
+}
 
 function CardDetail({ item, onClose }: { item: MyCardItem | null; onClose: () => void }) {
   const t = useTranslations('community.myCards')
@@ -35,6 +98,7 @@ function CardDetail({ item, onClose }: { item: MyCardItem | null; onClose: () =>
               {t(`answers.${item.label}`)}
               <span className="block text-[14px] text-text-secondary">{formatShortDate(item.created_at, locale)}</span>
             </p>
+            {item.label === 'real' && detail.data && <NoteBlock cardId={item.card_id} note={detail.data.note} editable={detail.data.note_editable} />}
             <p className={line}>
               <b className="font-semibold">{t('detail.others')}: </b>
               {t('detail.othersCount', { moves: reveal.votes.real, still: reveal.votes.artifact, unsure: reveal.votes.unsure })}

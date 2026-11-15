@@ -864,6 +864,13 @@
       "more": "Keep exploring",
       "back": "Back to Community"
     },
+    "note": {
+      "open": "Write a note",
+      "label": "Note",
+      "placeholder": "E.g. the dot moved up",
+      "help": "If you were the first to see it, the note shows on the post.",
+      "invalid": "Plain text only: no links, e-mails or @."
+    },
     "share": {
       "label": "Share card",
       "title": "Did something move? Help me look at this piece of sky.",
@@ -1138,6 +1145,7 @@
         "published": "A patch of sky you answered was published.",
         "discarded": "A patch of sky you answered was set aside. Your answer counted."
       },
+      "note": "Your note went to the post of a finding.",
       "findingFollowed": "A patch of sky you follow changed: {state}."
     }
   },
@@ -1248,6 +1256,8 @@
     "foundBy": "Found by {names}",
     "foundByMore": "Found by {names} and {n} more",
     "foundByAnonymous": "Found by {n, plural, one {# anonymous person} other {# anonymous people}}",
+    "noteReport": "Report note",
+    "noteReported": "Report sent",
     "firstVote": "First answer that saw it move, by {name}",
     "firstVoteAnonymous": "First answer that saw it move",
     "checksTitle": "Automatic checks",
@@ -1321,6 +1331,15 @@
       },
       "emptyTitle": "You haven't answered any photos yet",
       "emptyAction": "Answer a card",
+      "note": {
+        "title": "Your note",
+        "empty": "No note",
+        "edit": "Edit",
+        "delete": "Delete",
+        "save": "Save",
+        "cancel": "Cancel",
+        "locked": "The card became a finding, so the note no longer changes."
+      },
       "detail": {
         "title": "About this card",
         "others": "Answers so far",
