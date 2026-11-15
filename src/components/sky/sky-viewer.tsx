@@ -20,6 +20,8 @@ import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch
 import { pointHits, askServer } from '@/lib/explore/lookup'
 import { differenceGrey, differenceImages, differenceScale, SKY_CROP } from '@/lib/explore/sky-card'
 import { tileFetch } from '@/lib/explore/tiles'
+import { isControl, isTyping, ownsArrows, plainKey } from '@/lib/keys'
+import { modalCount } from '@/lib/modal-history'
 import { useUi } from '@/lib/state/ui'
 import { useBandName } from '@/lib/use-band'
 
@@ -334,6 +336,23 @@ function Player({
     setCur((c) => (c + d + n) % n)
   }
   const ready = b.status === 'ready' && n > 0
+
+  useEffect(() => {
+    if (!ready) return
+    const onKey = (e: KeyboardEvent) => {
+      if (!plainKey(e) || isTyping(e.target) || modalCount()) return
+      if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && !ownsArrows(e.target)) {
+        e.preventDefault()
+        setPlaying(false)
+        setCur((c) => (c + (e.key === 'ArrowRight' ? 1 : -1) + n) % n)
+      } else if (e.key === ' ' && !isControl(e.target)) {
+        e.preventDefault()
+        setPlaying((v) => !v)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [ready, n])
   const date = frame ? formatShortDate(mjdToMs(frame.mjd), locale) : ''
   const frameLabel = frame ? t('frameDate', { date, band: bandName(frame.band) }) : ''
   const canBuild = canBuildFrom(sky)
@@ -352,15 +371,6 @@ function Player({
           : undefined
       }
       tabIndex={ready ? 0 : -1}
-      onKeyDown={(e) => {
-        if (!ready) return
-        if (e.key === 'ArrowRight') step(1)
-        else if (e.key === 'ArrowLeft') step(-1)
-        else if (e.key === ' ') {
-          e.preventDefault()
-          setPlaying((v) => !v)
-        }
-      }}
       data-build-ms={b.ms ?? undefined}
       data-first-frame-ms={b.firstMs ?? undefined}
       data-frames={n}

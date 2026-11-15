@@ -4,9 +4,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type RefObject, useEffect, useId, useRef, useState } from 'react'
+import { type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type RefObject, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
 import { IconBack, IconFlask, IconSaturated, IconVerified } from '@/components/icons'
 import { cx } from '@/lib/format'
+import { closeModal, isTopModal, leaveModals, modalCount, openModal, subscribeModals } from '@/lib/modal-history'
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
 
@@ -122,22 +123,38 @@ export const isSaturated = (saturation: string) => saturation === 'heavy'
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-const modalStack: object[] = []
-
-export function useModal(ref: RefObject<HTMLElement | null>, open: boolean, onClose: () => void) {
+export function useModal(ref: RefObject<HTMLElement | null>, open: boolean, onClose: () => void): boolean {
   const closeRef = useRef(onClose)
+  const router = useRouter()
+  const routerRef = useRef(router)
+  const [token] = useState(() => ({}))
+  const top = useSyncExternalStore(
+    subscribeModals,
+    () => isTopModal(token),
+    () => false,
+  )
   useEffect(() => {
     closeRef.current = onClose
-  }, [onClose])
+    routerRef.current = router
+  }, [onClose, router])
   useEffect(() => {
     if (!open) return
-    const token = {}
+    const el = ref.current
     const prev = document.activeElement as HTMLElement | null
-    modalStack.push(token)
-    if (modalStack.length === 1) document.body.style.overflow = 'hidden'
-    ref.current?.focus()
+    openModal(token, () => closeRef.current())
+    if (modalCount() === 1) document.body.style.overflow = 'hidden'
+    el?.focus()
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      const a = (e.target as Element | null)?.closest?.('a[href]')
+      if (!(a instanceof HTMLAnchorElement) || (a.target && a.target !== '_self') || a.hasAttribute('download')) return
+      const url = new URL(a.href)
+      if (url.origin !== location.origin || url.href === location.href) return
+      e.preventDefault()
+      leaveModals(() => routerRef.current.push(url.pathname + url.search + url.hash))
+    }
     const onKey = (e: KeyboardEvent) => {
-      if (modalStack[modalStack.length - 1] !== token) return
+      if (!isTopModal(token)) return
       if (e.key === 'Escape') {
         e.stopPropagation()
         closeRef.current()
@@ -161,13 +178,128 @@ export function useModal(ref: RefObject<HTMLElement | null>, open: boolean, onCl
       }
     }
     document.addEventListener('keydown', onKey)
+    el?.addEventListener('click', onClick, true)
     return () => {
       document.removeEventListener('keydown', onKey)
-      modalStack.splice(modalStack.indexOf(token), 1)
-      if (!modalStack.length) document.body.style.overflow = ''
+      el?.removeEventListener('click', onClick, true)
+      closeModal(token)
+      if (!modalCount()) document.body.style.overflow = ''
       prev?.focus()
     }
-  }, [open, ref])
+  }, [open, ref, token])
+  return open && top
+}
+
+export function useLeaveModals() {
+  const router = useRouter()
+  return (href: string) => leaveModals(() => router.push(href))
+}
+
+const SHEET_CLOSE_PX = 120
+const SHEET_CLOSE_SPEED = 0.6
+const SHEET_LEAVE_MS = 180
+const NO_SHEET_DRAG = 'input, textarea, select, [role="slider"], [data-no-sheet-drag], .touch-none'
+
+function useSheetDrag(ref: RefObject<HTMLElement | null>, handle: RefObject<HTMLElement | null>, open: boolean, onClose: () => void) {
+  const [offset, setOffset] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const closeRef = useRef(onClose)
+  useEffect(() => {
+    closeRef.current = onClose
+  }, [onClose])
+  useEffect(() => {
+    const el = ref.current
+    if (!open || !el) return
+    setOffset(0)
+    setDragging(false)
+    let g: { id: number | 'touch'; x: number; y: number; top: boolean; active: boolean; lastY: number; lastT: number; v: number } | null = null
+    let leave: ReturnType<typeof setTimeout> | undefined
+    const begin = (id: number | 'touch', x: number, y: number, target: EventTarget | null) => {
+      const t = target instanceof Element ? target : null
+      const fromHandle = !!t && !!handle.current?.contains(t)
+      if (!fromHandle && t?.closest(NO_SHEET_DRAG)) return
+      g = { id, x, y, top: fromHandle || el.scrollTop <= 0, active: false, lastY: y, lastT: performance.now(), v: 0 }
+    }
+    const move = (x: number, y: number) => {
+      if (!g) return false
+      const dy = y - g.y
+      if (!g.active) {
+        if (Math.abs(dy) < 8 && Math.abs(x - g.x) < 8) return false
+        if (!g.top || el.scrollTop > 0 || dy < 8 || Math.abs(x - g.x) > dy) {
+          g = null
+          return false
+        }
+        g.active = true
+        setDragging(true)
+      }
+      const now = performance.now()
+      g.v = (y - g.lastY) / Math.max(1, now - g.lastT)
+      g.lastY = y
+      g.lastT = now
+      setOffset(Math.max(0, dy))
+      return true
+    }
+    const end = () => {
+      const was = g
+      g = null
+      if (!was?.active) return
+      setDragging(false)
+      const dy = was.lastY - was.y
+      const height = el.offsetHeight
+      if (dy > Math.min(SHEET_CLOSE_PX, height / 3) || (was.v > SHEET_CLOSE_SPEED && dy > 24)) {
+        setOffset(height)
+        leave = setTimeout(() => closeRef.current(), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : SHEET_LEAVE_MS)
+      } else setOffset(0)
+    }
+    const onTouchStart = (e: TouchEvent) => {
+      const p = e.touches[0]
+      if (e.touches.length !== 1 || !p) {
+        g = null
+        return
+      }
+      begin('touch', p.clientX, p.clientY, e.target)
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      const p = e.touches[0]
+      if (p && g?.id === 'touch' && move(p.clientX, p.clientY) && e.cancelable) e.preventDefault()
+    }
+    const onTouchEnd = () => {
+      if (g?.id === 'touch') end()
+    }
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch' && e.button === 0) begin(e.pointerId, e.clientX, e.clientY, e.target)
+    }
+    const onPointerMove = (e: PointerEvent) => {
+      if (g?.id !== e.pointerId) return
+      const was = g.active
+      if (!move(e.clientX, e.clientY)) return
+      if (!was) el.setPointerCapture(e.pointerId)
+      e.preventDefault()
+    }
+    const onPointerUp = (e: PointerEvent) => {
+      if (g?.id === e.pointerId) end()
+    }
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd)
+    el.addEventListener('touchcancel', onTouchEnd)
+    el.addEventListener('pointerdown', onPointerDown)
+    el.addEventListener('pointermove', onPointerMove)
+    el.addEventListener('pointerup', onPointerUp)
+    el.addEventListener('pointercancel', onPointerUp)
+    return () => {
+      clearTimeout(leave)
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+      el.removeEventListener('touchcancel', onTouchEnd)
+      el.removeEventListener('pointerdown', onPointerDown)
+      el.removeEventListener('pointermove', onPointerMove)
+      el.removeEventListener('pointerup', onPointerUp)
+      el.removeEventListener('pointercancel', onPointerUp)
+    }
+  }, [open, ref, handle])
+  return { offset, dragging }
 }
 
 export function Sheet({
@@ -189,15 +321,10 @@ export function Sheet({
 }) {
   const id = useId()
   const ref = useRef<HTMLDivElement>(null)
-  const dragStart = useRef<number | null>(null)
-  const [drag, setDrag] = useState(0)
+  const handle = useRef<HTMLDivElement>(null)
   const t = useTranslations('common')
   useModal(ref, open, onClose)
-  useEffect(() => {
-    if (open) return
-    dragStart.current = null
-    setDrag(0)
-  }, [open])
+  const { offset, dragging } = useSheetDrag(ref, handle, open, onClose)
   if (!open) return null
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" role="presentation">
@@ -208,29 +335,15 @@ export function Sheet({
         aria-modal="true"
         aria-labelledby={labelledBy ?? (title ? id : undefined)}
         tabIndex={-1}
-        style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
+        data-testid="sheet"
+        style={{ transform: offset ? `translateY(${offset}px)` : undefined }}
         className={cx(
-          'sheet-in relative max-h-[88dvh] w-full max-w-[var(--width-app)] overflow-y-auto rounded-t-[var(--radius-sheet)] bg-sheet pb-[max(var(--space-gutter),env(safe-area-inset-bottom))] shadow-[var(--shadow-sheet)] outline-none',
+          'sheet-in relative max-h-[88dvh] w-full max-w-[var(--width-app)] overflow-y-auto overscroll-contain rounded-t-[var(--radius-sheet)] bg-sheet pb-[max(var(--space-gutter),env(safe-area-inset-bottom))] shadow-[var(--shadow-sheet)] outline-none',
+          dragging ? 'select-none' : 'motion-safe:transition-transform motion-safe:duration-200',
           className,
         )}
       >
-        <div
-          className="sticky top-0 z-10 cursor-grab touch-none bg-sheet pt-2"
-          onPointerDown={(e) => {
-            dragStart.current = e.clientY
-            e.currentTarget.setPointerCapture(e.pointerId)
-          }}
-          onPointerMove={(e) => dragStart.current !== null && setDrag(Math.max(0, e.clientY - dragStart.current))}
-          onPointerUp={() => {
-            if (drag > 90) onClose()
-            else setDrag(0)
-            dragStart.current = null
-          }}
-          onPointerCancel={() => {
-            dragStart.current = null
-            setDrag(0)
-          }}
-        >
+        <div ref={handle} data-testid="sheet-handle" className="sticky top-0 z-10 cursor-grab touch-none bg-sheet pt-2">
           <div className="mx-auto h-1 w-10 rounded-full bg-ring-seen" aria-hidden="true" />
           {title ? (
             <h2 id={id} className="border-b-[0.5px] border-divider px-4 py-3 text-center text-title-sm font-semibold">

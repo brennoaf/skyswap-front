@@ -1,9 +1,8 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { Button, Notice, Sheet } from '@/components/ui/primitives'
+import { Button, Notice, Sheet, useLeaveModals } from '@/components/ui/primitives'
 import { IconWarning } from '@/components/icons'
 import { api, unwrap } from '@/lib/api/client'
 import { formatDec, formatRa } from '@/lib/format'
@@ -19,7 +18,7 @@ export function skyHref(p: { ra: number; dec: number; fov?: number; band?: strin
 
 export function SpotSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useTranslations('spot')
-  const router = useRouter()
+  const leave = useLeaveModals()
   const [query, setQuery] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,8 +39,7 @@ export function SpotSheet({ open, onClose }: { open: boolean; onClose: () => voi
         setStale({ href, name: spotName(r), moved: r.spot.moved_arcsec, ra: r.spot.ra, dec: r.spot.dec })
         return
       }
-      onClose()
-      router.push(href)
+      leave(href)
     } catch {
       setError(t('failed'))
     } finally {
@@ -88,8 +86,7 @@ export function SpotSheet({ open, onClose }: { open: boolean; onClose: () => voi
               variant="primary"
               className="mt-2"
               onClick={() => {
-                onClose()
-                router.push(stale.href)
+                leave(stale.href)
               }}
             >
               {t('watchAnyway')}

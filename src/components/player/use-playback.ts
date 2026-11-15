@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { isControl, isTyping, ownsArrows, plainKey } from '@/lib/keys'
+import { modalCount } from '@/lib/modal-history'
 import { useUi } from '@/lib/state/ui'
 
 const LAST_FRAME_HOLD = 2.5
@@ -71,3 +73,25 @@ export function usePlayback(n: number, opts: { baseMs: number; minMs?: number; a
 }
 
 export type Playback = ReturnType<typeof usePlayback>
+
+export function usePlaybackKeys(playback: Playback, active: boolean, arrows = true) {
+  const { n, setIndex, setPlaying, blinking, stopBlink } = playback
+  useEffect(() => {
+    if (!active || n < 2) return
+    const onKey = (e: KeyboardEvent) => {
+      if (!plainKey(e) || isTyping(e.target) || modalCount()) return
+      if (arrows && (e.key === 'ArrowRight' || e.key === 'ArrowLeft') && !ownsArrows(e.target)) {
+        e.preventDefault()
+        stopBlink()
+        setPlaying(false)
+        setIndex((i) => i + (e.key === 'ArrowRight' ? 1 : -1))
+      } else if (e.key === ' ' && !isControl(e.target)) {
+        e.preventDefault()
+        if (blinking) stopBlink()
+        else setPlaying((p) => !p)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [active, arrows, n, blinking, setIndex, setPlaying, stopBlink])
+}

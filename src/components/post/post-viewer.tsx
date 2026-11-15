@@ -9,6 +9,7 @@ import { KitChart, QrWarning } from '@/components/charts/charts'
 import { PostHeader } from '@/components/feed/post-card'
 import { IconCrosshair, IconStepBack, IconStepForward } from '@/components/icons'
 import { PlayerBar } from '@/components/player/player-bar'
+import { usePlaybackKeys } from '@/components/player/use-playback'
 import { ActionRow } from '@/components/post/action-row'
 import { EraTimeline } from '@/components/post/era-timeline'
 import { MarkResult, PredictionHelp } from '@/components/post/marking-help'
@@ -90,6 +91,7 @@ function PostStage({
   const t = useTranslations('viewer')
   const player = usePlayer(frames.length, mode === 'play', longBaseline ? LONG_BASELINE_FPS : undefined, longBaseline ? LONG_BASELINE_FPS : undefined)
   const { index, setIndex, setPlaying, playing } = player
+  usePlaybackKeys(player, mode === 'play')
   const [path, setPath] = useState(false)
   const [outside, setOutside] = useState<Record<string, boolean>>({})
   const current = frames[index]

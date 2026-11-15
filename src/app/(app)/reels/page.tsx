@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
 import { IconDirect, IconMore, IconSave, IconTag, IconTarget } from '@/components/icons'
 import { PlayerBar } from '@/components/player/player-bar'
-import { usePlayback } from '@/components/player/use-playback'
+import { usePlayback, usePlaybackKeys } from '@/components/player/use-playback'
 import { TagPanel } from '@/components/post/tag-panel'
 import { Button, IconButton, ObjectAvatar, Sheet, Skeleton } from '@/components/ui/primitives'
 import type { FeedItem } from '@/lib/api/client'
@@ -84,6 +84,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
   const playback = usePlayback(n, { baseMs: isLongBaseline(post) ? 1000 / LONG_BASELINE_FPS : 125, autoplay: true, enabled: active && !reduce, frozen: !nextSrc || !settled.has(nextSrc) })
   const frame = playback.index
   useEffect(() => setAt(frame), [frame])
+  usePlaybackKeys(playback, active)
   const title = postTitle(post.title, locale)
   const total = item.tags.counts ? Object.values(item.tags.counts).reduce((a, b) => a + b, 0) : 0
 

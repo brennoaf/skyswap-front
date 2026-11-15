@@ -7,12 +7,14 @@ import { useOffsetLabel } from '@/components/classify/photo-viewer'
 import { AnswerPanel, FrameBars, PhotoBar, SwapStage, SWIPE, swapButton, ToolsPanel, ToolsStrip } from '@/components/classify/swap-photo'
 import { PhotoSourceSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
-import { usePlayback } from '@/components/player/use-playback'
+import { usePlayback, usePlaybackKeys } from '@/components/player/use-playback'
 import { ScreenTour } from '@/components/shell/onboarding'
 import { ApiError, type DeckCard, type VoteResult } from '@/lib/api/client'
 import { useVote } from '@/lib/api/hooks'
 import { isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
 import { cx, formatDateTime } from '@/lib/format'
+import { isTyping, ownsArrows, plainKey } from '@/lib/keys'
+import { modalCount } from '@/lib/modal-history'
 import { greyOf, snapTap } from '@/lib/snap'
 import { useFmt } from '@/lib/use-fmt'
 import { useUi } from '@/lib/state/ui'
@@ -231,6 +233,20 @@ export function SwapCard({
     else if (!sideways && (dy < -SWIPE || vy < -700)) choose('unsure')
     else settle()
   }
+
+  useEffect(() => {
+    if (!canSwipe) return
+    const onKey = (e: KeyboardEvent) => {
+      if (!plainKey(e) || isTyping(e.target) || ownsArrows(e.target) || modalCount()) return
+      const a = e.key === 'ArrowRight' ? 'moves' : e.key === 'ArrowLeft' ? 'still' : e.key === 'ArrowUp' ? 'unsure' : null
+      if (!a) return
+      e.preventDefault()
+      choose(a)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  })
+  usePlaybackKeys(playback, !touring, false)
 
   const onTap = (u: number, v: number) => {
     if (mode === 'tracing') {

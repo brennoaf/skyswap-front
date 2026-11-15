@@ -11,7 +11,10 @@ import { usePlayback } from '@/components/player/use-playback'
 import { IconButton, ObjectAvatar, useModal } from '@/components/ui/primitives'
 import { useStories } from '@/lib/api/hooks'
 import { formatShortDate } from '@/lib/format'
+import { useFrameGate } from '@/lib/frame-gate'
+import { isControl, isTyping, plainKey } from '@/lib/keys'
 import { frameYear, LONG_BASELINE_FPS, telescopeOf } from '@/lib/long-baseline'
+import { usePageVisible } from '@/lib/page-visible'
 import { useUi } from '@/lib/state/ui'
 import { useBandName } from '@/lib/use-band'
 
@@ -32,6 +35,7 @@ export function StoryViewer() {
   const downAt = useRef<number | null>(null)
   const dialog = useRef<HTMLDivElement>(null)
   const bandName = useBandName()
+  const visible = usePageVisible()
 
   useEffect(() => {
     if (!start) return
@@ -40,6 +44,10 @@ export function StoryViewer() {
   }, [start, list])
 
   const story = start ? list[index] : undefined
+  const srcs = useMemo(() => story?.frames.map((f) => f.src) ?? [], [story])
+  const [at, setAt] = useState(0)
+  const gate = useFrameGate(srcs, at, !!story)
+  const [top, setTop] = useState(true)
   const close = useCallback(() => open(null), [open])
   const go = useCallback(
     (delta: number) => {
@@ -56,38 +64,42 @@ export function StoryViewer() {
     baseMs: 1000 / (story?.frames[0]?.telescope && story.frames[0].telescope !== 'SPHEREx' ? LONG_BASELINE_FPS : FPS),
     autoplay: true,
     enabled: !!story,
-    frozen: held,
+    frozen: held || !visible || !top || gate.waiting,
     loop: false,
     onEnd: () => go(1),
   })
   const frame = playback.index
-  const { setIndex: setFrame, setPlaying } = playback
+  const { setIndex: setFrame, setPlaying, stopBlink } = playback
+  useEffect(() => setAt(frame), [frame])
 
   useEffect(() => {
     setFrame(0)
     setPlaying(true)
-  }, [story?.object.id, setFrame, setPlaying])
+    stopBlink()
+  }, [story?.object.id, setFrame, setPlaying, stopBlink])
 
   useEffect(() => {
-    if (!story) return
+    if (!visible) setHeld(false)
+  }, [visible])
+
+  useEffect(() => {
+    if (!story || !top) return
     const onKey = (e: KeyboardEvent) => {
+      if (!plainKey(e) || isTyping(e.target)) return
       if (e.key === 'ArrowRight') go(1)
-      if (e.key === 'ArrowLeft') go(-1)
+      else if (e.key === 'ArrowLeft') go(-1)
+      else if (e.key === ' ' && !isControl(e.target)) {
+        e.preventDefault()
+        setPlaying((p) => !p)
+      }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [story, go, close])
-
-  useEffect(() => {
-    if (!story) return
-    for (const f of story.frames.slice(frame + 1, frame + 6)) {
-      const img = new window.Image()
-      img.src = f.src
-    }
-  }, [story, frame])
+  }, [story, top, go, setPlaying])
 
   const current = story?.frames[Math.min(frame, (story?.frames.length ?? 1) - 1)]
-  useModal(dialog, !!story && !!current, close)
+  const onTop = useModal(dialog, !!story && !!current, close)
+  useEffect(() => setTop(onTop), [onTop])
 
   return (
     <AnimatePresence>
@@ -132,11 +144,14 @@ export function StoryViewer() {
           </div>
 
           <div
+            data-testid="story-media"
             className="relative flex flex-1 items-center justify-center"
-            onPointerDown={() => {
+            onPointerDown={(e) => {
+              e.currentTarget.setPointerCapture(e.pointerId)
               downAt.current = performance.now()
               setHeld(true)
             }}
+            onLostPointerCapture={() => setHeld(false)}
             onPointerCancel={() => {
               downAt.current = null
               setHeld(false)
@@ -151,9 +166,9 @@ export function StoryViewer() {
             }}
           >
             <div className="relative aspect-square w-full">
-              <Image src={current.src} alt={t('frameAlt', { name: story.object.name, band: bandName(current.band), date: formatShortDate(current.t, locale) })} fill sizes="470px" className="pixelated object-contain" priority />
+              <Image src={current.src} alt={t('frameAlt', { name: story.object.name, band: bandName(current.band), date: formatShortDate(current.t, locale) })} fill sizes="470px" className="pixelated object-contain" priority onLoad={() => gate.markLoaded(current.src)} onError={() => gate.markLoaded(current.src)} />
             </div>
-            <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2 py-1 text-meta">
+            <span data-testid="story-frame" className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2 py-1 text-meta">
               {current.telescope && current.telescope !== 'SPHEREx' || story.frames.some((f) => f.telescope && f.telescope !== 'SPHEREx')
                 ? t('yearLabel', { year: frameYear(current), telescope: telescopeOf({ telescope: current.telescope, release: '' }), n: frame + 1, total: story.frames.length })
                 : t('frameLabel', { band: bandName(current.band), n: frame + 1, total: story.frames.length })}
@@ -169,7 +184,7 @@ export function StoryViewer() {
               seconds={story.frames.map((f) => (Date.parse(f.t) - Date.parse(story.frames[0]?.t ?? f.t)) / 1000)}
               dates={story.frames.map((f) => f.t)}
               thumb={(i) => {
-                const f = story.frames[i]
+                const f = playback.playing ? undefined : story.frames[i]
                 return f ? <Image src={f.src} alt="" fill sizes="56px" className="pixelated object-contain" unoptimized /> : null
               }}
             />

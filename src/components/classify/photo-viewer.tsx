@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useCardGestures } from '@/components/classify/card-gestures'
 import { IconChevronLeft, IconChevronRight } from '@/components/icons'
 import { PlayerBar } from '@/components/player/player-bar'
-import { usePlayback } from '@/components/player/use-playback'
+import { usePlayback, usePlaybackKeys } from '@/components/player/use-playback'
 import { Skeleton } from '@/components/ui/primitives'
 import type { Reveal } from '@/lib/api/client'
 import { cx } from '@/lib/format'
@@ -129,6 +129,7 @@ export function PhotoViewer({
   const n = Math.max(1, offsets.length)
   const tile = img ? Math.round(img.naturalHeight / 2) : 1
   const playback = usePlayback(n, { baseMs: FRAME_MS, autoplay: !reduce, frozen: frozen || hold })
+  usePlaybackKeys(playback, true)
   const panel = playback.index
   const { running, playing } = playback
 

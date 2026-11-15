@@ -72,6 +72,13 @@ export function PhotoStrip({ playback, seconds, thumb, label, tone }: { playback
       tabIndex={0}
       data-testid="photo-strip"
       className="relative h-11 touch-none select-none overflow-hidden rounded-lg [@media(min-height:700px)]:h-14"
+      onKeyDown={(e) => {
+        const to = e.key === 'ArrowRight' ? index + 1 : e.key === 'ArrowLeft' ? index - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : null
+        if (to === null) return
+        e.preventDefault()
+        setPlaying(false)
+        setIndex(clamp(to))
+      }}
       onPointerDown={(e) => {
         e.currentTarget.setPointerCapture(e.pointerId)
         setPlaying(false)
