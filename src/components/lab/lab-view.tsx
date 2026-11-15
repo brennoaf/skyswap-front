@@ -232,6 +232,7 @@ export function LabView({ id }: { id: string }) {
   const locale = useLocale()
   const num = (v: number, digits: number) => v.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits })
   const t = useTranslations('lab')
+  const tb = useTranslations('bands')
   const tl = useTranslations('lab.layerItems')
   const tcom = useTranslations('common')
   const tch = useTranslations('charts')
@@ -627,6 +628,7 @@ export function LabView({ id }: { id: string }) {
                     info={
                       <>
                         <p>{t('tools.colourAbout')}</p>
+                        <p>{tb('explain')}</p>
                         <p>{t('tools.colourSwitch')}</p>
                       </>
                     }

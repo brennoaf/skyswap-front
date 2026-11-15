@@ -298,7 +298,7 @@
     },
     "photo": {
       "title": "Fotos reais em infravermelho",
-      "body": "A cruz amarela mostra onde os catálogos dizem que o objeto deveria estar."
+      "body": "O SPHEREx fotografa o céu em 6 faixas de infravermelho, de D1 a D6. A cruz amarela mostra onde os catálogos dizem que o objeto deveria estar."
     },
     "cards": {
       "title": "Ajude a achar o que muda de lugar",
@@ -572,14 +572,13 @@
     "none": "Nenhuma imagem do SPHEREx cobre este ponto ainda.",
     "fov": "Campo de visão",
     "fovValue": "{arcmin} minutos de arco",
-    "band": "Cor",
+    "band": "Faixa",
     "allBands": "Todas",
     "start": "Montar a sequência",
     "building": "Lendo imagens da NASA: {done} de {total}",
     "built": "{n, plural, one {# foto pronta} other {# fotos prontas}}",
     "failed": "Não foi possível ler as imagens do arquivo da NASA. Verifique sua conexão.",
     "liveNote": "As imagens são lidas ao vivo do arquivo público do SPHEREx, da NASA, direto no seu navegador.",
-    "staleTyped": "Coordenadas digitadas ficam fixas no tempo. Se a sua estrela se move rápido, use o nome dela para podermos levá-la a cada data.",
     "nearby": "Objetos do SkySwap aqui",
     "openProfile": "Abrir perfil",
     "embedTitle": "Ponto do céu SkySwap",
@@ -599,7 +598,6 @@
     "player": "Sequência deste ponto",
     "frameAlt": "Imagem do SPHEREx deste ponto em {band}, feita em {date}",
     "cutoutsFailed": "Não foi possível buscar as fotos no arquivo da NASA. Tente de novo daqui a pouco.",
-    "rebuild": "Montar de novo",
     "noFrames": "Nenhuma das imagens deste ponto pôde ser lida.",
     "coordinates": "Posição: {ra}, {dec}",
     "downloaded": "{size} baixados da NASA para esta sequência.",
@@ -618,17 +616,26 @@
     "changesAlt": "O que mudou em {date}",
     "fovHint": "Quanto céu cabe na foto, em minutos de arco (60 fazem um grau). A Lua cheia tem cerca de 30 de largura.",
     "thisSpot": "Este ponto",
-    "introTitle": "{name} ao longo do tempo",
-    "introTitleSpot": "Este ponto ao longo do tempo",
-    "introBody": "O SPHEREx fotografou este ponto {n, plural, one {# vez} other {# vezes}}. Veja as fotos em sequência para achar o que muda de lugar ou de brilho.",
     "stepOf": "Passo {n} de {total}",
     "nextStep": "Próximo",
-    "bandLine": "São cores do infravermelho, invisíveis ao olho.",
+    "bandLine": "São faixas do infravermelho, invisíveis ao olho.",
     "fovSize": "~{size}",
     "readLine": "Monta {n} das {total} fotos, espalhadas pelo tempo. Melhor no Wi-Fi.",
     "readLineAll": "Monta {n, plural, one {a foto} other {as # fotos}}. Melhor no Wi-Fi.",
     "choices": "Escolhas: {band}, {fov}. Toque para mudar.",
     "viewSettings": "Ajustes da visualização",
+    "heroEyebrow": "O SPHEREx fotografou este ponto",
+    "heroTimes": "{n, plural, one {vez} other {vezes}}",
+    "heroDays": "{n, plural, one {# dia com fotos} other {# dias com fotos}}",
+    "heroLead": "Junte as fotos em sequência e veja o que muda de lugar ou de brilho.",
+    "seeSequence": "Ver a sequência",
+    "hereTitle": "{name} está aqui",
+    "hereMoves": "Ele anda. Abra pelo nome para a mira seguir o movimento.",
+    "hereStill": "Abra pelo nome para a mira ficar nele.",
+    "typedFixed": "Posição digitada: fica fixa em todas as fotos.",
+    "whereInSky": "Onde fica no céu",
+    "catalogs": "Consultar catálogos",
+    "more": "Mais sobre este ponto",
     "map": {
       "alt": "Mapa do céu inteiro com {name} marcado. {region}.",
       "north": "Norte",
@@ -657,7 +664,6 @@
     },
     "share": "Compartilhar este ponto",
     "photoOf": "Foto {n} de {total}",
-    "choose": "Escolher cor e tamanho",
     "unchecked": "Não deu para conferir agora se há fotos deste ponto.",
     "goSearch": "Pesquisar"
   },
@@ -711,7 +717,7 @@
       "chance": "Palpite do computador: {pct}% de chance de ter mudado de lugar",
       "chanceHint": "É uma estimativa que muda conforme mais pessoas respondem, e pode errar. Ela começa baixa porque a maioria dos pontos acaba não mudando de lugar.",
       "photos": "Quando e em qual cor cada foto foi feita",
-      "field": "Cada foto mostra {size} minutos de arco de céu (arcmin, 1/60 de grau), na banda de cor {band} (infravermelho, mostrado em cinza).",
+      "field": "Cada foto mostra {size} minutos de arco de céu (arcmin, 1/60 de grau), na faixa {band} do infravermelho, mostrada em cinza.",
       "where": "Onde no céu",
       "whereBody": "Ascensão reta {ra}°, declinação {dec}°.",
       "whereSky": "Ascensão reta {ra}°, declinação {dec}°. Sorteado entre as partes do céu que o SkySwap consegue ler.",
@@ -1516,7 +1522,6 @@
     "body": "Esta tela teve um problema."
   },
   "bands": {
-    "name": "Cor {n}",
-    "withCode": "{name} ({code})"
+    "explain": "D1 é a mais perto do vermelho; D6 mostra o calor de objetos frios."
   }
 }

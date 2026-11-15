@@ -10,6 +10,8 @@ export type Toast =
   | { kind: 'badge'; badge: string }
   | { kind: 'info'; key: string; values?: Record<string, string | number> }
 
+export type SkyChoice = { band: string | null; fov: number }
+
 interface PersistedUi {
   theme: ThemePref
   seenStories: string[]
@@ -23,6 +25,7 @@ interface PersistedUi {
   recentSearches: string[]
   crosshair: boolean
   speed: number
+  skyChoice: SkyChoice | null
 }
 
 interface UiState extends PersistedUi {
@@ -43,6 +46,7 @@ interface UiState extends PersistedUi {
   clearRecentSearches: () => void
   setCrosshair: (on: boolean) => void
   setSpeed: (s: number) => void
+  setSkyChoice: (c: SkyChoice) => void
   toast: (t: Toast) => void
   dismissToast: (id: number) => void
   askLogin: (reason: string) => void
@@ -67,6 +71,7 @@ export const useUi = create<UiState>()(
       recentSearches: [],
       crosshair: true,
       speed: 1,
+      skyChoice: null,
       toasts: [],
       authReason: null,
       storyStart: null,
@@ -84,6 +89,7 @@ export const useUi = create<UiState>()(
       clearRecentSearches: () => set({ recentSearches: [] }),
       setCrosshair: (crosshair) => set({ crosshair }),
       setSpeed: (speed) => set({ speed }),
+      setSkyChoice: (skyChoice) => set({ skyChoice }),
       toast: (t) => set((s) => ({ toasts: [...s.toasts, { ...t, id: ++toastId }].slice(-3) })),
       dismissToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
       askLogin: (authReason) => set({ authReason }),
@@ -106,6 +112,7 @@ export const useUi = create<UiState>()(
         recentSearches: s.recentSearches,
         crosshair: s.crosshair,
         speed: s.speed,
+        skyChoice: s.skyChoice,
       }),
     },
   ),

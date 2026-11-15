@@ -57,7 +57,6 @@ export function SkyShareSheet({ open, onClose, params }: { open: boolean; onClos
           {params.name && <p className="text-note text-text-secondary">{coords}</p>}
           {spot && <p className="text-note text-text-secondary">{t('resolvedBy', { source: t.has(sourceKey) ? t(sourceKey) : spot.source })}</p>}
         </div>
-        {!params.name && <Notice icon={<IconWarning size={20} />}>{ts('staleTyped')}</Notice>}
         {spot?.stale && (
           <Notice tone="warning" icon={<IconWarning size={20} />}>
             {spot.moved_arcsec !== null && spot.epoch !== null ? t('stale', { epoch: spot.epoch, moved: fmt.fixed(spot.moved_arcsec, 1) }) : t('staleUnknown')}

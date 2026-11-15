@@ -173,8 +173,6 @@ export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open
   const t = useTranslations('viewer')
   const tp = useTranslations('post')
   const tc = useTranslations('common')
-  const tb = useTranslations('bands')
-  const bandName = useBandName()
   const fmt = useFmt()
   const { post, object } = data
   const fs = post.flags_summary
@@ -186,7 +184,7 @@ export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open
         {frame && (
           <dl className="grid grid-cols-2 gap-x-3 gap-y-2">
             <dt className="text-text-secondary">{t('aboutBand')}</dt>
-            <dd>{frame.band ? (bandName(frame.band) === frame.band ? frame.band : tb('withCode', { name: bandName(frame.band), code: frame.band })) : '-'}</dd>
+            <dd>{frame.band ?? '-'}</dd>
             <dt className="text-text-secondary">{t('wavelength')}</dt>
             <dd>{c !== null ? `${formatWavelength(frame.wavelength_um, fmt.locale)}` : '-'}</dd>
             <dt className="text-text-secondary">{t('aboutDate')}</dt>

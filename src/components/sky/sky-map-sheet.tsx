@@ -38,7 +38,7 @@ function withTimeout<T>(work: Promise<T>): Promise<T> {
   return Promise.race([work, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), LOAD_MS))])
 }
 
-export function SkyMapSheet({ open, onClose, object }: { open: boolean; onClose: () => void; object: { id: string; name: string; ra: number; dec: number } }) {
+export function SkyMapSheet({ open, onClose, object, watch = true }: { open: boolean; onClose: () => void; object: { id: string; name: string; ra: number; dec: number }; watch?: boolean }) {
   const t = useTranslations('sky.map')
   const tp = useTranslations('profile')
   const tc = useTranslations('common')
@@ -161,10 +161,12 @@ export function SkyMapSheet({ open, onClose, object }: { open: boolean; onClose:
           </IconButton>
         </div>
 
-        <Link href={skyHref({ ra, dec, name, obj: id })} onClick={onClose} className="flex h-11 items-center justify-center gap-1.5 rounded-[var(--radius-button)] bg-accent text-ui font-semibold text-on-accent active:bg-accent-pressed">
-          <IconPlay size={20} />
-          {t('watch')}
-        </Link>
+        {watch && (
+          <Link href={skyHref({ ra, dec, name, obj: id })} onClick={onClose} className="flex h-11 items-center justify-center gap-1.5 rounded-[var(--radius-button)] bg-accent text-ui font-semibold text-on-accent active:bg-accent-pressed">
+            <IconPlay size={20} />
+            {t('watch')}
+          </Link>
+        )}
 
         {status === 'idle' && (
           <button type="button" onClick={explore} className="flex min-h-11 w-full items-center gap-2 rounded-[var(--radius-button)] px-1 py-1 text-left active:bg-surface">

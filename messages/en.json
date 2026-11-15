@@ -298,7 +298,7 @@
     },
     "photo": {
       "title": "Real infrared photos",
-      "body": "The yellow cross is where catalogues say the object should be."
+      "body": "SPHEREx photographs the sky in 6 infrared bands, D1 to D6. The yellow cross is where catalogues say the object should be."
     },
     "cards": {
       "title": "Help find what moves",
@@ -572,14 +572,13 @@
     "none": "No SPHEREx images cover this spot yet.",
     "fov": "Field of view",
     "fovValue": "{arcmin} arcminutes",
-    "band": "Colour",
+    "band": "Band",
     "allBands": "All",
     "start": "Build the time-lapse",
     "building": "Reading images from NASA: {done} of {total}",
     "built": "{n, plural, one {# photo} other {# photos}} ready",
     "failed": "Couldn't read the images from NASA's archive. Check your connection.",
     "liveNote": "Images are read live from NASA's public SPHEREx archive, straight into your browser.",
-    "staleTyped": "Typed coordinates are fixed in time. If your star moves fast, use its name instead so we can move it to each date.",
     "nearby": "SkySwap objects here",
     "openProfile": "Open profile",
     "embedTitle": "SkySwap sky spot",
@@ -599,7 +598,6 @@
     "player": "Time-lapse of this spot",
     "frameAlt": "SPHEREx image of this spot in {band} taken {date}",
     "cutoutsFailed": "Couldn't get the photos from NASA's archive. Try again in a moment.",
-    "rebuild": "Build again",
     "noFrames": "None of the images could be read for this spot.",
     "coordinates": "Position: {ra}, {dec}",
     "downloaded": "Downloaded {size} from NASA for this time-lapse.",
@@ -618,17 +616,26 @@
     "changesAlt": "What changed on {date}",
     "fovHint": "How much sky fits in the photo, in arcminutes (60 make one degree). The full Moon is about 30 wide.",
     "thisSpot": "This spot",
-    "introTitle": "{name} over time",
-    "introTitleSpot": "This spot over time",
-    "introBody": "SPHEREx photographed this spot {n, plural, one {# time} other {# times}}. Play the photos in sequence to see what moves or changes.",
     "stepOf": "Step {n} of {total}",
     "nextStep": "Next",
-    "bandLine": "These are infrared colours, invisible to the eye.",
+    "bandLine": "These are infrared bands, invisible to the eye.",
     "fovSize": "~{size}",
     "readLine": "Builds {n} of the {total} photos, spread over time. Wi-Fi is better.",
     "readLineAll": "Builds {n, plural, one {the photo} other {all # photos}}. Wi-Fi is better.",
     "choices": "Choices: {band}, {fov}. Tap to change.",
     "viewSettings": "View settings",
+    "heroEyebrow": "SPHEREx photographed this spot",
+    "heroTimes": "{n, plural, one {time} other {times}}",
+    "heroDays": "{n, plural, one {# day with photos} other {# days with photos}}",
+    "heroLead": "Put the photos in sequence and see what changes place or brightness.",
+    "seeSequence": "See the time-lapse",
+    "hereTitle": "{name} is here",
+    "hereMoves": "It moves. Open it by name so the crosshair follows it.",
+    "hereStill": "Open it by name to keep the crosshair on it.",
+    "typedFixed": "Typed position: it stays fixed in every photo.",
+    "whereInSky": "Where it is in the sky",
+    "catalogs": "Look it up in catalogues",
+    "more": "More about this spot",
     "map": {
       "alt": "Map of the whole sky with {name} marked. {region}.",
       "north": "North",
@@ -657,7 +664,6 @@
     },
     "share": "Share this spot",
     "photoOf": "Photo {n} of {total}",
-    "choose": "Choose colour and size",
     "unchecked": "Couldn't check for photos of this spot right now.",
     "goSearch": "Search"
   },
@@ -711,7 +717,7 @@
       "chance": "The computer's guess: {pct}% chance it moved",
       "chanceHint": "An estimate that changes as more people answer, and it can be wrong. It starts low because most spots turn out not to move.",
       "photos": "When and in which colour each photo was taken",
-      "field": "Each photo shows {size} arcminutes of sky (arcmin, 1/60 of a degree), in colour band {band} (infrared, shown in grey).",
+      "field": "Each photo shows {size} arcminutes of sky (arcmin, 1/60 of a degree), in infrared band {band}, shown in grey.",
       "where": "Where in the sky",
       "whereBody": "Right ascension {ra}°, declination {dec}°.",
       "whereSky": "Right ascension {ra}°, declination {dec}°. Picked at random among the parts of the sky SkySwap can read.",
@@ -1516,7 +1522,6 @@
     "body": "This screen ran into a problem."
   },
   "bands": {
-    "name": "Colour {n}",
-    "withCode": "{name} ({code})"
+    "explain": "D1 is the closest to red; D6 shows the heat of cold objects."
   }
 }

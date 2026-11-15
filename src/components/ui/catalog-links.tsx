@@ -5,17 +5,19 @@ import { useTranslations } from 'next-intl'
 import { IconLink } from '@/components/icons'
 import { catalogLinks } from '@/lib/catalogs'
 
-export function CatalogLinks({ ra, dec, skyLink = true, className }: { ra: number; dec: number; skyLink?: boolean; className?: string }) {
+export function CatalogLinks({ ra, dec, skyLink = true, bare = false, className }: { ra: number; dec: number; skyLink?: boolean; bare?: boolean; className?: string }) {
   const t = useTranslations('catalogs')
   const links = catalogLinks(ra, dec).filter((l) => skyLink || l.external)
   if (!links.length) return null
   const row = 'flex min-h-11 items-center gap-3 text-body text-link'
   return (
     <section aria-labelledby="catalogs-title" className={className}>
-      <h3 id="catalogs-title" className="text-ui font-semibold">
-        {t('title')}
-      </h3>
-      <p className="mt-1 text-note text-text-secondary">{t('hint')}</p>
+      {!bare && (
+        <h3 id="catalogs-title" className="text-ui font-semibold">
+          {t('title')}
+        </h3>
+      )}
+      <p className={bare ? 'text-note text-text-secondary' : 'mt-1 text-note text-text-secondary'}>{t('hint')}</p>
       <ul className="mt-1 divide-y-[0.5px] divide-divider">
         {links.map((l) => (
           <li key={l.id}>

@@ -62,11 +62,6 @@ export function edgeCoverage(h: { px: number; py: number }, fovDeg = SKY_FOV_DEG
   return (side(h.px) * side(h.py)) / (4 * half * half)
 }
 
-function spread<T>(list: T[], n: number): T[] {
-  if (list.length <= n) return list
-  return Array.from({ length: n }, (_, k) => list[Math.round((k * (list.length - 1)) / (n - 1))] as T)
-}
-
 export function chooseVisits(hits: IndexRow[], maxVisits = MAX_VISITS, budget = MAX_EXPOSURES): SkyPick | null {
   const byBand = new Map<string, IndexRow[]>()
   for (const h of hits) {

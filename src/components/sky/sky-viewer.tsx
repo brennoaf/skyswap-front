@@ -5,12 +5,13 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
 import { skyHref } from '@/components/feed/spot-sheet'
-import { IconCopy, IconCrosshair, IconPause, IconPlay, IconSliders, IconStepBack, IconStepForward, IconWarning } from '@/components/icons'
+import { IconChevronRight, IconCrosshair, IconMap, IconPause, IconPlay, IconSearch, IconSliders, IconStepBack, IconStepForward, IconWarning } from '@/components/icons'
 import { dotPositions, FrameTimeline } from '@/components/classify/photo-viewer'
-import { SkyLocator } from '@/components/sky/sky-locator'
+import { SkyLocator, skyRegion } from '@/components/sky/sky-locator'
+import { SkyMapSheet } from '@/components/sky/sky-map-sheet'
 import { BandTile } from '@/components/ui/band-tile'
 import { CatalogLinks } from '@/components/ui/catalog-links'
-import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Segmented, Skeleton, useLoopRestart } from '@/components/ui/primitives'
+import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Segmented, Sheet, Skeleton, useLoopRestart } from '@/components/ui/primitives'
 import { QrWarning } from '@/components/charts/charts'
 import type { SkyResult } from '@/lib/api/client'
 import { useObject, useSky } from '@/lib/api/hooks'
@@ -540,56 +541,78 @@ type Choice = { band: string | null; fov: number }
 
 const arcmin = (fov: number) => +(fov * 60).toFixed(1)
 
-function Intro({ sky, params, photos, onBuild, onChoose, onRetry }: { sky: SkyResult; params: SkyParams; photos: number; onBuild: () => void; onChoose: () => void; onRetry: () => void }) {
+function monthYear(mjd: number, locale: string) {
+  const parts = new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric', timeZone: 'UTC' }).formatToParts(new Date(mjdToMs(mjd)))
+  const month = parts.find((p) => p.type === 'month')?.value.replace('.', '') ?? ''
+  const year = parts.find((p) => p.type === 'year')?.value ?? ''
+  return `${month} ${year}`
+}
+
+function DayStrip({ images }: { images: { mjd: number }[] }) {
   const t = useTranslations('sky')
-  const tm = useTranslations('sky.map')
-  const tc = useTranslations('common')
-  const toast = useUi((s) => s.toast)
-  const canBuild = canBuildFrom(sky)
-  const region = params.dec > 10 ? 'regionNorth' : params.dec < -10 ? 'regionSouth' : 'regionEquator'
-  const copy = async () => {
-    const done = await navigator.clipboard?.writeText(`${params.ra.toFixed(5)} ${params.dec.toFixed(5)}`).then(
-      () => true,
-      () => false,
-    )
-    toast({ kind: 'info', key: done ? 'sky.map.copied' : 'sky.map.copyFailed' })
-  }
+  const locale = useLocale()
+  const days = useMemo(() => {
+    const count = new Map<number, number>()
+    for (const i of images) count.set(Math.floor(i.mjd), (count.get(Math.floor(i.mjd)) ?? 0) + 1)
+    return [...count.entries()].sort((a, b) => a[0] - b[0])
+  }, [images])
+  const first = days[0]
+  const last = days[days.length - 1]
+  if (!first || !last) return null
+  const lo = first[0]
+  const hi = last[0]
+  const max = Math.max(...days.map((d) => d[1]))
+  const at = (d: number) => (hi > lo ? (d - lo) / (hi - lo) : 0.5)
   return (
-    <section className="px-4 pt-4" data-testid="sky-intro">
-      <div className="flex items-center gap-3">
-        <SkyLocator bare ra={params.ra} dec={params.dec} name={params.name ?? t('thisSpot')} className="w-28 shrink-0" />
-        <div className="min-w-0 flex-1">
-          <h2 className="text-title-sm font-bold leading-tight">{params.name ? t('introTitle', { name: params.name }) : t('introTitleSpot')}</h2>
-          <div className="flex items-center gap-1">
-            <p className="min-w-0 truncate text-meta text-text-secondary">{tm(region)}</p>
-            <IconButton label={tm('copy')} onClick={() => void copy()} className="-my-2.5 text-text-secondary">
-              <IconCopy size={18} />
-            </IconButton>
-          </div>
-        </div>
+    <div className="mt-5" data-testid="sky-days">
+      <div className="relative mx-1 h-12 border-b-2 border-divider" aria-hidden="true">
+        {days.map(([d, n]) => (
+          <span key={d} className="absolute bottom-0 w-1 -translate-x-1/2 rounded-full bg-accent" style={{ left: `${at(d) * 100}%`, height: `${12 + (n / max) * 80}%` }} />
+        ))}
       </div>
-      {canBuild ? (
-        <>
-          <p className="pt-4 text-body leading-relaxed">{t('introBody', { n: photos })}</p>
-          <Button variant="primary" full className="mt-5 h-12 font-semibold" onClick={onBuild}>
-            <IconPlay size={20} />
-            {t('start')}
-          </Button>
-          <button type="button" onClick={onChoose} className="mx-auto mt-1 flex min-h-11 items-center gap-1.5 px-3 text-note font-semibold text-text-secondary">
-            <IconSliders size={18} />
-            {t('choose')}
-          </button>
-        </>
-      ) : couldNotCheck(sky) ? (
-        <>
-          <p className="pt-4 text-body text-text-secondary">{t('unchecked')}</p>
-          <Button full className="mt-4 h-11" onClick={onRetry}>
-            {tc('retry')}
-          </Button>
-        </>
-      ) : (
-        <p className="pt-4 text-body text-text-secondary">{t('none')}</p>
-      )}
+      <p className="mt-2 flex justify-between gap-2 text-note tabular-nums text-text-secondary">
+        <span>{monthYear(lo, locale)}</span>
+        <span>{t('heroDays', { n: days.length })}</span>
+        {hi > lo && <span>{monthYear(hi, locale)}</span>}
+      </p>
+    </div>
+  )
+}
+
+function Intro({ sky, images, total, onStart, onRetry }: { sky: SkyResult; images: { mjd: number }[]; total: number; onStart: () => void; onRetry: () => void }) {
+  const t = useTranslations('sky')
+  const tc = useTranslations('common')
+  if (couldNotCheck(sky))
+    return (
+      <section className="px-4 pt-4" data-testid="sky-intro">
+        <p className="text-body text-text-secondary">{t('unchecked')}</p>
+        <Button full className="mt-4 h-11" onClick={onRetry}>
+          {tc('retry')}
+        </Button>
+      </section>
+    )
+  if (!canBuildFrom(sky))
+    return (
+      <section className="px-4 pt-4" data-testid="sky-intro">
+        <p className="text-body text-text-secondary">{t('none')}</p>
+      </section>
+    )
+  return (
+    <section className="pt-2" data-testid="sky-intro">
+      <div className="mx-4 rounded-[20px] bg-surface px-5 pb-5 pt-5">
+        <p className="text-note text-text-secondary">{t('heroEyebrow')}</p>
+        <p className="mt-1 flex items-baseline gap-2">
+          <span className="text-[44px] font-bold leading-none tracking-[-0.02em] tabular-nums">{total}</span>
+          <span className="text-[17px] font-semibold">{t('heroTimes', { n: total })}</span>
+        </p>
+        <DayStrip images={images} />
+        <p className="mt-4 text-body leading-relaxed text-text-secondary">{t('heroLead')}</p>
+      </div>
+      <div className="px-4 pt-5">
+        <Button variant="primary" full className="h-12 font-semibold" onClick={onStart}>
+          {t('start')}
+        </Button>
+      </div>
     </section>
   )
 }
@@ -610,7 +633,6 @@ function Steps({
   sky,
   draft,
   onDraft,
-  again,
   onNext,
   onBuild,
 }: {
@@ -618,11 +640,11 @@ function Steps({
   sky: SkyResult
   draft: Choice
   onDraft: (c: Choice) => void
-  again: boolean
   onNext: () => void
   onBuild: () => void
 }) {
   const t = useTranslations('sky')
+  const tb = useTranslations('bands')
   const bandName = useBandName()
   const all = Object.values(sky.bands).reduce((s, v) => s + v, 0)
   const photos = photosFor(sky, draft.fov, draft.band)
@@ -633,7 +655,7 @@ function Steps({
       <div className="flex-1 px-4 pb-4 pt-3">
         <StepDots at={stage === 'band' ? 1 : 2} />
         <h2 className="pt-3 text-title-lg font-bold leading-tight tracking-[-0.01em]">{stage === 'band' ? t('band') : t('fov')}</h2>
-        <p className="pt-1 text-note text-text-secondary">{stage === 'band' ? t('bandLine') : t('fovHint')}</p>
+        <p className="pt-1 text-note text-text-secondary">{stage === 'band' ? `${t('bandLine')} ${tb('explain')}` : t('fovHint')}</p>
         {stage === 'band' ? (
           <div className="grid grid-cols-3 gap-2 pt-4" role="group" aria-label={t('band')}>
             <BandTile label={t('allBands')} hue="var(--gradient-bands)" detail={String(all)} on={!draft.band} onClick={() => onDraft({ ...draft, band: null })} />
@@ -670,7 +692,7 @@ function Steps({
             )}
             <Button variant="primary" full className="h-11 font-semibold" onClick={onBuild}>
               <IconPlay size={20} />
-              {again ? t('rebuild') : t('start')}
+              {t('seeSequence')}
             </Button>
             <p className="pt-2 text-micro leading-snug text-text-secondary">{t('liveNote')}</p>
           </>
@@ -698,26 +720,59 @@ function ChoiceLine({ band, fov, onOpen }: { band: string | null; fov: number; o
   )
 }
 
-function Nearby({ sky, params }: { sky: SkyResult; params: SkyParams }) {
+const MOVING_MAS_YR = 500
+
+function Tail({ sky, params }: { sky: SkyResult; params: SkyParams }) {
   const t = useTranslations('sky')
+  const tm = useTranslations('sky.map')
+  const [sheet, setSheet] = useState<'map' | 'catalogs' | null>(null)
+  const typed = !params.name && !params.obj
+  const here = typed ? (sky.nearby.find((o) => (o.separation_deg ?? Infinity) <= params.fov / 2) ?? null) : null
+  const { data: hereObj } = useObject(here?.id ?? '')
+  const moves = !!hereObj && hereObj.pm_ra_cosdec !== null && hereObj.pm_dec !== null && Math.hypot(hereObj.pm_ra_cosdec, hereObj.pm_dec) >= MOVING_MAS_YR
+  const others = sky.nearby.filter((o) => o.id !== here?.id && o.id !== params.obj)
+  const row = 'flex min-h-14 w-full items-center gap-3.5 border-b-[0.5px] border-divider text-left text-body active:bg-surface'
   return (
     <>
-      {sky.nearby.length > 0 && (
-        <section className="pt-6">
-          <h2 className="px-4 text-ui font-semibold">{t('nearby')}</h2>
-          <ul className="no-scrollbar flex gap-4 overflow-x-auto px-4 pt-3">
-            {sky.nearby.map((o) => (
-              <li key={o.id}>
-                <Link href={`/o/${o.id}`} className="flex w-[72px] flex-col items-center gap-1" aria-label={`${t('openProfile')}: ${o.name}`}>
-                  <ObjectAvatar src={o.avatar} alt="" size={64} ring={o.has_new_data ? 'new' : 'none'} />
-                  <span className="w-full truncate text-center text-meta">{o.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+      {here && (
+        <Link
+          href={skyHref({ ra: hereObj?.ra ?? params.ra, dec: hereObj?.dec ?? params.dec, fov: params.fov, band: params.band, name: here.name, obj: here.id })}
+          className="mx-4 mt-4 flex items-center gap-3 rounded-2xl bg-surface py-3 pl-3 pr-2 active:bg-surface-pressed"
+          data-testid="sky-here"
+        >
+          <ObjectAvatar src={here.avatar} alt="" size={44} />
+          <span className="min-w-0 flex-1">
+            <span className="block text-ui font-semibold leading-snug">{t('hereTitle', { name: here.name })}</span>
+            <span className="mt-0.5 block text-note leading-snug text-text-secondary">{moves ? t('hereMoves') : t('hereStill')}</span>
+          </span>
+          <IconChevronRight size={20} className="shrink-0 text-icon-muted" />
+        </Link>
       )}
-      <CatalogLinks ra={params.ra} dec={params.dec} skyLink={false} className="mx-4 mt-5 rounded-2xl bg-surface p-3" />
+      {typed && !here && <p className="px-4 pt-3 text-center text-note text-text-secondary">{t('typedFixed')}</p>}
+      <nav className="mx-4 mt-7 border-t-[0.5px] border-divider" aria-label={t('more')}>
+        {others.map((o) => (
+          <Link key={o.id} href={`/o/${o.id}`} className={row} aria-label={`${t('openProfile')}: ${o.name}`}>
+            <ObjectAvatar src={o.avatar} alt="" size={32} ring={o.has_new_data ? 'new' : 'none'} />
+            <span className="min-w-0 flex-1 truncate">{o.name}</span>
+            <IconChevronRight size={18} className="shrink-0 text-icon-muted" />
+          </Link>
+        ))}
+        <button type="button" className={row} onClick={() => setSheet('map')}>
+          <IconMap size={22} className="shrink-0 text-text-secondary" />
+          <span className="shrink-0">{t('whereInSky')}</span>
+          <span className="min-w-0 flex-1 truncate text-right text-note text-text-secondary">{tm(skyRegion(params.dec))}</span>
+          <IconChevronRight size={18} className="shrink-0 text-icon-muted" />
+        </button>
+        <button type="button" className={row} onClick={() => setSheet('catalogs')}>
+          <IconSearch size={22} className="shrink-0 text-text-secondary" />
+          <span className="min-w-0 flex-1">{t('catalogs')}</span>
+          <IconChevronRight size={18} className="shrink-0 text-icon-muted" />
+        </button>
+      </nav>
+      <SkyMapSheet open={sheet === 'map'} onClose={() => setSheet(null)} object={{ id: params.obj ?? '', name: params.name ?? t('title'), ra: params.ra, dec: params.dec }} watch={false} />
+      <Sheet open={sheet === 'catalogs'} onClose={() => setSheet(null)} title={t('catalogs')}>
+        <CatalogLinks ra={params.ra} dec={params.dec} skyLink={false} bare className="px-4 pb-2 pt-1" />
+      </Sheet>
     </>
   )
 }
@@ -747,6 +802,9 @@ export function SkyViewer({
     const epoch = Number(/([0-9]{4}(?:\.[0-9]+)?)/.exec(object.epoch)?.[1] ?? 2016)
     return { ra: object.ra, dec: object.dec, epoch, pmra: object.pm_ra_cosdec, pmdec: object.pm_dec }
   }, [object])
+  const lastChoice = useUi((s) => s.skyChoice)
+  const keepChoice = useUi((s) => s.setSkyChoice)
+  const all = useSky(ra, dec, fov, null)
   const [stage, setStage] = useState<Stage>('intro')
   const [from, setFrom] = useState<'intro' | 'player'>('intro')
   const [draft, setDraft] = useState<Choice>({ band, fov })
@@ -759,11 +817,12 @@ export function SkyViewer({
   }, [stage, compact])
 
   const openSteps = (origin: 'intro' | 'player') => {
-    setDraft({ band, fov })
+    setDraft(origin === 'intro' && lastChoice ? lastChoice : { band, fov })
     setFrom(origin)
     setStage('band')
   }
   const build = (next: Choice) => {
+    keepChoice(next)
     setWant(next)
     if (next.band !== band || next.fov !== fov) onChange?.(next)
     setRun((r) => r + 1)
@@ -806,16 +865,14 @@ export function SkyViewer({
   return (
     <div>
       {top}
-      {steps && <Steps stage={stage} sky={d} draft={draft} onDraft={setDraft} again={from === 'player'} onNext={() => setStage('fov')} onBuild={() => build(draft)} />}
+      {steps && <Steps stage={stage} sky={d} draft={draft} onDraft={setDraft} onNext={() => setStage('fov')} onBuild={() => build(draft)} />}
       <div className={cx('pb-6', steps && 'hidden')}>
         {built ? (
-          <>
-            {playerFor({ compact: false, autoStart: true, choices: <ChoiceLine band={band} fov={fov} onOpen={() => openSteps('player')} /> })}
-            <Nearby sky={d} params={params} />
-          </>
+          playerFor({ compact: false, autoStart: true, choices: <ChoiceLine band={band} fov={fov} onOpen={() => openSteps('player')} /> })
         ) : (
-          <Intro sky={d} params={params} photos={Object.values(d.bands).reduce((s, v) => s + v, 0)} onBuild={() => build({ band, fov })} onChoose={() => openSteps('intro')} onRetry={() => void sky.refetch()} />
+          <Intro sky={d} images={band ? (all.data?.images ?? []) : d.images} total={Object.values(d.bands).reduce((s, v) => s + v, 0)} onStart={() => openSteps('intro')} onRetry={() => void sky.refetch()} />
         )}
+        <Tail sky={d} params={params} />
       </div>
     </div>
   )
@@ -832,8 +889,4 @@ export function parseSkyParams(sp: URLSearchParams): SkyParams | null {
   const name = sp.get('name')?.trim() || null
   const obj = sp.get('obj')?.trim() || null
   return { ra, dec, fov, band, name, obj }
-}
-
-export function skyTitle(p: SkyParams) {
-  return p.name ?? `${p.ra.toFixed(4)}, ${p.dec.toFixed(4)}`
 }
