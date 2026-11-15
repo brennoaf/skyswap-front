@@ -201,11 +201,8 @@
   "auth": {
     "title": "Entrar no SkySwap",
     "nicknameLabel": "Escolha um apelido",
-    "nicknamePlaceholder": "stargazer_42",
-    "nicknameHelp": "De 3 a 24 letras, números, pontos ou sublinhados. Sem email, sem senha.",
     "join": "Entrar",
     "joining": "Entrando",
-    "privacy": "Seu apelido e a imagem escolhida são tudo o que guardamos. As notas ficam no seu navegador.",
     "errors": {
       "taken": "Esse apelido já está em uso. Tente outro.",
       "invalid": "Use de 3 a 24 letras, números, pontos ou sublinhados.",
@@ -223,7 +220,10 @@
     },
     "pictureLabel": "Sua imagem: um pedaço de foto da NASA",
     "pictureOption": "Imagem {n}",
-    "redraw": "Sortear outras"
+    "redraw": "Sortear outras imagens",
+    "noPassword": "Sem email, sem senha.",
+    "tooShort": "Pelo menos 3 letras ou números.",
+    "suggest": "Sugerir um apelido"
   },
   "xp": {
     "gained": "+{xp, plural, one {# ponto} other {# pontos}}",
@@ -661,8 +661,6 @@
     "next": "Próximo cartão",
     "done": "Você já viu todos os cartões",
     "doneBody": "Novas fotos chegam quando a NASA publica dados novos.",
-    "loginTitle": "Ajude a achar o que muda de lugar no céu",
-    "loginBody": "Escolha um apelido para começar. Suas respostas ajudam todo mundo a descobrir o que é cada ponto.",
     "about": {
       "open": "Mais sobre estas fotos",
       "title": "Sobre estas fotos",
@@ -902,7 +900,6 @@
   "me": {
     "title": "Meu perfil",
     "guestTitle": "Seu perfil de ciência cidadã",
-    "guestBody": "Escolha um apelido para guardar suas classificações, marcações, etiquetas, nível e selos.",
     "answers": "{n, plural, =0 {respostas} one {resposta} other {respostas}}",
     "marks": "{n, plural, =0 {marcações} one {marcação} other {marcações}}",
     "tags": "{n, plural, =0 {etiquetas} one {etiqueta} other {etiquetas}}",

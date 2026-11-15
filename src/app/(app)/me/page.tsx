@@ -10,7 +10,6 @@ import { ExploredSkyCard } from '@/components/me/explored-sky'
 import { BadgeDetail, BadgeHighlights, FollowingList, GoalsCard, HistoryList, LevelRing, ProgressBar, SavedGrid, useAgo } from '@/components/me/profile-parts'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Button, EmptyState, IconButton, IconTabs, Notice, Sheet, Skeleton, Stat, TopBar } from '@/components/ui/primitives'
-import { UserAvatar } from '@/components/ui/user-avatar'
 import { AvatarSheet } from '@/components/me/avatar-parts'
 import { ApiError, type Me } from '@/lib/api/client'
 import { useMe, useSession } from '@/lib/api/hooks'
@@ -51,9 +50,7 @@ function Guest() {
     <main>
       <TopBar back={false} title={t('title')} actions={<SettingsLink />} />
       <div className="flex flex-col items-center px-6 pb-2 pt-6 text-center">
-        <UserAvatar nickname={null} size={90} />
-        <h2 className="mt-4 font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">{t('guestTitle')}</h2>
-        <p className="mt-2 max-w-[320px] text-body text-text-secondary">{t('guestBody')}</p>
+        <h2 className="font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">{t('guestTitle')}</h2>
       </div>
       <LoginForm />
       <GoalsCard />

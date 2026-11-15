@@ -201,11 +201,8 @@
   "auth": {
     "title": "Join SkySwap",
     "nicknameLabel": "Pick a nickname",
-    "nicknamePlaceholder": "stargazer_42",
-    "nicknameHelp": "3 to 24 letters, numbers, dots or underscores. No email, no password.",
     "join": "Join",
     "joining": "Joining",
-    "privacy": "Your nickname and chosen picture are all we keep. Notes stay in your browser.",
     "errors": {
       "taken": "That nickname is taken. Try another.",
       "invalid": "Use 3 to 24 letters, numbers, dots or underscores.",
@@ -223,7 +220,10 @@
     },
     "pictureLabel": "Your picture: a piece of a NASA photo",
     "pictureOption": "Picture {n}",
-    "redraw": "Draw others"
+    "redraw": "Draw other pictures",
+    "noPassword": "No email, no password.",
+    "tooShort": "At least 3 letters or numbers.",
+    "suggest": "Suggest a nickname"
   },
   "xp": {
     "gained": "+{xp, plural, one {# point} other {# points}}",
@@ -661,8 +661,6 @@
     "next": "Next card",
     "done": "You've seen all the cards",
     "doneBody": "New photos arrive when NASA releases new data.",
-    "loginTitle": "Help spot what moves in the sky",
-    "loginBody": "Pick a nickname to start. Your answers help everyone figure out what each dot is.",
     "about": {
       "open": "More about these photos",
       "title": "About these photos",
@@ -902,7 +900,6 @@
   "me": {
     "title": "My profile",
     "guestTitle": "Your citizen-science profile",
-    "guestBody": "Pick a nickname to keep your classifications, marks, tags, level and badges.",
     "answers": "{n, plural, one {answer} other {answers}}",
     "marks": "{n, plural, one {mark} other {marks}}",
     "tags": "{n, plural, one {tag} other {tags}}",

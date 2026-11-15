@@ -3,30 +3,12 @@
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { SwapHelpSheet } from '@/components/classify/swap-sheets'
-import { IconMoves, IconQuestion } from '@/components/icons'
+import { IconQuestion } from '@/components/icons'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { IconButton, TopBar } from '@/components/ui/primitives'
 import { useSession } from '@/lib/api/hooks'
 import { Deck } from './deck/deck'
 import { DeckSkeleton, StateScreen } from './deck/deck-states'
-
-function LoginIntro() {
-  const t = useTranslations('classify')
-  return (
-    <div className="pt-6">
-      <div className="flex flex-col items-center px-6 text-center">
-        <span className="mb-4 inline-flex size-16 items-center justify-center rounded-full border-[0.5px] border-divider bg-bg-elevated text-text" aria-hidden="true">
-          <IconMoves size={40} />
-        </span>
-        <h2 className="font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">{t('loginTitle')}</h2>
-        <p className="mt-2 max-w-80 text-text-secondary">{t('loginBody')}</p>
-      </div>
-      <div className="mx-auto mt-4 max-w-96">
-        <LoginForm />
-      </div>
-    </div>
-  )
-}
 
 export default function ClassifyPage() {
   const t = useTranslations('classify')
@@ -53,7 +35,9 @@ export default function ClassifyPage() {
               </IconButton>
             }
           />
-          <LoginIntro />
+          <div className="mx-auto max-w-96 pt-4">
+            <LoginForm />
+          </div>
         </div>
       )}
       <SwapHelpSheet open={help} onClose={() => setHelp(false)} />

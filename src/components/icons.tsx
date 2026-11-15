@@ -465,6 +465,17 @@ export const IconLock = (p: IconProps) => (
   </Svg>
 )
 
+export const IconDice = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="6.5" y="6.5" width="19" height="19" rx="4.5" {...LINE} />
+    <circle cx="11.8" cy="11.8" r="1.5" fill="currentColor" />
+    <circle cx="20.2" cy="11.8" r="1.5" fill="currentColor" />
+    <circle cx="16" cy="16" r="1.5" fill="currentColor" />
+    <circle cx="11.8" cy="20.2" r="1.5" fill="currentColor" />
+    <circle cx="20.2" cy="20.2" r="1.5" fill="currentColor" />
+  </Svg>
+)
+
 export const IconCrosshair = (p: IconProps) => (
   <Svg {...p}>
     <path d="M16 4.5V11M16 21V27.5M4.5 16H11M21 16H27.5" {...LINE} />
