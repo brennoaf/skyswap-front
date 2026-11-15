@@ -648,7 +648,7 @@ function Understand({ card, img, answer, result, spot, pacing, hints, onNext }: 
         )}
         {(control || reveal.kind === 'sky') && <p className="pt-1 text-note leading-snug text-text-secondary">{control ? t(`kinds.${reveal.kind}`) : t('sky.reveal')}</p>}
         <ResultLine result={result} />
-        {pacing && !control && reveal.kind !== 'sky' && <p className="pt-1 text-note leading-snug text-text-secondary">{t('pacing')}</p>}
+        {pacing && <p className="pt-1 text-note leading-snug text-text-secondary">{t('pacing')}</p>}
         {(guided || (control && reveal.kind === 'mover')) && (
           <button type="button" onClick={() => setWhy(true)} className="inline-flex min-h-9 items-center text-note font-semibold text-link">
             {t('whyLook')}
@@ -839,7 +839,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   const onVoted = useCallback(
     (answer: Answer, data: VoteResult, spot: VotePosition | null) => {
       let pacing = false
-      if (!guiding) {
+      if (!guiding && !data.reveal.control && data.reveal.kind !== 'sky') {
         quietRun = answer === 'moves' ? 0 : quietRun + 1
         if (!pacingSeen) {
           pacing = true
