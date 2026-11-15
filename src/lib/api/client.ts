@@ -51,6 +51,7 @@ export type PostDetail = Ok<'/api/posts/{id}', 'get'>
 export type Me = Ok<'/api/me', 'get'>
 export type SearchResult = Ok<'/api/search', 'get'>
 export type SkyResult = Ok<'/api/sky', 'get'>
+export type PointSpectrum = Ok<'/api/sky/spectrum', 'get'>
 export type Alert = Ok<'/api/alerts', 'get'>['alerts'][number]
 export type NextCard = Ok<'/api/classify/next', 'get'>
 export type SkySpot = NonNullable<NextCard['spot']>

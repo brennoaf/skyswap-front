@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Suspense, useCallback, useState } from 'react'
 import { skyHref } from '@/components/feed/spot-sheet'
-import { IconCopy, IconDirect } from '@/components/icons'
+import { IconCopy, IconDirect, IconSpectrum } from '@/components/icons'
 import { SkyShareSheet } from '@/components/sky/sky-share-sheet'
+import { SkySpectrumSheet } from '@/components/sky/sky-spectrum-sheet'
 import { parseSkyParams, SkyViewer, type SkyParams } from '@/components/sky/sky-viewer'
 import { EmptyState, IconButton, Skeleton, TopBar } from '@/components/ui/primitives'
 import { formatDec, formatRa } from '@/lib/format'
@@ -20,6 +21,7 @@ function SkyScreen() {
   const router = useRouter()
   const params = parseSkyParams(new URLSearchParams(sp.toString()))
   const [share, setShare] = useState(false)
+  const [colours, setColours] = useState(false)
 
   const onChange = useCallback(
     (next: Partial<SkyParams>) => {
@@ -73,14 +75,20 @@ function SkyScreen() {
               </span>
             }
             actions={
-              <IconButton label={t('share')} onClick={() => setShare(true)}>
-                <IconDirect />
-              </IconButton>
+              <>
+                <IconButton label={t('spectrum.title')} onClick={() => setColours(true)} data-testid="sky-spectrum-open">
+                  <IconSpectrum />
+                </IconButton>
+                <IconButton label={t('share')} onClick={() => setShare(true)}>
+                  <IconDirect />
+                </IconButton>
+              </>
             }
           />
         )}
       />
       <SkyShareSheet open={share} onClose={() => setShare(false)} params={params} />
+      <SkySpectrumSheet open={colours} onClose={() => setColours(false)} params={params} />
     </main>
   )
 }

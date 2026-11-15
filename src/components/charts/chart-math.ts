@@ -41,6 +41,33 @@ export const BAND_EDGES: Record<string, [number, number]> = {
   D6: [4.42, 5.01],
 }
 
+export function robustTop(values: readonly number[], spread = 10, maxShare = 0.05): number {
+  if (!values.length) return 0
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = (v: number[]) => v[v.length >> 1] as number
+  const med = mid(sorted)
+  const mad = mid(sorted.map((v) => Math.abs(v - med)).sort((a, b) => a - b))
+  const cut = med + spread * Math.max(mad, 1e-12)
+  const kept = sorted.filter((v) => v <= cut)
+  const out = sorted.length - kept.length
+  return out > 0 && out <= Math.max(1, Math.floor(sorted.length * maxShare)) && kept.length ? (kept[kept.length - 1] as number) : (sorted[sorted.length - 1] as number)
+}
+
+export function gappedPaths(points: readonly { group: string; x: number; y: number | null }[]): { group: string; d: string }[] {
+  const out = new Map<string, { d: string; open: boolean }>()
+  for (const p of points) {
+    const line = out.get(p.group) ?? { d: '', open: false }
+    out.set(p.group, line)
+    if (p.y === null) {
+      line.open = false
+      continue
+    }
+    line.d += `${line.open ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`
+    line.open = true
+  }
+  return [...out].flatMap(([group, l]) => (l.d ? [{ group, d: l.d }] : []))
+}
+
 export function nearestIndex(points: readonly { x: number; y: number }[], px: number, py: number): number {
   let best = -1
   let dist = Infinity

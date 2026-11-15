@@ -4926,6 +4926,214 @@
         }
       }
     },
+    "/api/sky/spectrum": {
+      "get": {
+        "summary": "All 102 SPHEREx colours at one sky point, read from the IRSA DR1 all-sky cube (a quick look, not a measurement)",
+        "tags": [
+          "sky"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 360
+            },
+            "in": "query",
+            "name": "ra",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "in": "query",
+            "name": "dec",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ra",
+                    "dec",
+                    "tile",
+                    "pixel",
+                    "pixel_arcsec",
+                    "date_beg",
+                    "date_end",
+                    "bright",
+                    "channels"
+                  ],
+                  "properties": {
+                    "ra": {
+                      "type": "number"
+                    },
+                    "dec": {
+                      "type": "number"
+                    },
+                    "tile": {
+                      "type": "integer"
+                    },
+                    "pixel": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "pixel_arcsec": {
+                      "type": "number"
+                    },
+                    "date_beg": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "date_end": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "bright": {
+                      "type": "boolean"
+                    },
+                    "channels": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "band",
+                          "wavelength_um",
+                          "wl_min_um",
+                          "wl_max_um",
+                          "value",
+                          "hits",
+                          "state",
+                          "bright"
+                        ],
+                        "properties": {
+                          "band": {
+                            "type": "string"
+                          },
+                          "wavelength_um": {
+                            "type": "number"
+                          },
+                          "wl_min_um": {
+                            "type": "number"
+                          },
+                          "wl_max_um": {
+                            "type": "number"
+                          },
+                          "value": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "hits": {
+                            "type": "integer"
+                          },
+                          "state": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "ok"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "blank"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "empty"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "flagged"
+                                ]
+                              }
+                            ]
+                          },
+                          "bright": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/index/at": {
       "get": {
         "tags": [

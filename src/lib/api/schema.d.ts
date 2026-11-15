@@ -711,6 +711,82 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sky/spectrum": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query: {
+                    ra: number;
+                    dec: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            ra: number;
+                            dec: number;
+                            tile: number;
+                            pixel: number[];
+                            pixel_arcsec: number;
+                            date_beg: string | null;
+                            date_end: string | null;
+                            bright: boolean;
+                            channels: {
+                                band: string;
+                                wavelength_um: number;
+                                wl_min_um: number;
+                                wl_max_um: number;
+                                value: number | null;
+                                hits: number;
+                                state: "ok" | "blank" | "empty" | "flagged";
+                                bright: boolean;
+                            }[];
+                        };
+                    };
+                };
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/index/at": {
         parameters: {
             query?: never;

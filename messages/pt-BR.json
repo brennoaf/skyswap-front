@@ -437,8 +437,20 @@
       "motionRing": "O anel é a margem de erro desta comparação. Uma medida dentro do anel bate com a previsão.",
       "motionLine": "A linha liga a previsão à medida de que a frase embaixo do gráfico fala.",
       "arcsec": "As distâncias estão em segundos de arco, um ângulo bem pequeno: um grau dividido em 3.600 partes. Um pixel do SPHEREx tem {size} segundos de arco.",
-      "pathView": "Caminho mostra os dois no céu, contando a partir da primeira posição prevista."
-    }
+      "pathView": "Caminho mostra os dois no céu, contando a partir da primeira posição prevista.",
+      "pointPeek": "Cada ponto da linha é o brilho de um único pixel do mapa, somando fotos de vários meses. É uma espiada, não uma medida: o pixel pode juntar a luz de estrelas vizinhas.",
+      "pointGaps": "Onde a linha some, aquela cor ficou sem medida: faltou foto, a câmera marcou defeito ou o brilho estourou. Falha não quer dizer zero.",
+      "pointStripes": "O ? marca cores onde o mapa tem listras conhecidas, perto de 1,88, 3,3 e 4,05 µm. Ali o valor pode estar errado.",
+      "pointUnits": "MJy/sr é brilho por pedaço de céu. Para medir uma estrela de verdade, use a ferramenta da IRSA.",
+      "pointOffScale": "Uma seta no alto marca uma cor muito acima das outras, fora da escala. Toque nela para ler o valor."
+    },
+    "pointTitle": "Brilho em cada uma das 102 cores",
+    "surface": "Brilho (MJy/sr)",
+    "noValue": "Sem medida nesta cor",
+    "readSurface": "{value} MJy/sr",
+    "tooBright": "Brilhante demais",
+    "stripe": "Perto de uma listra conhecida do mapa",
+    "offScale": "Fora da escala do gráfico"
   },
   "viewer": {
     "title": "Post",
@@ -665,7 +677,19 @@
     "share": "Compartilhar este ponto",
     "photoOf": "Foto {n} de {total}",
     "unchecked": "Não deu para conferir agora se há fotos deste ponto.",
-    "goSearch": "Pesquisar"
+    "goSearch": "Pesquisar",
+    "spectrum": {
+      "title": "Cor deste ponto",
+      "peek": "Espiada rápida: soma de {from} a {to}, pixel de {px}″. Pode misturar estrelas vizinhas.",
+      "loading": "Lendo as 102 cores no mapa do céu inteiro",
+      "failed": "Não deu para ler o mapa do céu agora.",
+      "offline": "Este servidor está sem internet, então não lê o mapa do céu inteiro.",
+      "bright": "O centro deste ponto estourou na câmera. As cores sem medida aparecem como falha na linha.",
+      "lab": "Ver este objeto no Lab",
+      "irsa": "Medida de verdade na IRSA",
+      "credit": "Mapa do céu inteiro: SPHEREx DR1, NASA/JPL-Caltech/IPAC (IRSA).",
+      "more": "Mais sobre este ponto"
+    }
   },
   "classify": {
     "title": "Ache o que muda de lugar",
@@ -1284,7 +1308,8 @@
     "creditOn": "Ligado: seu apelido aparece nos achados.",
     "creditOff": "Desligado: você aparece como anônimo nos achados.",
     "logoutTitle": "Sair de {nickname}?",
-    "logoutBody": "Não tem senha, então não dá para voltar a este apelido. Suas respostas continuam valendo e suas notas privadas ficam neste navegador."
+    "logoutBody": "Não tem senha, então não dá para voltar a este apelido. Suas respostas continuam valendo e suas notas privadas ficam neste navegador.",
+    "cubeCredit": "A cor de qualquer ponto vem do mapa do céu inteiro do SPHEREx (DR1), publicado pela IRSA (NASA/JPL-Caltech/IPAC)."
   },
   "catalogs": {
     "title": "Consultar catálogos",

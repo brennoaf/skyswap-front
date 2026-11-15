@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslations, useLocale } from 'next-intl'
 import { useState, type ReactNode } from 'react'
-import { BAND_EDGES, formatMonthYear, logTicks, monthTicks, nearestIndex, residualExtent, skyOffset } from '@/components/charts/chart-math'
+import { BAND_EDGES, formatMonthYear, gappedPaths, robustTop, logTicks, monthTicks, nearestIndex, residualExtent, skyOffset } from '@/components/charts/chart-math'
 import { Frame, linear, PLOT } from '@/components/charts/plot'
 import { Button, Chip, IconButton, Notice, Segmented, Sheet, Skeleton } from '@/components/ui/primitives'
 import { IconInfo, IconWarning } from '@/components/icons'
@@ -229,6 +229,96 @@ export function SpectrumChart({ data, title, mixedBatches = false }: { data: Spe
       />
       {mixedBatches && <BatchNote />}
       <InfoSheet open={info} onClose={() => setInfo(false)} lines={[t('info.spectrumDot'), t('info.hollow'), t('info.spectrumAxes'), ...(log ? [t('info.logScale')] : [])]} />
+    </figure>
+  )
+}
+
+export interface PointSpectrumData {
+  channels: { band: string; wavelength_um: number; value: number | null; state: string; bright: boolean }[]
+}
+
+const POINT_X: [number, number] = [0.7, 5.05]
+const STRIPES_UM = [1.88, 3.3, 4.05]
+const STRIPE_NEAR_UM = 0.06
+
+export function PointSpectrumChart({ data }: { data: PointSpectrumData }) {
+  const locale = useLocale()
+  const t = useTranslations('charts')
+  const [sel, setSel] = useState<number | null>(null)
+  const [info, setInfo] = useState(false)
+  const values = data.channels.flatMap((c) => (c.value === null ? [] : [c.value]))
+  const x = linear(POINT_X, [PLOT.l, PLOT.w - PLOT.r], 6, 0)
+  const top = Math.max(0, robustTop(values))
+  const y = linear([Math.min(0, ...values), top], [PLOT.h - PLOT.b, PLOT.t], 5)
+  const sig = (v: number, digits: number) => v.toLocaleString(locale, { maximumSignificantDigits: digits })
+  const pts = data.channels.map((c) => ({ c, x: x(c.wavelength_um), y: c.value === null ? null : y(c.value) }))
+  const lines = gappedPaths(pts.map((p) => ({ group: p.c.band, x: p.x, y: p.y })))
+  const picked = sel === null ? undefined : pts[sel]
+  const nearStripe = picked ? STRIPES_UM.some((w) => Math.abs(w - picked.c.wavelength_um) <= STRIPE_NEAR_UM) : false
+  const above = (v: number | null) => v !== null && y(v) < PLOT.t
+  const flag = picked ? [picked.c.bright && t('tooBright'), nearStripe && t('stripe'), above(picked.c.value) && t('offScale')].filter(Boolean).join('. ') : ''
+  return (
+    <figure data-testid="point-spectrum">
+      <ChartHead title={t('pointTitle')} onInfo={() => setInfo(true)} />
+      {values.length ? (
+        <Frame
+          title={t('pointTitle')}
+          x={x}
+          y={y}
+          xLabel={t('wavelength')}
+          yLabel={t('surface')}
+          xEnds={[t('xNear'), t('xFar')]}
+          xFormat={(v) => v.toLocaleString(locale, { maximumFractionDigits: 1 })}
+          yFormat={(v) => sig(v, 3)}
+          onPick={(px) => {
+            let best = -1
+            let dist = Infinity
+            pts.forEach((p, i) => {
+              const d = Math.abs(p.x - px)
+              if (d < dist) {
+                dist = d
+                best = i
+              }
+            })
+            setSel(best < 0 ? null : best)
+          }}
+        >
+          {STRIPES_UM.map((w) => (
+            <g key={w} className="text-text-secondary" pointerEvents="none">
+              <line x1={x(w)} x2={x(w)} y1={PLOT.t + 12} y2={PLOT.h - PLOT.b} stroke="currentColor" strokeOpacity="0.5" strokeWidth="0.75" strokeDasharray="2 3" />
+              <text x={x(w)} y={PLOT.t + 7} textAnchor="middle" className="fill-text-secondary text-chart">
+                ?
+              </text>
+            </g>
+          ))}
+          {lines.map((l) => (
+            <path key={l.group} d={l.d} fill="none" stroke={BAND_HUE[l.group]} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+          ))}
+          {pts.map((p, i) => (p.y === null ? null : <circle key={i} cx={p.x} cy={p.y} r="1.4" fill={BAND_HUE[p.c.band]} />))}
+          {pts.map((p, i) => (above(p.c.value) ? <path key={`up${i}`} d={`M${p.x - 3.5} ${PLOT.t + 4}L${p.x} ${PLOT.t - 2}L${p.x + 3.5} ${PLOT.t + 4}Z`} fill={BAND_HUE[p.c.band]} pointerEvents="none" /> : null))}
+          {picked && <line x1={picked.x} x2={picked.x} y1={PLOT.t} y2={PLOT.h - PLOT.b} stroke="currentColor" strokeOpacity="0.35" strokeWidth="1" pointerEvents="none" />}
+          {picked && picked.y !== null && !above(picked.c.value) && <Picked x={picked.x} y={picked.y} />}
+        </Frame>
+      ) : (
+        <p className="py-10 text-center text-note text-text-secondary">{t('noData')}</p>
+      )}
+      <div className="relative h-6" aria-hidden="true">
+        {BANDS.map((b) => {
+          const [a, z] = BAND_EDGES[b] as [number, number]
+          return (
+            <span key={b} className="absolute top-0 flex flex-col items-center gap-0.5" style={{ left: `${(x(a) / PLOT.w) * 100}%`, width: `${((x(z) - x(a)) / PLOT.w) * 100}%` }}>
+              <span className="h-1.5 w-full rounded-full" style={{ background: BAND_HUE[b] }} />
+              <span className="text-meta leading-none text-text-secondary">{b}</span>
+            </span>
+          )
+        })}
+      </div>
+      <Readout
+        head={picked ? `${picked.c.band}, ${picked.c.wavelength_um.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} µm` : undefined}
+        body={picked ? (picked.c.value === null ? t('noValue') : t('readSurface', { value: sig(picked.c.value, 3) })) : undefined}
+        flag={flag || false}
+      />
+      <InfoSheet open={info} onClose={() => setInfo(false)} lines={[t('info.pointPeek'), t('info.pointGaps'), t('info.pointStripes'), ...(pts.some((p) => above(p.c.value)) ? [t('info.pointOffScale')] : []), t('info.pointUnits')]} />
     </figure>
   )
 }

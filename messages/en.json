@@ -437,8 +437,20 @@
       "motionRing": "The ring is the margin of error of this comparison. A measurement inside the ring agrees with the prediction.",
       "motionLine": "The line links the prediction to the measurement the sentence under the chart talks about.",
       "arcsec": "Distances are in arcseconds, a very small angle: one degree split into 3,600 parts. One SPHEREx pixel is {size} arcseconds.",
-      "pathView": "Path puts both on the sky, counted from the first predicted position."
-    }
+      "pathView": "Path puts both on the sky, counted from the first predicted position.",
+      "pointPeek": "Each point on the line is the brightness of a single map pixel, adding up photos from several months. It is a quick look, not a measurement: the pixel can blend light from nearby stars.",
+      "pointGaps": "Where the line breaks, that colour has no reading: a photo was missing, the camera flagged a fault or the light burnt out. A gap does not mean zero.",
+      "pointStripes": "The ? marks colours where the map has known stripes, near 1.88, 3.3 and 4.05 µm. Values there may be wrong.",
+      "pointUnits": "MJy/sr is brightness per patch of sky. To measure a star for real, use the IRSA tool.",
+      "pointOffScale": "An arrow at the top marks a colour far above the others, off the scale. Tap it to read the value."
+    },
+    "pointTitle": "Brightness in each of the 102 colours",
+    "surface": "Brightness (MJy/sr)",
+    "noValue": "No reading in this colour",
+    "readSurface": "{value} MJy/sr",
+    "tooBright": "Too bright",
+    "stripe": "Near a known stripe in the map",
+    "offScale": "Off the chart scale"
   },
   "viewer": {
     "title": "Post",
@@ -665,7 +677,19 @@
     "share": "Share this spot",
     "photoOf": "Photo {n} of {total}",
     "unchecked": "Couldn't check for photos of this spot right now.",
-    "goSearch": "Search"
+    "goSearch": "Search",
+    "spectrum": {
+      "title": "Colours of this spot",
+      "peek": "Quick look: sum from {from} to {to}, {px}″ pixel. Nearby stars may blend in.",
+      "loading": "Reading the 102 colours from the all-sky map",
+      "failed": "Could not read the sky map right now.",
+      "offline": "This server has no internet, so it cannot read the all-sky map.",
+      "bright": "The centre of this spot burnt out on the camera. Colours with no reading show as gaps in the line.",
+      "lab": "See this object in the Lab",
+      "irsa": "Real measurement at IRSA",
+      "credit": "All-sky map: SPHEREx DR1, NASA/JPL-Caltech/IPAC (IRSA).",
+      "more": "More about this spot"
+    }
   },
   "classify": {
     "title": "Spot what moves",
@@ -1284,7 +1308,8 @@
     "creditOn": "On: your nickname shows on findings.",
     "creditOff": "Off: you show as anonymous on findings.",
     "logoutTitle": "Log out of {nickname}?",
-    "logoutBody": "There is no password, so you can't come back to this nickname. Your answers stay counted, and your private notes stay in this browser."
+    "logoutBody": "There is no password, so you can't come back to this nickname. Your answers stay counted, and your private notes stay in this browser.",
+    "cubeCredit": "The colours of any spot come from the SPHEREx all-sky map (DR1), published by IRSA (NASA/JPL-Caltech/IPAC)."
   },
   "catalogs": {
     "title": "Check catalogs",

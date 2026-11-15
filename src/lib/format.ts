@@ -93,3 +93,10 @@ export function bandOf(wavelengthUm: number, ranges: Record<string, [number, num
 export function cx(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(' ')
 }
+
+export function monthYear(iso: string | null | undefined, locale: string): string {
+  if (!iso) return ''
+  const d = new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : `${iso}Z`)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString(locale, { month: 'short', year: 'numeric', timeZone: 'UTC' }).replace(/\./g, '').replace(/ de /g, '/')
+}

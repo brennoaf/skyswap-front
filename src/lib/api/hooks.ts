@@ -23,6 +23,7 @@ export const keys = {
   goals: ['goals'] as const,
   search: (q: string) => ['search', q] as const,
   sky: (ra: number, dec: number, fov: number, band: string | null) => ['sky', ra, dec, fov, band] as const,
+  skySpectrum: (ra: number, dec: number) => ['sky-spectrum', ra, dec] as const,
   health: ['health'] as const,
   exploreMap: exploreKeys.map,
   exploreCells: exploreKeys.cells,
@@ -280,6 +281,16 @@ export function useSky(ra: number | null, dec: number | null, fov: number, band:
     enabled: ra !== null && dec !== null,
     queryFn: async () => unwrap(await api.GET('/api/sky', { params: { query: { ra: ra as number, dec: dec as number, fov, ...(band ? { band } : {}) } } })),
     staleTime: 600_000,
+  })
+}
+
+export function useSkySpectrum(ra: number, dec: number, enabled: boolean) {
+  return useQuery({
+    queryKey: keys.skySpectrum(ra, dec),
+    enabled,
+    queryFn: async () => unwrap(await api.GET('/api/sky/spectrum', { params: { query: { ra, dec } } })),
+    staleTime: Infinity,
+    retry: 1,
   })
 }
 

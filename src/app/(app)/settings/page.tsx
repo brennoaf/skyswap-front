@@ -150,6 +150,7 @@ function Details() {
             <h3 className="font-semibold">{t('data')}</h3>
             <div className="mt-1 text-text-secondary">{health.data ? t('dataBody', { version: health.data.version, images: fmt.number(health.data.images_indexed) }) : <Skeleton className="h-10 w-full" />}</div>
           </section>
+          <p className="text-text-secondary">{t('cubeCredit')}</p>
           <p className="text-text-secondary">{t('about')}</p>
           <a href={API_DOCS_URL} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 font-semibold text-link">
             <IconLink size={20} />
