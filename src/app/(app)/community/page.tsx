@@ -30,7 +30,7 @@ function FindingCard({ finding }: { finding: FindingSummary }) {
             <span className="block truncate text-account font-medium">{title}</span>
             <span className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
               {finding.example && <ExamplePill />}
-              <StatePill state={finding.state} reason={finding.reason} />
+              <StatePill state={finding.state} />
             </span>
           </span>
         </div>
@@ -59,7 +59,7 @@ function Highlight({ finding }: { finding: FindingSummary }) {
   return (
     <Link href={`/community/${encodeURIComponent(finding.id)}`} className="mx-4 mt-3 block rounded-[var(--radius-button)] bg-surface p-3">
       <span className="flex items-center gap-1.5">
-        <StatePill state={finding.state} reason={finding.reason} />
+        <StatePill state={finding.state} />
         {finding.example && <ExamplePill />}
       </span>
       <span className="mt-1.5 block truncate text-ui font-semibold">{title}</span>

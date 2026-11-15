@@ -197,7 +197,7 @@ export default function FindingPage({ params }: { params: Promise<{ id: string }
       <Story finding={f} />
       <section className="space-y-1 px-4 pt-3">
         <div className="flex items-center gap-1.5">
-          <StatePill state={f.state} reason={f.reason} />
+          <StatePill state={f.state} />
           {f.example && <ExamplePill />}
         </div>
         <p className="pt-1 text-body leading-snug">{stateBody(ts, f)}</p>

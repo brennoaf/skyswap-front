@@ -1654,7 +1654,8 @@
     "nothingYet": "Nada aqui ainda.",
     "knownAs": "Já conhecido: {name}",
     "seeProfile": "Ver perfil de {name}",
-    "photoAlt": "Primeira foto de {title}"
+    "photoAlt": "Primeira foto de {title}",
+    "known": "Já conhecido"
   },
   "player": {
     "counter": "Foto {n} de {total}",

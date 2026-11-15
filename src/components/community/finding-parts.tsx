@@ -23,7 +23,7 @@ export function StatePill({ state, reason = null }: { state: string; reason?: st
   const tc = useTranslations('community')
   return (
     <span className={cx('inline-flex h-6 min-w-0 items-center rounded-full px-2.5 text-meta font-semibold', TONE[state] ?? 'bg-surface text-text-secondary')} data-testid="state-pill">
-      <span className="truncate">{state === 'known' && reason ? tc('knownAs', { name: reason }) : t(`${state}.label`)}</span>
+      <span className="truncate">{state === 'known' ? (reason ? tc('knownAs', { name: reason }) : tc('known')) : t(`${state}.label`)}</span>
     </span>
   )
 }

@@ -1654,7 +1654,8 @@
     "nothingYet": "Nothing here yet.",
     "knownAs": "Already known: {name}",
     "seeProfile": "See {name}'s profile",
-    "photoAlt": "First photo of {title}"
+    "photoAlt": "First photo of {title}",
+    "known": "Already known"
   },
   "player": {
     "counter": "Photo {n} of {total}",
