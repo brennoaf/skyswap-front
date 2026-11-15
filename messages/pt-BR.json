@@ -789,20 +789,23 @@
     "finish": "Terminar treino",
     "welcome": {
       "title": "Ache o que muda de lugar no céu",
-      "body1": "Estas são fotos reais do mesmo pedaço do céu, tiradas em momentos diferentes.",
+      "body1": "Fotos reais do mesmo pedaço do céu, tiradas em momentos diferentes.",
       "body2": "As estrelas ficam paradas. Asteroides e cometas mudam de lugar.",
       "swipe": {
         "right": "Mudou de lugar",
         "left": "Nada mudou",
         "up": "Não sei"
       },
-      "swipeRead": {
-        "right": "Deslizar para a direita: mudou de lugar",
-        "left": "Deslizar para a esquerda: nada mudou",
-        "up": "Deslizar para cima: não sei"
+      "drag": {
+        "right": "Arraste para a direita",
+        "left": "Arraste para a esquerda",
+        "up": "Arraste para cima"
       },
+      "stepRead": "Passo {n} de {total}",
+      "next": "Próximo",
+      "back": "Voltar",
       "start": "{n, plural, one {Treinar com # cartão} other {Treinar com # cartões}}",
-      "skip": "Pular treino"
+      "skip": "Pular"
     },
     "trained": {
       "title": "Treino concluído",

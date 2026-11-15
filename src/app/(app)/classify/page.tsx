@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
-import { AnswerPanel, FrameBars, PhotoBar, SwapPanel, SwapStage, SwapStrip, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
+import { AnswerPanel, FrameBars, PhotoBar, SwapPanel, SwapStage, SwapStamps, SwapStrip, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
 import { KnownSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
-import { IconArrowRight, IconCards, IconClose, IconMoves, IconQuestion } from '@/components/icons'
+import { IconArrowRight, IconBack, IconCards, IconClose, IconMoves, IconQuestion } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Button, EmptyState, IconButton, Skeleton, TopBar } from '@/components/ui/primitives'
@@ -32,15 +32,23 @@ const UNDO_MS = 3000
 const NOTICE_MS = 5000
 const FRAME_MS = 700
 const INTRO_FRAME_MS = 800
-const DEMO_S = 1.5
-const DEMO_PAUSE_MS = 500
-const DEMO_UP_PX = 70
-const DEMO = [
-  { dir: 'right', x: SWIPE, y: 0 },
-  { dir: 'left', x: -SWIPE, y: 0 },
-  { dir: 'up', x: 0, y: -DEMO_UP_PX },
+const DEMO_WAIT_MS = 300
+const DEMO_RESET_S = 0.2
+const DEMO_TOP_CLEAR_PX = 4
+const DEMO_STAMP_UP_PX = 24
+const DEMO_GESTURE = { duration: 2.2, times: [0, 0.5 / 2.2, 0.9 / 2.2, 1.4 / 2.2, 1], ease: 'easeInOut' as const, repeat: Infinity }
+const WELCOME_SWIPES = [
+  { key: 'left', x: -SWIPE, up: false, arrow: 'rotate-180' },
+  { key: 'right', x: SWIPE, up: false, arrow: '' },
+  { key: 'up', x: 0, up: true, arrow: '-rotate-90' },
 ] as const
-const DEMO_ARROW = { right: '', left: 'rotate-180', up: '-rotate-90' }
+const WELCOME_STEPS = WELCOME_SWIPES.length + 1
+const WELCOME_STYLE = {
+  '--welcome-up': 'clamp(28px, calc((100dvh - 560px) * 0.15 + 28px), 72px)',
+  '--welcome-photo': 'max(120px, min(calc(min(100vw, var(--width-app)) - 40px), calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--welcome-up) - var(--welcome-text) - 192px)))',
+} as CSSProperties
+const STEP_TITLE = 'font-[family-name:var(--font-display)] font-bold leading-tight [text-wrap:balance]'
+const STEP_BODY = 'text-title-sm leading-[1.4] text-text-secondary [@media(min-height:700px)]:text-title-md'
 const NUDGE_PX = 44
 const NUDGE_S = 0.7
 const NUDGE_WAIT_MS = 700
@@ -126,26 +134,31 @@ function Coach({ children }: { children: ReactNode }) {
   )
 }
 
-function SwipeDemo({ sprite, frames }: { sprite: string; frames: number }) {
-  const t = useTranslations('classify.welcome')
+function WelcomePhoto({ sprite, frames, step }: { sprite: string; frames: number; step: number }) {
   const canvas = useRef<HTMLCanvasElement>(null)
+  const gap = useRef<HTMLDivElement>(null)
   const img = useSprite(sprite)
   const reduce = useReducedMotion()
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const rotate = useTransform(x, [-240, 240], [-6, 6])
-  const [step, setStep] = useState(0)
   useEffect(() => {
-    if (reduce) return
-    const move = DEMO[step]
-    const options = { duration: DEMO_S, times: [0, 0.35, 0.65, 1], ease: 'easeInOut' as const }
-    const moves = [animate(x, [0, move.x, move.x, 0], options), animate(y, [0, move.y, move.y, 0], options)]
-    const timer = setTimeout(() => setStep((step + 1) % DEMO.length), DEMO_S * 1000 + DEMO_PAUSE_MS)
+    if (reduce) {
+      x.set(0)
+      y.set(0)
+      return
+    }
+    const moves = [animate(x, 0, { duration: DEMO_RESET_S }), animate(y, 0, { duration: DEMO_RESET_S })]
+    const swipe = WELCOME_SWIPES[step - 1]
+    const timer = swipe
+      ? setTimeout(() => {
+          const up = swipe.up ? (gap.current?.offsetHeight ?? 0) - DEMO_TOP_CLEAR_PX : 0
+          moves.push(animate(x, [0, swipe.x, swipe.x, 0, 0], DEMO_GESTURE), animate(y, [0, -up, -up, 0, 0], DEMO_GESTURE))
+        }, DEMO_WAIT_MS)
+      : undefined
     return () => {
       clearTimeout(timer)
       moves.forEach((m) => m.stop())
-      x.set(0)
-      y.set(0)
     }
   }, [reduce, step, x, y])
   useEffect(() => {
@@ -166,56 +179,72 @@ function SwipeDemo({ sprite, frames }: { sprite: string; frames: number }) {
     const timer = setInterval(draw, INTRO_FRAME_MS)
     return () => clearInterval(timer)
   }, [frames, img, reduce])
-  const dir = DEMO[step].dir
   return (
     <>
-      <div className="relative -mx-5 mt-4 min-h-[140px] shrink basis-[min(38dvh,calc(100vw-40px))] overflow-x-clip" aria-hidden="true" data-testid="swipe-demo-slot">
-        <div className="absolute inset-0 flex justify-center">
-          <motion.div style={{ x, y, rotate }} className="aspect-square h-full overflow-hidden rounded-[var(--radius-sheet)] bg-media-bg" data-testid="swipe-demo">
-            <canvas ref={canvas} className="pixelated block size-full" />
-          </motion.div>
-        </div>
+      <div ref={gap} className="h-[var(--welcome-up)] shrink-0" data-testid="welcome-gap" />
+      <div className="flex shrink-0 justify-center overflow-x-clip" aria-hidden="true" data-testid="swipe-demo-slot">
+        <motion.div style={{ x, y, rotate, width: 'var(--welcome-photo)', height: 'var(--welcome-photo)' }} className="relative shrink-0 overflow-hidden bg-media-bg" data-testid="swipe-demo">
+          <canvas ref={canvas} className="pixelated block size-full" />
+          <SwapStamps x={x} y={y} upFull={DEMO_STAMP_UP_PX} />
+        </motion.div>
       </div>
-      {reduce ? (
-        <div aria-hidden="true" className="my-3 grid shrink-0 grid-cols-3 gap-2" data-testid="swipe-demo-still">
-          {DEMO.map((d) => (
-            <div key={d.dir} className="flex flex-col items-center gap-1 text-center text-[16px] font-semibold leading-tight">
-              <IconArrowRight size={30} className={DEMO_ARROW[d.dir]} />
-              {t(`swipe.${d.dir}`)}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div aria-hidden="true" className="my-2 flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap text-[26px] font-bold leading-none" data-testid="swipe-demo-line" data-dir={dir}>
-          <IconArrowRight size={30} className={`shrink-0 ${DEMO_ARROW[dir]}`} />
-          {t(`swipe.${dir}`)}
-        </div>
-      )}
-      <ul className="sr-only">
-        {DEMO.map((d) => (
-          <li key={d.dir}>{t(`swipeRead.${d.dir}`)}</li>
-        ))}
-      </ul>
     </>
   )
 }
 
 function Welcome({ lesson, count, onStart, onSkip }: { lesson: { card: DeckCard }; count: number; onStart: () => void; onSkip: () => void }) {
   const t = useTranslations('classify.welcome')
+  const reduce = useReducedMotion()
+  const [step, setStep] = useState(0)
+  const primary = useRef<HTMLButtonElement>(null)
+  const swipe = WELCOME_SWIPES[step - 1]
+  const last = step === WELCOME_STEPS - 1
+  const back = () => {
+    setStep(step - 1)
+    if (step === 1) primary.current?.focus()
+  }
   return (
     <SwapShell>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-5 pb-4" data-testid="swap-welcome">
-        <SwipeDemo sprite={lesson.card.sprite} frames={Math.max(1, lesson.card.offsets_s.length)} />
-        <h1 className="text-[26px] font-bold leading-tight [text-wrap:balance]">{t('title')}</h1>
-        <p className="mt-2.5 text-[17px] leading-snug text-text-secondary">{t('body1')}</p>
-        <p className="mt-2.5 text-[17px] leading-snug text-text-secondary">{t('body2')}</p>
-        <div className="flex-1" />
-        <button type="button" onClick={onStart} className={`${swapButton.primary} mt-3 w-full flex-none`}>
-          {t('start', { n: count })}
-        </button>
-        <button type="button" onClick={onSkip} className="mt-1 min-h-12 shrink-0 text-[16px] font-semibold text-link">
-          {t('skip')}
-        </button>
+      <div style={WELCOME_STYLE} className="flex min-h-0 flex-1 flex-col pt-2 [--welcome-text:184px] [@media(min-height:700px)]:[--welcome-text:200px]" data-testid="swap-welcome">
+        <div className="shrink-0 px-2">
+          <FrameBars n={WELCOME_STEPS} index={step} />
+        </div>
+        <div className="flex h-12 shrink-0 items-center px-2" data-testid="welcome-top">
+          {step > 0 && (
+            <IconButton label={t('back')} onClick={back} className="size-12">
+              <IconBack size={28} />
+            </IconButton>
+          )}
+          <button type="button" onClick={onSkip} className="ml-auto flex h-12 items-center px-3 text-title-sm font-semibold text-text-secondary">
+            {t('skip')}
+          </button>
+        </div>
+        <WelcomePhoto sprite={lesson.card.sprite} frames={Math.max(1, lesson.card.offsets_s.length)} step={step} />
+        <div aria-live="polite" className="flex min-h-0 flex-1 overflow-y-auto px-5 py-6" data-testid="welcome-text-area">
+          <motion.div key={step} initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="m-auto w-full text-center" data-testid="welcome-text" data-step={step + 1}>
+            <p className="sr-only">{t('stepRead', { n: step + 1, total: WELCOME_STEPS })}</p>
+            {swipe ? (
+              <>
+                <h1 className={`${STEP_TITLE} text-wordmark`}>{t(`swipe.${swipe.key}`)}</h1>
+                <p className={`${STEP_BODY} mt-3 flex items-center justify-center gap-2`}>
+                  <IconArrowRight size={24} aria-hidden="true" className={`shrink-0 ${swipe.arrow}`} />
+                  {t(`drag.${swipe.key}`)}
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className={`${STEP_TITLE} text-display`}>{t('title')}</h1>
+                <p className={`${STEP_BODY} mt-3`}>{t('body1')}</p>
+                <p className={`${STEP_BODY} mt-3`}>{t('body2')}</p>
+              </>
+            )}
+          </motion.div>
+        </div>
+        <div className="shrink-0 px-5 pb-4">
+          <button ref={primary} type="button" onClick={last ? onStart : () => setStep(step + 1)} className={`${swapButton.primary} w-full`}>
+            {last ? t('start', { n: count }) : t('next')}
+          </button>
+        </div>
       </div>
     </SwapShell>
   )
@@ -225,15 +254,19 @@ function Trained({ onStart }: { onStart: () => void }) {
   const t = useTranslations('classify.trained')
   return (
     <SwapShell>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-4" data-testid="swap-trained">
-        <div className="flex-1" />
-        <h1 className="text-[26px] font-bold leading-tight">{t('title')}</h1>
-        <p className="mt-2.5 text-[17px] leading-snug text-text-secondary">{t('body1')}</p>
-        <p className="mt-2.5 text-[17px] leading-snug text-text-secondary">{t('body2')}</p>
-        <div className="flex-1" />
-        <button type="button" onClick={onStart} className={`${swapButton.primary} mt-3 w-full flex-none`}>
-          {t('start')}
-        </button>
+      <div className="flex min-h-0 flex-1 flex-col" data-testid="swap-trained">
+        <div className="flex min-h-0 flex-1 overflow-y-auto px-5 py-6">
+          <div className="m-auto w-full text-center">
+            <h1 className={`${STEP_TITLE} text-display`}>{t('title')}</h1>
+            <p className={`${STEP_BODY} mt-3`}>{t('body1')}</p>
+            <p className={`${STEP_BODY} mt-3`}>{t('body2')}</p>
+          </div>
+        </div>
+        <div className="shrink-0 px-5 pb-4">
+          <button type="button" onClick={onStart} className={`${swapButton.primary} w-full`}>
+            {t('start')}
+          </button>
+        </div>
       </div>
     </SwapShell>
   )

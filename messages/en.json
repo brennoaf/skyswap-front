@@ -789,20 +789,23 @@
     "finish": "Finish practice",
     "welcome": {
       "title": "Spot what moves in the sky",
-      "body1": "These are real photos of the same piece of sky, taken at different times.",
+      "body1": "Real photos of the same piece of sky, taken at different times.",
       "body2": "Stars stay still. Asteroids and comets change place.",
       "swipe": {
         "right": "It moved",
         "left": "Nothing moved",
         "up": "Not sure"
       },
-      "swipeRead": {
-        "right": "Swipe right: it moved",
-        "left": "Swipe left: nothing moved",
-        "up": "Swipe up: not sure"
+      "drag": {
+        "right": "Swipe right",
+        "left": "Swipe left",
+        "up": "Swipe up"
       },
+      "stepRead": "Step {n} of {total}",
+      "next": "Next",
+      "back": "Back",
       "start": "{n, plural, one {Practice with # card} other {Practice with # cards}}",
-      "skip": "Skip practice"
+      "skip": "Skip"
     },
     "trained": {
       "title": "Practice done",

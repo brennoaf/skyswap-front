@@ -44,6 +44,20 @@ function Stamp({ label, opacity, className }: { label: string; opacity: MotionVa
   )
 }
 
+export function SwapStamps({ x, y, upFull = 50 }: { x: MotionValue<number>; y: MotionValue<number>; upFull?: number }) {
+  const t = useTranslations('classify')
+  const moves = useTransform(x, [12, 50], [0, 1])
+  const still = useTransform(x, [-50, -12], [1, 0])
+  const unsure = useTransform(y, [-upFull, -12], [1, 0])
+  return (
+    <>
+      <Stamp label={t('moves')} opacity={moves} className="left-3.5 text-accent ring-accent" />
+      <Stamp label={t('still')} opacity={still} className="right-3.5 text-text ring-text-secondary" />
+      <Stamp label={t('unsure')} opacity={unsure} className="left-1/2 -translate-x-1/2 text-warning ring-warning" />
+    </>
+  )
+}
+
 export function SwapStage({
   img,
   sprite,
@@ -73,15 +87,11 @@ export function SwapStage({
   onHold: (held: boolean) => void
   overlay?: ReactNode
 }) {
-  const t = useTranslations('classify')
   const reduce = useReducedMotion()
   const canvas = useRef<HTMLCanvasElement>(null)
   const inner = useRef<HTMLDivElement>(null)
   const tile = img ? Math.round(img.naturalHeight / 2) : 1
   const rotate = useTransform(x, [-240, 240], reduce ? [0, 0] : [-6, 6])
-  const moves = useTransform(x, [12, 50], [0, 1])
-  const still = useTransform(x, [-50, -12], [1, 0])
-  const unsure = useTransform(y, [-50, -12], [1, 0])
 
   useEffect(() => {
     const c = canvas.current
@@ -120,9 +130,7 @@ export function SwapStage({
           {!img && <Skeleton className="absolute inset-0 rounded-none" />}
           {overlay}
         </div>
-        <Stamp label={t('moves')} opacity={moves} className="left-3.5 text-accent ring-accent" />
-        <Stamp label={t('still')} opacity={still} className="right-3.5 text-text ring-text-secondary" />
-        <Stamp label={t('unsure')} opacity={unsure} className="left-1/2 -translate-x-1/2 text-warning ring-warning" />
+        <SwapStamps x={x} y={y} />
       </motion.div>
     </div>
   )
