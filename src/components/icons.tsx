@@ -230,6 +230,21 @@ export const IconTarget = (p: IconProps) => (
   </Svg>
 )
 
+export const IconUndo = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 18.5L5.5 12L12 5.5" {...LINE} />
+    <path d="M5.5 12H18.5C22.6 12 26 15.4 26 19.5C26 23.6 22.6 27 18.5 27H14.5" {...LINE} />
+  </Svg>
+)
+
+export const IconInfo = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="16" cy="16" r="12" {...LINE} />
+    <path d="M16 14.5V21.5" {...LINE} />
+    <circle cx="16" cy="10.5" r="1.1" fill="currentColor" />
+  </Svg>
+)
+
 export const IconPlay = (p: IconProps) => (
   <Svg {...p}>
     <path d="M11 8.6C11 7.8 11.9 7.3 12.6 7.7L24.1 14.7C24.8 15.1 24.8 16.1 24.1 16.5L12.6 23.4C11.9 23.8 11 23.3 11 22.5V8.6Z" fill="currentColor" />

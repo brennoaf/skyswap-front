@@ -26,16 +26,23 @@ export const swapButton = {
 }
 
 export const photoFrame = 'relative rounded-[var(--radius-sheet)] bg-reels-bg'
+const SWAP_FRAME = 'relative rounded-[20px] bg-reels-bg transition-shadow duration-200'
+const FRAME_RING = {
+  rest: 'shadow-[0_0_0_1px_var(--color-divider)]',
+  chosen: 'shadow-[0_0_0_2px_var(--color-text),0_0_32px_color-mix(in_srgb,var(--color-text)_12%,transparent)]',
+  yes: 'shadow-[0_0_0_2px_var(--color-accent),0_0_32px_color-mix(in_srgb,var(--color-accent)_35%,transparent)]',
+} as const
+const LEAVE = {
+  still: { x: '-120%', rotate: -10, opacity: 0 },
+  moves: { x: '120%', rotate: 10, opacity: 0 },
+  unsure: { y: '-60%', opacity: 0 },
+  glitch: { scale: 0.9, opacity: 0 },
+} as const
+export const answerCircle = 'grid place-items-center rounded-full bg-surface ring-1 ring-inset ring-divider'
 export const photoInset = 'absolute inset-1.5'
 
 const DRAG_STARTS_PX = 12
 const STAMP_FULL_PX = 34
-const CHOSEN_STAMP = {
-  moves: 'left-3.5 -rotate-10 text-accent ring-accent',
-  still: 'right-3.5 rotate-10 text-text ring-text-secondary',
-  unsure: 'left-1/2 -translate-x-1/2 -rotate-8 text-warning ring-warning',
-  glitch: 'left-1/2 -translate-x-1/2 -rotate-8 text-text ring-text',
-} as const
 export const ANSWER_ICONS = { still: IconClose, glitch: IconWarning, unsure: IconQuestion, moves: IconCheck } as const
 const ANSWERS = [
   { answer: 'still', Icon: IconClose, big: true, lit: 'border-text bg-text text-bg' },
@@ -123,7 +130,8 @@ export function SwapStage({
   onHold,
   overlay,
   hint,
-  chosen,
+  ring = 'rest',
+  leaving,
 }: {
   img: HTMLImageElement | null
   sprite: string
@@ -139,9 +147,9 @@ export function SwapStage({
   onHold: (held: boolean) => void
   overlay?: ReactNode
   hint?: boolean
-  chosen?: 'still' | 'moves' | 'glitch' | 'unsure' | null
+  ring?: keyof typeof FRAME_RING
+  leaving?: keyof typeof LEAVE | null
 }) {
-  const t = useTranslations('classify')
   const reduce = useReducedMotion()
   const canvas = useRef<HTMLCanvasElement>(null)
   const inner = useRef<HTMLDivElement>(null)
@@ -176,11 +184,18 @@ export function SwapStage({
     <div className="relative z-10 flex shrink-0 justify-center pb-1.5" data-testid="swap-photo-slot">
       <CardBehind size="var(--swap-photo)" />
       <motion.div
+        initial={reduce ? false : { y: 24, scale: 0.96, opacity: 0 }}
+        animate={leaving ? LEAVE[leaving] : { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 }}
+        transition={{ duration: reduce ? 0 : 0.35, ease: [0.2, 0.8, 0.2, 1] }}
+        data-leaving={leaving ?? undefined}
+      >
+      <motion.div
         {...gestures.bind}
         style={{ x, y, rotate, width: 'var(--swap-photo)', height: 'var(--swap-photo)' }}
-        className={cx(photoFrame, 'touch-none select-none')}
+        className={cx(SWAP_FRAME, FRAME_RING[ring], 'touch-none select-none')}
         data-testid="swap-photo"
         data-tour="swap-photo"
+        data-ring={ring}
       >
         <div className={cx(photoInset, gestures.zoom.scale > 1 && 'overflow-hidden')}>
           <div ref={inner} className="relative size-full origin-center" style={gestures.zoom.scale > 1 ? { transform: `translate(${gestures.zoom.x}px, ${gestures.zoom.y}px) scale(${gestures.zoom.scale})` } : undefined}>
@@ -191,11 +206,7 @@ export function SwapStage({
         </div>
         {hint && <GestureHint x={x} y={y} />}
         <SwapStamps x={x} y={y} />
-        {chosen && (
-          <span aria-hidden="true" className={cx('pointer-events-none absolute bottom-full z-20 mb-1 whitespace-nowrap rounded-full bg-bg px-3.5 py-2 text-display font-bold leading-none ring-2', CHOSEN_STAMP[chosen])} data-testid="chosen-stamp">
-            {t(chosen)}
-          </span>
-        )}
+      </motion.div>
       </motion.div>
     </div>
   )
@@ -206,20 +217,20 @@ export function PhotoBar({ playback, offsets, onTools }: { playback: Playback; o
   const tp = useTranslations('player')
   const label = useOffsetLabel()
   return (
-    <div className="flex h-[60px] min-h-12 shrink items-center gap-3 px-4" data-testid="player-bar">
+    <div className="flex items-center gap-3 px-4 pt-3.5" data-testid="player-bar">
       <div className="flex min-w-0 flex-1 items-center gap-3" data-tour="swap-play">
-        <button type="button" aria-label={playback.playing ? tp('pause') : tp('play')} onClick={() => playback.setPlaying(!playback.playing)} className="flex size-12 shrink-0 items-center justify-center rounded-full border border-text-muted text-text active:bg-surface-pressed">
-          {playback.playing ? <IconPause size={26} /> : <IconPlay size={26} />}
+        <button type="button" aria-label={playback.playing ? tp('pause') : tp('play')} onClick={() => playback.setPlaying(!playback.playing)} className={cx(answerCircle, 'size-11 shrink-0 text-text active:bg-surface-pressed')}>
+          {playback.playing ? <IconPause size={24} /> : <IconPlay size={24} />}
         </button>
         <div className="min-w-0 flex-1">
           <p className="text-[16px] font-semibold leading-tight" data-testid="player-counter">
             {tp('counter', { n: playback.index + 1, total: playback.n })}
           </p>
-          <p className="truncate text-ui leading-tight text-text-secondary">{label(offsets[playback.index] ?? 0)}</p>
+          <p className="truncate text-ui leading-snug text-text-secondary">{label(offsets[playback.index] ?? 0)}</p>
         </div>
       </div>
-      <button type="button" aria-label={t('tools.open')} onClick={onTools} className="flex size-12 shrink-0 items-center justify-center rounded-full border border-text-muted text-text active:bg-surface-pressed" data-tour="swap-tools">
-        <IconSliders size={26} />
+      <button type="button" aria-label={t('tools.open')} onClick={onTools} className={cx(answerCircle, 'size-11 shrink-0 text-text active:bg-surface-pressed')} data-tour="swap-tools">
+        <IconSliders size={24} />
       </button>
     </div>
   )
@@ -276,8 +287,8 @@ export function ToolsPanel({
   )
 }
 
-export function AnswerFace({ big, compact, className, children }: { big: boolean; compact?: boolean; className?: string; children: ReactNode }) {
-  return <span className={cx('relative flex items-center justify-center rounded-full border-[1.5px] border-text-muted transition-[color,background-color,border-color,transform] duration-75', compact ? (big ? 'size-14' : 'size-12') : big ? 'size-[68px]' : 'size-14', className)}>{children}</span>
+export function AnswerFace({ big, className, children }: { big: boolean; className?: string; children: ReactNode }) {
+  return <span className={cx(answerCircle, 'relative transition-[color,background-color,transform] duration-100', big ? 'size-[68px]' : 'size-14', className)}>{children}</span>
 }
 
 function useDragDirection(x: MotionValue<number>, y: MotionValue<number>) {
@@ -297,68 +308,33 @@ export function AnswerPanel({
   disabled,
   x,
   y,
-  chosen,
   onChoose,
 }: {
   labels: { still: string; moves: string; glitch: string; unsure: string }
   disabled: boolean
   x: MotionValue<number>
   y: MotionValue<number>
-  chosen?: 'still' | 'moves' | 'glitch' | 'unsure' | null
   onChoose: (a: 'still' | 'moves' | 'glitch' | 'unsure') => void
 }) {
   const direction = useDragDirection(x, y)
   return (
-    <div className={cx('mt-auto flex shrink-0 gap-1 px-2', chosen ? 'pb-2 pt-1' : 'pb-3 pt-2')} data-testid="swap-answers" data-tour="swap-answers">
-      {ANSWERS.map(({ answer, Icon, big, lit }) => {
-        const picked = chosen === answer
-        return (
-          <button
-            key={answer}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChoose(answer)}
-            aria-pressed={chosen ? picked : undefined}
-            data-answer={answer}
-            data-lit={direction === answer ? '' : undefined}
-            data-chosen={picked ? '' : undefined}
-            className={cx('group flex min-w-0 flex-1 flex-col items-center gap-1 transition-opacity duration-75 disabled:opacity-50', chosen && !picked && 'opacity-35')}
-          >
-            <span className={cx('flex items-center', chosen ? 'h-14' : 'h-[68px]')}>
-              <AnswerFace big={big} compact={!!chosen} className={picked ? 'scale-110 border-text bg-text text-bg' : direction === answer ? lit : 'group-active:bg-surface-pressed'}>
-                <Icon size={chosen ? (big ? 28 : 24) : big ? 34 : 28} />
-                {picked && (
-                  <span aria-hidden="true" className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-accent text-on-accent ring-2 ring-sheet">
-                    <IconCheck size={16} />
-                  </span>
-                )}
-              </AnswerFace>
-            </span>
-            <span className={cx('whitespace-nowrap text-ui font-semibold leading-tight', chosen && 'sr-only')}>{labels[answer]}</span>
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-export function SwapStrip({ text, action, onAction }: { text: string; action?: string; onAction?: () => void }) {
-  return (
-    <div role="status" className="flex h-[60px] shrink-0 items-center gap-2 pl-4 pr-2 text-[16px] font-medium leading-tight" data-testid="swap-strip">
-      <span className="min-w-0 flex-1">{text}</span>
-      {action && (
-        <button type="button" onClick={onAction} className="h-11 shrink-0 rounded-xl px-3 text-[16px] font-semibold text-link active:bg-surface-pressed">
-          {action}
+    <div className="flex shrink-0 items-start justify-between" data-testid="swap-answers" data-tour="swap-answers">
+      {ANSWERS.map(({ answer, Icon, big, lit }) => (
+        <button
+          key={answer}
+          type="button"
+          disabled={disabled}
+          onClick={() => onChoose(answer)}
+          data-answer={answer}
+          data-lit={direction === answer ? '' : undefined}
+          className={cx('group flex w-20 flex-col items-center gap-2 text-ui font-semibold leading-tight disabled:opacity-50', !big && 'text-text-secondary')}
+        >
+          <AnswerFace big={big} className={cx(!big && 'mt-1.5 text-text', direction === answer ? lit : 'group-active:scale-[0.92] group-active:bg-surface-pressed')}>
+            <Icon size={big ? 30 : 26} />
+          </AnswerFace>
+          <span className="whitespace-nowrap">{labels[answer]}</span>
         </button>
-      )}
+      ))}
     </div>
-  )
-}
-
-export function SwapPanel({ children, label }: { children: ReactNode; label?: string }) {
-  return (
-    <section aria-label={label} className="relative mt-auto flex max-h-full shrink-0 flex-col gap-2 overflow-y-auto px-4 pb-3.5 pt-3.5" data-testid="swap-panel">
-      {children}
-    </section>
   )
 }

@@ -840,8 +840,8 @@
     "failed": "Não deu para salvar sua resposta.",
     "retry": "Tentar de novo",
     "mark": {
-      "where": "Viu onde? Toque no ponto.",
-      "marked": "Ponto marcado. Toque de novo para mudar."
+      "where": "Toque no ponto que mudou",
+      "marked": "Ponto marcado"
     },
     "confirm": {
       "still": "Nada mudou",
@@ -849,7 +849,10 @@
       "glitch": "Defeito na foto",
       "unsure": "Não sei dizer",
       "confirm": "Confirmar",
-      "source": "SPHEREx, NASA / {date} / {ra}° {dec}°",
+      "source": "SPHEREx, NASA, {date}",
+      "where": "{ra}°, {dec}°",
+      "yours": "Sua resposta",
+      "saved": "Salvo",
       "sourceShort": "SPHEREx, NASA"
     },
     "open": {

@@ -840,8 +840,8 @@
     "failed": "Couldn't save your answer.",
     "retry": "Try again",
     "mark": {
-      "where": "See where? Tap the spot.",
-      "marked": "Spot marked. Tap again to change it."
+      "where": "Tap the spot that moved",
+      "marked": "Spot marked"
     },
     "confirm": {
       "still": "Nothing moved",
@@ -849,7 +849,10 @@
       "glitch": "Photo defect",
       "unsure": "Not sure",
       "confirm": "Confirm",
-      "source": "SPHEREx, NASA / {date} / {ra}° {dec}°",
+      "source": "SPHEREx, NASA, {date}",
+      "where": "{ra}°, {dec}°",
+      "yours": "Your answer",
+      "saved": "Saved",
       "sourceShort": "SPHEREx, NASA"
     },
     "open": {

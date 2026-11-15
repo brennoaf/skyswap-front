@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
-import { ANSWER_ICONS, AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapPanel, SwapStage, SwapStamps, SwapStrip, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
+import { ANSWER_ICONS, AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapStage, SwapStamps, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
 import { KnownSheet, PhotoSourceSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
-import { IconArrowRight, IconBack, IconCards, IconClose, IconDirect, IconMoves, IconQuestion, IconWarning } from '@/components/icons'
+import { IconArrowRight, IconBack, IconCards, IconCheck, IconClose, IconDirect, IconInfo, IconMoves, IconQuestion, IconTarget, IconUndo, IconWarning } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { ScreenTour } from '@/components/shell/onboarding'
@@ -58,10 +58,10 @@ const WELCOME_STYLE = {
   '--welcome-up': 'clamp(28px, calc((100dvh - 560px) * 0.15 + 28px), 72px)',
   '--welcome-photo': 'max(120px, min(calc(min(100vw, var(--width-app)) - 40px), calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--welcome-up) - var(--welcome-text) - 198px)))',
 } as CSSProperties
-const SPOTLIGHT_TOP = 'pointer-events-auto absolute inset-x-0 top-0 z-[5] h-[calc(68px+env(safe-area-inset-top))] bg-media-scrim'
-const SWAP_SHEET = 'relative -mb-[env(safe-area-inset-bottom)] flex min-h-0 flex-1 flex-col rounded-t-[var(--radius-sheet)] bg-sheet pb-[env(safe-area-inset-bottom)]'
+const SHEET_MAX = 'max-h-[calc(100dvh-80px-var(--swap-photo)-env(safe-area-inset-top))]'
 const STEP_TITLE = 'font-[family-name:var(--font-display)] font-bold leading-tight [text-wrap:balance]'
 const STEP_BODY = 'text-title-sm leading-[1.4] text-text-secondary [@media(min-height:700px)]:text-title-md'
+const LEAVE_MS = 360
 const SWING_PX = 64
 const SWING_S = 1.3
 const SWING_WAIT_MS = 2500
@@ -69,7 +69,7 @@ const SWAP_TOUR_TIP = 'swapTour'
 const PAUSE_EVERY = 25
 const NO_MARKS: Mark[] = []
 const BLACK_EDGE_TIP = 'blackEdge'
-const SHELL_STYLE = { '--swap-photo': 'max(200px, min(min(100vw, var(--width-app)), calc(100dvh - 318px - env(safe-area-inset-top) - env(safe-area-inset-bottom))))' } as CSSProperties
+const SHELL_STYLE = { '--swap-photo': 'max(200px, min(calc(min(100vw, var(--width-app)) - 24px), calc(100dvh - 330px - env(safe-area-inset-top) - env(safe-area-inset-bottom))))' } as CSSProperties
 
 const preloaded = new Map<string, HTMLImageElement>()
 
@@ -112,7 +112,7 @@ function SwapShell({ children }: { children: ReactNode }) {
 function SwapHeader({ step, top, leave = '/', onHelp, onToolsBack }: { step?: string | null; top?: ReactNode; leave?: string; onHelp: () => void; onToolsBack?: () => void }) {
   const t = useTranslations('classify')
   return (
-    <header className="flex h-14 shrink-0 items-center gap-1 px-1">
+    <header className="flex h-[52px] shrink-0 items-center gap-1 px-1">
       {onToolsBack ? (
         <IconButton label={t('tools.back')} onClick={onToolsBack} className="size-12">
           <IconBack size={28} />
@@ -123,8 +123,7 @@ function SwapHeader({ step, top, leave = '/', onHelp, onToolsBack }: { step?: st
         </Link>
       )}
       <div className="min-w-0 flex-1 text-center">
-        {onToolsBack ? null : (top ?? (step && <p className="truncate text-ui leading-tight text-text-secondary">{step}</p>))}
-        <h1 className="truncate text-[18px] font-bold leading-tight">{onToolsBack ? t('tools.open') : t('question')}</h1>
+        {onToolsBack ? <h1 className="truncate text-[18px] font-bold leading-tight">{t('tools.open')}</h1> : (top ?? (step && <p className="truncate text-ui font-semibold leading-tight text-text-secondary">{step}</p>))}
       </div>
       <IconButton label={t('help.open')} onClick={onHelp} className="size-12">
         <IconQuestion size={26} />
@@ -140,14 +139,6 @@ function GuideRing({ mark }: { mark: Mark | undefined }) {
       <circle cx={mark.u * 100} cy={mark.v * 100} r="8" fill="none" stroke="var(--color-mark-halo)" strokeWidth="2" opacity="0.6" />
       <circle cx={mark.u * 100} cy={mark.v * 100} r="8" fill="none" stroke="var(--color-on-media)" strokeWidth="1.1" />
     </svg>
-  )
-}
-
-function Coach({ children }: { children: ReactNode }) {
-  return (
-    <div role="note" className="flex shrink basis-[60px] items-center px-4 text-title-sm font-semibold leading-tight">
-      {children}
-    </div>
   )
 }
 
@@ -385,60 +376,92 @@ function useOutside(img: HTMLImageElement | null, n: number) {
   return outside
 }
 
-function ConfirmSheet({ card, answer, spot, busy, past, onUndo, onConfirm, onAbout, onShare, onSkip }: { card: PlayCard; answer: Answer; spot: VotePosition | null | undefined; busy: boolean; past: boolean; onUndo: () => void; onConfirm: () => void; onAbout: () => void; onShare?: () => void; onSkip: () => void }) {
+function BottomSheet({ children, label, testId }: { children: ReactNode; label?: string; testId?: string }) {
+  const reduce = useReducedMotion()
+  return (
+    <motion.section
+      initial={reduce ? false : { y: '105%' }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.38, ease: [0.2, 0.9, 0.2, 1] }}
+      aria-label={label}
+      aria-labelledby={label ? undefined : 'confirm-title'}
+      className={cx('absolute inset-x-0 bottom-0 z-20 flex flex-col overflow-y-auto rounded-t-[26px] bg-sheet px-4 pb-[calc(16px+env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-12px_40px_rgb(0_0_0/0.45)]', SHEET_MAX)}
+      data-testid={testId}
+    >
+      <span aria-hidden="true" className="mx-auto mb-4 block h-1 w-9 shrink-0 rounded-sm bg-divider" />
+      {children}
+    </motion.section>
+  )
+}
+
+function ConfirmSheet({ card, answer, busy, past, onUndo, onConfirm, onAbout, onShare, onSkip }: { card: PlayCard; answer: Answer; busy: boolean; past: boolean; onUndo: () => void; onConfirm: () => void; onAbout: () => void; onShare?: () => void; onSkip: () => void }) {
   const t = useTranslations('classify')
   const fmt = useFmt()
-  const reduce = useReducedMotion()
   const Icon = ANSWER_ICONS[answer]
   const sky = isSkyCard(card) ? card : null
   return (
-    <motion.section
-      initial={reduce ? false : { y: 24, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-      aria-labelledby="confirm-title"
-      className="relative mx-2 mt-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto rounded-[var(--radius-sheet)] bg-surface px-4 pb-1.5 pt-2"
-      data-testid="swap-confirm"
-    >
-      <h2 id="confirm-title" className={cx('flex shrink-0 items-center gap-2 text-title-md font-bold leading-tight', onShare && 'pr-10')}>
-        <Icon size={24} className="shrink-0" />
-        {t(`confirm.${answer}`)}
-      </h2>
-      {onShare && (
-        <IconButton label={t('share.label')} onClick={onShare} className="absolute right-1 top-0 size-11" data-testid="share-card">
-          <IconDirect size={24} />
-        </IconButton>
-      )}
+    <BottomSheet testId="swap-confirm">
+      <div className="flex shrink-0 items-center gap-3.5">
+        <span className={cx('grid size-[52px] shrink-0 place-items-center rounded-full', answer === 'moves' ? 'bg-accent text-on-accent' : 'bg-text text-bg')} data-testid="confirm-badge">
+          <Icon size={28} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-ui leading-tight text-text-secondary">{t('confirm.yours')}</p>
+          <h2 id="confirm-title" className="text-title-lg font-bold leading-tight tracking-[-0.01em]">
+            {t(`confirm.${answer}`)}
+          </h2>
+        </div>
+        {onShare && (
+          <IconButton label={t('share.label')} onClick={onShare} className="size-12" data-testid="share-card">
+            <IconDirect size={24} />
+          </IconButton>
+        )}
+      </div>
       {past && (
-        <p role="status" className="shrink-0 text-ui font-semibold leading-snug">
+        <p role="status" className="mt-3 shrink-0 text-ui font-semibold leading-snug">
           {t('share.already')}
         </p>
       )}
-      {spot !== undefined && (
-        <p role="status" aria-live="polite" className="shrink-0 text-ui font-semibold leading-snug">
-          {spot ? t('mark.marked') : t('mark.where')}
-        </p>
-      )}
-      <button type="button" onClick={onAbout} className="block w-full shrink-0 truncate text-left text-ui leading-snug text-text-secondary" data-testid="confirm-source">
-        {sky ? t('confirm.source', { date: formatDate(sky.t0, fmt.locale, { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'UTC' }), ra: fmt.fixed(sky.ra, 2), dec: `${sky.dec >= 0 ? '+' : ''}${fmt.fixed(sky.dec, 2)}` }) : t('confirm.sourceShort')}
+      <button type="button" onClick={onAbout} className="mt-3.5 flex w-full shrink-0 items-center gap-2.5 border-t border-divider py-2.5 text-left text-ui leading-[1.35] text-text-secondary" data-testid="confirm-source">
+        <IconInfo size={20} className="shrink-0" />
+        <span className="min-w-0">
+          <span className="block truncate">{sky ? t('confirm.source', { date: formatDate(sky.t0, fmt.locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) }) : t('confirm.sourceShort')}</span>
+          {sky && <span className="block truncate tabular-nums">{t('confirm.where', { ra: fmt.fixed(sky.ra, 4), dec: `${sky.dec >= 0 ? '+' : ''}${fmt.fixed(sky.dec, 4)}` })}</span>}
+        </span>
       </button>
-      <div className="mt-auto flex shrink-0 gap-2">
+      <div className="mt-2 flex shrink-0 gap-2.5">
         {past ? (
-          <button type="button" onClick={onSkip} className={swapButton.primary}>
+          <button type="button" onClick={onSkip} className="flex h-[54px] flex-1 items-center justify-center rounded-2xl bg-accent text-[17px] font-semibold text-on-accent active:bg-accent-pressed">
             {t('next')}
           </button>
         ) : (
           <>
-            <button type="button" disabled={busy} onClick={onUndo} className={swapButton.big}>
+            <button type="button" disabled={busy} onClick={onUndo} className="flex h-[54px] flex-1 items-center justify-center gap-2 rounded-2xl bg-surface text-[17px] font-semibold active:bg-surface-pressed disabled:opacity-50">
+              <IconUndo size={22} />
               {t('undo')}
             </button>
-            <button type="button" disabled={busy} aria-busy={busy} onClick={onConfirm} className={swapButton.primary}>
+            <button type="button" disabled={busy} aria-busy={busy} onClick={onConfirm} className="flex h-[54px] flex-[1.5] items-center justify-center rounded-2xl bg-accent text-[17px] font-semibold text-on-accent active:bg-accent-pressed disabled:opacity-45">
               {t('confirm.confirm')}
             </button>
           </>
         )}
       </div>
-    </motion.section>
+    </BottomSheet>
+  )
+}
+
+function SpotMark({ u, v, faint }: { u: number; v: number; faint: boolean }) {
+  const reduce = useReducedMotion()
+  return (
+    <span aria-hidden="true" className={cx('pointer-events-none absolute size-11 -translate-x-1/2 -translate-y-1/2', faint && 'opacity-50')} style={{ left: `${u * 100}%`, top: `${v * 100}%` }} data-testid="spot-mark">
+      <motion.span
+        initial={reduce ? false : { scale: 0.3, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 520, damping: 16 }}
+        className="absolute inset-0 rounded-full border-[2.5px] border-accent shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-mark-halo)_60%,transparent),inset_0_0_0_2px_color-mix(in_srgb,var(--color-mark-halo)_60%,transparent)]"
+      />
+      {!reduce && <motion.span className="absolute -inset-2.5 rounded-full border-2 border-accent" initial={{ scale: 0.6, opacity: 0.8 }} animate={{ scale: [0.6, 1.3], opacity: [0.8, 0] }} transition={{ duration: 1.6, ease: 'easeOut', repeat: Infinity }} />}
+    </span>
   )
 }
 
@@ -450,7 +473,6 @@ function SwapCard({
   lessonMarks,
   lastLesson,
   firstLesson,
-  notice,
   top,
   leave,
   past,
@@ -468,7 +490,6 @@ function SwapCard({
   lessonMarks: Mark[]
   lastLesson: boolean
   firstLesson: boolean
-  notice: ReactNode
   top?: ReactNode
   leave?: string
   past?: Answer | null
@@ -501,6 +522,7 @@ function SwapCard({
   const [shownIt, setShownIt] = useState(false)
   const [retry, setRetry] = useState(false)
   const [swingOver, setSwingOver] = useState(false)
+  const [leaving, setLeaving] = useState<Answer | null>(null)
   const sky = isSkyCard(card) ? card : null
   const [hintsOn, setHintsOn] = useState(false)
   const [hintsUsed, setHintsUsed] = useState(false)
@@ -578,6 +600,7 @@ function SwapCard({
     }
     sentOnce.current = true
     setMode('sent')
+    setLeaving(answer)
     onAnswer(answer, answer === 'moves' ? spot : null, chosenAt, hintsUsed)
   }
 
@@ -645,7 +668,7 @@ function SwapCard({
       {ringOn && <GuideRing mark={lessonMarks[panel] ?? lessonMarks[0]} />}
       {hints && <HintRings hints={hints} panel={panel} />}
       {mode === 'result' && mark && verdict?.mark && <VoiceMark voice="known" u={mark.u} v={mark.v} />}
-      {spot && <VoiceMark voice="you" u={spot.x} v={spot.y} faint={spot.frame !== panel} />}
+      {spot && <SpotMark u={spot.x} v={spot.y} faint={spot.frame !== panel} />}
     </>
   )
 
@@ -653,12 +676,24 @@ function SwapCard({
   const note = hintLine ?? (blackNote && outside[panel] ? tp('outside') : null)
 
   const deciding = !!answer && (mode === 'confirm' || mode === 'sending' || mode === 'sent' || mode === 'past')
+  const sheetOpen = deciding || mode === 'result' || mode === 'failed'
+  const dim = cx('shrink-0 transition-opacity duration-200', sheetOpen && 'pointer-events-none opacity-30')
+  const coach = lesson ? (mustLookFirst ? t('guide.look') : lesson === 'moves' ? t('guide.answer') : t(`guide.${lesson}`)) : null
 
   return (
     <SwapShell>
-      {deciding && <div aria-hidden="true" className={SPOTLIGHT_TOP} data-testid="spotlight-top" />}
-      <SwapHeader step={step} top={top} leave={leave} onHelp={onHelp} onToolsBack={mode === 'tools' ? () => setMode('look') : undefined} />
-      <FrameBars n={n} index={panel} />
+      <div className={dim} aria-hidden={sheetOpen || undefined}>
+        <div className="px-1 pt-2.5">
+          <FrameBars n={n} index={panel} />
+        </div>
+        <SwapHeader step={step} top={marking ? null : top} leave={leave} onHelp={onHelp} onToolsBack={mode === 'tools' ? () => setMode('look') : undefined} />
+      </div>
+      {marking && (
+        <p role="status" aria-live="polite" className="pointer-events-none absolute inset-x-14 top-[calc(env(safe-area-inset-top)+22px)] z-30 flex h-[52px] items-center justify-center gap-2 whitespace-nowrap text-title-sm font-semibold leading-tight" data-testid="mark-hint">
+          <IconTarget size={22} className="shrink-0 text-accent" />
+          {spot ? t('mark.marked') : t('mark.where')}
+        </p>
+      )}
       <SwapStage
         img={img}
         sprite={card.sprite}
@@ -674,15 +709,49 @@ function SwapCard({
         onHold={setFrozen}
         overlay={overlay}
         hint={swinging}
-        chosen={deciding ? answer : null}
+        ring={deciding && !leaving ? (answer === 'moves' ? 'yes' : 'chosen') : 'rest'}
+        leaving={leaving}
       />
-      <div className={SWAP_SHEET} data-testid="swap-lower">
-        {lesson && mode === 'look' && (
-          <>
-            <Coach>{mustLookFirst ? t('guide.look') : lesson === 'moves' ? t('guide.answer') : t(`guide.${lesson}`)}</Coach>
+      {mode === 'tools' ? (
+        <ToolsPanel
+          playback={playback}
+          sprite={card.sprite}
+          offsets={offsets}
+          row={row}
+          onRow={setRow}
+          hints={
+            sky
+              ? {
+                  on: hintsOn,
+                  onChange: (on) => {
+                    if (on) setHintsUsed(true)
+                    setHintsOn(on)
+                  },
+                }
+              : undefined
+          }
+        />
+      ) : (
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-testid="swap-lower">
+          <div className={dim} aria-hidden={sheetOpen || undefined}>
             <PhotoBar playback={playback} offsets={offsets} onTools={() => mode === 'look' && setMode('tools')} />
-            {mustLookFirst && !touring ? (
-              <div className="mt-auto flex shrink-0 flex-col gap-2 px-4 pb-4 pt-1">
+          </div>
+          <div className="min-h-0 flex-1" />
+          <div className={cx('shrink-0 px-4 transition-[transform,opacity] duration-300', lesson ? 'pb-4' : 'pb-5', sheetOpen && 'pointer-events-none translate-y-6 opacity-0')} aria-hidden={sheetOpen || undefined} inert={sheetOpen || undefined} data-testid="swap-ask">
+            <h1 className={coach || note ? 'sr-only' : 'mb-[18px] text-center text-title-lg font-bold leading-tight tracking-[-0.01em]'}>{t('question')}</h1>
+            {coach ? (
+              <p role="note" className="mb-3 text-center text-title-sm font-semibold leading-snug [text-wrap:balance]">
+                {coach}
+              </p>
+            ) : (
+              note && (
+                <p role="status" className="mb-[18px] text-center text-ui leading-snug text-text-secondary [text-wrap:balance]">
+                  {note}
+                </p>
+              )
+            )}
+            {lesson && mustLookFirst && !touring ? (
+              <div className="flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -698,69 +767,31 @@ function SwapCard({
                 </button>
               </div>
             ) : (
-              <AnswerPanel labels={labels} disabled={!img} x={x} y={y} onChoose={choose} />
+              <AnswerPanel labels={labels} disabled={!img || sheetOpen} x={x} y={y} onChoose={choose} />
             )}
-          </>
-        )}
-        {!lesson && mode === 'look' && (
-          <>
-            <PhotoBar playback={playback} offsets={offsets} onTools={() => setMode('tools')} />
-            {notice ? (
-              <div className="my-auto">{notice}</div>
-            ) : (
-              note && (
-                <p role="status" className="my-auto px-6 text-center text-[15px] leading-snug text-text-secondary">
-                  {note}
-                </p>
-              )
-            )}
-            <AnswerPanel labels={labels} disabled={!img} x={x} y={y} onChoose={choose} />
-          </>
-        )}
-        {mode === 'tools' && (
-          <ToolsPanel
-            playback={playback}
-            sprite={card.sprite}
-            offsets={offsets}
-            row={row}
-            onRow={setRow}
-            hints={
-              sky
-                ? {
-                    on: hintsOn,
-                    onChange: (on) => {
-                      if (on) setHintsUsed(true)
-                      setHintsOn(on)
-                    },
-                  }
-                : undefined
-            }
-          />
-        )}
-        {deciding && answer && (
-          <>
-            <ConfirmSheet card={card} answer={answer} spot={marking ? spot : undefined} busy={mode !== 'confirm'} past={mode === 'past'} onUndo={undoChoice} onConfirm={confirm} onAbout={() => setAboutOpen(true)} onShare={onShare} onSkip={() => onSkip?.()} />
-            <AnswerPanel labels={labels} disabled={mode !== 'confirm'} x={x} y={y} chosen={answer} onChoose={choose} />
-          </>
-        )}
-        {mode === 'failed' && answer && (
-          <SwapPanel>
-            <p role="status" className="text-[16px] font-medium leading-snug text-danger">
-              {t('failed')}
-            </p>
-            <button type="button" onClick={() => void sendLesson(answer)} className={`${swapButton.primary} flex-none`}>
-              {t('retry')}
-            </button>
-          </SwapPanel>
-        )}
-        {mode === 'result' && saved && answer && verdict && (
-          <SwapPanel label={t('result.label')}>
+          </div>
+        </div>
+      )}
+      {deciding && answer && !leaving && <ConfirmSheet card={card} answer={answer} busy={mode !== 'confirm'} past={mode === 'past'} onUndo={undoChoice} onConfirm={confirm} onAbout={() => setAboutOpen(true)} onShare={onShare} onSkip={() => onSkip?.()} />}
+      {mode === 'failed' && answer && (
+        <BottomSheet label={t('failed')}>
+          <p role="status" className="text-[16px] font-medium leading-snug text-danger">
+            {t('failed')}
+          </p>
+          <button type="button" onClick={() => void sendLesson(answer)} className={`${swapButton.primary} mt-3 flex-none`}>
+            {t('retry')}
+          </button>
+        </BottomSheet>
+      )}
+      {mode === 'result' && saved && answer && verdict && (
+        <BottomSheet label={t('result.label')} testId="swap-panel">
+          <div className="flex shrink-0 flex-col gap-1.5">
             <h2 id="reveal-title" className="text-[21px] font-bold leading-tight [text-wrap:balance]">
               {t(`result.${verdict.title}`, { name: verdict.name ?? '' })}
             </h2>
             <p className="text-[16px] leading-snug text-text-secondary">{t(`result.${verdict.body}`)}</p>
             <p className="text-[15px] font-semibold leading-snug">{t('practice')}</p>
-            <div className="flex gap-2">
+            <div className="mt-1 flex gap-2">
               {verdict.again ? (
                 <button
                   type="button"
@@ -783,9 +814,9 @@ function SwapCard({
                 {lastLesson ? t('finish') : t('next')}
               </button>
             </div>
-          </SwapPanel>
-        )}
-      </div>
+          </div>
+        </BottomSheet>
+      )}
       <PhotoSourceSheet open={aboutOpen} onClose={() => setAboutOpen(false)} offsets={offsets} sky={sky} />
       {saved && answer && verdict && <UnderstandSheet open={understand} onClose={() => setUnderstand(false)} reveal={saved.reveal} answer={answer} verdict={verdict} />}
       {touring && (
@@ -807,12 +838,12 @@ function SwapCard({
 function DeckSkeleton({ onHelp, line, notice }: { onHelp: () => void; line?: string; notice?: ReactNode }) {
   return (
     <SwapShell>
+      <div className="h-[22px] shrink-0" />
       <SwapHeader onHelp={onHelp} />
-      <div className="h-3 shrink-0" />
       <div className="flex shrink-0 justify-center pb-1.5" aria-hidden="true">
-        <Skeleton className="rounded-[var(--radius-sheet)]" style={{ width: 'var(--swap-photo)', height: 'var(--swap-photo)' }} />
+        <Skeleton className="rounded-[20px]" style={{ width: 'var(--swap-photo)', height: 'var(--swap-photo)' }} />
       </div>
-      <div className={SWAP_SHEET} aria-live="polite">
+      <div className="flex min-h-0 flex-1 flex-col" aria-live="polite">
         {notice}
         {line && <p className="my-auto px-6 text-center text-[15px] text-text-secondary">{line}</p>}
       </div>
@@ -1019,6 +1050,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   const [knownOpen, setKnownOpen] = useState<string | null>(null)
   const [shown, setShown] = useState<{ card: PlayCard; img: HTMLImageElement } | null>(null)
   const [openMode, setOpenMode] = useState(false)
+  const [savedAt, setSavedAt] = useState(0)
   const [introSeen, setIntroSeen] = useState(false)
   const overview = useCommunityOverview(openMode)
   const goals = useGoals()
@@ -1028,6 +1060,11 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   useEffect(() => {
     setOpenMode(new URLSearchParams(window.location.search).has('open'))
   }, [])
+  useEffect(() => {
+    if (!savedAt) return
+    const timer = setTimeout(() => setSavedAt(0), 1400)
+    return () => clearTimeout(timer)
+  }, [savedAt])
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const notices = useRef<Strip[]>([])
   const card: PlayCard | null = lesson ? lesson.card : flow.card
@@ -1110,14 +1147,19 @@ function Deck({ onHelp }: { onHelp: () => void }) {
       if (!card) return
       retryFailed()
       void send({ card, answer, spot, at, hints })
+      setSavedAt(Date.now())
       sessionLooks++
+      const after = (go: () => void) => {
+        if (reduce) go()
+        else setTimeout(go, LEAVE_MS)
+      }
       if (sessionLooks % PAUSE_EVERY === 0) {
-        setPause(true)
+        after(() => setPause(true))
         return
       }
-      void flow.reload([card.id])
+      after(() => void flow.reload([card.id]))
     },
-    [card, flow, retryFailed, send],
+    [card, flow, reduce, retryFailed, send],
   )
 
   const nextLesson = useCallback(() => {
@@ -1125,23 +1167,44 @@ function Deck({ onHelp }: { onHelp: () => void }) {
     else endGuide()
   }, [endGuide, lessonIndex, lessons.length])
 
-  const noticeView =
-    strip?.kind === 'known' ? (
-      <SwapStrip text={t('strip.known', { name: strip.name })} action={t('strip.see')} onAction={() => setKnownOpen(strip.name)} />
-    ) : strip?.kind === 'badge' ? (
-      <SwapStrip text={t('strip.badge', { name: strip.name })} />
-    ) : strip?.kind === 'fast' ? (
-      <SwapStrip text={t('strip.fast')} />
-    ) : strip?.kind === 'failed' ? (
-      <SwapStrip
-        text={t('failed')}
-        action={t('retry')}
-        onAction={() => {
-          setStrip(null)
-          retryFailed()
-        }}
-      />
-    ) : null
+  const pill: { key: string; text: string; saved?: boolean; action?: string; onAction?: () => void } | null = savedAt
+    ? { key: `saved-${savedAt}`, text: t('confirm.saved'), saved: true }
+    : strip?.kind === 'known'
+      ? { key: `known-${strip.name}`, text: t('strip.known', { name: strip.name }), action: t('strip.see'), onAction: () => setKnownOpen(strip.name) }
+      : strip?.kind === 'badge'
+        ? { key: `badge-${strip.name}`, text: t('strip.badge', { name: strip.name }) }
+        : strip?.kind === 'fast'
+          ? { key: 'fast', text: t('strip.fast') }
+          : strip?.kind === 'failed'
+            ? {
+                key: 'failed',
+                text: t('failed'),
+                action: t('retry'),
+                onAction: () => {
+                  setStrip(null)
+                  retryFailed()
+                },
+              }
+            : null
+  const noticeView = pill && (
+    <motion.div
+      key={pill.key}
+      role="status"
+      initial={reduce ? false : { y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 420, damping: 22 }}
+      className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+28px)] z-[46] flex min-h-10 max-w-[calc(min(100vw,var(--width-app))-24px)] -translate-x-1/2 items-center gap-2 rounded-full bg-text py-1.5 pl-4 pr-1.5 text-ui font-semibold leading-tight text-bg shadow-[0_8px_24px_rgb(0_0_0/0.25)]"
+      data-testid={pill.saved ? 'saved-pill' : 'swap-strip'}
+    >
+      {pill.saved && <IconCheck size={18} className="shrink-0" />}
+      <span className={cx('min-w-0', !pill.action && 'pr-2.5')}>{pill.text}</span>
+      {pill.action && (
+        <button type="button" onClick={pill.onAction} className="h-8 shrink-0 rounded-full bg-bg px-3 text-ui font-semibold text-text">
+          {pill.action}
+        </button>
+      )}
+    </motion.div>
+  )
 
   const known = <KnownSheet name={knownOpen} onClose={() => setKnownOpen(null)} />
 
@@ -1248,7 +1311,6 @@ function Deck({ onHelp }: { onHelp: () => void }) {
         lessonMarks={lesson?.marks ?? NO_MARKS}
         lastLesson={!!lesson && lessonIndex + 1 === lessons.length}
         firstLesson={!!lesson && lessonIndex === 0}
-        notice={noticeView}
         top={openTop}
         leave={openMode ? '/community' : '/'}
         past={!lesson && view.card === flow.card ? flow.past : null}
@@ -1260,6 +1322,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
         onLessonNext={nextLesson}
       />
       {known}
+      {noticeView}
       {openMode && !lesson && !introSeen && !!left && (
         <Sheet open onClose={() => setIntroSeen(true)} title={t('open.title')}>
           <div className="flex flex-col gap-3 px-4 pb-4 pt-1" data-testid="open-intro">
