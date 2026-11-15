@@ -2403,7 +2403,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            items: {
+                            items: ({
                                 id: string;
                                 kind: "sky" | "deck";
                                 state: string;
@@ -2452,8 +2452,245 @@ export interface paths {
                                     y: number;
                                 } | null;
                                 object_id: string | null;
-                            }[];
+                            } | {
+                                type: "app";
+                                id: string;
+                                account: {
+                                    handle: string;
+                                    name: string;
+                                    kind: "app";
+                                };
+                                created_at: string;
+                                text: {
+                                    pt: string;
+                                    en: string;
+                                };
+                                source: {
+                                    pt: string;
+                                    en: string;
+                                };
+                                object: {
+                                    id: string;
+                                    handle: string;
+                                    name: string;
+                                    kind: string;
+                                    avatar: string;
+                                    official_target: boolean;
+                                    saturation: string;
+                                    verdict: string;
+                                    best_bands: string[];
+                                    has_new_data: boolean;
+                                    last_seen: string;
+                                };
+                                post: {
+                                    id: string;
+                                    object_id: string;
+                                    type: string;
+                                    title: string;
+                                    caption: string;
+                                    band: string | null;
+                                    wavelength_um: number[] | null;
+                                    date_range: string[];
+                                    cover: string;
+                                    frames: {
+                                        src: string;
+                                        t: string;
+                                        mjd: number;
+                                        band: string;
+                                        wavelength_um: number[] | null;
+                                        release: string;
+                                        fov_deg: number;
+                                        kind: string;
+                                        flags: {
+                                            saturated_frac: number;
+                                            cosmic_ray: boolean;
+                                            satellite: boolean;
+                                            persistence: boolean;
+                                        };
+                                        telescope: string | null;
+                                        n_exp: number | null;
+                                    }[];
+                                    chart: string | null;
+                                    marks: {
+                                        frame: number;
+                                        x: number;
+                                        y: number;
+                                    }[];
+                                    flags_summary: {
+                                        saturated: number;
+                                        cosmic_ray: number;
+                                        satellite: number;
+                                        persistence: number;
+                                    };
+                                };
+                                social: {
+                                    interesting: number;
+                                    doubts: number;
+                                    doubt_reasons: {
+                                        image_defect: number;
+                                        known_asteroid: number;
+                                        variable_star: number;
+                                        other: number;
+                                    };
+                                    also_seen: number;
+                                    blind_answers: number;
+                                    mine: {
+                                        interesting: boolean;
+                                        doubt: string | null;
+                                        second_look: string | null;
+                                        vote: string | null;
+                                        following: boolean;
+                                    } | null;
+                                };
+                            })[];
                             next_cursor: number | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/accounts/{handle}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    handle: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            account: {
+                                handle: string;
+                                name: string;
+                                kind: "app";
+                                bio: {
+                                    pt: string;
+                                    en: string;
+                                };
+                            };
+                            posts: {
+                                type: "app";
+                                id: string;
+                                account: {
+                                    handle: string;
+                                    name: string;
+                                    kind: "app";
+                                };
+                                created_at: string;
+                                text: {
+                                    pt: string;
+                                    en: string;
+                                };
+                                source: {
+                                    pt: string;
+                                    en: string;
+                                };
+                                object: {
+                                    id: string;
+                                    handle: string;
+                                    name: string;
+                                    kind: string;
+                                    avatar: string;
+                                    official_target: boolean;
+                                    saturation: string;
+                                    verdict: string;
+                                    best_bands: string[];
+                                    has_new_data: boolean;
+                                    last_seen: string;
+                                };
+                                post: {
+                                    id: string;
+                                    object_id: string;
+                                    type: string;
+                                    title: string;
+                                    caption: string;
+                                    band: string | null;
+                                    wavelength_um: number[] | null;
+                                    date_range: string[];
+                                    cover: string;
+                                    frames: {
+                                        src: string;
+                                        t: string;
+                                        mjd: number;
+                                        band: string;
+                                        wavelength_um: number[] | null;
+                                        release: string;
+                                        fov_deg: number;
+                                        kind: string;
+                                        flags: {
+                                            saturated_frac: number;
+                                            cosmic_ray: boolean;
+                                            satellite: boolean;
+                                            persistence: boolean;
+                                        };
+                                        telescope: string | null;
+                                        n_exp: number | null;
+                                    }[];
+                                    chart: string | null;
+                                    marks: {
+                                        frame: number;
+                                        x: number;
+                                        y: number;
+                                    }[];
+                                    flags_summary: {
+                                        saturated: number;
+                                        cosmic_ray: number;
+                                        satellite: number;
+                                        persistence: number;
+                                    };
+                                };
+                                social: {
+                                    interesting: number;
+                                    doubts: number;
+                                    doubt_reasons: {
+                                        image_defect: number;
+                                        known_asteroid: number;
+                                        variable_star: number;
+                                        other: number;
+                                    };
+                                    also_seen: number;
+                                    blind_answers: number;
+                                    mine: {
+                                        interesting: boolean;
+                                        doubt: string | null;
+                                        second_look: string | null;
+                                        vote: string | null;
+                                        following: boolean;
+                                    } | null;
+                                };
+                            }[];
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
                         };
                     };
                 };
@@ -4272,59 +4509,6 @@ export interface components {
                 following: boolean;
             } | null;
         };
-        CommunityFeed: {
-            items: {
-                id: string;
-                kind: "sky" | "deck";
-                state: string;
-                reason: string | null;
-                example: boolean;
-                ra: number;
-                dec: number;
-                band: string;
-                sprite: string | null;
-                passes: number;
-                first_t: string | null;
-                last_t: string | null;
-                updated_at: number;
-                checks_done: number;
-                checks_total: number;
-                credit_names: string[];
-                credit_others: number;
-                first_vote: {
-                    nickname: string | null;
-                    at: number;
-                    note: string | null;
-                } | null;
-                social: {
-                    interesting: number;
-                    doubts: number;
-                    doubt_reasons: {
-                        image_defect: number;
-                        known_asteroid: number;
-                        variable_star: number;
-                        other: number;
-                    };
-                    also_seen: number;
-                    blind_answers: number;
-                    mine: {
-                        interesting: boolean;
-                        doubt: string | null;
-                        second_look: string | null;
-                        vote: string | null;
-                        following: boolean;
-                    } | null;
-                };
-                photo: string | null;
-                photo_cols: number;
-                mark: {
-                    x: number;
-                    y: number;
-                } | null;
-                object_id: string | null;
-            }[];
-            next_cursor: number | null;
-        };
         FindingDetail: {
             id: string;
             kind: "sky" | "deck";
@@ -4590,6 +4774,245 @@ export interface components {
                     [key: string]: number;
                 } | null;
             };
+        };
+        CommunityFeed: {
+            items: ({
+                id: string;
+                kind: "sky" | "deck";
+                state: string;
+                reason: string | null;
+                example: boolean;
+                ra: number;
+                dec: number;
+                band: string;
+                sprite: string | null;
+                passes: number;
+                first_t: string | null;
+                last_t: string | null;
+                updated_at: number;
+                checks_done: number;
+                checks_total: number;
+                credit_names: string[];
+                credit_others: number;
+                first_vote: {
+                    nickname: string | null;
+                    at: number;
+                    note: string | null;
+                } | null;
+                social: {
+                    interesting: number;
+                    doubts: number;
+                    doubt_reasons: {
+                        image_defect: number;
+                        known_asteroid: number;
+                        variable_star: number;
+                        other: number;
+                    };
+                    also_seen: number;
+                    blind_answers: number;
+                    mine: {
+                        interesting: boolean;
+                        doubt: string | null;
+                        second_look: string | null;
+                        vote: string | null;
+                        following: boolean;
+                    } | null;
+                };
+                photo: string | null;
+                photo_cols: number;
+                mark: {
+                    x: number;
+                    y: number;
+                } | null;
+                object_id: string | null;
+            } | {
+                type: "app";
+                id: string;
+                account: {
+                    handle: string;
+                    name: string;
+                    kind: "app";
+                };
+                created_at: string;
+                text: {
+                    pt: string;
+                    en: string;
+                };
+                source: {
+                    pt: string;
+                    en: string;
+                };
+                object: {
+                    id: string;
+                    handle: string;
+                    name: string;
+                    kind: string;
+                    avatar: string;
+                    official_target: boolean;
+                    saturation: string;
+                    verdict: string;
+                    best_bands: string[];
+                    has_new_data: boolean;
+                    last_seen: string;
+                };
+                post: {
+                    id: string;
+                    object_id: string;
+                    type: string;
+                    title: string;
+                    caption: string;
+                    band: string | null;
+                    wavelength_um: number[] | null;
+                    date_range: string[];
+                    cover: string;
+                    frames: {
+                        src: string;
+                        t: string;
+                        mjd: number;
+                        band: string;
+                        wavelength_um: number[] | null;
+                        release: string;
+                        fov_deg: number;
+                        kind: string;
+                        flags: {
+                            saturated_frac: number;
+                            cosmic_ray: boolean;
+                            satellite: boolean;
+                            persistence: boolean;
+                        };
+                        telescope: string | null;
+                        n_exp: number | null;
+                    }[];
+                    chart: string | null;
+                    marks: {
+                        frame: number;
+                        x: number;
+                        y: number;
+                    }[];
+                    flags_summary: {
+                        saturated: number;
+                        cosmic_ray: number;
+                        satellite: number;
+                        persistence: number;
+                    };
+                };
+                social: {
+                    interesting: number;
+                    doubts: number;
+                    doubt_reasons: {
+                        image_defect: number;
+                        known_asteroid: number;
+                        variable_star: number;
+                        other: number;
+                    };
+                    also_seen: number;
+                    blind_answers: number;
+                    mine: {
+                        interesting: boolean;
+                        doubt: string | null;
+                        second_look: string | null;
+                        vote: string | null;
+                        following: boolean;
+                    } | null;
+                };
+            })[];
+            next_cursor: number | null;
+        };
+        AppPostItem: {
+            type: "app";
+            id: string;
+            account: {
+                handle: string;
+                name: string;
+                kind: "app";
+            };
+            created_at: string;
+            text: {
+                pt: string;
+                en: string;
+            };
+            source: {
+                pt: string;
+                en: string;
+            };
+            object: {
+                id: string;
+                handle: string;
+                name: string;
+                kind: string;
+                avatar: string;
+                official_target: boolean;
+                saturation: string;
+                verdict: string;
+                best_bands: string[];
+                has_new_data: boolean;
+                last_seen: string;
+            };
+            post: {
+                id: string;
+                object_id: string;
+                type: string;
+                title: string;
+                caption: string;
+                band: string | null;
+                wavelength_um: number[] | null;
+                date_range: string[];
+                cover: string;
+                frames: {
+                    src: string;
+                    t: string;
+                    mjd: number;
+                    band: string;
+                    wavelength_um: number[] | null;
+                    release: string;
+                    fov_deg: number;
+                    kind: string;
+                    flags: {
+                        saturated_frac: number;
+                        cosmic_ray: boolean;
+                        satellite: boolean;
+                        persistence: boolean;
+                    };
+                    telescope: string | null;
+                    n_exp: number | null;
+                }[];
+                chart: string | null;
+                marks: {
+                    frame: number;
+                    x: number;
+                    y: number;
+                }[];
+                flags_summary: {
+                    saturated: number;
+                    cosmic_ray: number;
+                    satellite: number;
+                    persistence: number;
+                };
+            };
+            social: {
+                interesting: number;
+                doubts: number;
+                doubt_reasons: {
+                    image_defect: number;
+                    known_asteroid: number;
+                    variable_star: number;
+                    other: number;
+                };
+                also_seen: number;
+                blind_answers: number;
+                mine: {
+                    interesting: boolean;
+                    doubt: string | null;
+                    second_look: string | null;
+                    vote: string | null;
+                    following: boolean;
+                } | null;
+            };
+        };
+        AppAccountRef: {
+            handle: string;
+            name: string;
+            kind: "app";
         };
         Xp: {
             xp: number;

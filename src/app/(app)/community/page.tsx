@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
+import { AppPostCard } from '@/components/community/app-post-card'
 import { CommunitySwitch } from '@/components/community/community-switch'
 import { FindingActions, SocialFacts } from '@/components/community/finding-actions'
 import { ExamplePill, FindingFacts, FindingPhoto, FirstAnswer, FoundBy, ObjectLink, stateBody, StatePill, useFindingTitle } from '@/components/community/finding-parts'
@@ -149,9 +150,7 @@ export default function CommunityPage() {
           }
         />
       )}
-      {items.map((f) => (
-        <FindingCard key={f.id} finding={f} />
-      ))}
+      {items.map((f) => ('type' in f ? <AppPostCard key={f.id} item={f} /> : <FindingCard key={f.id} finding={f} />))}
       <div ref={sentinel} />
     </main>
   )

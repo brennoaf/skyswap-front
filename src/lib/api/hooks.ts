@@ -198,6 +198,14 @@ export function useCommunityFeed(tab: CommunityTab, enabled = true) {
   })
 }
 
+export function useAccount(handle: string) {
+  return useQuery({
+    queryKey: ['community', 'account', handle],
+    retry: false,
+    queryFn: async () => unwrap(await api.GET('/api/accounts/{handle}', { params: { path: { handle } } })),
+  })
+}
+
 export function useFinding(id: string) {
   return useQuery({
     queryKey: ['community', 'finding', id],

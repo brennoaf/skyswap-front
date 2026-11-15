@@ -1657,7 +1657,12 @@
     "knownAs": "Já conhecido: {name}",
     "seeProfile": "Ver perfil de {name}",
     "photoAlt": "Primeira foto de {title}",
-    "known": "Já conhecido"
+    "known": "Já conhecido",
+    "appAccount": "Conta do app",
+    "account": {
+      "notFound": "Esta conta não existe.",
+      "posts": "Posts de {name}"
+    }
   },
   "player": {
     "counter": "Foto {n} de {total}",
