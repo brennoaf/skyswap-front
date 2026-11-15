@@ -5,6 +5,8 @@ import { use, useEffect, useState, type ReactNode } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { PhotoViewer } from '@/components/classify/photo-viewer'
 import { FindingActions, PeopleButton, SecondLookPanel, SocialFacts } from '@/components/community/finding-actions'
+import { Discussion, FindersLine, PostVotes } from '@/components/community/talk'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { CrowdMap } from '@/components/community/crowd-map'
 import { ExamplePill, FindingFacts, FirstAnswer, FoundBy, ObjectLink, stateBody, StatePill, useFindingTitle } from '@/components/community/finding-parts'
 import { IconLink } from '@/components/icons'
@@ -194,6 +196,15 @@ export default function FindingPage({ params }: { params: Promise<{ id: string }
           <Notice>{t('exampleNotice')}</Notice>
         </div>
       )}
+      <div className="flex items-center gap-2.5 px-4 pb-3" data-testid="finding-author">
+        <span className="story-ring inline-flex shrink-0 rounded-full p-[2px]">
+          <UserAvatar nickname={f.finder?.name ?? null} src={f.finder?.avatar} size={32} className="ring-2 ring-bg" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <FindersLine id={f.id} finder={f.finder} total={f.finders} />
+        </div>
+        <PostVotes id={f.id} votes={f.thread.votes} mine={f.thread.my_vote} />
+      </div>
       <Story finding={f} />
       <section className="space-y-1 px-4 pt-3">
         <div className="flex items-center gap-1.5">
@@ -208,6 +219,7 @@ export default function FindingPage({ params }: { params: Promise<{ id: string }
       <CrowdMap finding={f} />
       <Checks finding={f} />
       <Timeline finding={f} />
+      <Discussion id={f.id} />
       <p className="px-4 pt-5 text-note leading-snug text-text-secondary">{t('namingNote')}</p>
     </main>
   )

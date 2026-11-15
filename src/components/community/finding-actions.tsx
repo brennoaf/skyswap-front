@@ -38,19 +38,6 @@ function Action({ icon, label, on, onClick, href, expanded }: { icon: ReactNode;
   )
 }
 
-export function InterestingAction({ id, social }: { id: string; social: FindingSocial }) {
-  const t = useTranslations('community')
-  const gate = useGate()
-  const actions = useFindingActions(id)
-  const pending = actions.reaction.isPending ? actions.reaction.variables : null
-  const interesting = pending?.kind === 'interesting' ? pending.on : !!social.mine?.interesting
-  return (
-    <div role="group" aria-label={t('actionsLabel')} className="flex border-b-[0.5px] border-divider">
-      <Action icon={<IconLike size={24} />} label={t('interesting')} on={interesting} onClick={() => gate(() => actions.reaction.mutate({ kind: 'interesting', on: !interesting }))} />
-    </div>
-  )
-}
-
 export function FindingActions({ id, social, lookHref, lookOpen, onLook, onDoubted }: { id: string; social: FindingSocial; lookHref?: string; lookOpen?: boolean; onLook?: () => void; onDoubted?: () => void }) {
   const t = useTranslations('community')
   const gate = useGate()

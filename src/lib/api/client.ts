@@ -77,6 +77,7 @@ export function unwrap<T>(r: { data?: T; error?: unknown; response: Response }):
 }
 export type FindingSummary = components['schemas']['FindingSummary']
 export type AppPostItem = components['schemas']['AppPostItem']
+export type CommentNode = Ok<'/api/community/threads/{id}', 'get'>['comments'][number]
 export type AccountPage = Ok<'/api/accounts/{handle}', 'get'>
 export type FindingDetail = components['schemas']['FindingDetail']
 export type FindingSocial = components['schemas']['FindingSocial']

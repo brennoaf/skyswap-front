@@ -2426,6 +2426,16 @@ export interface paths {
                                     at: number;
                                     note: string | null;
                                 } | null;
+                                finder: {
+                                    name: string;
+                                    avatar: string | null;
+                                } | null;
+                                finders: number;
+                                thread: {
+                                    votes: number;
+                                    my_vote: number;
+                                    comments: number;
+                                };
                                 social: {
                                     interesting: number;
                                     doubts: number;
@@ -2523,6 +2533,11 @@ export interface paths {
                                         persistence: number;
                                     };
                                 };
+                                thread: {
+                                    votes: number;
+                                    my_vote: number;
+                                    comments: number;
+                                };
                                 social: {
                                     interesting: number;
                                     doubts: number;
@@ -2544,6 +2559,626 @@ export interface paths {
                                 };
                             })[];
                             next_cursor: number | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/threads/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    sort?: "best" | "new";
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            count: number;
+                            comments: {
+                                id: number;
+                                parent_id: number | null;
+                                depth: number;
+                                replies: number;
+                                author: string | null;
+                                avatar: string | null;
+                                body: string | null;
+                                created_at: number;
+                                score: number;
+                                my_vote: number;
+                                state: "ok" | "deleted" | "hidden";
+                                mine: boolean;
+                                reported: boolean;
+                            }[];
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/threads/{id}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        body: string;
+                        parent_id?: number | null;
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                        };
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/threads/{id}/vote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        value: -1 | 0 | 1;
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            votes: number;
+                            my_vote: number;
+                            comments: number;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/comments/{cid}/vote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    cid: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        value: -1 | 0 | 1;
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            ok: boolean;
+                        };
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/comments/{cid}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    cid: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            ok: boolean;
+                        };
+                    };
+                };
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/comments/{cid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    cid: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            ok: boolean;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/findings/{id}/finders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            finders: {
+                                name: string;
+                                avatar: string | null;
+                                first: boolean;
+                            }[];
+                            anonymous: number;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/community/posts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            type: "app";
+                            id: string;
+                            account: {
+                                handle: string;
+                                name: string;
+                                kind: "app";
+                            };
+                            created_at: string;
+                            text: {
+                                pt: string;
+                                en: string;
+                            };
+                            source: {
+                                pt: string;
+                                en: string;
+                            };
+                            object: {
+                                id: string;
+                                handle: string;
+                                name: string;
+                                kind: string;
+                                avatar: string;
+                                official_target: boolean;
+                                saturation: string;
+                                verdict: string;
+                                best_bands: string[];
+                                has_new_data: boolean;
+                                last_seen: string;
+                            };
+                            post: {
+                                id: string;
+                                object_id: string;
+                                type: string;
+                                title: string;
+                                caption: string;
+                                band: string | null;
+                                wavelength_um: number[] | null;
+                                date_range: string[];
+                                cover: string;
+                                frames: {
+                                    src: string;
+                                    t: string;
+                                    mjd: number;
+                                    band: string;
+                                    wavelength_um: number[] | null;
+                                    release: string;
+                                    fov_deg: number;
+                                    kind: string;
+                                    flags: {
+                                        saturated_frac: number;
+                                        cosmic_ray: boolean;
+                                        satellite: boolean;
+                                        persistence: boolean;
+                                    };
+                                    telescope: string | null;
+                                    n_exp: number | null;
+                                }[];
+                                chart: string | null;
+                                marks: {
+                                    frame: number;
+                                    x: number;
+                                    y: number;
+                                }[];
+                                flags_summary: {
+                                    saturated: number;
+                                    cosmic_ray: number;
+                                    satellite: number;
+                                    persistence: number;
+                                };
+                            };
+                            thread: {
+                                votes: number;
+                                my_vote: number;
+                                comments: number;
+                            };
+                            social: {
+                                interesting: number;
+                                doubts: number;
+                                doubt_reasons: {
+                                    image_defect: number;
+                                    known_asteroid: number;
+                                    variable_star: number;
+                                    other: number;
+                                };
+                                also_seen: number;
+                                blind_answers: number;
+                                mine: {
+                                    interesting: boolean;
+                                    doubt: string | null;
+                                    second_look: string | null;
+                                    vote: string | null;
+                                    following: boolean;
+                                } | null;
+                            };
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
                         };
                     };
                 };
@@ -2661,6 +3296,11 @@ export interface paths {
                                         persistence: number;
                                     };
                                 };
+                                thread: {
+                                    votes: number;
+                                    my_vote: number;
+                                    comments: number;
+                                };
                                 social: {
                                     interesting: number;
                                     doubts: number;
@@ -2750,6 +3390,16 @@ export interface paths {
                                 at: number;
                                 note: string | null;
                             } | null;
+                            finder: {
+                                name: string;
+                                avatar: string | null;
+                            } | null;
+                            finders: number;
+                            thread: {
+                                votes: number;
+                                my_vote: number;
+                                comments: number;
+                            };
                             social: {
                                 interesting: number;
                                 doubts: number;
@@ -2903,6 +3553,16 @@ export interface paths {
                                     at: number;
                                     note: string | null;
                                 } | null;
+                                finder: {
+                                    name: string;
+                                    avatar: string | null;
+                                } | null;
+                                finders: number;
+                                thread: {
+                                    votes: number;
+                                    my_vote: number;
+                                    comments: number;
+                                };
                                 social: {
                                     interesting: number;
                                     doubts: number;
@@ -4463,6 +5123,16 @@ export interface components {
                 at: number;
                 note: string | null;
             } | null;
+            finder: {
+                name: string;
+                avatar: string | null;
+            } | null;
+            finders: number;
+            thread: {
+                votes: number;
+                my_vote: number;
+                comments: number;
+            };
             social: {
                 interesting: number;
                 doubts: number;
@@ -4532,6 +5202,16 @@ export interface components {
                 at: number;
                 note: string | null;
             } | null;
+            finder: {
+                name: string;
+                avatar: string | null;
+            } | null;
+            finders: number;
+            thread: {
+                votes: number;
+                my_vote: number;
+                comments: number;
+            };
             social: {
                 interesting: number;
                 doubts: number;
@@ -4799,6 +5479,16 @@ export interface components {
                     at: number;
                     note: string | null;
                 } | null;
+                finder: {
+                    name: string;
+                    avatar: string | null;
+                } | null;
+                finders: number;
+                thread: {
+                    votes: number;
+                    my_vote: number;
+                    comments: number;
+                };
                 social: {
                     interesting: number;
                     doubts: number;
@@ -4896,6 +5586,11 @@ export interface components {
                         persistence: number;
                     };
                 };
+                thread: {
+                    votes: number;
+                    my_vote: number;
+                    comments: number;
+                };
                 social: {
                     interesting: number;
                     doubts: number;
@@ -4988,6 +5683,11 @@ export interface components {
                     satellite: number;
                     persistence: number;
                 };
+            };
+            thread: {
+                votes: number;
+                my_vote: number;
+                comments: number;
             };
             social: {
                 interesting: number;

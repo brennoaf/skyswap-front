@@ -151,6 +151,9 @@
           "credit_names",
           "credit_others",
           "first_vote",
+          "finder",
+          "finders",
+          "thread",
           "social",
           "photo",
           "photo_cols",
@@ -292,6 +295,57 @@
                 "type": "null"
               }
             ]
+          },
+          "finder": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "name",
+                  "avatar"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "avatar": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "finders": {
+            "type": "integer"
+          },
+          "thread": {
+            "type": "object",
+            "required": [
+              "votes",
+              "my_vote",
+              "comments"
+            ],
+            "properties": {
+              "votes": {
+                "type": "integer"
+              },
+              "my_vote": {
+                "type": "integer"
+              },
+              "comments": {
+                "type": "integer"
+              }
+            }
           },
           "social": {
             "type": "object",
@@ -567,6 +621,9 @@
           "credit_names",
           "credit_others",
           "first_vote",
+          "finder",
+          "finders",
+          "thread",
           "social",
           "photo",
           "photo_cols",
@@ -716,6 +773,57 @@
                 "type": "null"
               }
             ]
+          },
+          "finder": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "name",
+                  "avatar"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "avatar": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "finders": {
+            "type": "integer"
+          },
+          "thread": {
+            "type": "object",
+            "required": [
+              "votes",
+              "my_vote",
+              "comments"
+            ],
+            "properties": {
+              "votes": {
+                "type": "integer"
+              },
+              "my_vote": {
+                "type": "integer"
+              },
+              "comments": {
+                "type": "integer"
+              }
+            }
           },
           "social": {
             "type": "object",
@@ -2043,6 +2151,9 @@
                     "credit_names",
                     "credit_others",
                     "first_vote",
+                    "finder",
+                    "finders",
+                    "thread",
                     "social",
                     "photo",
                     "photo_cols",
@@ -2184,6 +2295,57 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "finder": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "avatar"
+                          ],
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "avatar": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "finders": {
+                      "type": "integer"
+                    },
+                    "thread": {
+                      "type": "object",
+                      "required": [
+                        "votes",
+                        "my_vote",
+                        "comments"
+                      ],
+                      "properties": {
+                        "votes": {
+                          "type": "integer"
+                        },
+                        "my_vote": {
+                          "type": "integer"
+                        },
+                        "comments": {
+                          "type": "integer"
+                        }
+                      }
                     },
                     "social": {
                       "type": "object",
@@ -2346,6 +2508,7 @@
                     "source",
                     "object",
                     "post",
+                    "thread",
                     "social"
                   ],
                   "properties": {
@@ -2687,6 +2850,25 @@
                         }
                       }
                     },
+                    "thread": {
+                      "type": "object",
+                      "required": [
+                        "votes",
+                        "my_vote",
+                        "comments"
+                      ],
+                      "properties": {
+                        "votes": {
+                          "type": "integer"
+                        },
+                        "my_vote": {
+                          "type": "integer"
+                        },
+                        "comments": {
+                          "type": "integer"
+                        }
+                      }
+                    },
                     "social": {
                       "type": "object",
                       "required": [
@@ -2818,6 +3000,7 @@
           "source",
           "object",
           "post",
+          "thread",
           "social"
         ],
         "properties": {
@@ -3156,6 +3339,25 @@
                     "type": "number"
                   }
                 }
+              }
+            }
+          },
+          "thread": {
+            "type": "object",
+            "required": [
+              "votes",
+              "my_vote",
+              "comments"
+            ],
+            "properties": {
+              "votes": {
+                "type": "integer"
+              },
+              "my_vote": {
+                "type": "integer"
+              },
+              "comments": {
+                "type": "integer"
               }
             }
           },
@@ -10260,6 +10462,9 @@
                               "credit_names",
                               "credit_others",
                               "first_vote",
+                              "finder",
+                              "finders",
+                              "thread",
                               "social",
                               "photo",
                               "photo_cols",
@@ -10401,6 +10606,57 @@
                                     "type": "null"
                                   }
                                 ]
+                              },
+                              "finder": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "name",
+                                      "avatar"
+                                    ],
+                                    "properties": {
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "avatar": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "finders": {
+                                "type": "integer"
+                              },
+                              "thread": {
+                                "type": "object",
+                                "required": [
+                                  "votes",
+                                  "my_vote",
+                                  "comments"
+                                ],
+                                "properties": {
+                                  "votes": {
+                                    "type": "integer"
+                                  },
+                                  "my_vote": {
+                                    "type": "integer"
+                                  },
+                                  "comments": {
+                                    "type": "integer"
+                                  }
+                                }
                               },
                               "social": {
                                 "type": "object",
@@ -10563,6 +10819,7 @@
                               "source",
                               "object",
                               "post",
+                              "thread",
                               "social"
                             ],
                             "properties": {
@@ -10904,6 +11161,25 @@
                                   }
                                 }
                               },
+                              "thread": {
+                                "type": "object",
+                                "required": [
+                                  "votes",
+                                  "my_vote",
+                                  "comments"
+                                ],
+                                "properties": {
+                                  "votes": {
+                                    "type": "integer"
+                                  },
+                                  "my_vote": {
+                                    "type": "integer"
+                                  },
+                                  "comments": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
                               "social": {
                                 "type": "object",
                                 "required": [
@@ -11030,6 +11306,1374 @@
         }
       }
     },
+    "/api/community/threads/{id}": {
+      "get": {
+        "tags": [
+          "community"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "best"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "new"
+                  ]
+                }
+              ]
+            },
+            "in": "query",
+            "name": "sort",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "count",
+                    "comments"
+                  ],
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "comments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "parent_id",
+                          "depth",
+                          "replies",
+                          "author",
+                          "avatar",
+                          "body",
+                          "created_at",
+                          "score",
+                          "my_vote",
+                          "state",
+                          "mine",
+                          "reported"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "parent_id": {
+                            "anyOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "depth": {
+                            "type": "integer"
+                          },
+                          "replies": {
+                            "type": "integer"
+                          },
+                          "author": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "avatar": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "body": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "created_at": {
+                            "type": "number"
+                          },
+                          "score": {
+                            "type": "integer"
+                          },
+                          "my_vote": {
+                            "type": "integer"
+                          },
+                          "state": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "ok"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "deleted"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "hidden"
+                                ]
+                              }
+                            ]
+                          },
+                          "mine": {
+                            "type": "boolean"
+                          },
+                          "reported": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/community/threads/{id}/comments": {
+      "post": {
+        "tags": [
+          "community"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "body"
+                ],
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "parent_id": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "id"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/community/threads/{id}/vote": {
+      "post": {
+        "tags": [
+          "community"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "value"
+                ],
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "enum": [
+                          -1
+                        ]
+                      },
+                      {
+                        "type": "number",
+                        "enum": [
+                          0
+                        ]
+                      },
+                      {
+                        "type": "number",
+                        "enum": [
+                          1
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "votes",
+                    "my_vote",
+                    "comments"
+                  ],
+                  "properties": {
+                    "votes": {
+                      "type": "integer"
+                    },
+                    "my_vote": {
+                      "type": "integer"
+                    },
+                    "comments": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/community/comments/{cid}/vote": {
+      "post": {
+        "tags": [
+          "community"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "value"
+                ],
+                "properties": {
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "enum": [
+                          -1
+                        ]
+                      },
+                      {
+                        "type": "number",
+                        "enum": [
+                          0
+                        ]
+                      },
+                      {
+                        "type": "number",
+                        "enum": [
+                          1
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "in": "path",
+            "name": "cid",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/community/comments/{cid}/report": {
+      "post": {
+        "tags": [
+          "community"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "in": "path",
+            "name": "cid",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/community/comments/{cid}": {
+      "delete": {
+        "tags": [
+          "community"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "in": "path",
+            "name": "cid",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/community/findings/{id}/finders": {
+      "get": {
+        "tags": [
+          "community"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "finders",
+                    "anonymous"
+                  ],
+                  "properties": {
+                    "finders": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "name",
+                          "avatar",
+                          "first"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "avatar": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "first": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    },
+                    "anonymous": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/community/posts/{id}": {
+      "get": {
+        "tags": [
+          "community"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "type",
+                    "id",
+                    "account",
+                    "created_at",
+                    "text",
+                    "source",
+                    "object",
+                    "post",
+                    "thread",
+                    "social"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "app"
+                      ]
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "account": {
+                      "type": "object",
+                      "required": [
+                        "handle",
+                        "name",
+                        "kind"
+                      ],
+                      "properties": {
+                        "handle": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "app"
+                          ]
+                        }
+                      }
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "object",
+                      "required": [
+                        "pt",
+                        "en"
+                      ],
+                      "properties": {
+                        "pt": {
+                          "type": "string"
+                        },
+                        "en": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "source": {
+                      "type": "object",
+                      "required": [
+                        "pt",
+                        "en"
+                      ],
+                      "properties": {
+                        "pt": {
+                          "type": "string"
+                        },
+                        "en": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "object": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "handle",
+                        "name",
+                        "kind",
+                        "avatar",
+                        "official_target",
+                        "saturation",
+                        "verdict",
+                        "best_bands",
+                        "has_new_data",
+                        "last_seen"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "handle": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "type": "string"
+                        },
+                        "avatar": {
+                          "type": "string"
+                        },
+                        "official_target": {
+                          "type": "boolean"
+                        },
+                        "saturation": {
+                          "type": "string"
+                        },
+                        "verdict": {
+                          "type": "string"
+                        },
+                        "best_bands": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "has_new_data": {
+                          "type": "boolean"
+                        },
+                        "last_seen": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "post": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "object_id",
+                        "type",
+                        "title",
+                        "caption",
+                        "band",
+                        "wavelength_um",
+                        "date_range",
+                        "cover",
+                        "frames",
+                        "chart",
+                        "marks",
+                        "flags_summary"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "object_id": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "caption": {
+                          "type": "string"
+                        },
+                        "band": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "wavelength_um": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "date_range": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "cover": {
+                          "type": "string"
+                        },
+                        "frames": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "src",
+                              "t",
+                              "mjd",
+                              "band",
+                              "wavelength_um",
+                              "release",
+                              "fov_deg",
+                              "kind",
+                              "flags",
+                              "telescope",
+                              "n_exp"
+                            ],
+                            "properties": {
+                              "src": {
+                                "type": "string"
+                              },
+                              "t": {
+                                "type": "string"
+                              },
+                              "mjd": {
+                                "type": "number"
+                              },
+                              "band": {
+                                "type": "string"
+                              },
+                              "wavelength_um": {
+                                "anyOf": [
+                                  {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "release": {
+                                "type": "string"
+                              },
+                              "fov_deg": {
+                                "type": "number"
+                              },
+                              "kind": {
+                                "type": "string"
+                              },
+                              "flags": {
+                                "type": "object",
+                                "required": [
+                                  "saturated_frac",
+                                  "cosmic_ray",
+                                  "satellite",
+                                  "persistence"
+                                ],
+                                "properties": {
+                                  "saturated_frac": {
+                                    "type": "number"
+                                  },
+                                  "cosmic_ray": {
+                                    "type": "boolean"
+                                  },
+                                  "satellite": {
+                                    "type": "boolean"
+                                  },
+                                  "persistence": {
+                                    "type": "boolean"
+                                  }
+                                }
+                              },
+                              "telescope": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "n_exp": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        },
+                        "chart": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "marks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "frame",
+                              "x",
+                              "y"
+                            ],
+                            "properties": {
+                              "frame": {
+                                "type": "integer"
+                              },
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        "flags_summary": {
+                          "type": "object",
+                          "required": [
+                            "saturated",
+                            "cosmic_ray",
+                            "satellite",
+                            "persistence"
+                          ],
+                          "properties": {
+                            "saturated": {
+                              "type": "number"
+                            },
+                            "cosmic_ray": {
+                              "type": "number"
+                            },
+                            "satellite": {
+                              "type": "number"
+                            },
+                            "persistence": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "thread": {
+                      "type": "object",
+                      "required": [
+                        "votes",
+                        "my_vote",
+                        "comments"
+                      ],
+                      "properties": {
+                        "votes": {
+                          "type": "integer"
+                        },
+                        "my_vote": {
+                          "type": "integer"
+                        },
+                        "comments": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "social": {
+                      "type": "object",
+                      "required": [
+                        "interesting",
+                        "doubts",
+                        "doubt_reasons",
+                        "also_seen",
+                        "blind_answers",
+                        "mine"
+                      ],
+                      "properties": {
+                        "interesting": {
+                          "type": "integer"
+                        },
+                        "doubts": {
+                          "type": "integer"
+                        },
+                        "doubt_reasons": {
+                          "type": "object",
+                          "required": [
+                            "image_defect",
+                            "known_asteroid",
+                            "variable_star",
+                            "other"
+                          ],
+                          "properties": {
+                            "image_defect": {
+                              "type": "integer"
+                            },
+                            "known_asteroid": {
+                              "type": "integer"
+                            },
+                            "variable_star": {
+                              "type": "integer"
+                            },
+                            "other": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "also_seen": {
+                          "type": "integer"
+                        },
+                        "blind_answers": {
+                          "type": "integer"
+                        },
+                        "mine": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "required": [
+                                "interesting",
+                                "doubt",
+                                "second_look",
+                                "vote",
+                                "following"
+                              ],
+                              "properties": {
+                                "interesting": {
+                                  "type": "boolean"
+                                },
+                                "doubt": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "second_look": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "vote": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "following": {
+                                  "type": "boolean"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/accounts/{handle}": {
       "get": {
         "tags": [
@@ -11109,6 +12753,7 @@
                           "source",
                           "object",
                           "post",
+                          "thread",
                           "social"
                         ],
                         "properties": {
@@ -11450,6 +13095,25 @@
                               }
                             }
                           },
+                          "thread": {
+                            "type": "object",
+                            "required": [
+                              "votes",
+                              "my_vote",
+                              "comments"
+                            ],
+                            "properties": {
+                              "votes": {
+                                "type": "integer"
+                              },
+                              "my_vote": {
+                                "type": "integer"
+                              },
+                              "comments": {
+                                "type": "integer"
+                              }
+                            }
+                          },
                           "social": {
                             "type": "object",
                             "required": [
@@ -11624,6 +13288,9 @@
                     "credit_names",
                     "credit_others",
                     "first_vote",
+                    "finder",
+                    "finders",
+                    "thread",
                     "social",
                     "photo",
                     "photo_cols",
@@ -11773,6 +13440,57 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "finder": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "name",
+                            "avatar"
+                          ],
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "avatar": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "finders": {
+                      "type": "integer"
+                    },
+                    "thread": {
+                      "type": "object",
+                      "required": [
+                        "votes",
+                        "my_vote",
+                        "comments"
+                      ],
+                      "properties": {
+                        "votes": {
+                          "type": "integer"
+                        },
+                        "my_vote": {
+                          "type": "integer"
+                        },
+                        "comments": {
+                          "type": "integer"
+                        }
+                      }
                     },
                     "social": {
                       "type": "object",
@@ -12334,6 +14052,9 @@
                             "credit_names",
                             "credit_others",
                             "first_vote",
+                            "finder",
+                            "finders",
+                            "thread",
                             "social",
                             "photo",
                             "photo_cols",
@@ -12475,6 +14196,57 @@
                                   "type": "null"
                                 }
                               ]
+                            },
+                            "finder": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "name",
+                                    "avatar"
+                                  ],
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "avatar": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "finders": {
+                              "type": "integer"
+                            },
+                            "thread": {
+                              "type": "object",
+                              "required": [
+                                "votes",
+                                "my_vote",
+                                "comments"
+                              ],
+                              "properties": {
+                                "votes": {
+                                  "type": "integer"
+                                },
+                                "my_vote": {
+                                  "type": "integer"
+                                },
+                                "comments": {
+                                  "type": "integer"
+                                }
+                              }
                             },
                             "social": {
                               "type": "object",

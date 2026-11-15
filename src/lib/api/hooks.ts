@@ -198,6 +198,59 @@ export function useCommunityFeed(tab: CommunityTab, enabled = true) {
   })
 }
 
+export type ThreadSort = 'best' | 'new'
+export type Vote = -1 | 0 | 1
+
+export function useThread(id: string, sort: ThreadSort) {
+  return useQuery({
+    queryKey: ['community', 'thread', id, sort],
+    queryFn: async () => unwrap(await api.GET('/api/community/threads/{id}', { params: { path: { id }, query: { sort } } })),
+  })
+}
+
+export function useTalk(id: string) {
+  const qc = useQueryClient()
+  const onSuccess = () => qc.invalidateQueries({ queryKey: ['community'] })
+  return {
+    comment: useMutation({
+      mutationFn: async (body: { body: string; parent_id?: number | null }) => unwrap(await api.POST('/api/community/threads/{id}/comments', { params: { path: { id } }, body })),
+      onSuccess,
+    }),
+    votePost: useMutation({
+      mutationFn: async (value: Vote) => unwrap(await api.POST('/api/community/threads/{id}/vote', { params: { path: { id } }, body: { value } })),
+      onSuccess,
+    }),
+    voteComment: useMutation({
+      mutationFn: async ({ cid, value }: { cid: number; value: Vote }) => unwrap(await api.POST('/api/community/comments/{cid}/vote', { params: { path: { cid } }, body: { value } })),
+      onSuccess,
+    }),
+    report: useMutation({
+      mutationFn: async (cid: number) => unwrap(await api.POST('/api/community/comments/{cid}/report', { params: { path: { cid } } })),
+      onSuccess,
+    }),
+    remove: useMutation({
+      mutationFn: async (cid: number) => unwrap(await api.DELETE('/api/community/comments/{cid}', { params: { path: { cid } } })),
+      onSuccess,
+    }),
+  }
+}
+
+export function useFinders(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['community', 'finders', id],
+    enabled,
+    queryFn: async () => unwrap(await api.GET('/api/community/findings/{id}/finders', { params: { path: { id } } })),
+  })
+}
+
+export function useAppPost(id: string) {
+  return useQuery({
+    queryKey: ['community', 'post', id],
+    retry: false,
+    queryFn: async () => unwrap(await api.GET('/api/community/posts/{id}', { params: { path: { id } } })),
+  })
+}
+
 export function useAccount(handle: string) {
   return useQuery({
     queryKey: ['community', 'account', handle],

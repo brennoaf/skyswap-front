@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { AppAvatar, AppBadge, AppPostCard } from '@/components/community/app-post-card'
+import { AppAvatar, AppBadge } from '@/components/community/app-post-card'
+import { AppCard } from '@/components/community/community-card'
 import { IconChart } from '@/components/icons'
 import { EmptyState, Skeleton, TopBar } from '@/components/ui/primitives'
 import type { AppPostItem } from '@/lib/api/client'
@@ -58,9 +59,9 @@ export default function AccountPage() {
               </div>
             ))}
           </div>
-          <div className="pt-3">
+          <div>
             {page.posts.map((p) => (
-              <AppPostCard key={p.id} item={p} />
+              <AppCard key={p.id} item={p} />
             ))}
           </div>
         </>
