@@ -16,7 +16,7 @@ export function TraceBanner({ at, total }: { at: number; total: number }) {
   if (at === 0) {
     return (
       <div className="pointer-events-none absolute inset-x-1.5 top-1.5 z-20 rounded-t-[14px] bg-media-scrim px-4 pb-3 pt-2.5 text-center text-on-media" data-testid="trace-banner">
-        <p className="text-title-sm font-bold leading-tight [text-wrap:balance]">{t('tap')}</p>
+        <p className="text-title-md font-bold leading-tight [text-wrap:balance]">{t('tap')}</p>
       </div>
     )
   }

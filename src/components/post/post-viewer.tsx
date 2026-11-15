@@ -173,7 +173,7 @@ function PostStage({
 
       {watching && frames.length > 1 && (
         <div className="px-3 pb-2">
-          <PlayerBar dense playback={player} seconds={seconds} dates={dates} outside={!!(current && outside[current.src])} thumb={thumb} />
+          <PlayerBar dense={mode === 'play'} compact={mode === 'path'} quiet={mode === 'path'} playback={player} seconds={seconds} dates={dates} outside={!!(current && outside[current.src])} thumb={thumb} />
         </div>
       )}
 
@@ -258,7 +258,7 @@ function MarkBanner({ first, name, bright, n, total }: { first: boolean; name: s
   if (first) {
     return (
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-media-scrim px-4 pb-3 pt-2.5 text-center text-on-media" data-testid="mark-banner">
-        <p className="text-title-sm font-bold leading-tight [text-wrap:balance]">{t('markTap', { name })}</p>
+        <p className="text-title-md font-bold leading-tight [text-wrap:balance]">{t('markTap', { name: name.split(' (')[0] })}</p>
         <p className="mt-0.5 text-note leading-snug text-on-media-muted">{bright ? t('markHintBright') : t('markMoves')}</p>
       </div>
     )

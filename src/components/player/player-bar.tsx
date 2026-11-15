@@ -132,6 +132,7 @@ export function PlayerBar({
   tone = 'surface',
   compact = false,
   dense = false,
+  quiet = false,
   outside = false,
   reserve = false,
   note,
@@ -145,6 +146,7 @@ export function PlayerBar({
   tone?: 'surface' | 'media'
   compact?: boolean
   dense?: boolean
+  quiet?: boolean
   outside?: boolean
   reserve?: boolean
   note?: ReactNode
@@ -207,11 +209,11 @@ export function PlayerBar({
   return (
     <div className={cx('space-y-1', tone === 'media' && 'text-on-media', className)} data-testid="player-bar">
       <div className="flex items-center gap-3">
-        <button type="button" aria-label={playback.playing ? t('pause') : t('play')} onClick={() => playback.setPlaying(!playback.playing)} className={cx('inline-flex size-14 shrink-0 items-center justify-center rounded-full', soft)}>
-          {playback.playing ? <IconPause size={30} /> : <IconPlay size={30} />}
+        <button type="button" aria-label={playback.playing ? t('pause') : t('play')} onClick={() => playback.setPlaying(!playback.playing)} className={cx('inline-flex shrink-0 items-center justify-center rounded-full', quiet ? 'size-11' : 'size-14', soft)}>
+          {playback.playing ? <IconPause size={quiet ? 22 : 30} /> : <IconPlay size={quiet ? 22 : 30} />}
         </button>
         <div className="min-w-0 flex-1" aria-live="off">
-          <p className="text-[15px] font-medium leading-5" data-testid="player-counter">
+          <p className={quiet ? 'text-note leading-5 text-text-secondary' : 'text-[15px] font-medium leading-5'} data-testid="player-counter">
             {running || after <= 0 ? counter : t('counterAfter', { counter, gap: gap(after) })}
           </p>
           {note ? (
