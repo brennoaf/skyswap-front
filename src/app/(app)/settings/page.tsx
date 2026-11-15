@@ -1,13 +1,15 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState, type ReactNode } from 'react'
-import { IconChevronDownSmall, IconChevronRight, IconFollow, IconLink, IconMap, IconMore, IconNote, IconQuestion, IconSun } from '@/components/icons'
+import { IconChevronDownSmall, IconChevronRight, IconDevices, IconFollow, IconLink, IconMap, IconMore, IconNote, IconQuestion, IconSun } from '@/components/icons'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { Button, Segmented, Sheet, Skeleton, Switch, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { locales, type Locale } from '@/i18n/locales'
+import { isProtected, useAccount } from '@/lib/api/account'
 import { useCredit, useHealth, useLogout, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
 import { useUi, type ThemePref } from '@/lib/state/ui'
@@ -39,6 +41,7 @@ function RowIcon({ children, label }: { children: ReactNode; label?: string }) {
 
 function Account() {
   const t = useTranslations('settings')
+  const td = useTranslations('account.devices')
   const { data: user, isLoading } = useSession()
   const ask = useUi((s) => s.askLogin)
   if (isLoading) return <Skeleton className="mx-4 h-12" />
@@ -53,13 +56,22 @@ function Account() {
       </button>
     )
   return (
-    <div className={cx(ROW, 'py-1')}>
-      <UserAvatar nickname={user.nickname} src={user.avatar?.url} size={44} />
-      <span className="min-w-0 flex-1 leading-tight">
-        <span className="block truncate text-ui font-semibold">{user.nickname}</span>
-        <span className="block text-note text-text-secondary">{t('signedIn')}</span>
-      </span>
-    </div>
+    <>
+      <div className={cx(ROW, 'py-1')}>
+        <UserAvatar nickname={user.nickname} src={user.avatar?.url} size={44} />
+        <span className="min-w-0 flex-1 leading-tight">
+          <span className="block truncate text-ui font-semibold">{user.nickname}</span>
+          <span className="block text-note text-text-secondary">{t('signedIn')}</span>
+        </span>
+      </div>
+      <Link href="/me/devices" className={cx(ROW, 'active:bg-surface')}>
+        <RowIcon>
+          <IconDevices size={24} />
+        </RowIcon>
+        <span className="min-w-0 flex-1 text-ui">{td('title')}</span>
+        <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
+      </Link>
+    </>
   )
 }
 
@@ -167,6 +179,8 @@ function Logout() {
   const tc = useTranslations('common')
   const { data: user } = useSession()
   const logout = useLogout()
+  const account = useAccount(!!user)
+  const ta = useTranslations('account')
   const [confirm, setConfirm] = useState(false)
   if (!user) return null
   return (
@@ -176,7 +190,7 @@ function Logout() {
       </button>
       <Sheet open={confirm} onClose={() => setConfirm(false)} title={t('logoutTitle', { nickname: user.nickname })}>
         <div className="space-y-3 px-4 py-4">
-          <p className="text-body leading-snug">{t('logoutBody')}</p>
+          <p className="text-body leading-snug">{isProtected(account.data) ? ta('logoutProtected') : t('logoutBody')}</p>
           <Button variant="danger" className="h-11 w-full font-semibold" disabled={logout.isPending} onClick={() => logout.mutate(undefined, { onSuccess: () => setConfirm(false) })}>
             {t('logout')}
           </Button>

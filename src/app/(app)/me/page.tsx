@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { IconCards, IconChevronRight, IconFollow, IconHighlight, IconMap, IconNote, IconQuestion, IconSave, IconSettings } from '@/components/icons'
+import { IconCards, IconChevronRight, IconDevices, IconFollow, IconHighlight, IconMap, IconNote, IconQuestion, IconSave, IconSettings } from '@/components/icons'
 import { MeIntro } from '@/components/me/me-intro'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { ExploredSkyCard } from '@/components/me/explored-sky'
@@ -12,6 +12,7 @@ import { LoginForm } from '@/components/shell/login-sheet'
 import { Button, EmptyState, IconButton, IconTabs, Notice, Sheet, Skeleton, Stat, TopBar } from '@/components/ui/primitives'
 import { AvatarSheet } from '@/components/me/avatar-parts'
 import { ApiError, type Me } from '@/lib/api/client'
+import { isProtected, useAccount } from '@/lib/api/account'
 import { useMe, useSession } from '@/lib/api/hooks'
 import { formatNumber } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
@@ -23,6 +24,18 @@ function SettingsLink() {
   return (
     <Link href="/settings" aria-label={t('settings')} title={t('settings')} className="inline-flex size-11 items-center justify-center rounded-full active:scale-90">
       <IconSettings />
+    </Link>
+  )
+}
+
+function DevicesLink() {
+  const t = useTranslations('account.devices')
+  const account = useAccount()
+  const dot = !!account.data && !isProtected(account.data)
+  return (
+    <Link href="/me/devices" aria-label={t('open')} title={t('open')} className="relative inline-flex size-11 items-center justify-center rounded-full active:scale-90">
+      <IconDevices size={30} />
+      {dot && <span aria-hidden="true" className="absolute right-2 top-2 size-2.5 rounded-full bg-danger ring-2 ring-bg" />}
     </Link>
   )
 }
@@ -125,6 +138,7 @@ function Profile({ me }: { me: Me }) {
             <IconButton label={t('intro')} onClick={() => setIntro(true)}>
               <IconQuestion size={26} />
             </IconButton>
+            <DevicesLink />
             <SettingsLink />
           </>
         }

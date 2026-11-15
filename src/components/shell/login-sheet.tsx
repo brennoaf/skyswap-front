@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { IconCheck, IconDice, IconLock } from '@/components/icons'
@@ -97,6 +98,7 @@ function ProfilePreview({ choice, nick }: { choice: Choice; nick: string }) {
 
 export function LoginForm({ onDone }: { onDone?: () => void }) {
   const t = useTranslations('auth')
+  const ta = useTranslations('account.login')
   const [nick, setNick] = useState('')
   const login = useLogin()
   const choice = useAvatarChoice()
@@ -169,6 +171,9 @@ export function LoginForm({ onDone }: { onDone?: () => void }) {
         <IconLock size={16} className="shrink-0" />
         <span>{t('noPassword')}</span>
       </p>
+      <Link href="/login" onClick={onDone} className="mx-auto inline-flex min-h-11 items-center text-ui font-semibold text-link">
+        {ta('haveAccount')}
+      </Link>
     </form>
   )
 }
