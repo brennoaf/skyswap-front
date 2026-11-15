@@ -325,15 +325,13 @@
   },
   "profile": {
     "posts": "{n, plural, one {post} other {posts}}",
-    "passes": "{n, plural, one {time seen} other {times seen}}",
+    "passes": "{n, plural, one {pass} other {passes}}",
     "followers": "{n, plural, one {follower} other {followers}}",
     "follow": "Follow",
     "following": "Following",
     "unfollow": "Unfollow",
-    "skyMap": "Sky map",
+    "skySpot": "Sky spot",
     "lab": "Lab",
-    "notifications": "Alerts about this object",
-    "more": "More options",
     "share": "Share profile",
     "tabs": {
       "label": "Profile sections",
@@ -350,9 +348,13 @@
       "not_measurable": "This telescope can't measure this object.",
       "not_detected": "This object doesn't show up in these photos.",
       "clear_bright": "This telescope sees it clearly, but its centre is too bright to measure well.",
-      "with_help_bright": "Too bright for this telescope to measure well. The yellow cross helps you find it."
+      "with_help_bright": "Too bright for this telescope to measure well."
     },
     "whyTitle": "Why this telescope can't measure it",
+    "flag": {
+      "bright": "Too bright",
+      "indicative": "Rough values"
+    },
     "candidateTitle": "Candidate #{id}",
     "candidateBody": "Nobody knows yet what this is. Help find out: flip through its photos, mark it and tag it.",
     "facts": "Facts",
@@ -366,11 +368,33 @@
     "noMeasurements": "No measurements for this object yet.",
     "skyMapTitle": "Sky map",
     "skyMapCredit": "Aladin Lite (CDS), DSS2 colour survey served by ESA",
-    "why": "Why"
+    "why": "Why",
+    "whyOriginal": "Original notes from the data kit",
+    "whyPredicted": "The too-bright warning is a forecast from catalogue brightness, not something measured in these photos.",
+    "notes": {
+      "satPercent": "The centre burns out in {pct}% of the photos, so brightness changes are only a rough guide.",
+      "satMost": "The centre of the star burns out in most SPHEREx photos. Brightness and position are only rough.",
+      "satSome": "The centre burns out in some photos. Those points are marked.",
+      "satEveryBand": "The centre burns out in every colour. The position comes from the edges of the star image, good to about {arcsec}″ per pass.",
+      "twoBatches": "The photos come from two NASA batches processed in different ways. In the second batch the same stars come out {lo} to {hi}% fainter, so small brightness differences between batches do not count.",
+      "satellites": "SPHEREx does not mark satellite trails, and they were not checked.",
+      "leftOut": "{n, plural, one {# burnt-out photo was} other {# burnt-out photos were}} left out of the spectrum and the brightness curve: the brightness worked out there was over 10 times off other catalogues, a sign the calculation failed.",
+      "fitFew": "The calculation only worked in {ok} of {total} photos of this very bright star. SPHEREx numbers here are not reliable.",
+      "fitFailed": "The brightness calculation failed in most photos, so SPHEREx numbers for this object are not reliable.",
+      "onlyBands": "It only shows up in {seen}. The faint signal in {other} comes from a nearby star, not from this object.",
+      "oldPosition": "The old published position is from about {year}. In the SPHEREx photos the object is already about {arcsec}″ ({px} pixels) away from it.",
+      "blended": "These are two objects about {sep}″ apart. SPHEREx cannot split them: position and brightness are of their light added together.",
+      "ephemeris": "The predicted position comes from NASA JPL, as seen from SPHEREx in the middle of each photo. The measurements were not adjusted with reference stars, so differences under about 1″ mean nothing.",
+      "blurredField": "In the stacked photos the background stars come out blurred, because the stack follows the moving object.",
+      "coma": "Brightness is measured as if it were a single point, so it misses part of the comet's glow.",
+      "candidate": "The SIMBAD catalogue lists this object as a possible brown dwarf.",
+      "notDetected": "Not detected: at the predicted position the signal was too faint to tell apart from noise in every colour and pass."
+    }
   },
   "charts": {
     "wavelength": "Wavelength (µm)",
     "flux": "Brightness (mJy)",
+    "brightness": "Brightness",
     "magnitude": "Magnitude",
     "pass": "Pass {n}",
     "saturated": "Too bright, approximate",
@@ -391,6 +415,13 @@
       "marginal": "Calculation: a gap a little larger than expected, not enough to say they differ",
       "not_enough_data": "Too few measurements to compare"
     },
+    "motionLead": {
+      "consistent": "By the measurement in these photos, it is where the catalogue predicted.",
+      "marginal": "By the measurement in these photos, it is a little off where the catalogue predicted, but not by enough to say they differ.",
+      "deviates": "By the measurement in these photos, it is not where the catalogue predicted. That alone does not say which of the two is off.",
+      "inconsistent": "By the measurement in these photos, it is not where the catalogue predicted. That alone does not say which of the two is off."
+    },
+    "motionDetail": "The measurement landed {offset} arcseconds from the prediction. The margin of error is {margin}.",
     "path": "Path",
     "residuals": "Measured minus predicted",
     "pixel": "1 pixel",
@@ -398,13 +429,6 @@
     "north": "North (arcseconds)",
     "qrWarning": "NASA released these photos in two batches, processed differently. Don't compare small brightness changes between one batch and the other.",
     "noData": "No data",
-    "measuredVs": {
-      "consistent": "The measurement landed {offset} arcseconds from the prediction, inside the margin of {margin}.",
-      "marginal": "The measurement landed {offset} arcseconds from the prediction, outside the margin of {margin}, but not by enough to say they differ.",
-      "deviates": "The measurement landed {offset} arcseconds from the prediction, far outside the margin of {margin}. That alone does not say which one is off.",
-      "inconsistent": "The measurement landed {offset} arcseconds from the prediction, far outside the margin of {margin}. That alone does not say which one is off."
-    },
-    "marginAssumed": "{margin} ({floor} of it assumed, not measured)",
     "variability": {
       "varied": "{band}: the brightness spread over {spread} magnitudes, more than the measurement errors explain.",
       "hint": "{band}: the brightness spread over {spread} magnitudes, a little more than the errors predict. It may have changed, but this is not enough to say so.",
@@ -421,7 +445,6 @@
     "brighter": "brighter",
     "fainter": "fainter",
     "margin": "Margin",
-    "pixelScale": "1 pixel = {size} arcseconds",
     "outside": "{n, plural, one {# dot} other {# dots}} beyond this frame",
     "batchNote": "Photos from two NASA batches: small brightness differences between them may not be real.",
     "loadFailed": "Couldn't load this chart",
@@ -435,17 +458,17 @@
       "magnitudeScale": "Magnitude is the astronomers' brightness scale: a lower number means brighter, so brighter is at the top.",
       "motionMarks": "The cross is where the catalogue predicts the object. The dots are where SkySwap measured it in SPHEREx photos.",
       "motionRing": "The ring is the margin of error of this comparison. A measurement inside the ring agrees with the prediction.",
-      "motionLine": "The line links the prediction to the measurement the sentence under the chart talks about.",
+      "motionLine": "The line links the prediction to the measurement the sentence above the chart talks about.",
+      "motionAssumed": "Of that margin, {floor} arcseconds is an assumed value for instrument errors, not a measured one.",
       "arcsec": "Distances are in arcseconds, a very small angle: one degree split into 3,600 parts. One SPHEREx pixel is {size} arcseconds.",
       "pathView": "Path puts both on the sky, counted from the first predicted position.",
       "pointPeek": "Each point on the line is the brightness of a single map pixel, adding up photos from several months. It is a quick look, not a measurement: the pixel can blend light from nearby stars.",
       "pointGaps": "Where the line breaks, that colour has no reading: a photo was missing, the camera flagged a fault or the light burnt out. A gap does not mean zero.",
-      "pointStripes": "The ? marks colours where the map has known stripes, near 1.88, 3.3 and 4.05 µm. Values there may be wrong.",
-      "pointUnits": "MJy/sr is brightness per patch of sky. To measure a star for real, use the IRSA tool.",
+      "pointStripes": "Near 1.88, 3.3 and 4.05 µm the map has known stripes. Values there may be wrong.",
+      "pointUnits": "Brightness is in MJy/sr, brightness per patch of sky. To measure a star for real, use the IRSA tool.",
       "pointOffScale": "An arrow at the top marks a colour far above the others, off the scale. Tap it to read the value."
     },
     "pointTitle": "Brightness in each of the 102 colours",
-    "surface": "Brightness (MJy/sr)",
     "noValue": "No reading in this colour",
     "readSurface": "{value} MJy/sr",
     "tooBright": "Too bright",
@@ -581,7 +604,7 @@
   "sky": {
     "title": "Sky spot",
     "loadingIndex": "Looking up SPHEREx images",
-    "images": "{n, plural, one {# image} other {# images}} cover this spot",
+    "images": "{n, plural, one {# photo from the NASA archive covers} other {# photos from the NASA archive cover}} this spot",
     "none": "No SPHEREx images cover this spot yet.",
     "fov": "Field of view",
     "fovValue": "{arcmin} arcminutes",
@@ -594,6 +617,7 @@
     "liveNote": "Images are read live from NASA's public SPHEREx archive, straight into your browser.",
     "nearby": "SkySwap objects here",
     "openProfile": "Open profile",
+    "openLab": "Open in the Lab",
     "embedTitle": "SkySwap sky spot",
     "openInSkySwap": "Open in SkySwap",
     "frameDate": "{date}, {band}",
@@ -640,7 +664,8 @@
     "heroEyebrow": "SPHEREx photographed this spot",
     "heroTimes": "{n, plural, one {time} other {times}}",
     "heroDays": "{n, plural, one {# day with photos} other {# days with photos}}",
-    "heroLead": "Put the photos in sequence and see what changes place or brightness.",
+    "heroAll": "Counts every photo in the NASA archive.",
+    "heroProfile": "Counts every photo in the NASA archive. The profile counts {n}, only the ones it uses.",
     "seeSequence": "See the time-lapse",
     "hereTitle": "{name} is here",
     "hereMoves": "It moves. Open it by name so the crosshair follows it.",
@@ -680,20 +705,20 @@
     "unchecked": "Couldn't check for photos of this spot right now.",
     "goSearch": "Search",
     "spectrum": {
-      "title": "Colours of this spot",
-      "peek": "Quick look: sum from {from} to {to}, {px}″ pixel. Nearby stars may blend in.",
+      "title": "Spectrum of this spot",
+      "sum": "The summed photos run from {from} to {to}, and each pixel covers {px}″ of sky.",
       "loading": "Reading the 102 colours from the all-sky map",
       "failed": "Could not read the sky map right now.",
       "offline": "This server has no internet, so it cannot read the all-sky map.",
       "bright": "The centre of this spot burnt out on the camera. Colours with no reading show as gaps in the line.",
-      "lab": "See this object in the Lab",
+      "brightProfile": "Too bright for this map. The profile has the spectrum measured photo by photo.",
+      "seeProfile": "See on the profile",
       "irsa": "Real measurement at IRSA",
       "credit": "All-sky map: SPHEREx DR1, NASA/JPL-Caltech/IPAC (IRSA).",
-      "more": "More about this spot",
       "movedRead": "Read where {name} was in the middle of the sum, {n}″ from the catalogue position.",
       "solarSystem": "This object moves too fast for the summed map. The colours here are only the sky behind it.",
       "elsewhere": "{name} is no longer at this spot in this sum: it was {n}″ away.",
-      "elsewhereGo": "See the colours of {name}"
+      "elsewhereGo": "See the spectrum of {name}"
     }
   },
   "classify": {

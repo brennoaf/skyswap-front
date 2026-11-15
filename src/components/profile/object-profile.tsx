@@ -1,23 +1,26 @@
 'use client'
 
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { mixesBatches } from '@/components/charts/chart-math'
 import { KitChart } from '@/components/charts/charts'
+import { skyHref } from '@/components/feed/spot-sheet'
 import { frameTiles, PostGrid, tilesFromPosts } from '@/components/profile/post-grid'
-import { IconBell, IconChart, IconChevronDownSmall, IconFlask, IconGrid, IconLink, IconMap, IconMore, IconReel, IconSpectrum, IconTarget, IconWarning, IconChevronRight } from '@/components/icons'
-import { Button, Chip, EmptyState, IconButton, IconTabs, isSaturated, isVerified, ObjectAvatar, ObjectBadges, Sheet, SheetRow, Skeleton, TopBar } from '@/components/ui/primitives'
+import { IconChart, IconChevronDownSmall, IconFlask, IconGrid, IconReel, IconShare, IconSpectrum, IconTarget, IconWarning, IconChevronRight } from '@/components/icons'
+import { Button, Chip, EmptyState, IconButton, IconTabs, isSaturated, isVerified, ObjectAvatar, ObjectBadges, Sheet, Skeleton, TopBar } from '@/components/ui/primitives'
 import type { ObjectProfile } from '@/lib/api/client'
 import { useFollow, useLearn, useObject, useObjectPosts, useSession } from '@/lib/api/hooks'
 import { BAND_HUE, BANDS, compactNumber, cx, formatShortDate } from '@/lib/format'
+import { kitNote, kitNotes, noteValues } from '@/lib/kit-notes'
 import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
 import { objectBio } from '@/lib/post-text'
 import { useBandList, useBandName } from '@/lib/use-band'
-import { SkyMapSheet } from '@/components/sky/sky-map-sheet'
 
 type Tab = 'photos' | 'spectrum' | 'timelapses' | 'measurements'
+const TABS: Tab[] = ['photos', 'spectrum', 'timelapses', 'measurements']
 
 function ProfileSkeleton() {
   return (
@@ -69,11 +72,10 @@ export function ObjectProfileView({ id }: { id: string }) {
   const bandList = useBandList()
   const seen = useUi((s) => s.seenStories.includes(id))
   const openStory = useUi((s) => s.openStory)
-  const [tab, setTab] = useState<Tab>('photos')
+  const asked = useSearchParams().get('tab')
+  const [tab, setTab] = useState<Tab>(TABS.find((k) => k === asked) ?? 'photos')
   const [band, setBand] = useState<string | null>(null)
   const [why, setWhy] = useState(false)
-  const [more, setMore] = useState(false)
-  const [map, setMap] = useState(false)
   const [bioOpen, setBioOpen] = useState(false)
 
   const learnRef = useRef(learn.mutate)
@@ -105,7 +107,11 @@ export function ObjectProfileView({ id }: { id: string }) {
   }
 
   const unmeasurable = profile.verdict === 'not_measurable' || profile.verdict === 'not_detected'
-  const verdictKey = isSaturated(profile.saturation) && (profile.verdict === 'clear' || profile.verdict === 'with_help') ? `${profile.verdict}_bright` : profile.verdict
+  const bright = isSaturated(profile.saturation)
+  const verdictKey = bright && (profile.verdict === 'clear' || profile.verdict === 'with_help') ? `${profile.verdict}_bright` : profile.verdict
+  const flag = unmeasurable ? null : bright ? 'bright' : profile.verdict === 'indicative' ? 'indicative' : null
+  const notes = kitNotes(profile.limits)
+  const untranslated = profile.limits.filter((l) => !kitNote(l))
   const tiles = band ? frameTiles(posts ?? [], band, locale) : tilesFromPosts(posts ?? [], locale)
 
   return (
@@ -113,14 +119,9 @@ export function ObjectProfileView({ id }: { id: string }) {
       <TopBar
         title={profile.kind === 'candidate' ? t('candidateTitle', { id: profile.id }) : profile.name}
         actions={
-          <>
-            <Link href="/alerts" aria-label={t('notifications')} className="inline-flex size-11 items-center justify-center">
-              <IconBell />
-            </Link>
-            <IconButton label={t('more')} onClick={() => setMore(true)}>
-              <IconMore />
-            </IconButton>
-          </>
+          <IconButton label={t('share')} onClick={() => void share({ title: profile.name, path: `/o/${profile.id}` })}>
+            <IconShare />
+          </IconButton>
         }
       />
 
@@ -131,9 +132,16 @@ export function ObjectProfileView({ id }: { id: string }) {
             {profile.has_new_data && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded border-2 border-bg bg-danger px-1 text-micro font-bold uppercase text-white">{ts('new')}</span>}
           </button>
           <div className="min-w-0 flex-1">
-            <p className="flex items-center gap-1 text-account font-semibold">
+            <p className="flex min-w-0 items-center gap-1 text-account font-semibold">
               <span className="truncate">{tp(`kinds.${profile.kind}`)}</span>
-              <ObjectBadges verified={isVerified(profile.verdict)} saturated={isSaturated(profile.saturation)} size={15} />
+              <ObjectBadges verified={isVerified(profile.verdict)} saturated={bright && !flag} size={15} />
+              {flag && (
+                <button type="button" onClick={() => setWhy(true)} className="hit-44 inline-flex min-w-0 items-center gap-1.5 font-normal text-warning" data-testid="profile-flag">
+                  <span className="size-1 shrink-0 rounded-full bg-text-secondary" aria-hidden="true" />
+                  <span className="truncate">{t(`flag.${flag}`)}</span>
+                  <IconChevronRight size={16} className="-ml-1 shrink-0" />
+                </button>
+              )}
             </p>
             <dl className="mt-2 flex gap-[23px]">
               {(
@@ -192,20 +200,20 @@ export function ObjectProfileView({ id }: { id: string }) {
 
       <div className="mt-3 flex gap-[6px] px-4">
         <FollowButton profile={profile} />
-        <Button className="h-8 flex-1 whitespace-nowrap px-2 text-body" onClick={() => setMap(true)}>
-          {t('skyMap')}
-        </Button>
+        <Link href={skyHref({ ra: profile.ra, dec: profile.dec, name: profile.name, obj: profile.id })} className="hit-44 inline-flex h-8 flex-1 items-center justify-center whitespace-nowrap rounded-[var(--radius-button)] bg-surface px-2 text-ui font-medium active:bg-surface-pressed">
+          {t('skySpot')}
+        </Link>
         <Link href={`/lab/${profile.id}`} className="hit-44 inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-[var(--radius-button)] bg-surface text-ui font-medium active:bg-surface-pressed">
           <IconFlask size={18} />
           {t('lab')}
         </Link>
       </div>
 
-      {(unmeasurable || profile.verdict === 'indicative' || isSaturated(profile.saturation)) && (
+      {unmeasurable && (
         <div className="mt-4 px-4">
           <button type="button" onClick={() => setWhy(true)} className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-surface px-3 py-2 text-left text-note active:bg-surface-pressed">
             <IconWarning size={20} className="shrink-0 text-warning" />
-            <span className="min-w-0 flex-1 font-semibold">{unmeasurable ? t('whyTitle') : t(`verdicts.${verdictKey}`)}</span>
+            <span className="min-w-0 flex-1 font-semibold">{t('whyTitle')}</span>
             <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
           </button>
         </div>
@@ -267,25 +275,26 @@ export function ObjectProfileView({ id }: { id: string }) {
       )}
 
       <Sheet open={why} onClose={() => setWhy(false)} title={t('why')}>
-        <div className="space-y-3 px-4 py-4 text-body">
+        <div className="space-y-3 px-4 py-4 text-body" data-testid="profile-why">
           <p className="font-semibold">{t(`verdicts.${verdictKey}`)}</p>
-          <ul className="list-disc space-y-2 pl-4 text-text-secondary">
-            {profile.limits.map((l) => (
-              <li key={l}>{l}</li>
+          <ul className="list-disc space-y-2 pl-4">
+            {bright && profile.saturation_source === 'predicted' && <li>{t('whyPredicted')}</li>}
+            {notes.map((n) => (
+              <li key={n.key}>{t(`notes.${n.key}`, noteValues(n.values, locale))}</li>
             ))}
           </ul>
+          {untranslated.length > 0 && (
+            <section className="border-t-[0.5px] border-divider pt-3">
+              <h3 className="text-note font-semibold text-text-secondary">{t('whyOriginal')}</h3>
+              <ul lang="en" className="mt-1 list-disc space-y-1 pl-4 text-meta leading-snug text-text-secondary">
+                {untranslated.map((l) => (
+                  <li key={l}>{l}</li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
       </Sheet>
-
-      <Sheet open={more} onClose={() => setMore(false)}>
-        <div className="py-2">
-          <SheetRow icon={<IconFlask size={26} />} label={tp('menu.lab')} hint={tp('menu.labHint')} href={`/lab/${profile.id}`} onClick={() => setMore(false)} />
-          <SheetRow icon={<IconMap size={26} />} label={t('skyMap')} onClick={() => { setMore(false); setMap(true) }} />
-          <SheetRow icon={<IconLink size={26} />} label={t('share')} onClick={() => { setMore(false); void share({ title: profile.name, path: `/o/${profile.id}` }) }} />
-        </div>
-      </Sheet>
-
-      <SkyMapSheet open={map} onClose={() => setMap(false)} object={profile} />
     </main>
   )
 }

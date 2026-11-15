@@ -9,7 +9,8 @@ import { IconCopy, IconDirect, IconSpectrum } from '@/components/icons'
 import { SkyShareSheet } from '@/components/sky/sky-share-sheet'
 import { SkySpectrumSheet } from '@/components/sky/sky-spectrum-sheet'
 import { parseSkyParams, SkyViewer, type SkyParams } from '@/components/sky/sky-viewer'
-import { EmptyState, IconButton, Skeleton, TopBar } from '@/components/ui/primitives'
+import { EmptyState, IconButton, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
+import { useObject } from '@/lib/api/hooks'
 import { formatDec, formatRa } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 
@@ -22,6 +23,7 @@ function SkyScreen() {
   const params = parseSkyParams(new URLSearchParams(sp.toString()))
   const [share, setShare] = useState(false)
   const [colours, setColours] = useState(false)
+  const { data: object } = useObject(params?.obj ?? '')
 
   const onChange = useCallback(
     (next: Partial<SkyParams>) => {
@@ -55,6 +57,9 @@ function SkyScreen() {
     toast({ kind: 'info', key: done ? 'sky.map.copied' : 'sky.map.copyFailed' })
   }
 
+  const name = params.name ?? object?.name ?? t('title')
+  const profile = object ? `/o/${object.id}` : null
+
   return (
     <main>
       <SkyViewer
@@ -64,14 +69,27 @@ function SkyScreen() {
           <TopBar
             onBack={onBack}
             title={
-              <span className="block leading-tight">
-                <span className="block truncate">{params.name ?? t('title')}</span>
-                <button type="button" onClick={() => void copy()} aria-label={tm('copy')} className="-my-1 flex max-w-full items-center gap-1.5 py-1 font-sans text-meta font-normal tabular-nums text-text-secondary" data-testid="sky-position">
-                  <span className="truncate">
-                    {formatRa(params.ra)} {formatDec(params.dec)}
-                  </span>
-                  <IconCopy size={14} className="shrink-0" />
-                </button>
+              <span className="flex min-w-0 items-center gap-2">
+                {object && profile && (
+                  <Link href={profile} tabIndex={-1} aria-hidden="true" className="shrink-0">
+                    <ObjectAvatar src={object.avatar} alt="" size={28} />
+                  </Link>
+                )}
+                <span className="block min-w-0 flex-1 leading-tight">
+                  {profile ? (
+                    <Link href={profile} className="block truncate" data-testid="sky-profile">
+                      {name}
+                    </Link>
+                  ) : (
+                    <span className="block truncate">{name}</span>
+                  )}
+                  <button type="button" onClick={() => void copy()} aria-label={tm('copy')} className="-my-1 flex max-w-full items-center gap-1.5 py-1 font-sans text-meta font-normal tabular-nums text-text-secondary" data-testid="sky-position">
+                    <span className="truncate">
+                      {formatRa(params.ra)} {formatDec(params.dec)}
+                    </span>
+                    <IconCopy size={14} className="shrink-0" />
+                  </button>
+                </span>
               </span>
             }
             actions={

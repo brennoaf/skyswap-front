@@ -325,15 +325,13 @@
   },
   "profile": {
     "posts": "{n, plural, =0 {posts} one {post} other {posts}}",
-    "passes": "{n, plural, =0 {vezes visto} one {vez visto} other {vezes visto}}",
+    "passes": "{n, plural, =0 {passagens} one {passagem} other {passagens}}",
     "followers": "{n, plural, =0 {seguidores} one {seguidor} other {seguidores}}",
     "follow": "Seguir",
     "following": "Seguindo",
     "unfollow": "Deixar de seguir",
-    "skyMap": "Mapa do céu",
+    "skySpot": "Ponto do céu",
     "lab": "Lab",
-    "notifications": "Alertas sobre este objeto",
-    "more": "Mais opções",
     "share": "Compartilhar perfil",
     "tabs": {
       "label": "Seções do perfil",
@@ -350,9 +348,13 @@
       "not_measurable": "Este telescópio não consegue medir este objeto.",
       "not_detected": "Este objeto não aparece nestas fotos.",
       "clear_bright": "Dá para ver com clareza, mas o centro é brilhante demais para medir bem.",
-      "with_help_bright": "Brilhante demais para este telescópio medir bem. A cruz amarela ajuda a achar."
+      "with_help_bright": "Brilhante demais para este telescópio medir bem."
     },
     "whyTitle": "Por que este telescópio não consegue medir",
+    "flag": {
+      "bright": "Brilhante demais",
+      "indicative": "Valor aproximado"
+    },
     "candidateTitle": "Candidato #{id}",
     "candidateBody": "Ninguém sabe ainda o que é isto. Ajude a descobrir: passe as fotos, marque e etiquete.",
     "facts": "Fatos",
@@ -366,11 +368,33 @@
     "noMeasurements": "Ainda não há medições deste objeto.",
     "skyMapTitle": "Mapa do céu",
     "skyMapCredit": "Aladin Lite (CDS), levantamento colorido DSS2 servido pela ESA",
-    "why": "Por quê"
+    "why": "Por quê",
+    "whyOriginal": "Notas originais (em inglês)",
+    "whyPredicted": "O aviso de brilho demais é uma previsão feita pelo brilho de catálogo, não algo medido nestas fotos.",
+    "notes": {
+      "satPercent": "O centro estoura em {pct}% das fotos, então mudanças de brilho são só uma indicação.",
+      "satMost": "O centro da estrela estoura na maioria das fotos do SPHEREx. Brilho e posição são só aproximados.",
+      "satSome": "O centro estoura em algumas fotos. Esses pontos aparecem marcados.",
+      "satEveryBand": "O centro estoura em todas as cores. A posição vem da borda da imagem da estrela, com precisão de cerca de {arcsec}″ por passagem.",
+      "twoBatches": "As fotos vêm de dois lotes da NASA, processados de jeitos diferentes. No segundo lote, as mesmas estrelas saem de {lo} a {hi}% mais fracas, então pequenas diferenças de brilho entre os lotes não contam.",
+      "satellites": "O SPHEREx não marca rastros de satélite, e eles não foram conferidos.",
+      "leftOut": "{n, plural, one {# foto estourada ficou} other {# fotos estouradas ficaram}} de fora do espectro e da curva de brilho: o brilho calculado ali passou de 10 vezes o de outros catálogos, sinal de que a conta falhou.",
+      "fitFew": "A conta só funcionou em {ok} de {total} fotos desta estrela muito brilhante. Os números do SPHEREx aqui não são confiáveis.",
+      "fitFailed": "A conta do brilho falhou na maioria das fotos, então os números do SPHEREx para este objeto não são confiáveis.",
+      "onlyBands": "Só aparece em {seen}. O sinal fraco em {other} vem de uma estrela vizinha, não deste objeto.",
+      "oldPosition": "A posição antiga publicada é de cerca de {year}. Nas fotos do SPHEREx o objeto já está a uns {arcsec}″ ({px} pixels) dali.",
+      "blended": "São dois objetos a cerca de {sep}″ um do outro. O SPHEREx não separa os dois: posição e brilho são da luz somada.",
+      "ephemeris": "A posição prevista vem do JPL, da NASA, vista do próprio SPHEREx no meio de cada foto. As medidas não foram ajustadas com estrelas de referência, então diferenças menores que cerca de 1″ não dizem nada.",
+      "blurredField": "Nas fotos empilhadas, as estrelas do fundo saem borradas, porque a pilha acompanha o objeto que anda.",
+      "coma": "O brilho é medido como se fosse um ponto só, então perde parte da cabeleira do cometa.",
+      "candidate": "O catálogo SIMBAD lista este objeto como possível anã marrom.",
+      "notDetected": "Não detectado: na posição prevista, o sinal ficou fraco demais para separar do ruído em todas as cores e passagens."
+    }
   },
   "charts": {
     "wavelength": "Comprimento de onda (µm)",
     "flux": "Brilho (mJy)",
+    "brightness": "Brilho",
     "magnitude": "Magnitude",
     "pass": "Passagem {n}",
     "saturated": "Brilhante demais, valor aproximado",
@@ -391,6 +415,13 @@
       "marginal": "Cálculo: diferença um pouco maior que o esperado, sem base para dizer que são diferentes",
       "not_enough_data": "Poucas medidas para comparar"
     },
+    "motionLead": {
+      "consistent": "Pela medida destas fotos, está onde o catálogo previa.",
+      "marginal": "Pela medida destas fotos, está um pouco fora de onde o catálogo previa, mas não o bastante para dizer que são diferentes.",
+      "deviates": "Pela medida destas fotos, não está onde o catálogo previa. Só isso não diz qual dos dois está errado.",
+      "inconsistent": "Pela medida destas fotos, não está onde o catálogo previa. Só isso não diz qual dos dois está errado."
+    },
+    "motionDetail": "A medida ficou a {offset} segundos de arco da previsão. A margem de erro é de {margin}.",
     "path": "Caminho",
     "residuals": "Medido menos previsto",
     "pixel": "1 pixel",
@@ -398,13 +429,6 @@
     "north": "Norte (segundos de arco)",
     "qrWarning": "A NASA publicou estas fotos em dois lotes, processados de jeitos diferentes. Não compare pequenas mudanças de brilho entre um lote e outro.",
     "noData": "Sem dados",
-    "measuredVs": {
-      "consistent": "A medida ficou a {offset} segundos de arco da previsão, dentro da margem de {margin}.",
-      "marginal": "A medida ficou a {offset} segundos de arco da previsão, fora da margem de {margin}, mas não o bastante para dizer que são diferentes.",
-      "deviates": "A medida ficou a {offset} segundos de arco da previsão, bem fora da margem de {margin}. Só isso não diz qual das duas está errada.",
-      "inconsistent": "A medida ficou a {offset} segundos de arco da previsão, bem fora da margem de {margin}. Só isso não diz qual das duas está errada."
-    },
-    "marginAssumed": "{margin} ({floor} dela é valor suposto, não medido)",
     "variability": {
       "varied": "{band}: o brilho variou {spread} magnitudes, mais do que os erros de medida explicam.",
       "hint": "{band}: o brilho variou {spread} magnitudes, um pouco mais do que os erros preveem. Pode ter mudado, mas isso não basta para afirmar.",
@@ -421,7 +445,6 @@
     "brighter": "mais brilho",
     "fainter": "menos brilho",
     "margin": "Margem",
-    "pixelScale": "1 pixel = {size} segundos de arco",
     "outside": "{n, plural, one {# ponto} other {# pontos}} fora deste quadro",
     "batchNote": "Fotos de dois lotes da NASA: pequenas diferenças de brilho entre um e outro podem não ser reais.",
     "loadFailed": "Não deu para carregar este gráfico",
@@ -435,17 +458,17 @@
       "magnitudeScale": "Magnitude é a escala de brilho dos astrônomos: número menor quer dizer mais brilho, por isso o mais brilhante fica em cima.",
       "motionMarks": "A cruz é onde o catálogo prevê o objeto. Os pontos são onde o SkySwap mediu o objeto nas fotos do SPHEREx.",
       "motionRing": "O anel é a margem de erro desta comparação. Uma medida dentro do anel bate com a previsão.",
-      "motionLine": "A linha liga a previsão à medida de que a frase embaixo do gráfico fala.",
+      "motionLine": "A linha liga a previsão à medida de que a frase acima do gráfico fala.",
+      "motionAssumed": "Dessa margem, {floor} segundos de arco são um valor suposto para erros do instrumento, não medido.",
       "arcsec": "As distâncias estão em segundos de arco, um ângulo bem pequeno: um grau dividido em 3.600 partes. Um pixel do SPHEREx tem {size} segundos de arco.",
       "pathView": "Caminho mostra os dois no céu, contando a partir da primeira posição prevista.",
       "pointPeek": "Cada ponto da linha é o brilho de um único pixel do mapa, somando fotos de vários meses. É uma espiada, não uma medida: o pixel pode juntar a luz de estrelas vizinhas.",
       "pointGaps": "Onde a linha some, aquela cor ficou sem medida: faltou foto, a câmera marcou defeito ou o brilho estourou. Falha não quer dizer zero.",
-      "pointStripes": "O ? marca cores onde o mapa tem listras conhecidas, perto de 1,88, 3,3 e 4,05 µm. Ali o valor pode estar errado.",
-      "pointUnits": "MJy/sr é brilho por pedaço de céu. Para medir uma estrela de verdade, use a ferramenta da IRSA.",
+      "pointStripes": "Perto de 1,88, 3,3 e 4,05 µm o mapa tem listras conhecidas. Ali o valor pode estar errado.",
+      "pointUnits": "O brilho está em MJy/sr, brilho por pedaço de céu. Para medir uma estrela de verdade, use a ferramenta da IRSA.",
       "pointOffScale": "Uma seta no alto marca uma cor muito acima das outras, fora da escala. Toque nela para ler o valor."
     },
     "pointTitle": "Brilho em cada uma das 102 cores",
-    "surface": "Brilho (MJy/sr)",
     "noValue": "Sem medida nesta cor",
     "readSurface": "{value} MJy/sr",
     "tooBright": "Brilhante demais",
@@ -581,7 +604,7 @@
   "sky": {
     "title": "Ponto do céu",
     "loadingIndex": "Procurando imagens do SPHEREx",
-    "images": "{n, plural, one {# imagem cobre} other {# imagens cobrem}} este ponto",
+    "images": "{n, plural, one {# foto do arquivo da NASA cobre} other {# fotos do arquivo da NASA cobrem}} este ponto",
     "none": "Nenhuma imagem do SPHEREx cobre este ponto ainda.",
     "fov": "Campo de visão",
     "fovValue": "{arcmin} minutos de arco",
@@ -594,6 +617,7 @@
     "liveNote": "As imagens são lidas ao vivo do arquivo público do SPHEREx, da NASA, direto no seu navegador.",
     "nearby": "Objetos do SkySwap aqui",
     "openProfile": "Abrir perfil",
+    "openLab": "Abrir no Lab",
     "embedTitle": "Ponto do céu SkySwap",
     "openInSkySwap": "Abrir no SkySwap",
     "frameDate": "{date}, {band}",
@@ -640,7 +664,8 @@
     "heroEyebrow": "O SPHEREx fotografou este ponto",
     "heroTimes": "{n, plural, one {vez} other {vezes}}",
     "heroDays": "{n, plural, one {# dia com fotos} other {# dias com fotos}}",
-    "heroLead": "Junte as fotos em sequência e veja o que muda de lugar ou de brilho.",
+    "heroAll": "Conta todas as fotos do arquivo da NASA.",
+    "heroProfile": "Conta todas as fotos do arquivo da NASA. O perfil conta {n}, só as que ele usa.",
     "seeSequence": "Ver a sequência",
     "hereTitle": "{name} está aqui",
     "hereMoves": "Ele anda. Abra pelo nome para a mira seguir o movimento.",
@@ -680,20 +705,20 @@
     "unchecked": "Não deu para conferir agora se há fotos deste ponto.",
     "goSearch": "Pesquisar",
     "spectrum": {
-      "title": "Cor deste ponto",
-      "peek": "Espiada rápida: soma de {from} a {to}, pixel de {px}″. Pode misturar estrelas vizinhas.",
+      "title": "Espectro deste ponto",
+      "sum": "As fotos somadas vão de {from} a {to}, e cada pixel cobre {px}″ de céu.",
       "loading": "Lendo as 102 cores no mapa do céu inteiro",
       "failed": "Não deu para ler o mapa do céu agora.",
       "offline": "Este servidor está sem internet, então não lê o mapa do céu inteiro.",
       "bright": "O centro deste ponto estourou na câmera. As cores sem medida aparecem como falha na linha.",
-      "lab": "Ver este objeto no Lab",
+      "brightProfile": "Brilhante demais para este mapa. O perfil tem o espectro medido foto a foto.",
+      "seeProfile": "Ver no perfil",
       "irsa": "Medida de verdade na IRSA",
       "credit": "Mapa do céu inteiro: SPHEREx DR1, NASA/JPL-Caltech/IPAC (IRSA).",
-      "more": "Mais sobre este ponto",
       "movedRead": "Lido onde {name} estava no meio da soma, a {n}″ da posição do catálogo.",
       "solarSystem": "Este objeto anda rápido demais para o mapa somado. A cor aqui é só do fundo do céu.",
       "elsewhere": "{name} não está mais neste ponto nesta soma: estava a {n}″ daqui.",
-      "elsewhereGo": "Ver a cor de {name}"
+      "elsewhereGo": "Ver o espectro de {name}"
     }
   },
   "classify": {

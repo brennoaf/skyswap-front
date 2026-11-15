@@ -123,16 +123,6 @@ function Picked({ x, y }: { x: number; y: number }) {
   return <circle cx={x} cy={y} r="6.5" fill="none" stroke="currentColor" strokeWidth="1.5" pointerEvents="none" />
 }
 
-function BatchNote() {
-  const t = useTranslations('charts')
-  return (
-    <p className="mt-2 flex items-start gap-1.5 text-meta leading-snug text-text-secondary">
-      <IconWarning size={14} className="mt-px shrink-0 text-warning" />
-      {t('batchNote')}
-    </p>
-  )
-}
-
 function TooBrightKey() {
   const t = useTranslations('charts')
   return (
@@ -227,8 +217,7 @@ export function SpectrumChart({ data, title, mixedBatches = false }: { data: Spe
         body={picked ? t('readFlux', { value: sig(picked.q.flux_mjy, 3), err: sig(picked.q.err, 2) }) : undefined}
         flag={picked?.q.saturated && t('saturated')}
       />
-      {mixedBatches && <BatchNote />}
-      <InfoSheet open={info} onClose={() => setInfo(false)} lines={[t('info.spectrumDot'), t('info.hollow'), t('info.spectrumAxes'), ...(log ? [t('info.logScale')] : [])]} />
+      <InfoSheet open={info} onClose={() => setInfo(false)} lines={[t('info.spectrumDot'), t('info.hollow'), t('info.spectrumAxes'), ...(log ? [t('info.logScale')] : []), ...(mixedBatches ? [t('batchNote')] : [])]} />
     </figure>
   )
 }
@@ -241,7 +230,7 @@ const POINT_X: [number, number] = [0.7, 5.05]
 const STRIPES_UM = [1.88, 3.3, 4.05]
 const STRIPE_NEAR_UM = 0.06
 
-export function PointSpectrumChart({ data }: { data: PointSpectrumData }) {
+export function PointSpectrumChart({ data, notes = [], extra }: { data: PointSpectrumData; notes?: string[]; extra?: ReactNode }) {
   const locale = useLocale()
   const t = useTranslations('charts')
   const [sel, setSel] = useState<number | null>(null)
@@ -259,14 +248,29 @@ export function PointSpectrumChart({ data }: { data: PointSpectrumData }) {
   const flag = picked ? [picked.c.bright && t('tooBright'), nearStripe && t('stripe'), above(picked.c.value) && t('offScale')].filter(Boolean).join('. ') : ''
   return (
     <figure data-testid="point-spectrum">
-      <ChartHead title={t('pointTitle')} onInfo={() => setInfo(true)} />
+      <ChartHead onInfo={() => setInfo(true)}>
+        <p aria-live="polite" className="text-note leading-snug" data-testid="point-reading">
+          {picked && (
+            <>
+              <span className="font-semibold">{`${picked.c.band}, ${picked.c.wavelength_um.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} µm`}</span>{' '}
+              <span className="tabular-nums">{picked.c.value === null ? t('noValue') : t('readSurface', { value: sig(picked.c.value, 3) })}</span>
+              {flag && (
+                <span className="flex items-center gap-1 text-warning">
+                  <IconWarning size={14} className="shrink-0" />
+                  {flag}
+                </span>
+              )}
+            </>
+          )}
+        </p>
+      </ChartHead>
       {values.length ? (
         <Frame
           title={t('pointTitle')}
           x={x}
           y={y}
           xLabel={t('wavelength')}
-          yLabel={t('surface')}
+          yLabel={t('brightness')}
           xEnds={[t('xNear'), t('xFar')]}
           xFormat={(v) => v.toLocaleString(locale, { maximumFractionDigits: 1 })}
           yFormat={(v) => sig(v, 3)}
@@ -283,14 +287,6 @@ export function PointSpectrumChart({ data }: { data: PointSpectrumData }) {
             setSel(best < 0 ? null : best)
           }}
         >
-          {STRIPES_UM.map((w) => (
-            <g key={w} className="text-text-secondary" pointerEvents="none">
-              <line x1={x(w)} x2={x(w)} y1={PLOT.t + 12} y2={PLOT.h - PLOT.b} stroke="currentColor" strokeOpacity="0.5" strokeWidth="0.75" strokeDasharray="2 3" />
-              <text x={x(w)} y={PLOT.t + 7} textAnchor="middle" className="fill-text-secondary text-chart">
-                ?
-              </text>
-            </g>
-          ))}
           {lines.map((l) => (
             <path key={l.group} d={l.d} fill="none" stroke={BAND_HUE[l.group]} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
           ))}
@@ -313,12 +309,9 @@ export function PointSpectrumChart({ data }: { data: PointSpectrumData }) {
           )
         })}
       </div>
-      <Readout
-        head={picked ? `${picked.c.band}, ${picked.c.wavelength_um.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} µm` : undefined}
-        body={picked ? (picked.c.value === null ? t('noValue') : t('readSurface', { value: sig(picked.c.value, 3) })) : undefined}
-        flag={flag || false}
-      />
-      <InfoSheet open={info} onClose={() => setInfo(false)} lines={[t('info.pointPeek'), t('info.pointGaps'), t('info.pointStripes'), ...(pts.some((p) => above(p.c.value)) ? [t('info.pointOffScale')] : []), t('info.pointUnits')]} />
+      <InfoSheet open={info} onClose={() => setInfo(false)} lines={[t('info.pointPeek'), ...notes, t('info.pointGaps'), t('info.pointStripes'), ...(pts.some((p) => above(p.c.value)) ? [t('info.pointOffScale')] : []), t('info.pointUnits')]}>
+        {extra}
+      </InfoSheet>
     </figure>
   )
 }
@@ -419,8 +412,7 @@ export function LightCurveChart({ data, technical = false, title, mixedBatches =
         )}
         {!top && tested && <p>{t('variability.none')}</p>}
       </figcaption>
-      {mixedBatches && <BatchNote />}
-      <InfoSheet open={info} onClose={() => setInfo(false)} lines={[t('info.lightcurveDot'), t('info.magnitudeScale'), ...(pts.some((p) => p.saturated) ? [t('info.hollow')] : [])]}>
+      <InfoSheet open={info} onClose={() => setInfo(false)} lines={[t('info.lightcurveDot'), t('info.magnitudeScale'), ...(pts.some((p) => p.saturated) ? [t('info.hollow')] : []), ...(mixedBatches ? [t('batchNote')] : [])]}>
         {technical && data.zp_note && <p>{data.zp_note}</p>}
       </InfoSheet>
     </figure>
@@ -470,7 +462,6 @@ export function MotionChart({ data, pixelArcsec = 6.15, technical = false, title
   const margin = c && typeof c.uncertainty_arcsec === 'number' && c.uncertainty_arcsec > 0 ? c.uncertainty_arcsec : null
   const hasNumbers = MEASURED_VS.includes(data.verdict) && !!c && typeof c.offset_arcsec === 'number' && margin !== null
   const floor = hasNumbers && c && typeof c.systematic_floor_arcsec === 'number' && c.systematic_floor_arcsec > 0 ? c.systematic_floor_arcsec : null
-  const marginText = margin === null ? '' : floor === null ? fixed(margin) : t('marginAssumed', { margin: fixed(margin), floor: fixed(floor) })
   const verdictText = motionVerdictText(data.verdict_text, locale)
   const p0 = data.predicted[0]
   if (!p0 || !data.measured.length) return <p className="text-text-secondary">{t('noData')}</p>
@@ -511,10 +502,13 @@ export function MotionChart({ data, pixelArcsec = 6.15, technical = false, title
   const compared = view === 'residuals' && hasNumbers && c && typeof c.offset_ra_arcsec === 'number' && typeof c.offset_dec_arcsec === 'number' ? { x: x(c.offset_ra_arcsec), y: y(c.offset_dec_arcsec) } : null
   const tick = (v: number) => v.toLocaleString(locale, { maximumFractionDigits: half < 2 ? 1 : 0 })
   const pixelSize = pixelArcsec.toLocaleString(locale, { maximumFractionDigits: 2 })
-  const notes = [...(pixelFits ? [] : [t('pixelScale', { size: pixelSize })]), ...(view === 'residuals' && frame.outside > 0 ? [t('outside', { n: frame.outside })] : [])]
+  const notes = view === 'residuals' && frame.outside > 0 ? [t('outside', { n: frame.outside })] : []
   return (
     <figure>
       <ChartHead title={title} onInfo={() => setInfo(true)}>
+        <p className="mb-2 text-body leading-snug" data-testid="motion-lead">
+          {hasNumbers ? t(`motionLead.${data.verdict}`) : t.has(`verdict.${data.verdict}`) ? t(`verdict.${data.verdict}`) : t('verdict.unknown')}
+        </p>
         <Segmented
           label={t('motionTitle')}
           value={view}
@@ -578,10 +572,11 @@ export function MotionChart({ data, pixelArcsec = 6.15, technical = false, title
       </Frame>
       <MotionKey ring={view === 'residuals' && margin !== null} pixel={pixelFits} />
       <Readout head={pickedData ? formatShortDate(pickedData.t, locale) : undefined} body={pickedData ? t('readOffset', { dist: near(Math.hypot(pickedData.dx, pickedData.dy)) }) : undefined} />
-      <figcaption className="mt-2 text-note leading-snug">
-        <p>{hasNumbers && c ? t(`measuredVs.${data.verdict}`, { offset: fixed(c.offset_arcsec as number), margin: marginText }) : t.has(`verdict.${data.verdict}`) ? t(`verdict.${data.verdict}`) : t('verdict.unknown')}</p>
-      </figcaption>
-      <InfoSheet open={info} onClose={() => setInfo(false)} lines={[t('info.motionMarks'), ...(margin !== null ? [t('info.motionRing')] : []), ...(compared ? [t('info.motionLine')] : []), t('info.arcsec', { size: pixelSize }), t('info.pathView')]}>
+      <InfoSheet
+        open={info}
+        onClose={() => setInfo(false)}
+        lines={[...(hasNumbers && c && margin !== null ? [t('motionDetail', { offset: fixed(c.offset_arcsec as number), margin: fixed(margin) })] : []), t('info.motionMarks'), ...(margin !== null ? [t('info.motionRing')] : []), ...(floor !== null ? [t('info.motionAssumed', { floor: fixed(floor) })] : []), ...(compared ? [t('info.motionLine')] : []), t('info.arcsec', { size: pixelSize }), t('info.pathView')]}
+      >
         {verdictText && <p>{verdictText}</p>}
         {technical && data.note && <p>{data.note}</p>}
       </InfoSheet>

@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
 import { skyHref } from '@/components/feed/spot-sheet'
-import { IconChevronRight, IconCrosshair, IconMap, IconPause, IconPlay, IconSearch, IconSliders, IconStepBack, IconStepForward, IconWarning } from '@/components/icons'
+import { IconChevronRight, IconCrosshair, IconFlask, IconMap, IconPause, IconPlay, IconSearch, IconSliders, IconStepBack, IconStepForward, IconWarning } from '@/components/icons'
 import { dotPositions, FrameTimeline } from '@/components/classify/photo-viewer'
 import { SkyLocator, skyRegion } from '@/components/sky/sky-locator'
 import { SkyMapSheet } from '@/components/sky/sky-map-sheet'
@@ -579,7 +579,7 @@ function DayStrip({ images }: { images: { mjd: number }[] }) {
   )
 }
 
-function Intro({ sky, images, total, onStart, onRetry }: { sky: SkyResult; images: { mjd: number }[]; total: number; onStart: () => void; onRetry: () => void }) {
+function Intro({ sky, images, total, profileCount, onStart, onRetry }: { sky: SkyResult; images: { mjd: number }[]; total: number; profileCount: number | null; onStart: () => void; onRetry: () => void }) {
   const t = useTranslations('sky')
   const tc = useTranslations('common')
   if (couldNotCheck(sky))
@@ -605,8 +605,10 @@ function Intro({ sky, images, total, onStart, onRetry }: { sky: SkyResult; image
           <span className="text-[44px] font-bold leading-none tracking-[-0.02em] tabular-nums">{total}</span>
           <span className="text-[17px] font-semibold">{t('heroTimes', { n: total })}</span>
         </p>
+        <p className="mt-1 text-meta leading-snug text-text-secondary" data-testid="sky-count-note">
+          {profileCount !== null && profileCount !== total ? t('heroProfile', { n: profileCount }) : t('heroAll')}
+        </p>
         <DayStrip images={images} />
-        <p className="mt-4 text-body leading-relaxed text-text-secondary">{t('heroLead')}</p>
       </div>
       <div className="px-4 pt-5">
         <Button variant="primary" full className="h-12 font-semibold" onClick={onStart}>
@@ -750,6 +752,13 @@ function Tail({ sky, params }: { sky: SkyResult; params: SkyParams }) {
       )}
       {typed && !here && <p className="px-4 pt-3 text-center text-note text-text-secondary">{t('typedFixed')}</p>}
       <nav className="mx-4 mt-7 border-t-[0.5px] border-divider" aria-label={t('more')}>
+        {params.obj && (
+          <Link href={`/lab/${params.obj}`} className={row} data-testid="sky-lab">
+            <IconFlask size={22} className="shrink-0 text-text-secondary" />
+            <span className="min-w-0 flex-1">{t('openLab')}</span>
+            <IconChevronRight size={18} className="shrink-0 text-icon-muted" />
+          </Link>
+        )}
         {others.map((o) => (
           <Link key={o.id} href={`/o/${o.id}`} className={row} aria-label={`${t('openProfile')}: ${o.name}`}>
             <ObjectAvatar src={o.avatar} alt="" size={32} ring={o.has_new_data ? 'new' : 'none'} />
@@ -870,7 +879,7 @@ export function SkyViewer({
         {built ? (
           playerFor({ compact: false, autoStart: true, choices: <ChoiceLine band={band} fov={fov} onOpen={() => openSteps('player')} /> })
         ) : (
-          <Intro sky={d} images={band ? (all.data?.images ?? []) : d.images} total={Object.values(d.bands).reduce((s, v) => s + v, 0)} onStart={() => openSteps('intro')} onRetry={() => void sky.refetch()} />
+          <Intro sky={d} images={band ? (all.data?.images ?? []) : d.images} total={Object.values(d.bands).reduce((s, v) => s + v, 0)} profileCount={object?.n_images ?? null} onStart={() => openSteps('intro')} onRetry={() => void sky.refetch()} />
         )}
         <Tail sky={d} params={params} />
       </div>
