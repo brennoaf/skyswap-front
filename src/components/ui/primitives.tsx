@@ -279,6 +279,9 @@ function useSheetDrag(ref: RefObject<HTMLElement | null>, handle: RefObject<HTML
     const onPointerUp = (e: PointerEvent) => {
       if (g?.id === e.pointerId) end()
     }
+    const onDragStart = (e: DragEvent) => {
+      if (g) e.preventDefault()
+    }
     el.addEventListener('touchstart', onTouchStart, { passive: true })
     el.addEventListener('touchmove', onTouchMove, { passive: false })
     el.addEventListener('touchend', onTouchEnd)
@@ -287,6 +290,7 @@ function useSheetDrag(ref: RefObject<HTMLElement | null>, handle: RefObject<HTML
     el.addEventListener('pointermove', onPointerMove)
     el.addEventListener('pointerup', onPointerUp)
     el.addEventListener('pointercancel', onPointerUp)
+    el.addEventListener('dragstart', onDragStart)
     return () => {
       clearTimeout(leave)
       el.removeEventListener('touchstart', onTouchStart)
@@ -297,6 +301,7 @@ function useSheetDrag(ref: RefObject<HTMLElement | null>, handle: RefObject<HTML
       el.removeEventListener('pointermove', onPointerMove)
       el.removeEventListener('pointerup', onPointerUp)
       el.removeEventListener('pointercancel', onPointerUp)
+      el.removeEventListener('dragstart', onDragStart)
     }
   }, [open, ref, handle])
   return { offset, dragging }

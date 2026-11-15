@@ -12,9 +12,14 @@ export type Toast =
 
 export type SkyChoice = { band: string | null; fov: number }
 
+export const FINDS_STORY = 'finds'
+
+export const storyFresh = (seen: Record<string, string>, id: string, lastSeen: string) => !(id in seen) || (seen[id] ?? '') < lastSeen
+
 interface PersistedUi {
   theme: ThemePref
-  seenStories: string[]
+  storySeen: Record<string, string>
+  seenFinds: string[]
   languageChosen: boolean
   onboardingDone: boolean
   labIntroDone: boolean
@@ -33,7 +38,8 @@ interface UiState extends PersistedUi {
   authReason: string | null
   storyStart: string | null
   setTheme: (t: ThemePref) => void
-  markStorySeen: (id: string) => void
+  markStorySeen: (id: string, lastSeen: string) => void
+  markFindSeen: (id: string) => void
   chooseLanguage: () => void
   finishOnboarding: () => void
   resetOnboarding: () => void
@@ -60,7 +66,8 @@ export const useUi = create<UiState>()(
   persist(
     (set) => ({
       theme: 'system',
-      seenStories: [],
+      storySeen: {},
+      seenFinds: [],
       languageChosen: false,
       onboardingDone: false,
       labIntroDone: false,
@@ -76,7 +83,8 @@ export const useUi = create<UiState>()(
       authReason: null,
       storyStart: null,
       setTheme: (theme) => set({ theme }),
-      markStorySeen: (id) => set((s) => (s.seenStories.includes(id) ? s : { seenStories: [...s.seenStories, id] })),
+      markStorySeen: (id, lastSeen) => set((s) => (s.storySeen[id] === lastSeen ? s : { storySeen: { ...s.storySeen, [id]: lastSeen } })),
+      markFindSeen: (id) => set((s) => (s.seenFinds.includes(id) ? s : { seenFinds: [...s.seenFinds, id].slice(-50) })),
       chooseLanguage: () => set({ languageChosen: true }),
       finishOnboarding: () => set({ onboardingDone: true }),
       resetOnboarding: () => set({ onboardingDone: false, labIntroDone: false, classifyGuideDone: false, tipsSeen: [], homeHintDismissed: false }),
@@ -101,7 +109,8 @@ export const useUi = create<UiState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (s): PersistedUi => ({
         theme: s.theme,
-        seenStories: s.seenStories,
+        storySeen: s.storySeen,
+        seenFinds: s.seenFinds,
         languageChosen: s.languageChosen,
         onboardingDone: s.onboardingDone,
         labIntroDone: s.labIntroDone,

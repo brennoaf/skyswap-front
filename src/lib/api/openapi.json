@@ -3143,7 +3143,8 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "stories"
+                    "stories",
+                    "finds"
                   ],
                   "properties": {
                     "stories": {
@@ -3152,8 +3153,7 @@
                         "type": "object",
                         "required": [
                           "object",
-                          "post_id",
-                          "frames"
+                          "screens"
                         ],
                         "properties": {
                           "object": {
@@ -3210,50 +3210,371 @@
                               }
                             }
                           },
-                          "post_id": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
-                          },
-                          "frames": {
+                          "screens": {
                             "type": "array",
                             "items": {
-                              "type": "object",
-                              "required": [
-                                "src",
-                                "t",
-                                "band",
-                                "telescope"
-                              ],
-                              "properties": {
-                                "src": {
-                                  "type": "string"
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "kind",
+                                    "topic",
+                                    "band",
+                                    "wavelength_um",
+                                    "fixed",
+                                    "frames"
+                                  ],
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "blink"
+                                      ]
+                                    },
+                                    "topic": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "years"
+                                          ]
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "passes"
+                                          ]
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "night"
+                                          ]
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "brightness"
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    "band": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "wavelength_um": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "fixed": {
+                                      "type": "boolean"
+                                    },
+                                    "frames": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "required": [
+                                          "src",
+                                          "t",
+                                          "telescope",
+                                          "mark"
+                                        ],
+                                        "properties": {
+                                          "src": {
+                                            "type": "string"
+                                          },
+                                          "t": {
+                                            "type": "string"
+                                          },
+                                          "telescope": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "mark": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "required": [
+                                                  "x",
+                                                  "y"
+                                                ],
+                                                "properties": {
+                                                  "x": {
+                                                    "type": "number"
+                                                  },
+                                                  "y": {
+                                                    "type": "number"
+                                                  }
+                                                }
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
                                 },
-                                "t": {
-                                  "type": "string"
-                                },
-                                "band": {
-                                  "type": "string"
-                                },
-                                "telescope": {
-                                  "anyOf": [
-                                    {
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "kind",
+                                    "topic",
+                                    "band",
+                                    "src",
+                                    "hours"
+                                  ],
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "still"
+                                      ]
+                                    },
+                                    "topic": {
+                                      "type": "string",
+                                      "enum": [
+                                        "difference"
+                                      ]
+                                    },
+                                    "band": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "src": {
                                       "type": "string"
                                     },
-                                    {
-                                      "type": "null"
+                                    "hours": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
                                     }
-                                  ]
+                                  }
+                                },
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "kind",
+                                    "band",
+                                    "saturated",
+                                    "points"
+                                  ],
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "curve"
+                                      ]
+                                    },
+                                    "band": {
+                                      "type": "string"
+                                    },
+                                    "saturated": {
+                                      "type": "boolean"
+                                    },
+                                    "points": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "required": [
+                                          "t",
+                                          "mag",
+                                          "err"
+                                        ],
+                                        "properties": {
+                                          "t": {
+                                            "type": "string"
+                                          },
+                                          "mag": {
+                                            "type": "number"
+                                          },
+                                          "err": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "kind",
+                                    "frames",
+                                    "signal"
+                                  ],
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "colours"
+                                      ]
+                                    },
+                                    "frames": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "required": [
+                                          "band",
+                                          "src",
+                                          "um",
+                                          "mark"
+                                        ],
+                                        "properties": {
+                                          "band": {
+                                            "type": "string"
+                                          },
+                                          "src": {
+                                            "type": "string"
+                                          },
+                                          "um": {
+                                            "anyOf": [
+                                              {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "number"
+                                                }
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          },
+                                          "mark": {
+                                            "anyOf": [
+                                              {
+                                                "type": "object",
+                                                "required": [
+                                                  "x",
+                                                  "y"
+                                                ],
+                                                "properties": {
+                                                  "x": {
+                                                    "type": "number"
+                                                  },
+                                                  "y": {
+                                                    "type": "number"
+                                                  }
+                                                }
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "signal": {
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "kind",
+                                    "motion",
+                                    "images",
+                                    "passes"
+                                  ],
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "end"
+                                      ]
+                                    },
+                                    "motion": {
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "required": [
+                                            "measured_arcsec",
+                                            "err_arcsec",
+                                            "predicted_arcsec",
+                                            "days"
+                                          ],
+                                          "properties": {
+                                            "measured_arcsec": {
+                                              "type": "number"
+                                            },
+                                            "err_arcsec": {
+                                              "type": "number"
+                                            },
+                                            "predicted_arcsec": {
+                                              "type": "number"
+                                            },
+                                            "days": {
+                                              "type": "number"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "images": {
+                                      "type": "integer"
+                                    },
+                                    "passes": {
+                                      "type": "integer"
+                                    }
+                                  }
                                 }
-                              }
+                              ]
                             }
                           }
                         }
+                      }
+                    },
+                    "finds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
                       }
                     }
                   }
@@ -5346,7 +5667,7 @@
           {
             "schema": {
               "type": "string",
-              "pattern": "^qr[23]\\/level2\\/[A-Za-z0-9_.-]+(\\/[A-Za-z0-9_.-]+)*\\.fits$",
+              "pattern": "^(qr[23]|dr1)\\/level2\\/[A-Za-z0-9_.-]+(\\/[A-Za-z0-9_.-]+)*\\.fits$",
               "maxLength": 200
             },
             "in": "query",

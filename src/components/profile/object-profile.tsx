@@ -15,7 +15,7 @@ import { useFollow, useLearn, useObject, useObjectPosts, useSession } from '@/li
 import { BAND_HUE, BANDS, compactNumber, cx, formatShortDate } from '@/lib/format'
 import { kitNote, kitNotes, noteValues } from '@/lib/kit-notes'
 import { useShare } from '@/lib/share'
-import { useUi } from '@/lib/state/ui'
+import { storyFresh, useUi } from '@/lib/state/ui'
 import { objectBio } from '@/lib/post-text'
 import { useBandList, useBandName } from '@/lib/use-band'
 
@@ -70,7 +70,7 @@ export function ObjectProfileView({ id }: { id: string }) {
   const share = useShare()
   const bandName = useBandName()
   const bandList = useBandList()
-  const seen = useUi((s) => s.seenStories.includes(id))
+  const storySeen = useUi((s) => s.storySeen)
   const openStory = useUi((s) => s.openStory)
   const asked = useSearchParams().get('tab')
   const [tab, setTab] = useState<Tab>(TABS.find((k) => k === asked) ?? 'photos')
@@ -128,7 +128,7 @@ export function ObjectProfileView({ id }: { id: string }) {
       <section className="px-[10px] pt-1">
         <div className="flex items-center gap-[15px]">
           <button type="button" onClick={() => openStory(profile.id)} aria-label={tp('openStory', { name: profile.name })} className="relative shrink-0 rounded-full">
-            <ObjectAvatar src={profile.avatar} alt="" size={91} ring={timelapse ? (seen ? 'seen' : 'new') : 'none'} />
+            <ObjectAvatar src={profile.avatar} alt="" size={91} ring={timelapse ? (storyFresh(storySeen, profile.id, profile.last_seen) ? 'new' : 'seen') : 'none'} />
             {profile.has_new_data && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded border-2 border-bg bg-danger px-1 text-micro font-bold uppercase text-white">{ts('new')}</span>}
           </button>
           <div className="min-w-0 flex-1">

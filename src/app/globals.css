@@ -248,6 +248,14 @@ body {
   background: var(--gradient-story);
 }
 
+.story-chrome {
+  transition: opacity 200ms;
+}
+
+[data-held] .story-chrome {
+  opacity: 0;
+}
+
 .no-scrollbar {
   scrollbar-width: none;
 }

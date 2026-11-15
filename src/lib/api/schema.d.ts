@@ -182,14 +182,61 @@ export interface paths {
                                     has_new_data: boolean;
                                     last_seen: string;
                                 };
-                                post_id: string | null;
-                                frames: {
+                                screens: ({
+                                    kind: "blink";
+                                    topic: "years" | "passes" | "night" | "brightness";
+                                    band: string | null;
+                                    wavelength_um: number | null;
+                                    fixed: boolean;
+                                    frames: {
+                                        src: string;
+                                        t: string;
+                                        telescope: string | null;
+                                        mark: {
+                                            x: number;
+                                            y: number;
+                                        } | null;
+                                    }[];
+                                } | {
+                                    kind: "still";
+                                    topic: "difference";
+                                    band: string | null;
                                     src: string;
-                                    t: string;
+                                    hours: number | null;
+                                } | {
+                                    kind: "curve";
                                     band: string;
-                                    telescope: string | null;
-                                }[];
+                                    saturated: boolean;
+                                    points: {
+                                        t: string;
+                                        mag: number;
+                                        err: number;
+                                    }[];
+                                } | {
+                                    kind: "colours";
+                                    frames: {
+                                        band: string;
+                                        src: string;
+                                        um: number[] | null;
+                                        mark: {
+                                            x: number;
+                                            y: number;
+                                        } | null;
+                                    }[];
+                                    signal: (number | null)[];
+                                } | {
+                                    kind: "end";
+                                    motion: {
+                                        measured_arcsec: number;
+                                        err_arcsec: number;
+                                        predicted_arcsec: number;
+                                        days: number;
+                                    } | null;
+                                    images: number;
+                                    passes: number;
+                                })[];
                             }[];
+                            finds: string[];
                         };
                     };
                 };

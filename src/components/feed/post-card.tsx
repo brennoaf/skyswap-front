@@ -11,13 +11,13 @@ import { TagPanel } from '@/components/post/tag-panel'
 import { IconButton, LabChip, ObjectAvatar, Sheet, SheetRow } from '@/components/ui/primitives'
 import type { FeedItem } from '@/lib/api/client'
 import { formatDate } from '@/lib/format'
-import { useUi } from '@/lib/state/ui'
+import { storyFresh, useUi } from '@/lib/state/ui'
 import { useShare } from '@/lib/share'
 import { postCaption, postTitle } from '@/lib/post-text'
 
 export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | 'post'>; onMore: () => void }) {
   const t = useTranslations('post')
-  const seen = useUi((s) => s.seenStories.includes(item.object.id))
+  const seen = useUi((s) => !storyFresh(s.storySeen, item.object.id, item.object.last_seen))
   const openStory = useUi((s) => s.openStory)
   return (
     <div className="flex h-[54px] items-center gap-[6px] pl-[6px] pr-1">

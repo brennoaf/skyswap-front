@@ -72,7 +72,7 @@ export function useFeed(tab: FeedTab) {
 }
 
 export function useStories() {
-  return useQuery({ queryKey: keys.stories, queryFn: async () => unwrap(await api.GET('/api/stories')).stories, staleTime: 300_000 })
+  return useQuery({ queryKey: keys.stories, queryFn: async () => unwrap(await api.GET('/api/stories')), staleTime: 300_000 })
 }
 
 export function useObjects() {

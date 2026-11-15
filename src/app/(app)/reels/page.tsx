@@ -16,7 +16,7 @@ import { formatShortDate } from '@/lib/format'
 import { useShare } from '@/lib/share'
 import { useBandName } from '@/lib/use-band'
 import { frameYear, isLongBaseline, LONG_BASELINE_FPS, telescopeOf } from '@/lib/long-baseline'
-import { useUi } from '@/lib/state/ui'
+import { storyFresh, useUi } from '@/lib/state/ui'
 import { postCaption, postTitle } from '@/lib/post-text'
 
 const REEL_H = 'h-[calc(100dvh-var(--height-bottomnav)-env(safe-area-inset-bottom))]'
@@ -71,7 +71,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
   const crosshair = useUi((s) => s.crosshair)
   const saved = useUi((s) => s.saved.includes(item.post.id))
   const toggleSaved = useUi((s) => s.toggleSaved)
-  const seen = useUi((s) => s.seenStories.includes(item.object.id))
+  const seen = useUi((s) => !storyFresh(s.storySeen, item.object.id, item.object.last_seen))
   const share = useShare()
   const bandName = useBandName()
   const [expanded, setExpanded] = useState(false)
