@@ -1433,6 +1433,7 @@
       },
       "emptyTitle": "Você ainda não respondeu nenhuma foto",
       "emptyAction": "Responder um cartão",
+      "retired": "Este cartão saiu do baralho. Sua resposta continua guardada.",
       "note": {
         "title": "Seu recado",
         "empty": "Sem recado",

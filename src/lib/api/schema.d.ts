@@ -2394,7 +2394,11 @@ export interface paths {
                                 you: boolean;
                                 size_px: number;
                                 wcs: {
-                                    [key: string]: unknown;
+                                    ctype: string[];
+                                    crval: number[];
+                                    crpix: number[];
+                                    cd: number[][];
+                                    naxis: number[];
                                 } | null;
                                 spot: {
                                     id: string;
@@ -2881,6 +2885,7 @@ export interface paths {
                                 finding: string | null;
                                 thumb: string | null;
                                 thumb_cols: number;
+                                retired: boolean;
                             }[];
                             next_cursor: number | null;
                         };
@@ -3245,6 +3250,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CardWcs: {
+            ctype: string[];
+            crval: number[];
+            crpix: number[];
+            cd: number[][];
+            naxis: number[];
+        };
         SkySpot: {
             id: string;
             ra: number;
@@ -3434,7 +3446,11 @@ export interface components {
                 you: boolean;
                 size_px: number;
                 wcs: {
-                    [key: string]: unknown;
+                    ctype: string[];
+                    crval: number[];
+                    crpix: number[];
+                    cd: number[][];
+                    naxis: number[];
                 } | null;
                 spot: {
                     id: string;
@@ -3472,6 +3488,7 @@ export interface components {
                 finding: string | null;
                 thumb: string | null;
                 thumb_cols: number;
+                retired: boolean;
             }[];
             next_cursor: number | null;
         };

@@ -14,6 +14,63 @@
       }
     },
     "schemas": {
+      "CardWcs": {
+        "type": "object",
+        "required": [
+          "ctype",
+          "crval",
+          "crpix",
+          "cd",
+          "naxis"
+        ],
+        "properties": {
+          "ctype": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "crval": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "crpix": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "cd": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "naxis": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      },
       "SkySpot": {
         "type": "object",
         "required": [
@@ -1145,7 +1202,60 @@
                     "anyOf": [
                       {
                         "type": "object",
-                        "additionalProperties": {}
+                        "required": [
+                          "ctype",
+                          "crval",
+                          "crpix",
+                          "cd",
+                          "naxis"
+                        ],
+                        "properties": {
+                          "ctype": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                          },
+                          "crval": {
+                            "type": "array",
+                            "items": {
+                              "type": "number"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                          },
+                          "crpix": {
+                            "type": "array",
+                            "items": {
+                              "type": "number"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                          },
+                          "cd": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              },
+                              "minItems": 2,
+                              "maxItems": 2
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                          },
+                          "naxis": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                          }
+                        }
                       },
                       {
                         "type": "null"
@@ -1301,7 +1411,8 @@
                 "practice",
                 "finding",
                 "thumb",
-                "thumb_cols"
+                "thumb_cols",
+                "retired"
               ],
               "properties": {
                 "card_id": {
@@ -1338,6 +1449,9 @@
                 },
                 "thumb_cols": {
                   "type": "integer"
+                },
+                "retired": {
+                  "type": "boolean"
                 }
               }
             }
@@ -9050,7 +9164,60 @@
                               "anyOf": [
                                 {
                                   "type": "object",
-                                  "additionalProperties": {}
+                                  "required": [
+                                    "ctype",
+                                    "crval",
+                                    "crpix",
+                                    "cd",
+                                    "naxis"
+                                  ],
+                                  "properties": {
+                                    "ctype": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "minItems": 2,
+                                      "maxItems": 2
+                                    },
+                                    "crval": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      },
+                                      "minItems": 2,
+                                      "maxItems": 2
+                                    },
+                                    "crpix": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "number"
+                                      },
+                                      "minItems": 2,
+                                      "maxItems": 2
+                                    },
+                                    "cd": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "number"
+                                        },
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                      },
+                                      "minItems": 2,
+                                      "maxItems": 2
+                                    },
+                                    "naxis": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "integer"
+                                      },
+                                      "minItems": 2,
+                                      "maxItems": 2
+                                    }
+                                  }
                                 },
                                 {
                                   "type": "null"
@@ -10336,7 +10503,8 @@
                           "practice",
                           "finding",
                           "thumb",
-                          "thumb_cols"
+                          "thumb_cols",
+                          "retired"
                         ],
                         "properties": {
                           "card_id": {
@@ -10373,6 +10541,9 @@
                           },
                           "thumb_cols": {
                             "type": "integer"
+                          },
+                          "retired": {
+                            "type": "boolean"
                           }
                         }
                       }

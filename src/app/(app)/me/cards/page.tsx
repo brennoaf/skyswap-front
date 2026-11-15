@@ -145,15 +145,18 @@ function Row({ item, onOpen }: { item: MyCardItem; onOpen: () => void }) {
       <span className="min-w-0 flex-1 leading-tight">
         <span className="block text-title-sm">{t(`answers.${item.label}`)}</span>
         <span className="block text-meta text-text-secondary">{formatShortDate(item.created_at, locale)}</span>
+        {item.retired && <span className="mt-0.5 block text-meta text-text-secondary">{t('retired')}</span>}
       </span>
       {item.finding === 'candidate' && <StatePill state={item.finding} />}
-      <IconChevronRight size={18} className="shrink-0 text-text-secondary" />
+      {!item.retired && <IconChevronRight size={18} className="shrink-0 text-text-secondary" />}
     </>
   )
   const cls = 'flex min-h-16 items-center gap-3 px-4 py-2'
   return (
-    <li>
-      {item.finding ? (
+    <li data-testid={item.retired ? 'my-card-retired' : undefined}>
+      {item.retired ? (
+        <div className={cls}>{body}</div>
+      ) : item.finding ? (
         <Link href={`/community/${encodeURIComponent(item.card_id)}`} className={`${cls} active:bg-surface`}>
           {body}
         </Link>

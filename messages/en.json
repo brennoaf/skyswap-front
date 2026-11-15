@@ -1433,6 +1433,7 @@
       },
       "emptyTitle": "You haven't answered any photos yet",
       "emptyAction": "Answer a card",
+      "retired": "This card left the deck. Your answer is still saved.",
       "note": {
         "title": "Your note",
         "empty": "No note",

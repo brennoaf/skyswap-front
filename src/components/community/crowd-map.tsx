@@ -4,17 +4,12 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Segmented, Switch } from '@/components/ui/primitives'
 import type { FindingDetail } from '@/lib/api/client'
+import { crowdSky, crowdStats, positionsCsv, type Tracks } from '@/lib/crowd'
 import { buildSpotCard } from '@/lib/explore/sky-card'
 import { cssColor } from '@/lib/format'
-import { referenceGrid } from '@/lib/sky'
 import { useFmt } from '@/lib/use-fmt'
 
-type Tracks = NonNullable<FindingDetail['tracks']>
-type Point = { u: number; v: number }
-
-const PIXEL_ARCSEC = 6.15
 const BLOB = 0.08
-const MIN_SIDE = 0.3
 const HEAT_ALPHA = 0.1
 
 function useSpriteImage(finding: FindingDetail, tracks: Tracks) {
@@ -47,58 +42,6 @@ function useSpriteImage(finding: FindingDetail, tracks: Tracks) {
   return img
 }
 
-const mean = (pts: Point[]): Point | null => (pts.length ? { u: pts.reduce((s, p) => s + p.u, 0) / pts.length, v: pts.reduce((s, p) => s + p.v, 0) / pts.length } : null)
-
-export function crowdStats(tracks: Tracks, arcsecPerPx: number) {
-  const size = tracks.size_px
-  const frames = tracks.frames.map((f) => {
-    const m = mean(f.points)
-    const spread = m && f.points.length > 1 ? Math.sqrt(f.points.reduce((s, p) => s + (p.u - m.u) ** 2 + (p.v - m.v) ** 2, 0) / f.points.length) : 0
-    return { mjd: f.mjd, mean: m, n: f.points.length, margin: m ? ((spread * size) / Math.sqrt(Math.max(1, f.points.length))) * arcsecPerPx : null }
-  })
-  const used = frames.filter((f): f is (typeof frames)[number] & { mean: Point } => !!f.mean)
-  let speed: number | null = null
-  let direction: string | null = null
-  if (used.length >= 2) {
-    const hours = used.map((f) => f.mjd * 24)
-    const th = hours.reduce((s, h) => s + h, 0) / hours.length
-    const vt = hours.reduce((s, h) => s + (h - th) ** 2, 0)
-    if (vt > 0) {
-      const slope = (pick: (p: Point) => number) => {
-        const m = used.reduce((s, f) => s + pick(f.mean), 0) / used.length
-        return used.reduce((s, f, i) => s + ((hours[i] as number) - th) * (pick(f.mean) - m), 0) / vt
-      }
-      speed = Math.hypot(slope((p) => p.u), slope((p) => p.v)) * size * arcsecPerPx
-    }
-    const first = (used[0] as (typeof used)[number]).mean
-    const last = (used[used.length - 1] as (typeof used)[number]).mean
-    const dx = last.u - first.u
-    const dy = last.v - first.v
-    const big = Math.max(Math.abs(dx), Math.abs(dy))
-    if (big > 0) {
-      const vert = Math.abs(dy) >= MIN_SIDE * big ? (dy < 0 ? 'up' : 'down') : ''
-      const horiz = Math.abs(dx) >= MIN_SIDE * big ? (dx < 0 ? 'Left' : 'Right') : ''
-      direction = vert ? `${vert}${horiz}` : horiz.toLowerCase()
-    }
-  }
-  const margins = frames.flatMap((f) => (f.margin !== null ? [f.margin] : []))
-  return { frames, speed, direction, margin: margins.length ? margins.reduce((s, m) => s + m, 0) / margins.length : null }
-}
-
-function positionsCsv(tracks: Tracks, stats: ReturnType<typeof crowdStats>): string | null {
-  const spot = tracks.spot
-  if (!spot) return null
-  const grid = referenceGrid(spot.ra, spot.dec, spot.fov_deg)
-  const rows = ['utc,ra_deg,dec_deg,margin_arcsec,marks']
-  for (const f of stats.frames) {
-    if (!f.mean) continue
-    const [ra, dec] = grid.wcs.pix2world(f.mean.u * grid.n - 0.5, (1 - f.mean.v) * grid.n - 0.5) as [number, number]
-    const utc = new Date((f.mjd - 40587) * 86400000).toISOString()
-    rows.push([utc, ra.toFixed(6), dec.toFixed(6), (f.margin ?? 0).toFixed(2), f.n].join(','))
-  }
-  return rows.join('\n')
-}
-
 function download(name: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: 'text/csv' }))
   const a = document.createElement('a')
@@ -127,9 +70,9 @@ function CrowdMapView({ finding, tracks }: { finding: FindingDetail; tracks: Tra
   const canvas = useRef<HTMLCanvasElement>(null)
   const [frame, setFrame] = useState(0)
   const [heat, setHeat] = useState(true)
-  const arcsecPerPx = tracks.spot ? PIXEL_ARCSEC : (finding.fov_deg * 3600) / Math.max(1, tracks.size_px)
-  const stats = useMemo(() => crowdStats(tracks, arcsecPerPx), [arcsecPerPx, tracks])
-  const csv = useMemo(() => positionsCsv(tracks, stats), [stats, tracks])
+  const sky = useMemo(() => crowdSky(tracks, finding.fov_deg), [finding.fov_deg, tracks])
+  const stats = useMemo(() => crowdStats(tracks, sky), [sky, tracks])
+  const csv = useMemo(() => positionsCsv(sky, stats), [sky, stats])
   const known = knownLine(finding)
 
   useEffect(() => {
