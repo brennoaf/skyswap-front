@@ -655,7 +655,7 @@
       "days": "{n, plural, one {# day} other {# days}} after the first photo"
     },
     "hints": {
-      "swipe": "Right: it moves. Left: it doesn't. Up: not sure."
+      "swipe": "Swipe the photo: right for yes, left for no, up if you are not sure."
     },
     "guide": {
       "step": "Practice {n} of {total}.",
@@ -688,15 +688,15 @@
     },
     "guesses": {
       "mover": "a moving object",
-      "residual": "a leftover around a bright star",
-      "single": "a dot that flashes once",
-      "trail": "a streak",
-      "stationary": "something that stays put",
-      "orphan": "a lone dot with no match"
+      "residual": "a mark left by a bright star",
+      "single": "a spot that shows up once",
+      "trail": "a line across the photo",
+      "stationary": "nothing moving",
+      "orphan": "a spot with no match in the other photos"
     },
     "glitch": "Camera glitch",
-    "tooFast": "That was quick. Answers in under a second don't count, so take a closer look next time.",
-    "next": "Next",
+    "tooFast": "That was too fast, so it didn't count.",
+    "next": "Next card",
     "voteFailed": "Couldn't save your answer. Try again.",
     "done": "You've seen all the cards",
     "doneBody": "New photos arrive when NASA releases new data.",
@@ -749,16 +749,17 @@
     "help": {
       "open": "How to look",
       "title": "How to look",
-      "jumpTitle": "What moving looks like",
-      "jumpBody": "A dot that sits in a different place in each photo. Stars stay put.",
-      "slowTitle": "Slow objects don't jump",
-      "slowBody": "In What changed they show as a dark spot touching a bright one. That still counts as moving.",
-      "glitchTitle": "What is not real",
-      "glitchBody": "Something real shows up in most of the photos. A dot in only one photo is usually a camera glitch.",
-      "emptyTitle": "Most sets are empty",
-      "emptyBody": "Most cards have nothing new. That's normal, and every look still counts.",
-      "gesturesBody": "Swipe right: it moves. Left: it does not. Up: not sure. Hold to freeze. Double tap or pinch to zoom. Hold Blink to jump between the first and last photo.",
-      "gesturesTitle": "The gestures"
+      "ok": "Got it",
+      "lookTitle": "What to look for",
+      "lookBody": "A spot that shows up somewhere else in each photo. Stars stay still.",
+      "answerTitle": "How to answer",
+      "answerBody": "Tap a button or swipe the photo: right for \"Yes, it moved\", left for \"Nothing moved\", up for \"Not sure\".",
+      "betterTitle": "How to look closer",
+      "betterBody": "Hold the photo to stop it. Let go to continue. Tap twice to zoom in. Settings has the speed and the differences.",
+      "defectTitle": "What a defect is",
+      "defectBody": "A spot that shows up in one photo only is usually a camera defect.",
+      "emptyTitle": "Finding nothing is normal",
+      "emptyBody": "Most cards have nothing new. Saying \"Nothing moved\" helps too."
     },
     "dipole": {
       "whole": "What changed, whole photo",
@@ -767,7 +768,7 @@
       "zoomAlt": "Close-up: a dark spot where the object was, touching a bright spot where it is now",
       "source": "Real SPHEREx data: {name}, {last} minus {first}."
     },
-    "practice": "Practice, doesn't count",
+    "practice": "Practice: no points.",
     "whyLook": "Why does it look like that?",
     "verdicts": {
       "mover": "It's a moving object.",
@@ -778,12 +779,12 @@
       "orphan": "It's a lone dot."
     },
     "confirm": {
-      "said": "You said: {choice}",
+      "said": "Your answer: {choice}",
       "undo": "Undo",
-      "see": "See the answer",
-      "tap": "Tap the photo where you saw it, if you like.",
+      "see": "See result",
+      "tap": "See where? Tap the spot on the photo if you like. You can still undo.",
+      "canUndo": "You can still undo.",
       "marked": "Spot marked. Tap again to change it.",
-      "nothingSent": "Nothing has been saved yet.",
       "saving": "Saving",
       "failed": "Couldn't save your answer.",
       "retry": "Try again"
@@ -799,9 +800,65 @@
     "newBadge": "New badge: {name}.",
     "changesShort": "Changes",
     "tips": {
-      "swipeUp": "Not sure? Swipe up.",
-      "hold": "You can also hold the photo to freeze it, and let go to play again.",
       "short": "Drag a little further to answer."
+    },
+    "leave": "Leave",
+    "tools": {
+      "open": "Settings",
+      "speed": "Speed",
+      "slower": "Slower",
+      "normal": "Normal",
+      "faster": "Faster",
+      "blink": "Hold: 1st and last",
+      "diff": "See differences",
+      "diffNote": "Still stars also become a bright and dark pair.",
+      "back": "Back to answers"
+    },
+    "result": {
+      "label": "Result",
+      "movesOk": "You got it: it's asteroid {name}",
+      "movesWrong": "It did move: it's asteroid {name}",
+      "movesOkPlain": "You got it: it's a moving object",
+      "movesWrongPlain": "It did move: it's a moving object",
+      "defectOk": "You got it: photo defect",
+      "defectNear": "Close: it's a photo defect",
+      "defectWrong": "It didn't move: it's a photo defect",
+      "stillOk": "You got it: nothing moved",
+      "stillWrong": "Nothing moved here",
+      "open": "No answer key for this one yet",
+      "likelyMoves": "It looks like it moved",
+      "likelyStill": "It looks like nothing moved",
+      "undecided": "People still disagree",
+      "bodyMovesOk": "It shows up somewhere else in each photo. The green diamond shows where.",
+      "bodyMovesWrong": "Look again: it shows up somewhere else in each photo.",
+      "bodyDefect": "The spot shows up in one photo only. It is usually a particle hitting the camera.",
+      "bodyTrail": "It is a line across the photo. It is usually a passing satellite or a camera defect.",
+      "bodyStill": "All the stars stayed where they were. Most cards are like this.",
+      "bodyOpen": "Answer saved. If more people see movement here, it goes on the candidate list.",
+      "bodyLikely": "No answer key yet. This is what the answers say so far.",
+      "quiet": "Most cards have nothing new, and that is normal. Every look helps."
+    },
+    "understand": {
+      "open": "Understand",
+      "title": "Understand this card",
+      "you": "You",
+      "computer": "Computer",
+      "computerFound": "found {guess}",
+      "computerHints": "these are the hints it marked",
+      "right": "Right answer",
+      "others": "Other people",
+      "othersCount": "{moves} saw it move, {still} did not, {unsure} were not sure",
+      "showOnPhoto": "Show on photo",
+      "why": "Why?",
+      "technical": "Technical data",
+      "close": "Close",
+      "truthMoves": "It moved",
+      "truthDefect": "Photo defect",
+      "truthStill": "Nothing moved",
+      "whyMoves": "Stars always stay in the same place. An asteroid is closer to us and travels between one photo and the next.",
+      "whyDefect": "What is real shows up in almost every photo. What shows up only once is usually a defect.",
+      "whyStill": "Almost no card has anything new. Saying \"Nothing moved\" helps the research too.",
+      "whyOpen": "Nobody has checked this piece of sky yet. That is why people's answers matter."
     }
   },
   "reels": {

@@ -34,7 +34,7 @@ function bigGaps(seconds: number[]): boolean[] {
   return seconds.map((_, i) => i > 0 && (diffs[i - 1] ?? 0) > BIG_GAP_S && (diffs[i - 1] ?? 0) > median * BIG_GAP_RATIO)
 }
 
-function PhotoStrip({ playback, seconds, thumb, label, tone }: { playback: Playback; seconds: number[]; thumb: (i: number) => ReactNode; label: string; tone: 'surface' | 'media' }) {
+export function PhotoStrip({ playback, seconds, thumb, label, tone }: { playback: Playback; seconds: number[]; thumb: (i: number) => ReactNode; label: string; tone: 'surface' | 'media' }) {
   const { n, index, setIndex, setPlaying } = playback
   const box = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(0)

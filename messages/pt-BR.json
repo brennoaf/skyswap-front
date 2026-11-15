@@ -655,7 +655,7 @@
       "days": "{n, plural, one {# dia} other {# dias}} depois da 1ª foto"
     },
     "hints": {
-      "swipe": "Direita: se move. Esquerda: não. Cima: não sei."
+      "swipe": "Deslize a foto: direita para sim, esquerda para não, para cima se não souber."
     },
     "guide": {
       "step": "Treino {n} de {total}.",
@@ -688,15 +688,15 @@
     },
     "guesses": {
       "mover": "um objeto em movimento",
-      "residual": "uma sobra em volta de uma estrela brilhante",
-      "single": "um ponto que pisca uma vez",
-      "trail": "um risco",
-      "stationary": "algo que fica parado",
-      "orphan": "um ponto sozinho, sem par"
+      "residual": "uma marca deixada por uma estrela forte",
+      "single": "um ponto que aparece uma vez só",
+      "trail": "um risco na foto",
+      "stationary": "nada se movendo",
+      "orphan": "um ponto sem par nas outras fotos"
     },
     "glitch": "Falha da câmera",
-    "tooFast": "Foi rápido. Respostas em menos de um segundo não contam, então olhe com mais calma da próxima vez.",
-    "next": "Próximo",
+    "tooFast": "Foi rápido demais, por isso não contou.",
+    "next": "Próximo cartão",
     "voteFailed": "Não foi possível salvar sua resposta. Tente de novo.",
     "done": "Você já viu todos os cartões",
     "doneBody": "Novas fotos chegam quando a NASA publica dados novos.",
@@ -749,16 +749,17 @@
     "help": {
       "open": "Como olhar",
       "title": "Como olhar",
-      "jumpTitle": "Como é um movimento",
-      "jumpBody": "Um ponto que está num lugar diferente em cada foto. As estrelas ficam paradas.",
-      "slowTitle": "Objetos lentos não pulam",
-      "slowBody": "Em O que mudou eles aparecem como uma mancha escura encostada numa clara. Isso também conta como movimento.",
-      "glitchTitle": "O que não é real",
-      "glitchBody": "Algo real aparece na maioria das fotos. Um ponto em só uma foto normalmente é uma falha da câmera.",
-      "emptyTitle": "A maioria dos cartões está vazia",
-      "emptyBody": "A maioria dos cartões não tem nada novo. Isso é normal, e cada olhada conta.",
-      "gesturesBody": "Deslize para a direita: se move. Para a esquerda: não se move. Para cima: não sei. Segure para congelar. Toque duplo ou pinça aproximam. Segure Piscar para alternar entre a primeira e a última foto.",
-      "gesturesTitle": "Os gestos"
+      "ok": "Entendi",
+      "lookTitle": "O que procurar",
+      "lookBody": "Um ponto que aparece em outro lugar em cada foto. As estrelas ficam paradas.",
+      "answerTitle": "Como responder",
+      "answerBody": "Toque em um botão ou deslize a foto: direita para \"Sim, mudou\", esquerda para \"Nada mudou\", para cima para \"Não sei dizer\".",
+      "betterTitle": "Como olhar melhor",
+      "betterBody": "Segure a foto para parar. Solte para continuar. Toque duas vezes para aproximar. Em Ajustes você muda a velocidade e vê as diferenças.",
+      "defectTitle": "O que é defeito",
+      "defectBody": "Um ponto que aparece em uma foto só costuma ser defeito da câmera.",
+      "emptyTitle": "É normal não achar nada",
+      "emptyBody": "A maioria dos cartões não tem novidade. Dizer \"Nada mudou\" também ajuda."
     },
     "dipole": {
       "whole": "O que mudou, foto inteira",
@@ -767,7 +768,7 @@
       "zoomAlt": "Detalhe: uma mancha escura onde o objeto estava, encostada numa mancha clara onde ele está agora",
       "source": "Dados reais do SPHEREx: {name}, {last} menos {first}."
     },
-    "practice": "Treino, não conta",
+    "practice": "Treino: sem pontos.",
     "whyLook": "Por que fica assim?",
     "verdicts": {
       "mover": "É um objeto em movimento.",
@@ -778,14 +779,14 @@
       "orphan": "É um ponto sozinho."
     },
     "confirm": {
-      "said": "Você disse: {choice}",
+      "said": "Sua resposta: {choice}",
       "undo": "Desfazer",
-      "see": "Ver resposta",
-      "tap": "Toque na foto onde viu, se quiser.",
+      "see": "Ver resultado",
+      "tap": "Viu onde? Toque no ponto da foto, se quiser. Ainda dá para desfazer.",
+      "canUndo": "Ainda dá para desfazer.",
       "marked": "Ponto marcado. Toque de novo para mudar.",
-      "nothingSent": "Nada foi salvo ainda.",
       "saving": "Salvando",
-      "failed": "Não foi possível salvar sua resposta.",
+      "failed": "Não deu para salvar sua resposta.",
       "retry": "Tentar de novo"
     },
     "voices": {
@@ -799,9 +800,65 @@
     "newBadge": "Selo novo: {name}.",
     "changesShort": "Mudanças",
     "tips": {
-      "swipeUp": "Não sabe? Deslize para cima.",
-      "hold": "Você também pode segurar a foto para congelar, e soltar para voltar a rodar.",
       "short": "Arraste um pouco mais para responder."
+    },
+    "leave": "Sair",
+    "tools": {
+      "open": "Ajustes",
+      "speed": "Velocidade",
+      "slower": "Mais lento",
+      "normal": "Normal",
+      "faster": "Mais rápido",
+      "blink": "Segure: 1ª e última",
+      "diff": "Ver diferenças",
+      "diffNote": "Estrelas paradas também viram par claro e escuro.",
+      "back": "Voltar às respostas"
+    },
+    "result": {
+      "label": "Resultado",
+      "movesOk": "Acertou: é o asteroide {name}",
+      "movesWrong": "Mudou, sim: é o asteroide {name}",
+      "movesOkPlain": "Acertou: é um objeto em movimento",
+      "movesWrongPlain": "Mudou, sim: é um objeto em movimento",
+      "defectOk": "Acertou: defeito na foto",
+      "defectNear": "Quase: é um defeito na foto",
+      "defectWrong": "Não mudou: é um defeito na foto",
+      "stillOk": "Acertou: nada mudou de lugar",
+      "stillWrong": "Aqui nada mudou de lugar",
+      "open": "Este ainda não tem gabarito",
+      "likelyMoves": "Parece que mudou de lugar",
+      "likelyStill": "Parece que nada mudou",
+      "undecided": "As pessoas ainda discordam",
+      "bodyMovesOk": "Ele aparece em outro lugar em cada foto. O losango verde mostra onde.",
+      "bodyMovesWrong": "Veja de novo: ele aparece em outro lugar em cada foto.",
+      "bodyDefect": "O ponto aparece em uma foto só. Costuma ser uma partícula batendo na câmera.",
+      "bodyTrail": "É um risco na foto. Costuma ser um satélite passando ou um defeito da câmera.",
+      "bodyStill": "Todas as estrelas ficaram onde estavam. A maioria dos cartões é assim.",
+      "bodyOpen": "Resposta salva. Se mais gente vir movimento aqui, ele entra na lista de candidatos.",
+      "bodyLikely": "Ainda sem gabarito. É o que as respostas dizem até agora.",
+      "quiet": "A maioria dos cartões não tem novidade, e isso é normal. Cada olhada ajuda."
+    },
+    "understand": {
+      "open": "Entender",
+      "title": "Entender este cartão",
+      "you": "Você",
+      "computer": "Computador",
+      "computerFound": "achou {guess}",
+      "computerHints": "estas são as dicas que ele marcou",
+      "right": "Resposta certa",
+      "others": "Outras pessoas",
+      "othersCount": "{moves} viram mudar, {still} não, {unsure} não souberam",
+      "showOnPhoto": "Ver na foto",
+      "why": "Por quê?",
+      "technical": "Dados técnicos",
+      "close": "Fechar",
+      "truthMoves": "Mudou de lugar",
+      "truthDefect": "Defeito na foto",
+      "truthStill": "Nada mudou",
+      "whyMoves": "Estrelas ficam sempre no mesmo lugar. Um asteroide está mais perto de nós e anda entre uma foto e outra.",
+      "whyDefect": "O que é real aparece em quase todas as fotos. O que aparece uma vez só costuma ser defeito.",
+      "whyStill": "Quase todo cartão não tem novidade. Dizer \"Nada mudou\" também ajuda a pesquisa.",
+      "whyOpen": "Ninguém conferiu este pedaço do céu ainda. É por isso que as respostas das pessoas importam."
     }
   },
   "reels": {
