@@ -3,9 +3,9 @@
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { IconCheck, IconDice, IconLock } from '@/components/icons'
+import { IconCheck, IconClose, IconDice, IconLock } from '@/components/icons'
 import { AvatarCarousel, useAvatarChoice } from '@/components/me/avatar-parts'
-import { Button, Sheet, Wordmark } from '@/components/ui/primitives'
+import { Button, IconButton, Sheet, Wordmark } from '@/components/ui/primitives'
 import { ApiError } from '@/lib/api/client'
 import { useLogin } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
@@ -109,10 +109,14 @@ export function LoginForm({ onDone }: { onDone?: () => void }) {
 
 export function LoginSheet() {
   const t = useTranslations('auth')
+  const tc = useTranslations('common')
   const reason = useUi((s) => s.authReason)
   const close = useUi((s) => s.closeLogin)
   return (
     <Sheet open={reason !== null} onClose={close} labelledBy="login-title">
+      <IconButton label={tc('close')} onClick={close} className="absolute right-1 top-1 z-20" data-testid="login-close">
+        <IconClose size={24} />
+      </IconButton>
       <div className="flex flex-col items-center px-6 pt-4 text-center">
         <Wordmark className="text-wordmark-lg" />
         <h2 id="login-title" className="mt-2 text-body text-text-secondary">

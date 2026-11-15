@@ -130,7 +130,17 @@ function Composer({ id, parentId = null, onDone, autoFocus = false, placeholder 
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value.slice(0, MAX_CHARS))}
-        onFocus={() => (user ? null : gate(() => null))}
+        readOnly={!user}
+        onPointerDown={(e) => {
+          if (user) return
+          e.preventDefault()
+          gate(() => null)
+        }}
+        onKeyDown={(e) => {
+          if (user || (e.key.length > 1 && e.key !== 'Enter')) return
+          e.preventDefault()
+          gate(() => null)
+        }}
         placeholder={placeholder}
         aria-label={placeholder}
         rows={parentId ? 2 : 3}
