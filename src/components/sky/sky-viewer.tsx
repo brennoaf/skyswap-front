@@ -136,7 +136,7 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
     if (!alive.current) return
     setFirstMs((v) => v ?? Math.round(performance.now() - t0Ref.current))
     setScanning(false)
-    setFrames((prev) => [...prev, f].sort((a, b) => a.mjd - b.mjd))
+    setFrames((prev) => [...prev, f].sort((a, b) => a.mjd - b.mjd || a.key.localeCompare(b.key)))
     setLatest(f.key)
     setDone((d) => d + 1)
   }, [])
@@ -410,6 +410,7 @@ function Player({
       data-build-ms={b.ms ?? undefined}
       data-first-frame-ms={b.firstMs ?? undefined}
       data-frames={n}
+      data-frame-key={frame?.key}
     >
       {before && oldPhase && oldFrame && old.survey ? (
         <FrameCanvas frame={oldFrame} colormap="grey" diff={null} label={t('beforeAlt', { telescope: old.survey.telescope, year: String(old.survey.year) })} />
