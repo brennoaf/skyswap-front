@@ -8,7 +8,7 @@ import { useOffsetLabel } from '@/components/classify/photo-viewer'
 import { ANSWER_ICONS, AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapStage, SwapStamps, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
 import { KnownSheet, PhotoSourceSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
-import { IconArrowRight, IconBack, IconCards, IconCheck, IconClose, IconDirect, IconInfo, IconMoves, IconQuestion, IconTarget, IconUndo, IconWarning } from '@/components/icons'
+import { IconArrowRight, IconBack, IconCards, IconCheck, IconClose, IconInfo, IconMoves, IconQuestion, IconShare, IconTarget, IconUndo, IconWarning } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { ScreenTour } from '@/components/shell/onboarding'
@@ -413,7 +413,7 @@ function ConfirmSheet({ card, answer, busy, past, onUndo, onConfirm, onAbout, on
         </div>
         {onShare && (
           <IconButton label={t('share.label')} onClick={onShare} className="size-12" data-testid="share-card">
-            <IconDirect size={24} />
+            <IconShare size={24} />
           </IconButton>
         )}
       </div>
