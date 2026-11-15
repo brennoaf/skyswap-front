@@ -865,11 +865,18 @@
       "back": "Back to Community"
     },
     "note": {
-      "open": "Write a note",
       "label": "Note",
       "placeholder": "E.g. the dot moved up",
       "help": "If you were the first to see it, the note shows on the post.",
       "invalid": "Plain text only: no links, e-mails or @."
+    },
+    "firstNote": {
+      "title": "You saw it first",
+      "sub": "Nobody had marked movement here before",
+      "body": "Tell what you saw. If the community confirms it, the note goes to the post with your name.",
+      "placeholder": "E.g. the dot moves up a little in each photo",
+      "skip": "Skip",
+      "save": "Save note"
     },
     "share": {
       "label": "Share card",

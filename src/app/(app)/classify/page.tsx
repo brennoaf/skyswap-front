@@ -8,7 +8,7 @@ import { useOffsetLabel } from '@/components/classify/photo-viewer'
 import { ANSWER_ICONS, AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapStage, SwapStamps, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
 import { KnownSheet, PhotoSourceSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
-import { IconArrowRight, IconBack, IconCards, IconCheck, IconClose, IconInfo, IconMoves, IconPencil, IconQuestion, IconShare, IconTarget, IconUndo, IconWarning } from '@/components/icons'
+import { IconArrowRight, IconBack, IconCards, IconCheck, IconClose, IconInfo, IconMoves, IconQuestion, IconShare, IconTarget, IconUndo, IconWarning } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { ScreenTour } from '@/components/shell/onboarding'
@@ -29,8 +29,8 @@ type VoteResult = NonNullable<ReturnType<typeof useVote>['data']>
 type Mark = { u: number; v: number }
 type PlayCard = DeckCard | SkyPlayCard
 type Lesson = 'moves' | 'still' | 'glitch'
-type Mode = 'look' | 'tools' | 'confirm' | 'sending' | 'sent' | 'past' | 'failed' | 'result'
-type Pending = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; hints: boolean; note: string | null }
+type Mode = 'look' | 'tools' | 'confirm' | 'sending' | 'sent' | 'noting' | 'past' | 'failed' | 'result'
+type Pending = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; hints: boolean }
 type GuideData = NonNullable<ReturnType<typeof useGuideCard>['data']>
 type WelcomeExample = GuideData['examples'][number]
 type WelcomeStepPlan = { key: 'intro' | 'still' | 'moves' | 'particle' | 'streak' | 'unsure'; example?: WelcomeExample['example']; swipe?: { x: number; up: boolean; arrow: string }; follow?: boolean; spot?: { u: number; v: number; r: number }; tap?: boolean; hold?: number }
@@ -406,7 +406,7 @@ function BottomSheet({ children, label, testId, grow = false }: { children: Reac
       transition={{ duration: 0.38, ease: [0.2, 0.9, 0.2, 1] }}
       aria-label={label}
       aria-labelledby={label ? undefined : 'confirm-title'}
-      className={cx('absolute inset-x-0 bottom-0 z-[35] flex flex-col overflow-y-auto rounded-t-[26px] bg-sheet px-4 pb-[calc(16px+env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-12px_40px_rgb(0_0_0/0.45)]', !grow && SHEET_MAX)}
+      className={cx('group absolute inset-x-0 bottom-0 z-[35] flex flex-col overflow-y-auto rounded-t-[26px] bg-sheet px-4 pb-[calc(16px+env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-12px_40px_rgb(0_0_0/0.45)]', !grow && SHEET_MAX)}
       data-testid={testId}
     >
       <span aria-hidden="true" className="mx-auto mb-4 block h-1 w-9 shrink-0 rounded-sm bg-divider" />
@@ -415,53 +415,76 @@ function BottomSheet({ children, label, testId, grow = false }: { children: Reac
   )
 }
 
-function NoteField({ value, onChange }: { value: string | null; onChange: (v: string | null) => void }) {
-  const t = useTranslations('classify.note')
-  const length = value ? [...value].length : 0
-  const invalid = value !== null && cleanNote(value) === 'invalid'
-  if (value === null)
-    return (
-      <button type="button" onClick={() => onChange('')} className="flex h-11 w-full shrink-0 items-center gap-2.5 text-left text-ui font-semibold text-text" data-testid="note-open">
-        <IconPencil size={20} className="shrink-0 text-text-secondary" />
-        {t('open')}
-      </button>
-    )
+function NotePhase({ cardId, onDone }: { cardId: string; onDone: () => void }) {
+  const t = useTranslations('classify.firstNote')
+  const tn = useTranslations('classify.note')
+  const [text, setText] = useState('')
+  const [saving, setSaving] = useState(false)
+  const clean = cleanNote(text)
+  const length = [...text].length
+  const save = async () => {
+    if (!clean || clean === 'invalid' || saving) return
+    setSaving(true)
+    await api.PUT('/api/me/cards/{id}/note', { params: { path: { id: cardId } }, body: { note: clean } }).catch(() => null)
+    onDone()
+  }
   return (
-    <div className="shrink-0 pb-1" data-testid="note-field">
-      <div className="field-focus flex h-11 items-center gap-2.5 rounded-xl bg-surface px-3">
-        <IconPencil size={20} className="shrink-0 text-text-secondary" />
-        <input
+    <BottomSheet testId="swap-note" grow>
+      <div className="flex shrink-0 items-center gap-3.5">
+        <span className="grid size-[52px] shrink-0 place-items-center rounded-full bg-accent text-on-accent">
+          <IconTarget size={28} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 id="confirm-title" className="text-title-lg font-bold leading-tight tracking-[-0.01em]">
+            {t('title')}
+          </h2>
+          <p className="text-ui leading-snug text-text-secondary group-data-[keyboard]:hidden">{t('sub')}</p>
+        </div>
+      </div>
+      <label htmlFor="first-note" className="mt-3.5 block shrink-0 text-ui leading-[1.4] text-text-secondary group-data-[keyboard]:sr-only">
+        {t('body')}
+      </label>
+      <div className="field-focus relative mt-2.5 shrink-0 rounded-2xl">
+        <textarea
+          id="first-note"
           autoFocus
-          type="text"
-          enterKeyHint="done"
-          aria-label={t('label')}
-          aria-invalid={invalid || undefined}
+          rows={3}
           maxLength={NOTE_MAX}
-          value={value}
+          value={text}
           placeholder={t('placeholder')}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') e.currentTarget.blur()
-          }}
-          className="min-w-0 flex-1 bg-transparent text-ui text-text outline-none placeholder:text-text-secondary"
+          aria-invalid={clean === 'invalid' || undefined}
+          onChange={(e) => setText(e.target.value)}
+          className="block w-full resize-none rounded-2xl border border-divider bg-surface px-3.5 pb-7 pt-3 text-[17px] leading-snug text-text placeholder:text-text-secondary"
           data-testid="note-input"
         />
-        {length >= NOTE_MAX - 20 && <span className="shrink-0 text-ui tabular-nums text-text-secondary" data-testid="note-count">{NOTE_MAX - length}</span>}
+        <span className="pointer-events-none absolute bottom-2 right-3 text-ui tabular-nums text-text-secondary" data-testid="note-count">
+          {length}/{NOTE_MAX}
+        </span>
       </div>
-      <p className={cx('mt-1 text-ui leading-snug', invalid ? 'text-danger' : 'text-text-secondary')} role={invalid ? 'alert' : undefined}>
-        {invalid ? t('invalid') : t('help')}
-      </p>
-    </div>
+      {clean === 'invalid' && (
+        <p role="alert" className="mt-1.5 shrink-0 text-ui leading-snug text-danger">
+          {tn('invalid')}
+        </p>
+      )}
+      <div className="sticky bottom-0 -mx-4 mt-auto flex shrink-0 gap-2.5 bg-sheet px-4 pt-3">
+        <button type="button" disabled={saving} onClick={onDone} className="flex h-[54px] flex-1 items-center justify-center rounded-2xl bg-surface text-[17px] font-semibold active:bg-surface-pressed disabled:opacity-50">
+          {t('skip')}
+        </button>
+        <button type="button" disabled={!clean || clean === 'invalid' || saving} aria-busy={saving} onClick={() => void save()} className="flex h-[54px] flex-[1.5] items-center justify-center rounded-2xl bg-accent text-[17px] font-semibold text-on-accent active:bg-accent-pressed disabled:opacity-45">
+          {t('save')}
+        </button>
+      </div>
+    </BottomSheet>
   )
 }
 
-function ConfirmSheet({ card, answer, busy, past, note, onNote, onUndo, onConfirm, onAbout, onShare, onSkip }: { card: PlayCard; answer: Answer; busy: boolean; past: boolean; note?: string | null; onNote?: (v: string | null) => void; onUndo: () => void; onConfirm: () => void; onAbout: () => void; onShare?: () => void; onSkip: () => void }) {
+function ConfirmSheet({ card, answer, busy, past, onUndo, onConfirm, onAbout, onShare, onSkip }: { card: PlayCard; answer: Answer; busy: boolean; past: boolean; onUndo: () => void; onConfirm: () => void; onAbout: () => void; onShare?: () => void; onSkip: () => void }) {
   const t = useTranslations('classify')
   const fmt = useFmt()
   const Icon = ANSWER_ICONS[answer]
   const sky = isSkyCard(card) ? card : null
   return (
-    <BottomSheet testId="swap-confirm" grow={note !== null && note !== undefined}>
+    <BottomSheet testId="swap-confirm">
       <div className="flex shrink-0 items-center gap-3.5">
         <span className={cx('grid size-[52px] shrink-0 place-items-center rounded-full', answer === 'moves' ? 'bg-accent text-on-accent' : 'bg-text text-bg')} data-testid="confirm-badge">
           <Icon size={28} />
@@ -490,7 +513,6 @@ function ConfirmSheet({ card, answer, busy, past, note, onNote, onUndo, onConfir
           {sky && <span className="block truncate tabular-nums">{t('confirm.where', { ra: fmt.fixed(sky.ra, 4), dec: `${sky.dec >= 0 ? '+' : ''}${fmt.fixed(sky.dec, 4)}` })}</span>}
         </span>
       </button>
-      {onNote && <NoteField value={note ?? null} onChange={onNote} />}
       <div className="mt-2 flex shrink-0 gap-2.5">
         {past ? (
           <button type="button" onClick={onSkip} className="flex h-[54px] flex-1 items-center justify-center rounded-2xl bg-accent text-[17px] font-semibold text-on-accent active:bg-accent-pressed">
@@ -502,7 +524,7 @@ function ConfirmSheet({ card, answer, busy, past, note, onNote, onUndo, onConfir
               <IconUndo size={22} />
               {t('undo')}
             </button>
-            <button type="button" disabled={busy || (!!note && cleanNote(note) === 'invalid')} aria-busy={busy} onClick={onConfirm} className="flex h-[54px] flex-[1.5] items-center justify-center rounded-2xl bg-accent text-[17px] font-semibold text-on-accent active:bg-accent-pressed disabled:opacity-45">
+            <button type="button" disabled={busy} aria-busy={busy} onClick={onConfirm} className="flex h-[54px] flex-[1.5] items-center justify-center rounded-2xl bg-accent text-[17px] font-semibold text-on-accent active:bg-accent-pressed disabled:opacity-45">
               {t('confirm.confirm')}
             </button>
           </>
@@ -540,6 +562,7 @@ function SwapCard({
   past,
   onHelp,
   onAnswer,
+  onNoteDone,
   onShare,
   onSkip,
   onLessonStale,
@@ -558,7 +581,8 @@ function SwapCard({
   onHelp: () => void
   onShare?: () => void
   onSkip?: () => void
-  onAnswer: (answer: Answer, spot: VotePosition | null, at: number, hints: boolean, note: string | null) => void
+  onAnswer: (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => Promise<boolean>
+  onNoteDone: () => void
   onLessonStale: () => void
   onLessonNext: () => void
 }) {
@@ -585,7 +609,6 @@ function SwapCard({
   const [retry, setRetry] = useState(false)
   const [swingOver, setSwingOver] = useState(false)
   const [leaving, setLeaving] = useState<Answer | null>(null)
-  const [noteText, setNoteText] = useState<string | null>(null)
   const sky = isSkyCard(card) ? card : null
   const [hintsOn, setHintsOn] = useState(false)
   const [hintsUsed, setHintsUsed] = useState(false)
@@ -611,7 +634,6 @@ function SwapCard({
 
   const undoChoice = () => {
     settle()
-    setNoteText(null)
     setAnswer(null)
     setSpot(null)
     setMode('look')
@@ -662,12 +684,17 @@ function SwapCard({
       void sendLesson(answer)
       return
     }
-    const kept = answer === 'moves' && noteText ? cleanNote(noteText) : null
-    if (kept === 'invalid') return
     sentOnce.current = true
     setMode('sent')
-    setLeaving(answer)
-    onAnswer(answer, answer === 'moves' ? spot : null, chosenAt, hintsUsed, kept)
+    if (answer !== 'moves') {
+      setLeaving(answer)
+      void onAnswer(answer, null, chosenAt, hintsUsed)
+      return
+    }
+    void onAnswer(answer, spot, chosenAt, hintsUsed).then((first) => {
+      if (first) setMode('noting')
+      else setLeaving(answer)
+    })
   }
 
   useEffect(() => {
@@ -741,7 +768,7 @@ function SwapCard({
   const labels = { still: t('still'), moves: t('moves'), glitch: t('glitch'), unsure: t('unsure') }
   const note = hintLine ?? (blackNote && outside[panel] ? tp('outside') : null)
 
-  const deciding = !!answer && (mode === 'confirm' || mode === 'sending' || mode === 'sent' || mode === 'past')
+  const deciding = !!answer && (mode === 'confirm' || mode === 'sending' || mode === 'sent' || mode === 'noting' || mode === 'past')
   const sheetOpen = deciding || mode === 'result' || mode === 'failed'
   const dim = cx('shrink-0 transition-opacity duration-200', sheetOpen && 'pointer-events-none opacity-30')
   const coach = lesson ? (mustLookFirst ? t('guide.look') : lesson === 'moves' ? t('guide.answer') : t(`guide.${lesson}`)) : null
@@ -838,7 +865,16 @@ function SwapCard({
           </div>
         </div>
       )}
-      {deciding && answer && !leaving && <ConfirmSheet card={card} answer={answer} busy={mode !== 'confirm'} past={mode === 'past'} note={noteText} onNote={!lesson && answer === 'moves' && mode !== 'past' ? setNoteText : undefined} onUndo={undoChoice} onConfirm={confirm} onAbout={() => setAboutOpen(true)} onShare={onShare} onSkip={() => onSkip?.()} />}
+      {mode === 'noting' && !leaving && (
+        <NotePhase
+          cardId={card.id}
+          onDone={() => {
+            setLeaving('moves')
+            onNoteDone()
+          }}
+        />
+      )}
+      {deciding && mode !== 'noting' && answer && !leaving && <ConfirmSheet card={card} answer={answer} busy={mode !== 'confirm'} past={mode === 'past'} onUndo={undoChoice} onConfirm={confirm} onAbout={() => setAboutOpen(true)} onShare={onShare} onSkip={() => onSkip?.()} />}
       {mode === 'failed' && answer && (
         <BottomSheet label={t('failed')}>
           <p role="status" className="text-[16px] font-medium leading-snug text-danger">
@@ -1070,7 +1106,6 @@ function useDelayedVotes(onNotice: (strips: Strip[]) => void, onFailed: (answer:
           hints: p.hints,
           held_ms: Math.min(600000, Math.round(performance.now() - p.at)),
           ...(p.spot ? { position: p.spot } : {}),
-          ...(p.note ? { note: p.note } : {}),
         })
         exploreQueue.release(isSkyCard(p.card) ? p.card : null)
         const known = r.reveal.known
@@ -1080,10 +1115,12 @@ function useDelayedVotes(onNotice: (strips: Strip[]) => void, onFailed: (answer:
           strips.push({ kind: 'fast' })
         }
         if (strips.length) onNotice(strips)
+        return r
       } catch (err) {
-        if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) return
+        if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) return null
         failed.current.push(p)
         onFailed(p.answer)
+        return null
       }
     },
     [onFailed, onNotice, tb, vote],
@@ -1209,24 +1246,31 @@ function Deck({ onHelp }: { onHelp: () => void }) {
     }
   }, [finishGuide, nothingToPractice, phase])
 
+  const advance = useCallback(() => {
+    if (!card) return
+    setSavedAt(Date.now())
+    sessionLooks++
+    const after = (go: () => void) => {
+      if (reduce) go()
+      else setTimeout(go, LEAVE_MS)
+    }
+    if (sessionLooks % PAUSE_EVERY === 0) {
+      after(() => setPause(true))
+      return
+    }
+    after(() => void flow.reload([card.id]))
+  }, [card, flow, reduce])
+
   const onAnswer = useCallback(
-    (answer: Answer, spot: VotePosition | null, at: number, hints: boolean, note: string | null) => {
-      if (!card) return
+    async (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => {
+      if (!card) return false
       retryFailed()
-      void send({ card, answer, spot, at, hints, note })
-      setSavedAt(Date.now())
-      sessionLooks++
-      const after = (go: () => void) => {
-        if (reduce) go()
-        else setTimeout(go, LEAVE_MS)
-      }
-      if (sessionLooks % PAUSE_EVERY === 0) {
-        after(() => setPause(true))
-        return
-      }
-      after(() => void flow.reload([card.id]))
+      const sent = send({ card, answer, spot, at, hints })
+      if (answer === 'moves' && (await sent)?.first) return true
+      advance()
+      return false
     },
-    [card, flow, reduce, retryFailed, send],
+    [advance, card, retryFailed, send],
   )
 
   const nextLesson = useCallback(() => {
@@ -1390,6 +1434,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
         past={!lesson && view.card === flow.card ? flow.past : null}
         onHelp={onHelp}
         onAnswer={onAnswer}
+        onNoteDone={advance}
         onShare={shareCard}
         onSkip={() => void flow.reload([view.card.id])}
         onLessonStale={nextLesson}

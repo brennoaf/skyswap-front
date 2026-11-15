@@ -1,4 +1,4 @@
-export const NOTE_MAX = 140
+export const NOTE_MAX = 280
 
 const LINK = /https?:|www\.|@|\b[\w-]+\.(com|net|org|br|io|gov|edu|info|me|app|dev|co|xyz|ly|gg|tv|site|online)\b/i
 const WORD = /[\p{L}\p{N}]/u

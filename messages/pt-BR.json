@@ -865,11 +865,18 @@
       "back": "Voltar à Comunidade"
     },
     "note": {
-      "open": "Escrever recado",
       "label": "Recado",
       "placeholder": "Ex.: o ponto andou para cima",
       "help": "Se você foi a primeira pessoa a ver, o recado aparece no post.",
       "invalid": "Só texto: sem links, e-mails ou @."
+    },
+    "firstNote": {
+      "title": "Você viu primeiro",
+      "sub": "Ninguém tinha marcado movimento aqui antes",
+      "body": "Conte o que você viu. Se a comunidade confirmar, o recado vai para o post com o seu nome.",
+      "placeholder": "Ex.: o ponto sobe um pouco a cada foto",
+      "skip": "Pular",
+      "save": "Salvar recado"
     },
     "share": {
       "label": "Compartilhar cartão",

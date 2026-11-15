@@ -7104,10 +7104,6 @@
                   },
                   "hints": {
                     "type": "boolean"
-                  },
-                  "note": {
-                    "type": "string",
-                    "maxLength": 600
                   }
                 }
               }
@@ -7126,7 +7122,8 @@
                     "guided",
                     "xp",
                     "reveal",
-                    "new_badges"
+                    "new_badges",
+                    "first"
                   ],
                   "properties": {
                     "counted": {
@@ -7428,6 +7425,9 @@
                       "items": {
                         "type": "string"
                       }
+                    },
+                    "first": {
+                      "type": "boolean"
                     }
                   }
                 }
@@ -10304,6 +10304,24 @@
             }
           },
           "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
             "description": "Default Response",
             "content": {
               "application/json": {

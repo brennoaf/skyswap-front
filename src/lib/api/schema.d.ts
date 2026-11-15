@@ -1898,7 +1898,6 @@ export interface paths {
                         };
                         held_ms?: number;
                         hints?: boolean;
-                        note?: string;
                     };
                 };
             };
@@ -1958,6 +1957,7 @@ export interface paths {
                                 status: string;
                             };
                             new_badges: string[];
+                            first: boolean;
                         };
                     };
                 };
@@ -2995,6 +2995,16 @@ export interface paths {
                     };
                 };
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };

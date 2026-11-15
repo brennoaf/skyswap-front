@@ -232,15 +232,8 @@ export const IconTarget = (p: IconProps) => (
 
 export const IconShare = (p: IconProps) => (
   <Svg viewBox="0 0 24 24" {...p}>
-    <path d="M12 3v12M7.5 7.5L12 3l4.5 4.5" {...LINE} />
-    <path d="M8 11H6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-2" {...LINE} />
-  </Svg>
-)
-
-export const IconPencil = (p: IconProps) => (
-  <Svg viewBox="0 0 24 24" {...p}>
-    <path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z" {...LINE} />
-    <path d="M14 8l2 2" {...LINE} />
+    <path d="M14.5 5.5L20 11l-5.5 5.5" {...LINE} />
+    <path d="M20 11h-8.5A6.5 6.5 0 0 0 5 17.5V19" {...LINE} />
   </Svg>
 )
 

@@ -226,12 +226,14 @@ body {
   border-radius: 6px;
 }
 
-.field-focus:has(input:focus-visible) {
+.field-focus:has(input:focus-visible),
+.field-focus:has(textarea:focus-visible) {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-.field-focus input:focus-visible {
+.field-focus input:focus-visible,
+.field-focus textarea:focus-visible {
   outline: none;
 }
 

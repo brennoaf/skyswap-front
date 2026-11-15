@@ -98,7 +98,7 @@ function CardDetail({ item, onClose }: { item: MyCardItem | null; onClose: () =>
               {t(`answers.${item.label}`)}
               <span className="block text-[14px] text-text-secondary">{formatShortDate(item.created_at, locale)}</span>
             </p>
-            {item.label === 'real' && detail.data && <NoteBlock cardId={item.card_id} note={detail.data.note} editable={detail.data.note_editable} />}
+            {item.label === 'real' && detail.data && (detail.data.note || detail.data.note_editable) && <NoteBlock cardId={item.card_id} note={detail.data.note} editable={detail.data.note_editable} />}
             <p className={line}>
               <b className="font-semibold">{t('detail.others')}: </b>
               {t('detail.othersCount', { moves: reveal.votes.real, still: reveal.votes.artifact, unsure: reveal.votes.unsure })}
