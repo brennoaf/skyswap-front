@@ -9,7 +9,7 @@ export const PREFETCH = 3
 const PARALLEL = 2
 const TRIES_PER_CARD = 6
 
-export type SkyPlayCard = DeckCard & { kind: 'sky'; ra: number; dec: number; band: string; hints: CardHint[] }
+export type SkyPlayCard = DeckCard & { kind: 'sky'; ra: number; dec: number; t0: string; band: string; hints: CardHint[] }
 
 type Sky = { cells: SkyCell[] | null; indexed: Set<number>; bytes: Map<number, number>; looks: Record<number, number> }
 
@@ -108,7 +108,7 @@ async function buildOne(): Promise<SkyPlayCard | null> {
         ),
       ])
       failures = 0
-      return { id: reg.id, sprite, n_frames: reg.offsets_s.length, offsets_s: reg.offsets_s, kind: 'sky', ra: reg.ra, dec: reg.dec, band: draft.band, hints }
+      return { id: reg.id, sprite, n_frames: reg.offsets_s.length, offsets_s: reg.offsets_s, kind: 'sky', ra: reg.ra, dec: reg.dec, t0: new Date(((draft.frames[0]?.mjd ?? 40587) - 40587) * 86400000).toISOString(), band: draft.band, hints }
     } catch {
       failures++
     }

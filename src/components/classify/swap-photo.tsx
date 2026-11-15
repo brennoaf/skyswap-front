@@ -2,7 +2,7 @@
 
 import { motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue } from 'framer-motion'
 import { useTranslations } from 'next-intl'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { useCardGestures } from '@/components/classify/card-gestures'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
 import { IconCheck, IconClose, IconPause, IconPlay, IconQuestion, IconSliders, IconWarning } from '@/components/icons'
@@ -30,6 +30,13 @@ export const photoInset = 'absolute inset-1.5'
 
 const DRAG_STARTS_PX = 12
 const STAMP_FULL_PX = 34
+const CHOSEN_STAMP = {
+  moves: 'left-3.5 -rotate-10 text-accent ring-accent',
+  still: 'right-3.5 rotate-10 text-text ring-text-secondary',
+  unsure: 'left-1/2 -translate-x-1/2 -rotate-8 text-warning ring-warning',
+  glitch: 'left-1/2 -translate-x-1/2 -rotate-8 text-text ring-text',
+} as const
+export const ANSWER_ICONS = { still: IconClose, glitch: IconWarning, unsure: IconQuestion, moves: IconCheck } as const
 const ANSWERS = [
   { answer: 'still', Icon: IconClose, big: true, lit: 'border-text bg-text text-bg' },
   { answer: 'glitch', Icon: IconWarning, big: false, lit: '' },
@@ -116,6 +123,7 @@ export function SwapStage({
   onHold,
   overlay,
   hint,
+  chosen,
 }: {
   img: HTMLImageElement | null
   sprite: string
@@ -131,14 +139,16 @@ export function SwapStage({
   onHold: (held: boolean) => void
   overlay?: ReactNode
   hint?: boolean
+  chosen?: 'still' | 'moves' | 'glitch' | 'unsure' | null
 }) {
+  const t = useTranslations('classify')
   const reduce = useReducedMotion()
   const canvas = useRef<HTMLCanvasElement>(null)
   const inner = useRef<HTMLDivElement>(null)
   const tile = img ? Math.round(img.naturalHeight / 2) : 1
   const rotate = useTransform(x, [-240, 240], reduce ? [0, 0] : [-6, 6])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const c = canvas.current
     const ctx = c?.getContext('2d')
     if (!c || !ctx || !img) return
@@ -181,6 +191,11 @@ export function SwapStage({
         </div>
         {hint && <GestureHint x={x} y={y} />}
         <SwapStamps x={x} y={y} />
+        {chosen && (
+          <span aria-hidden="true" className={cx('pointer-events-none absolute bottom-full z-20 mb-1 whitespace-nowrap rounded-full bg-bg px-3.5 py-2 text-display font-bold leading-none ring-2', CHOSEN_STAMP[chosen])} data-testid="chosen-stamp">
+            {t(chosen)}
+          </span>
+        )}
       </motion.div>
     </div>
   )
@@ -261,8 +276,8 @@ export function ToolsPanel({
   )
 }
 
-export function AnswerFace({ big, className, children }: { big: boolean; className?: string; children: ReactNode }) {
-  return <span className={cx('flex items-center justify-center rounded-full border-[1.5px] border-text-muted transition-colors duration-75', big ? 'size-[68px]' : 'size-14', className)}>{children}</span>
+export function AnswerFace({ big, compact, className, children }: { big: boolean; compact?: boolean; className?: string; children: ReactNode }) {
+  return <span className={cx('relative flex items-center justify-center rounded-full border-[1.5px] border-text-muted transition-[color,background-color,border-color,transform] duration-75', compact ? (big ? 'size-14' : 'size-12') : big ? 'size-[68px]' : 'size-14', className)}>{children}</span>
 }
 
 function useDragDirection(x: MotionValue<number>, y: MotionValue<number>) {
@@ -277,20 +292,52 @@ function useDragDirection(x: MotionValue<number>, y: MotionValue<number>) {
   return direction
 }
 
-export function AnswerPanel({ labels, disabled, x, y, onChoose }: { labels: { still: string; moves: string; glitch: string; unsure: string }; disabled: boolean; x: MotionValue<number>; y: MotionValue<number>; onChoose: (a: 'still' | 'moves' | 'glitch' | 'unsure') => void }) {
+export function AnswerPanel({
+  labels,
+  disabled,
+  x,
+  y,
+  chosen,
+  onChoose,
+}: {
+  labels: { still: string; moves: string; glitch: string; unsure: string }
+  disabled: boolean
+  x: MotionValue<number>
+  y: MotionValue<number>
+  chosen?: 'still' | 'moves' | 'glitch' | 'unsure' | null
+  onChoose: (a: 'still' | 'moves' | 'glitch' | 'unsure') => void
+}) {
   const direction = useDragDirection(x, y)
   return (
-    <div className="mt-auto flex shrink-0 gap-1 px-2 pb-3 pt-2" data-testid="swap-answers" data-tour="swap-answers">
-      {ANSWERS.map(({ answer, Icon, big, lit }) => (
-        <button key={answer} type="button" disabled={disabled} onClick={() => onChoose(answer)} data-answer={answer} data-lit={direction === answer ? '' : undefined} className="group flex min-w-0 flex-1 flex-col items-center gap-1 disabled:opacity-50">
-          <span className="flex h-[68px] items-center">
-            <AnswerFace big={big} className={direction === answer ? lit : 'group-active:bg-surface-pressed'}>
-              <Icon size={big ? 34 : 28} />
-            </AnswerFace>
-          </span>
-          <span className="whitespace-nowrap text-ui font-semibold leading-tight">{labels[answer]}</span>
-        </button>
-      ))}
+    <div className={cx('mt-auto flex shrink-0 gap-1 px-2', chosen ? 'pb-2 pt-1' : 'pb-3 pt-2')} data-testid="swap-answers" data-tour="swap-answers">
+      {ANSWERS.map(({ answer, Icon, big, lit }) => {
+        const picked = chosen === answer
+        return (
+          <button
+            key={answer}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChoose(answer)}
+            aria-pressed={chosen ? picked : undefined}
+            data-answer={answer}
+            data-lit={direction === answer ? '' : undefined}
+            data-chosen={picked ? '' : undefined}
+            className={cx('group flex min-w-0 flex-1 flex-col items-center gap-1 transition-opacity duration-75 disabled:opacity-50', chosen && !picked && 'opacity-35')}
+          >
+            <span className={cx('flex items-center', chosen ? 'h-14' : 'h-[68px]')}>
+              <AnswerFace big={big} compact={!!chosen} className={picked ? 'scale-110 border-text bg-text text-bg' : direction === answer ? lit : 'group-active:bg-surface-pressed'}>
+                <Icon size={chosen ? (big ? 28 : 24) : big ? 34 : 28} />
+                {picked && (
+                  <span aria-hidden="true" className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-accent text-on-accent ring-2 ring-sheet">
+                    <IconCheck size={16} />
+                  </span>
+                )}
+              </AnswerFace>
+            </span>
+            <span className={cx('whitespace-nowrap text-ui font-semibold leading-tight', chosen && 'sr-only')}>{labels[answer]}</span>
+          </button>
+        )
+      })}
     </div>
   )
 }

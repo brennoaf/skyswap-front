@@ -111,6 +111,36 @@ export function UnderstandSheet({ open, onClose, reveal, answer, verdict }: { op
   )
 }
 
+export function PhotoSourceSheet({ open, onClose, offsets, sky }: { open: boolean; onClose: () => void; offsets: number[]; sky: { ra: number; dec: number; t0: string } | null }) {
+  const t = useTranslations('classify.about')
+  const fmt = useFmt()
+  const label = useOffsetLabel()
+  const start = sky ? Date.parse(sky.t0) : 0
+  return (
+    <Sheet open={open} onClose={onClose} title={t('title')}>
+      <div className="space-y-4 px-4 py-4 text-ui" data-testid="photo-source">
+        {sky && (
+          <section>
+            <h3 className="text-[16px] font-bold">{t('where')}</h3>
+            <p className="mt-1 leading-snug text-text-secondary">{t('whereBody', { ra: fmt.fixed(sky.ra, 4), dec: fmt.fixed(sky.dec, 4) })}</p>
+          </section>
+        )}
+        <section>
+          <h3 className="text-[16px] font-bold">{t('photos')}</h3>
+          <ol className="mt-1">
+            {offsets.map((s, i) => (
+              <li key={i} className="flex min-h-11 items-center justify-between gap-3 border-b-[0.5px] border-divider py-1">
+                <span>{i + 1}</span>
+                <span className="text-right text-text-secondary">{sky ? formatDateTimeSeconds(new Date(start + s * 1000).toISOString(), fmt.locale) : label(s)}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </div>
+    </Sheet>
+  )
+}
+
 export function KnownSheet({ name, onClose }: { name: string | null; onClose: () => void }) {
   const t = useTranslations('classify')
   return (

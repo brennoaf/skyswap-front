@@ -841,11 +841,18 @@
     "retry": "Tentar de novo",
     "mark": {
       "where": "Viu onde? Toque no ponto.",
-      "marked": "Ponto marcado. Toque de novo para mudar.",
-      "next": "Próximo"
+      "marked": "Ponto marcado. Toque de novo para mudar."
+    },
+    "confirm": {
+      "still": "Nada mudou",
+      "moves": "Mudou de lugar",
+      "glitch": "Defeito na foto",
+      "unsure": "Não sei dizer",
+      "confirm": "Confirmar",
+      "source": "SPHEREx, NASA / {date} / {ra}° {dec}°",
+      "sourceShort": "SPHEREx, NASA"
     },
     "strip": {
-      "saved": "Salvo: {answer}",
       "known": "Aquele ponto é conhecido: asteroide {name}",
       "see": "Ver",
       "badge": "Selo novo: {name}",

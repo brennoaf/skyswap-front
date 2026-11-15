@@ -841,11 +841,18 @@
     "retry": "Try again",
     "mark": {
       "where": "See where? Tap the spot.",
-      "marked": "Spot marked. Tap again to change it.",
-      "next": "Next"
+      "marked": "Spot marked. Tap again to change it."
+    },
+    "confirm": {
+      "still": "Nothing moved",
+      "moves": "It moved",
+      "glitch": "Photo defect",
+      "unsure": "Not sure",
+      "confirm": "Confirm",
+      "source": "SPHEREx, NASA / {date} / {ra}° {dec}°",
+      "sourceShort": "SPHEREx, NASA"
     },
     "strip": {
-      "saved": "Saved: {answer}",
       "known": "That spot is known: asteroid {name}",
       "see": "See",
       "badge": "New badge: {name}",

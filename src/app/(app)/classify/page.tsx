@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
-import { AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapPanel, SwapStage, SwapStamps, SwapStrip, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
-import { KnownSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
+import { ANSWER_ICONS, AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapPanel, SwapStage, SwapStamps, SwapStrip, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
+import { KnownSheet, PhotoSourceSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
 import { IconArrowRight, IconBack, IconCards, IconClose, IconMoves, IconQuestion, IconWarning } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
@@ -14,27 +14,27 @@ import { LoginForm } from '@/components/shell/login-sheet'
 import { ScreenTour } from '@/components/shell/onboarding'
 import { Button, EmptyState, IconButton, Skeleton, TopBar } from '@/components/ui/primitives'
 import { api, ApiError, unwrap, type DeckCard } from '@/lib/api/client'
-import { cx } from '@/lib/format'
+import { cx, formatDate } from '@/lib/format'
 import { useGuideCard, useSession, useVote, type VotePosition } from '@/lib/api/hooks'
 import type { CardHint } from '@/lib/explore/flashlight'
 import { exploreQueue, isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
 import { hasOutsideArea } from '@/lib/out-of-field'
 import { knownName, verdictOf, type Answer } from '@/lib/swap-verdict'
 import { useUi } from '@/lib/state/ui'
+import { useFmt } from '@/lib/use-fmt'
 
 type VoteResult = NonNullable<ReturnType<typeof useVote>['data']>
 type Mark = { u: number; v: number }
 type PlayCard = DeckCard | SkyPlayCard
 type Lesson = 'moves' | 'still' | 'glitch'
-type Mode = 'look' | 'tools' | 'mark' | 'sending' | 'failed' | 'result'
+type Mode = 'look' | 'tools' | 'confirm' | 'sending' | 'sent' | 'failed' | 'result'
 type Pending = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; hints: boolean }
 type GuideData = NonNullable<ReturnType<typeof useGuideCard>['data']>
 type WelcomeExample = GuideData['examples'][number]
 type WelcomeStepPlan = { key: 'intro' | 'still' | 'moves' | 'particle' | 'streak' | 'unsure'; example?: WelcomeExample['example']; swipe?: { x: number; up: boolean; arrow: string }; follow?: boolean; spot?: { u: number; v: number; r: number }; tap?: boolean; hold?: number }
 type WelcomeStep = WelcomeStepPlan & { card: DeckCard; marks: Mark[] }
-type Strip = { kind: 'saved'; answer: Answer } | { kind: 'known'; name: string } | { kind: 'badge'; name: string } | { kind: 'fast' } | { kind: 'failed'; answer: Answer }
+type Strip = { kind: 'known'; name: string } | { kind: 'badge'; name: string } | { kind: 'fast' } | { kind: 'failed'; answer: Answer }
 
-const UNDO_MS = 3000
 const NOTICE_MS = 5000
 const FRAME_MS = 700
 const INTRO_FRAME_MS = 800
@@ -57,6 +57,7 @@ const WELCOME_STYLE = {
   '--welcome-up': 'clamp(28px, calc((100dvh - 560px) * 0.15 + 28px), 72px)',
   '--welcome-photo': 'max(120px, min(calc(min(100vw, var(--width-app)) - 40px), calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--welcome-up) - var(--welcome-text) - 198px)))',
 } as CSSProperties
+const SPOTLIGHT_TOP = 'pointer-events-auto absolute inset-x-0 top-0 z-[5] h-[calc(68px+env(safe-area-inset-top))] bg-media-scrim'
 const SWAP_SHEET = 'relative -mb-[env(safe-area-inset-bottom)] flex min-h-0 flex-1 flex-col rounded-t-[var(--radius-sheet)] bg-sheet pb-[env(safe-area-inset-bottom)]'
 const STEP_TITLE = 'font-[family-name:var(--font-display)] font-bold leading-tight [text-wrap:balance]'
 const STEP_BODY = 'text-title-sm leading-[1.4] text-text-secondary [@media(min-height:700px)]:text-title-md'
@@ -383,6 +384,45 @@ function useOutside(img: HTMLImageElement | null, n: number) {
   return outside
 }
 
+function ConfirmSheet({ card, answer, spot, busy, onUndo, onConfirm, onAbout }: { card: PlayCard; answer: Answer; spot: VotePosition | null | undefined; busy: boolean; onUndo: () => void; onConfirm: () => void; onAbout: () => void }) {
+  const t = useTranslations('classify')
+  const fmt = useFmt()
+  const reduce = useReducedMotion()
+  const Icon = ANSWER_ICONS[answer]
+  const sky = isSkyCard(card) ? card : null
+  return (
+    <motion.section
+      initial={reduce ? false : { y: 24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      aria-labelledby="confirm-title"
+      className="mx-2 mt-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto rounded-[var(--radius-sheet)] bg-surface px-4 pb-1.5 pt-2"
+      data-testid="swap-confirm"
+    >
+      <h2 id="confirm-title" className="flex shrink-0 items-center gap-2 text-title-md font-bold leading-tight">
+        <Icon size={24} className="shrink-0" />
+        {t(`confirm.${answer}`)}
+      </h2>
+      {spot !== undefined && (
+        <p role="status" aria-live="polite" className="shrink-0 text-ui font-semibold leading-snug">
+          {spot ? t('mark.marked') : t('mark.where')}
+        </p>
+      )}
+      <button type="button" onClick={onAbout} className="block w-full shrink-0 truncate text-left text-ui leading-snug text-text-secondary" data-testid="confirm-source">
+        {sky ? t('confirm.source', { date: formatDate(sky.t0, fmt.locale, { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'UTC' }), ra: fmt.fixed(sky.ra, 2), dec: `${sky.dec >= 0 ? '+' : ''}${fmt.fixed(sky.dec, 2)}` }) : t('confirm.sourceShort')}
+      </button>
+      <div className="mt-auto flex shrink-0 gap-2">
+        <button type="button" disabled={busy} onClick={onUndo} className={swapButton.big}>
+          {t('undo')}
+        </button>
+        <button type="button" disabled={busy} aria-busy={busy} onClick={onConfirm} className={swapButton.primary}>
+          {t('confirm.confirm')}
+        </button>
+      </div>
+    </motion.section>
+  )
+}
+
 function SwapCard({
   card,
   img,
@@ -391,9 +431,8 @@ function SwapCard({
   lessonMarks,
   lastLesson,
   firstLesson,
-  strip,
+  notice,
   onHelp,
-  onChoosing,
   onAnswer,
   onLessonStale,
   onLessonNext,
@@ -405,9 +444,8 @@ function SwapCard({
   lessonMarks: Mark[]
   lastLesson: boolean
   firstLesson: boolean
-  strip: ReactNode
+  notice: ReactNode
   onHelp: () => void
-  onChoosing: () => void
   onAnswer: (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => void
   onLessonStale: () => void
   onLessonNext: () => void
@@ -422,7 +460,9 @@ function SwapCard({
   const y = useMotionValue(0)
   const [mode, setMode] = useState<Mode>('look')
   const [answer, setAnswer] = useState<Answer | null>(null)
-  const [markAt, setMarkAt] = useState(0)
+  const [chosenAt, setChosenAt] = useState(0)
+  const [aboutOpen, setAboutOpen] = useState(false)
+  const sentOnce = useRef(false)
   const [spot, setSpot] = useState<VotePosition | null>(null)
   const [saved, setSaved] = useState<VoteResult | null>(null)
   const [frozen, setFrozen] = useState(false)
@@ -455,12 +495,13 @@ function SwapCard({
     animate(y, 0, { type: 'spring', stiffness: 500, damping: 32 })
   }, [x, y])
 
-  const undoMark = useCallback(() => {
+  const undoChoice = () => {
+    settle()
     setAnswer(null)
     setSpot(null)
     setMode('look')
-    setPlaying(!reduce)
-  }, [reduce, setPlaying])
+    setPlaying(!reduce || !!lesson)
+  }
 
   const sendLesson = useCallback(
     async (a: Answer) => {
@@ -485,33 +526,30 @@ function SwapCard({
     if (mode !== 'tools') stopBlink()
   }, [mode, stopBlink])
 
-  useEffect(() => {
-    if (mode !== 'mark') return
-    const onHide = () => {
-      if (document.visibilityState === 'hidden') undoMark()
-    }
-    document.addEventListener('visibilitychange', onHide)
-    return () => document.removeEventListener('visibilitychange', onHide)
-  }, [mode, undoMark])
-
   const choose = (a: Answer) => {
-    if (!img) return
+    if (!img || mode === 'sending' || mode === 'sent') return
     settle()
     setRow(0)
     setSpot(null)
     setAnswer(a)
-    if (lesson) {
-      if (saved) {
-        setMode('result')
-        setPlaying(true)
-      } else void sendLesson(a)
+    if (lesson && saved) {
+      setMode('result')
+      setPlaying(true)
       return
     }
-    onChoosing()
-    if (a === 'moves') {
-      setMarkAt(performance.now())
-      setMode('mark')
-    } else onAnswer(a, null, performance.now(), hintsUsed)
+    if (mode !== 'confirm') setChosenAt(performance.now())
+    setMode('confirm')
+  }
+
+  const confirm = () => {
+    if (!answer || mode !== 'confirm' || sentOnce.current) return
+    if (lesson) {
+      void sendLesson(answer)
+      return
+    }
+    sentOnce.current = true
+    setMode('sent')
+    onAnswer(answer, answer === 'moves' ? spot : null, chosenAt, hintsUsed)
   }
 
   useEffect(() => {
@@ -563,11 +601,12 @@ function SwapCard({
     else settle()
   }
 
+  const marking = !lesson && mode === 'confirm' && answer === 'moves'
   const onTap = (u: number, v: number) => {
-    if (mode === 'mark') {
+    if (marking) {
       setSpot({ frame: panel, x: Math.round(u * 1e4) / 1e4, y: Math.round(v * 1e4) / 1e4 })
       setPlaying(false)
-    } else if (looking || mode === 'result') setPlaying(!playback.playing)
+    } else if (looking || mode === 'result' || mode === 'confirm') setPlaying(!playback.playing)
   }
 
   const mark = saved?.reveal.marks[panel]
@@ -584,8 +623,11 @@ function SwapCard({
   const labels = { still: t('still'), moves: t('moves'), glitch: t('glitch'), unsure: t('unsure') }
   const note = hintLine ?? (blackNote && outside[panel] ? tp('outside') : null)
 
+  const deciding = !!answer && (mode === 'confirm' || mode === 'sending' || mode === 'sent')
+
   return (
     <SwapShell>
+      {deciding && <div aria-hidden="true" className={SPOTLIGHT_TOP} data-testid="spotlight-top" />}
       <SwapHeader step={step} onHelp={onHelp} onToolsBack={mode === 'tools' ? () => setMode('look') : undefined} />
       <FrameBars n={n} index={panel} />
       <SwapStage
@@ -603,9 +645,10 @@ function SwapCard({
         onHold={setFrozen}
         overlay={overlay}
         hint={swinging}
+        chosen={deciding ? answer : null}
       />
       <div className={SWAP_SHEET} data-testid="swap-lower">
-        {lesson && (mode === 'look' || mode === 'sending') && (
+        {lesson && mode === 'look' && (
           <>
             <Coach>{mustLookFirst ? t('guide.look') : lesson === 'moves' ? t('guide.answer') : t(`guide.${lesson}`)}</Coach>
             <PhotoBar playback={playback} offsets={offsets} onTools={() => mode === 'look' && setMode('tools')} />
@@ -626,17 +669,21 @@ function SwapCard({
                 </button>
               </div>
             ) : (
-              <AnswerPanel labels={labels} disabled={!img || mode === 'sending'} x={x} y={y} onChoose={choose} />
+              <AnswerPanel labels={labels} disabled={!img} x={x} y={y} onChoose={choose} />
             )}
           </>
         )}
         {!lesson && mode === 'look' && (
           <>
-            {strip ?? <PhotoBar playback={playback} offsets={offsets} onTools={() => setMode('tools')} />}
-            {note && (
-              <p role="status" className="my-auto px-6 text-center text-[15px] leading-snug text-text-secondary">
-                {note}
-              </p>
+            <PhotoBar playback={playback} offsets={offsets} onTools={() => setMode('tools')} />
+            {notice ? (
+              <div className="my-auto">{notice}</div>
+            ) : (
+              note && (
+                <p role="status" className="my-auto px-6 text-center text-[15px] leading-snug text-text-secondary">
+                  {note}
+                </p>
+              )
             )}
             <AnswerPanel labels={labels} disabled={!img} x={x} y={y} onChoose={choose} />
           </>
@@ -661,20 +708,11 @@ function SwapCard({
             }
           />
         )}
-        {mode === 'mark' && (
-          <SwapPanel>
-            <p role="status" aria-live="polite" className="text-[18px] font-bold leading-snug">
-              {spot ? t('mark.marked') : t('mark.where')}
-            </p>
-            <div className="flex gap-2">
-              <button type="button" onClick={undoMark} className={swapButton.big}>
-                {t('undo')}
-              </button>
-              <button type="button" onClick={() => onAnswer('moves', spot, markAt, hintsUsed)} className={swapButton.primary}>
-                {t('mark.next')}
-              </button>
-            </div>
-          </SwapPanel>
+        {deciding && answer && (
+          <>
+            <ConfirmSheet card={card} answer={answer} spot={marking ? spot : undefined} busy={mode !== 'confirm'} onUndo={undoChoice} onConfirm={confirm} onAbout={() => setAboutOpen(true)} />
+            <AnswerPanel labels={labels} disabled={mode !== 'confirm'} x={x} y={y} chosen={answer} onChoose={choose} />
+          </>
         )}
         {mode === 'failed' && answer && (
           <SwapPanel>
@@ -719,6 +757,7 @@ function SwapCard({
           </SwapPanel>
         )}
       </div>
+      <PhotoSourceSheet open={aboutOpen} onClose={() => setAboutOpen(false)} offsets={offsets} sky={sky} />
       {saved && answer && verdict && <UnderstandSheet open={understand} onClose={() => setUnderstand(false)} reveal={saved.reveal} answer={answer} verdict={verdict} />}
       {touring && (
         <ScreenTour
@@ -736,7 +775,7 @@ function SwapCard({
   )
 }
 
-function DeckSkeleton({ onHelp, line, strip }: { onHelp: () => void; line?: string; strip?: ReactNode }) {
+function DeckSkeleton({ onHelp, line, notice }: { onHelp: () => void; line?: string; notice?: ReactNode }) {
   return (
     <SwapShell>
       <SwapHeader onHelp={onHelp} />
@@ -745,7 +784,7 @@ function DeckSkeleton({ onHelp, line, strip }: { onHelp: () => void; line?: stri
         <Skeleton className="rounded-[var(--radius-sheet)]" style={{ width: 'var(--swap-photo)', height: 'var(--swap-photo)' }} />
       </div>
       <div className={SWAP_SHEET} aria-live="polite">
-        {strip}
+        {notice}
         {line && <p className="my-auto px-6 text-center text-[15px] text-text-secondary">{line}</p>}
       </div>
     </SwapShell>
@@ -782,8 +821,6 @@ async function fetchNext(not: string[]): Promise<DeckState> {
 
 function useDeckFlow(enabled: boolean) {
   const [state, setState] = useState<DeckState>({ status: 'loading', card: null })
-  const stateNow = useRef(state)
-  stateNow.current = state
   const live = useRef(true)
   const next = useRef<{ work: Promise<DeckState>; done: DeckState | null } | null>(null)
   useEffect(() => {
@@ -830,17 +867,11 @@ function useDeckFlow(enabled: boolean) {
     }
   }, [])
 
-  const restore = useCallback((card: PlayCard) => {
-    const shown = stateNow.current
-    if (shown.card) next.current = { work: Promise.resolve(shown), done: shown }
-    setState({ status: 'ready', card })
-  }, [])
-
   useEffect(() => {
     if (enabled) void load()
   }, [enabled, load])
 
-  return { ...state, reload: load, prepare, restore }
+  return { ...state, reload: load, prepare }
 }
 
 function PauseCard({ looks, onContinue }: { looks: number; onContinue: () => void }) {
@@ -923,16 +954,16 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   const [pause, setPause] = useState(false)
   const [strip, setStrip] = useState<Strip | null>(null)
   const [knownOpen, setKnownOpen] = useState<string | null>(null)
-  const pending = useRef<Pending | null>(null)
-  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [shown, setShown] = useState<{ card: PlayCard; img: HTMLImageElement } | null>(null)
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const notices = useRef<Strip[]>([])
   const card: PlayCard | null = lesson ? lesson.card : flow.card
   const img = useSprite(card?.sprite)
   const cardId = card?.id
+  if (!lesson && card && img && shown?.card !== card) setShown({ card, img })
 
   const pumpNotices = useCallback(() => {
-    if (noticeTimer.current || pending.current) return
+    if (noticeTimer.current) return
     const notice = notices.current.shift()
     if (!notice) return
     setStrip(notice)
@@ -951,48 +982,25 @@ function Deck({ onHelp }: { onHelp: () => void }) {
     [pumpNotices],
   )
 
-  const onVoteFailed = useCallback((answer: Answer) => setStrip((now) => (now?.kind === 'saved' ? now : { kind: 'failed', answer })), [])
+  const onVoteFailed = useCallback((answer: Answer) => setStrip({ kind: 'failed', answer }), [])
   const { send, retryFailed } = useDelayedVotes(showNotices, onVoteFailed)
 
-  const clearUndo = useCallback(() => {
-    if (undoTimer.current) clearTimeout(undoTimer.current)
-    undoTimer.current = null
-  }, [])
-
-  const commitPending = useCallback(() => {
-    clearUndo()
-    const p = pending.current
-    pending.current = null
-    setStrip((now) => (now?.kind === 'saved' ? null : now))
-    if (p) void send(p)
-    pumpNotices()
-  }, [clearUndo, pumpNotices, send])
-
-  const sendNow = useCallback(() => {
-    clearUndo()
-    const p = pending.current
-    pending.current = null
-    setStrip((now) => (now?.kind === 'saved' ? null : now))
-    if (p) void send(p, true)
-    retryFailed(true)
-  }, [clearUndo, retryFailed, send])
-
-  const sendOnLeave = useRef(sendNow)
+  const retryOnLeave = useRef(retryFailed)
   useEffect(() => {
-    sendOnLeave.current = sendNow
-  }, [sendNow])
+    retryOnLeave.current = retryFailed
+  }, [retryFailed])
 
   useEffect(() => {
     const onHide = () => {
-      if (document.visibilityState === 'hidden') sendOnLeave.current()
+      if (document.visibilityState === 'hidden') retryOnLeave.current(true)
     }
-    const onPageHide = () => sendOnLeave.current()
+    const onPageHide = () => retryOnLeave.current(true)
     document.addEventListener('visibilitychange', onHide)
     window.addEventListener('pagehide', onPageHide)
     return () => {
       document.removeEventListener('visibilitychange', onHide)
       window.removeEventListener('pagehide', onPageHide)
-      sendOnLeave.current()
+      retryOnLeave.current(true)
       if (noticeTimer.current) clearTimeout(noticeTimer.current)
     }
   }, [])
@@ -1004,7 +1012,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   const { prepare } = flow
   useEffect(() => {
     if (!cardId || guiding || (phase !== 'cards' && !nothingToPractice)) return
-    prepare([cardId, ...(pending.current ? [pending.current.card.id] : [])])
+    prepare([cardId])
   }, [cardId, guiding, nothingToPractice, phase, prepare])
 
   useEffect(() => {
@@ -1024,20 +1032,11 @@ function Deck({ onHelp }: { onHelp: () => void }) {
     }
   }, [finishGuide, nothingToPractice, phase])
 
-  const onChoosing = useCallback(() => {
-    commitPending()
-    retryFailed()
-    if (noticeTimer.current) clearTimeout(noticeTimer.current)
-    noticeTimer.current = null
-    setStrip(null)
-  }, [commitPending, retryFailed])
-
   const onAnswer = useCallback(
     (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => {
       if (!card) return
-      pending.current = { card, answer, spot, at, hints }
-      setStrip({ kind: 'saved', answer })
-      undoTimer.current = setTimeout(commitPending, UNDO_MS)
+      retryFailed()
+      void send({ card, answer, spot, at, hints })
       sessionLooks++
       if (sessionLooks % PAUSE_EVERY === 0) {
         setPause(true)
@@ -1045,30 +1044,16 @@ function Deck({ onHelp }: { onHelp: () => void }) {
       }
       void flow.reload([card.id])
     },
-    [card, commitPending, flow],
+    [card, flow, retryFailed, send],
   )
-
-  const undo = useCallback(() => {
-    clearUndo()
-    const p = pending.current
-    pending.current = null
-    setStrip(null)
-    pumpNotices()
-    if (!p) return
-    sessionLooks = Math.max(0, sessionLooks - 1)
-    setPause(false)
-    flow.restore(p.card)
-  }, [clearUndo, flow, pumpNotices])
 
   const nextLesson = useCallback(() => {
     if (lessonIndex + 1 < lessons.length) setLessonIndex(lessonIndex + 1)
     else endGuide()
   }, [endGuide, lessonIndex, lessons.length])
 
-  const stripView =
-    strip?.kind === 'saved' ? (
-      <SwapStrip text={t('strip.saved', { answer: t(`answered.${strip.answer}`) })} action={t('undo')} onAction={undo} />
-    ) : strip?.kind === 'known' ? (
+  const noticeView =
+    strip?.kind === 'known' ? (
       <SwapStrip text={t('strip.known', { name: strip.name })} action={t('strip.see')} onAction={() => setKnownOpen(strip.name)} />
     ) : strip?.kind === 'badge' ? (
       <SwapStrip text={t('strip.badge', { name: strip.name })} />
@@ -1115,14 +1100,15 @@ function Deck({ onHelp }: { onHelp: () => void }) {
           looks={sessionLooks}
           onContinue={() => {
             setPause(false)
-            void flow.reload(pending.current ? [pending.current.card.id] : [])
+            void flow.reload([])
           }}
         />
       </div>,
     )
   if (phase === 'welcome' && !nothingToPractice) return <DeckSkeleton onHelp={onHelp} />
-  if (!guiding && flow.status === 'searching') return <DeckSkeleton onHelp={onHelp} line={t('searching')} strip={stripView} />
-  if (!guiding && flow.status === 'loading') return <DeckSkeleton onHelp={onHelp} strip={stripView} />
+  const holding = !guiding && !!shown && (flow.status === 'loading' || (flow.status === 'ready' && !img))
+  if (!guiding && flow.status === 'searching') return <DeckSkeleton onHelp={onHelp} line={t('searching')} notice={noticeView} />
+  if (!guiding && flow.status === 'loading' && !holding) return <DeckSkeleton onHelp={onHelp} notice={noticeView} />
   if (!guiding && flow.status === 'error')
     return plain(
       <EmptyState
@@ -1134,22 +1120,23 @@ function Deck({ onHelp }: { onHelp: () => void }) {
         }
       />,
     )
-  if (!card) return plain(<EmptyState art={<IconCards size={56} className="text-accent" />} title={t('done')} body={t('doneBody')} />)
+  if (!card && !holding) return plain(<EmptyState art={<IconCards size={56} className="text-accent" />} title={t('done')} body={t('doneBody')} />)
+  const view = holding && shown ? shown : card ? { card, img } : null
+  if (!view) return null
 
   return (
     <>
       <SwapCard
-        key={card.id}
-        card={card}
-        img={img}
+        key={view.card.id}
+        card={view.card}
+        img={view.img}
         step={lesson ? t('guide.step', { n: lessonIndex + 1, total: lessons.length }) : null}
         lesson={lesson?.lesson ?? null}
         lessonMarks={lesson?.marks ?? NO_MARKS}
         lastLesson={!!lesson && lessonIndex + 1 === lessons.length}
         firstLesson={!!lesson && lessonIndex === 0}
-        strip={stripView}
+        notice={noticeView}
         onHelp={onHelp}
-        onChoosing={onChoosing}
         onAnswer={onAnswer}
         onLessonStale={nextLesson}
         onLessonNext={nextLesson}
