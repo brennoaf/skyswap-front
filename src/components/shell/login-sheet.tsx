@@ -1,25 +1,17 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { IconCheck, IconDice, IconLock } from '@/components/icons'
-import { useAvatarChoice } from '@/components/me/avatar-parts'
+import { AvatarCarousel, useAvatarChoice } from '@/components/me/avatar-parts'
 import { Button, Sheet, Wordmark } from '@/components/ui/primitives'
-import { UserAvatar } from '@/components/ui/user-avatar'
 import { ApiError } from '@/lib/api/client'
 import { useLogin } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 
 const SKY_NAMES = ['vega', 'orion', 'lyra', 'sirius', 'rigel', 'altair', 'antares', 'polaris', 'andromeda', 'perseus', 'draco', 'aquila', 'cygnus', 'phoenix', 'hydra', 'carina', 'nebula', 'quasar', 'pulsar', 'nova', 'aurora', 'zenith']
-
-const HERO = 104
-const THUMB = 48
-const RING = 3
-const RING_MASK = `radial-gradient(farthest-side, transparent calc(100% - ${RING}px), #000 calc(100% - ${RING}px))`
 
 function suggestNickname(previous: string): string {
   const pool = SKY_NAMES.filter((n) => !previous.startsWith(n))
@@ -30,70 +22,7 @@ function suggestNickname(previous: string): string {
 type Choice = ReturnType<typeof useAvatarChoice>
 
 function ProfilePreview({ choice, nick }: { choice: Choice; nick: string }) {
-  const t = useTranslations('auth')
-  const selected = choice.selected
-  return (
-    <div className="flex flex-col items-center">
-      <span className="relative inline-flex items-center justify-center" style={{ width: HERO, height: HERO }} aria-hidden="true">
-        <span className="story-ring absolute inset-0 rounded-full" style={{ WebkitMask: RING_MASK, mask: RING_MASK }} />
-        <motion.span
-          key={selected?.id ?? 'none'}
-          initial={{ scale: 0.92, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="inline-flex overflow-hidden rounded-full bg-surface-pressed"
-          style={{ width: HERO - RING * 4, height: HERO - RING * 4 }}
-        >
-          {selected ? (
-            <Image src={selected.url} alt="" width={HERO} height={HERO} unoptimized onError={() => choice.drop(selected.id)} className="size-full object-cover" />
-          ) : (
-            !choice.loading && <UserAvatar nickname={nick || null} size={HERO - RING * 4} />
-          )}
-        </motion.span>
-      </span>
-      <p className="mt-3 h-6 max-w-full truncate text-title-sm font-semibold" aria-hidden="true">
-        {nick}
-      </p>
-      {(choice.loading || choice.options.length > 0) && (
-        <div className="mt-2 flex items-center gap-3">
-          <span id="avatar-choice" className="sr-only">
-            {t('pictureLabel')}
-          </span>
-          <div role="radiogroup" aria-labelledby="avatar-choice" className="flex gap-3">
-            {choice.loading
-              ? [0, 1, 2].map((i) => <span key={i} className="rounded-full bg-surface-pressed" style={{ width: THUMB, height: THUMB }} />)
-              : choice.options.map((a, i) => {
-                  const on = selected?.id === a.id
-                  return (
-                    <button
-                      key={a.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={on}
-                      aria-label={t('pictureOption', { n: i + 1 })}
-                      onClick={() => choice.pick(a.id)}
-                      className={cx('shrink-0 overflow-hidden rounded-full ring-offset-2 ring-offset-bg transition-[opacity,box-shadow]', on ? 'ring-2 ring-text' : 'opacity-60')}
-                      style={{ width: THUMB, height: THUMB }}
-                    >
-                      <Image src={a.url} alt="" width={THUMB} height={THUMB} unoptimized onError={() => choice.drop(a.id)} className="size-full object-cover" />
-                    </button>
-                  )
-                })}
-          </div>
-          <button
-            type="button"
-            aria-label={t('redraw')}
-            onClick={choice.redraw}
-            disabled={choice.drawing}
-            className="inline-flex shrink-0 items-center justify-center rounded-full border-[0.5px] border-divider bg-surface text-text active:bg-surface-pressed disabled:opacity-50"
-            style={{ width: THUMB, height: THUMB }}
-          >
-            <IconDice size={26} />
-          </button>
-        </div>
-      )}
-    </div>
-  )
+  return <AvatarCarousel choice={choice} hero={168} name={nick} />
 }
 
 export function LoginForm({ onDone }: { onDone?: () => void }) {

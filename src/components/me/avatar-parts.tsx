@@ -1,10 +1,14 @@
 'use client'
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { motion, useReducedMotion } from 'framer-motion'
 import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { IconChevronLeft, IconChevronRight, IconDice } from '@/components/icons'
+import { glassClass } from '@/components/ui/glass'
 import { Button, Sheet } from '@/components/ui/primitives'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { api, ApiError, unwrap, type User } from '@/lib/api/client'
 import { useSetAvatar } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
@@ -46,45 +50,147 @@ export function useAvatarChoice(enabled = true) {
 
 type Choice = ReturnType<typeof useAvatarChoice>
 
-export function AvatarChoices({ choice, size = 56 }: { choice: Choice; size?: number }) {
+const RING = 4
+const RING_MASK = `radial-gradient(farthest-side, transparent calc(100% - ${RING}px), #000 calc(100% - ${RING}px))`
+const CARD = 112
+
+export function AvatarCarousel({ choice, hero = 200, name = null }: { choice: Choice; hero?: number; name?: string | null }) {
   const t = useTranslations('auth')
-  if (choice.loading) {
-    return (
-      <div className="flex gap-3" aria-hidden="true">
-        {[0, 1, 2].map((i) => (
-          <span key={i} className="rounded-full bg-surface-pressed" style={{ width: size, height: size }} />
-        ))}
-      </div>
-    )
+  const tp = useTranslations('player')
+  const reduce = useReducedMotion()
+  const track = useRef<HTMLDivElement>(null)
+  const cards = useRef<(HTMLButtonElement | null)[]>([])
+  const options = choice.options
+  const selected = choice.selected
+  const index = Math.max(0, options.findIndex((a) => a.id === selected?.id))
+  const settle = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  const go = (i: number, focus = false) => {
+    const a = options[(i + options.length) % options.length]
+    if (!a) return
+    choice.pick(a.id)
+    const el = cards.current[(i + options.length) % options.length]
+    const box = track.current
+    if (el && box) box.scrollTo({ left: el.offsetLeft - (box.clientWidth - el.offsetWidth) / 2, behavior: reduce ? 'auto' : 'smooth' })
+    if (focus) el?.focus({ preventScroll: true })
   }
-  if (!choice.options.length) return null
+
+  const onScroll = () => {
+    clearTimeout(settle.current)
+    settle.current = setTimeout(() => {
+      const box = track.current?.getBoundingClientRect()
+      if (!box) return
+      const mid = box.left + box.width / 2
+      let best = -1
+      let gap = Infinity
+      cards.current.forEach((el, i) => {
+        if (!el) return
+        const r = el.getBoundingClientRect()
+        const d = Math.abs(r.left + r.width / 2 - mid)
+        if (d < gap) [best, gap] = [i, d]
+      })
+      const a = options[best]
+      if (a && a.id !== selected?.id) choice.pick(a.id)
+    }, 90)
+  }
+
+  useEffect(() => () => clearTimeout(settle.current), [])
+
+  const preview = (
+    <span className="relative inline-flex items-center justify-center" style={{ width: hero, height: hero }} aria-hidden="true" data-testid="avatar-preview">
+      <span className="story-ring absolute inset-0 rounded-full" style={{ WebkitMask: RING_MASK, mask: RING_MASK }} />
+      <span className={cx(glassClass('media'), 'absolute rounded-full')} style={{ inset: RING + 2 }} />
+      <motion.span
+        key={selected?.id ?? 'none'}
+        initial={reduce ? false : { scale: 0.94, opacity: 0.4 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        className="relative inline-flex overflow-hidden rounded-full bg-surface-pressed"
+        style={{ width: hero - (RING + 6) * 2, height: hero - (RING + 6) * 2 }}
+      >
+        {selected ? (
+          <Image src={selected.url} alt="" width={hero} height={hero} unoptimized onError={() => choice.drop(selected.id)} className="size-full object-cover" data-testid="avatar-preview-image" data-avatar={selected.id} />
+        ) : (
+          !choice.loading && <UserAvatar nickname={name || null} size={hero - (RING + 6) * 2} />
+        )}
+      </motion.span>
+    </span>
+  )
+
   return (
-    <div>
-      <p id="avatar-choice" className="mb-2 text-note text-text-secondary">
+    <div className="flex flex-col items-center">
+      {preview}
+      {name !== null && (
+        <p className="mt-3 h-6 max-w-full truncate text-title-sm font-semibold" aria-hidden="true">
+          {name}
+        </p>
+      )}
+      <span id="avatar-choice" className="sr-only">
         {t('pictureLabel')}
-      </p>
-      <div className="flex items-center gap-3">
-        <div role="radiogroup" aria-labelledby="avatar-choice" className="flex gap-3">
-          {choice.options.map((a, i) => {
-            const on = choice.selected?.id === a.id
-            return (
-              <button
-                key={a.id}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                aria-label={t('pictureOption', { n: i + 1 })}
-                onClick={() => choice.pick(a.id)}
-                className={cx('shrink-0 overflow-hidden rounded-full ring-offset-2 ring-offset-bg', on ? 'ring-2 ring-text' : 'ring-0 opacity-80')}
-                style={{ width: size, height: size }}
-              >
-                <Image src={a.url} alt="" width={size} height={size} unoptimized onError={() => choice.drop(a.id)} className="size-full object-cover" />
-              </button>
-            )
-          })}
+      </span>
+      <div className={cx('relative mt-4 w-full', !choice.loading && !options.length && 'hidden')}>
+        <div
+          ref={track}
+          role="radiogroup"
+          aria-labelledby="avatar-choice"
+          onScroll={onScroll}
+          onKeyDown={(e) => {
+            const move = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0
+            if (!move) return
+            e.preventDefault()
+            go(index + move, true)
+          }}
+          className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ paddingInline: `calc(50% - ${CARD / 2}px)` }}
+          data-testid="avatar-carousel"
+        >
+          {choice.loading
+            ? [0, 1, 2].map((i) => <span key={i} className="shrink-0 snap-center rounded-[28px] bg-surface-pressed" style={{ width: CARD, height: CARD }} />)
+            : options.map((a, i) => {
+                const on = i === index
+                return (
+                  <motion.button
+                    key={a.id}
+                    ref={(el) => {
+                      cards.current[i] = el
+                    }}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    tabIndex={on ? 0 : -1}
+                    aria-label={t('pictureOption', { n: i + 1 })}
+                    onClick={() => go(i)}
+                    initial={reduce ? false : { opacity: 0, y: 14, rotateY: -35 }}
+                    animate={{ opacity: on ? 1 : 0.55, y: 0, rotateY: 0, scale: on ? 1 : 0.88 }}
+                    transition={{ duration: reduce ? 0 : 0.28, delay: reduce ? 0 : i * 0.05, ease: [0.2, 0.8, 0.2, 1] }}
+                    className={cx('shrink-0 snap-center overflow-hidden rounded-[28px] outline-none focus-visible:ring-2 focus-visible:ring-accent', on && 'ring-2 ring-text ring-offset-2 ring-offset-bg')}
+                    style={{ width: CARD, height: CARD }}
+                    data-avatar={a.id}
+                  >
+                    <Image src={a.url} alt="" width={CARD} height={CARD} unoptimized onError={() => choice.drop(a.id)} className="size-full object-cover" />
+                  </motion.button>
+                )
+              })}
         </div>
-        <button type="button" onClick={choice.redraw} disabled={choice.drawing} className="inline-flex min-h-11 min-w-0 items-center px-1 text-left text-note font-semibold text-link disabled:opacity-50">
-          {t('redraw')}
+        {options.length > 1 && (
+          <>
+            <button type="button" aria-label={tp('prev')} onClick={() => go(index - 1)} className={cx(glassClass(), 'absolute left-1 top-1/2 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full text-text [@media(pointer:fine)]:inline-flex')}>
+              <IconChevronLeft size={22} />
+            </button>
+            <button type="button" aria-label={tp('next')} onClick={() => go(index + 1)} className={cx(glassClass(), 'absolute right-1 top-1/2 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full text-text [@media(pointer:fine)]:inline-flex')}>
+              <IconChevronRight size={22} />
+            </button>
+          </>
+        )}
+      </div>
+      <div className="mt-2 flex items-center gap-3">
+        <span className="flex items-center gap-1.5" aria-hidden="true" data-testid="avatar-dots">
+          {options.map((a, i) => (
+            <span key={a.id} className={cx('h-1.5 rounded-full transition-[width,background-color]', i === index ? 'w-4 bg-text' : 'w-1.5 bg-divider')} />
+          ))}
+        </span>
+        <button type="button" aria-label={t('redraw')} onClick={choice.redraw} disabled={choice.drawing} className={cx(glassClass(), 'inline-flex size-11 items-center justify-center rounded-full text-text disabled:opacity-50')} data-testid="avatar-redraw">
+          <IconDice size={24} />
         </button>
       </div>
     </div>
@@ -101,7 +207,7 @@ function SwapPanel({ onDone, onCancel }: { onDone: () => void; onCancel: (() => 
       <h2 id="avatar-sheet-title" className="text-title-sm font-semibold">
         {t('chooseTitle')}
       </h2>
-      <AvatarChoices choice={choice} />
+      <AvatarCarousel choice={choice} />
       {!choice.loading && !choice.options.length && <p className="text-body text-text-secondary">{t('none')}</p>}
       {save.error && <p className="text-meta text-danger">{t(taken ? 'taken' : 'failed')}</p>}
       <div className="flex gap-2">
