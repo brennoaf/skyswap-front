@@ -20,6 +20,7 @@ import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch
 import { pointHits, askServer } from '@/lib/explore/lookup'
 import { differenceGrey, differenceImages, differenceScale, SKY_CROP } from '@/lib/explore/sky-card'
 import { tileFetch } from '@/lib/explore/tiles'
+import { bandLevels } from '@/lib/band-levels'
 import { isControl, isTyping, ownsArrows, plainKey } from '@/lib/keys'
 import { modalCount } from '@/lib/modal-history'
 import { useUi } from '@/lib/state/ui'
@@ -282,6 +283,7 @@ function Player({
   const [view, setView] = useState<View>('photos')
   const [ends, setEnds] = useState(false)
   const shown = useMemo(() => (ends && b.frames.length > 2 ? [b.frames[0], b.frames[b.frames.length - 1]].filter((f): f is ViewFrame => !!f) : b.frames), [ends, b.frames])
+  const levels = useMemo(() => (params.band ? null : bandLevels(b.frames)), [params.band, b.frames])
   const n = shown.length
   const sameGrid = n > 1 && shown.every((f) => f.w === shown[0]?.w && f.h === shown[0]?.h)
   const diffs = useMemo(() => {
@@ -330,6 +332,10 @@ function Player({
   }, [playing, n, speed])
 
   const frame = shown[Math.min(cur, n - 1)]
+  const shownFrame = useMemo(() => {
+    const level = frame && levels?.get(frame.band)
+    return frame && level ? { ...frame, ...level } : frame
+  }, [frame, levels])
   const diff = diffs ? { img: diffs.d[Math.min(cur, n - 1)] as Float32Array, scale: diffs.scale } : null
   const step = (d: number) => {
     setPlaying(false)
@@ -375,7 +381,7 @@ function Player({
       data-first-frame-ms={b.firstMs ?? undefined}
       data-frames={n}
     >
-      {frame && <FrameCanvas frame={frame} colormap={colormap} diff={diff} label={diff ? t('changesAlt', { date }) : t('frameAlt', { band: bandName(frame.band), date })} />}
+      {frame && shownFrame && <FrameCanvas frame={shownFrame} colormap={colormap} diff={diff} label={diff ? t('changesAlt', { date }) : t('frameAlt', { band: bandName(frame.band), date })} />}
       {frame && crosshair && <TargetCrosshair frame={frame} target={target} grid={grid} />}
       {marker}
       {b.status === 'idle' && compact && (
