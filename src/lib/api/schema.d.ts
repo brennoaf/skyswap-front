@@ -2462,6 +2462,11 @@ export interface paths {
                                     y: number;
                                 } | null;
                                 object_id: string | null;
+                                object: {
+                                    id: string;
+                                    name: string;
+                                    avatar: string;
+                                } | null;
                             } | {
                                 type: "app";
                                 id: string;
@@ -3426,6 +3431,11 @@ export interface paths {
                                 y: number;
                             } | null;
                             object_id: string | null;
+                            object: {
+                                id: string;
+                                name: string;
+                                avatar: string;
+                            } | null;
                             fov_deg: number;
                             offsets_s: number[];
                             checks: {
@@ -3589,6 +3599,11 @@ export interface paths {
                                     y: number;
                                 } | null;
                                 object_id: string | null;
+                                object: {
+                                    id: string;
+                                    name: string;
+                                    avatar: string;
+                                } | null;
                             } | null;
                             has_popular: boolean;
                         };
@@ -5159,6 +5174,11 @@ export interface components {
                 y: number;
             } | null;
             object_id: string | null;
+            object: {
+                id: string;
+                name: string;
+                avatar: string;
+            } | null;
         };
         FindingSocial: {
             interesting: number;
@@ -5238,6 +5258,11 @@ export interface components {
                 y: number;
             } | null;
             object_id: string | null;
+            object: {
+                id: string;
+                name: string;
+                avatar: string;
+            } | null;
             fov_deg: number;
             offsets_s: number[];
             checks: {
@@ -5515,6 +5540,11 @@ export interface components {
                     y: number;
                 } | null;
                 object_id: string | null;
+                object: {
+                    id: string;
+                    name: string;
+                    avatar: string;
+                } | null;
             } | {
                 type: "app";
                 id: string;

@@ -1701,6 +1701,16 @@
       "reported": "Denunciado",
       "delete": "Apagar meu comentário",
       "share": "Compartilhar"
+    },
+    "card": {
+      "more": "mais",
+      "play": "Tocar",
+      "pause": "Pausar",
+      "openProfile": "Abrir perfil de {name}",
+      "known": "já conhecido",
+      "source": "Fonte",
+      "years": "{from} a {to}",
+      "spectrum": "Espectro"
     }
   },
   "player": {

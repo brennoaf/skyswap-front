@@ -1701,6 +1701,16 @@
       "reported": "Reported",
       "delete": "Delete my comment",
       "share": "Share"
+    },
+    "card": {
+      "more": "more",
+      "play": "Play",
+      "pause": "Pause",
+      "openProfile": "Open {name}'s profile",
+      "known": "already known",
+      "source": "Source",
+      "years": "{from} to {to}",
+      "spectrum": "Spectrum"
     }
   },
   "player": {

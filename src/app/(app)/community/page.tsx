@@ -7,10 +7,10 @@ import { CommunityCard } from '@/components/community/community-card'
 import { CommunitySwitch } from '@/components/community/community-switch'
 import { ExamplePill, stateBody, StatePill, useFindingTitle } from '@/components/community/finding-parts'
 import { IconCards, IconChevronRight } from '@/components/icons'
+import { GlassTabs } from '@/components/ui/glass'
 import { Button, EmptyState, Skeleton, Wordmark } from '@/components/ui/primitives'
 import type { FindingSummary } from '@/lib/api/client'
 import { useCommunityFeed, useCommunityOverview, useGoals, type CommunityTab } from '@/lib/api/hooks'
-import { cx } from '@/lib/format'
 
 const TABS: CommunityTab[] = ['popular', 'open', 'solved']
 const TAB_LABEL = { popular: 'tabPopular', open: 'tabOpen', solved: 'tabSolved' } as const
@@ -55,18 +55,8 @@ function OpenCards({ n }: { n: number }) {
 function Tabs({ tab, onPick }: { tab: CommunityTab; onPick: (k: CommunityTab) => void }) {
   const t = useTranslations('community')
   return (
-    <div role="group" aria-label={t('tabsLabel')} className="mx-4 mt-4 grid grid-cols-3 gap-1 rounded-full bg-surface p-1">
-      {TABS.map((k) => (
-        <button
-          key={k}
-          type="button"
-          aria-pressed={tab === k}
-          onClick={() => onPick(k)}
-          className={cx('hit-44 h-9 rounded-full text-note font-semibold transition-colors', tab === k ? 'bg-bg text-text shadow-[0_1px_3px_rgb(0_0_0/0.18)]' : 'text-text-secondary')}
-        >
-          {t(TAB_LABEL[k])}
-        </button>
-      ))}
+    <div className="sticky top-[var(--height-topbar)] z-20 px-4 pb-1 pt-3">
+      <GlassTabs items={TABS.map((k) => ({ key: k, label: t(TAB_LABEL[k]) }))} value={tab} onChange={onPick} label={t('tabsLabel')} />
     </div>
   )
 }
@@ -102,7 +92,7 @@ export default function CommunityPage() {
       <OpenCards n={openCards} />
       {overview.data?.highlight && <Highlight finding={overview.data.highlight} />}
       <Tabs tab={tab} onPick={setPick} />
-      <p className="px-5 pb-2 pt-2 text-note leading-snug text-text-secondary" data-testid="community-line">
+      <p className="px-5 pb-2 pt-1.5 text-meta leading-snug text-text-muted" data-testid="community-line">
         {t(`tabLine.${tab}`)}
       </p>
       {(feed.isLoading || overview.isLoading) && (

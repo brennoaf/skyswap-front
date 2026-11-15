@@ -158,7 +158,8 @@
           "photo",
           "photo_cols",
           "mark",
-          "object_id"
+          "object_id",
+          "object"
         ],
         "properties": {
           "id": {
@@ -494,6 +495,32 @@
                 "type": "null"
               }
             ]
+          },
+          "object": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "id",
+                  "name",
+                  "avatar"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "avatar": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       },
@@ -629,6 +656,7 @@
           "photo_cols",
           "mark",
           "object_id",
+          "object",
           "fov_deg",
           "offsets_s",
           "checks",
@@ -967,6 +995,32 @@
             "anyOf": [
               {
                 "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "object": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "id",
+                  "name",
+                  "avatar"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "avatar": {
+                    "type": "string"
+                  }
+                }
               },
               {
                 "type": "null"
@@ -2158,7 +2212,8 @@
                     "photo",
                     "photo_cols",
                     "mark",
-                    "object_id"
+                    "object_id",
+                    "object"
                   ],
                   "properties": {
                     "id": {
@@ -2489,6 +2544,32 @@
                       "anyOf": [
                         {
                           "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "object": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "name",
+                            "avatar"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "avatar": {
+                              "type": "string"
+                            }
+                          }
                         },
                         {
                           "type": "null"
@@ -10469,7 +10550,8 @@
                               "photo",
                               "photo_cols",
                               "mark",
-                              "object_id"
+                              "object_id",
+                              "object"
                             ],
                             "properties": {
                               "id": {
@@ -10800,6 +10882,32 @@
                                 "anyOf": [
                                   {
                                     "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "object": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "id",
+                                      "name",
+                                      "avatar"
+                                    ],
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "avatar": {
+                                        "type": "string"
+                                      }
+                                    }
                                   },
                                   {
                                     "type": "null"
@@ -13296,6 +13404,7 @@
                     "photo_cols",
                     "mark",
                     "object_id",
+                    "object",
                     "fov_deg",
                     "offsets_s",
                     "checks",
@@ -13634,6 +13743,32 @@
                       "anyOf": [
                         {
                           "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "object": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "name",
+                            "avatar"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "avatar": {
+                              "type": "string"
+                            }
+                          }
                         },
                         {
                           "type": "null"
@@ -14059,7 +14194,8 @@
                             "photo",
                             "photo_cols",
                             "mark",
-                            "object_id"
+                            "object_id",
+                            "object"
                           ],
                           "properties": {
                             "id": {
@@ -14390,6 +14526,32 @@
                               "anyOf": [
                                 {
                                   "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "object": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "id",
+                                    "name",
+                                    "avatar"
+                                  ],
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "avatar": {
+                                      "type": "string"
+                                    }
+                                  }
                                 },
                                 {
                                   "type": "null"
