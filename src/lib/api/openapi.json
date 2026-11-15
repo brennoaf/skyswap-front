@@ -2129,7 +2129,8 @@
           "id",
           "sprite",
           "n_frames",
-          "offsets_s"
+          "offsets_s",
+          "t0"
         ],
         "properties": {
           "id": {
@@ -2146,6 +2147,9 @@
             "items": {
               "type": "number"
             }
+          },
+          "t0": {
+            "type": "string"
           }
         }
       },
@@ -6311,7 +6315,8 @@
                             "id",
                             "sprite",
                             "n_frames",
-                            "offsets_s"
+                            "offsets_s",
+                            "t0"
                           ],
                           "properties": {
                             "id": {
@@ -6328,6 +6333,9 @@
                               "items": {
                                 "type": "number"
                               }
+                            },
+                            "t0": {
+                              "type": "string"
                             }
                           }
                         },
@@ -6402,7 +6410,8 @@
                         "id",
                         "sprite",
                         "n_frames",
-                        "offsets_s"
+                        "offsets_s",
+                        "t0"
                       ],
                       "properties": {
                         "id": {
@@ -6419,6 +6428,9 @@
                           "items": {
                             "type": "number"
                           }
+                        },
+                        "t0": {
+                          "type": "string"
                         }
                       }
                     },
@@ -7618,7 +7630,8 @@
                               "id",
                               "sprite",
                               "n_frames",
-                              "offsets_s"
+                              "offsets_s",
+                              "t0"
                             ],
                             "properties": {
                               "id": {
@@ -7635,6 +7648,9 @@
                                 "items": {
                                   "type": "number"
                                 }
+                              },
+                              "t0": {
+                                "type": "string"
                               }
                             }
                           },
@@ -7703,7 +7719,8 @@
                               "id",
                               "sprite",
                               "n_frames",
-                              "offsets_s"
+                              "offsets_s",
+                              "t0"
                             ],
                             "properties": {
                               "id": {
@@ -7720,6 +7737,9 @@
                                 "items": {
                                   "type": "number"
                                 }
+                              },
+                              "t0": {
+                                "type": "string"
                               }
                             }
                           },

@@ -425,7 +425,7 @@ function ConfirmSheet({ card, answer, busy, past, onUndo, onConfirm, onAbout, on
       <button type="button" onClick={onAbout} className="mt-3.5 flex w-full shrink-0 items-center gap-2.5 border-t border-divider py-2.5 text-left text-ui leading-[1.35] text-text-secondary" data-testid="confirm-source">
         <IconInfo size={20} className="shrink-0" />
         <span className="min-w-0">
-          <span className="block truncate">{sky ? t('confirm.source', { date: formatDate(sky.t0, fmt.locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) }) : t('confirm.sourceShort')}</span>
+          <span className="block truncate">{t('confirm.source', { date: formatDate(card.t0, fmt.locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) })}</span>
           {sky && <span className="block truncate tabular-nums">{t('confirm.where', { ra: fmt.fixed(sky.ra, 4), dec: `${sky.dec >= 0 ? '+' : ''}${fmt.fixed(sky.dec, 4)}` })}</span>}
         </span>
       </button>

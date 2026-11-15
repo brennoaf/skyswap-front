@@ -852,8 +852,7 @@
       "source": "SPHEREx, NASA, {date}",
       "where": "{ra}°, {dec}°",
       "yours": "Sua resposta",
-      "saved": "Salvo",
-      "sourceShort": "SPHEREx, NASA"
+      "saved": "Salvo"
     },
     "open": {
       "title": "Cartões em aberto",

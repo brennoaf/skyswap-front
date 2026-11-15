@@ -1555,6 +1555,7 @@ export interface paths {
                                 sprite: string;
                                 n_frames: number;
                                 offsets_s: number[];
+                                t0: string;
                             } | null;
                             sky: boolean;
                             interesting: boolean;
@@ -1610,6 +1611,7 @@ export interface paths {
                                 sprite: string;
                                 n_frames: number;
                                 offsets_s: number[];
+                                t0: string;
                             };
                             answered: ("moves" | "still" | "glitch" | "unsure") | null;
                         };
@@ -2151,6 +2153,7 @@ export interface paths {
                                     sprite: string;
                                     n_frames: number;
                                     offsets_s: number[];
+                                    t0: string;
                                 };
                                 marks: {
                                     u: number;
@@ -2164,6 +2167,7 @@ export interface paths {
                                     sprite: string;
                                     n_frames: number;
                                     offsets_s: number[];
+                                    t0: string;
                                 };
                                 marks: {
                                     u: number;
@@ -3399,6 +3403,7 @@ export interface components {
             sprite: string;
             n_frames: number;
             offsets_s: number[];
+            t0: string;
         };
         Spot: {
             name: string | null;
