@@ -4,6 +4,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { api, unwrap, type PostDetail, type TagSummary } from './client'
 import { exploreCellsQuery, exploreKeys, exploreMapQuery } from './queries'
 import { useUi } from '../state/ui'
+import { SPECTRUM_FORMAT, spectrumShape } from '../spectrum-shape'
 
 export type FeedTab = 'for_you' | 'following' | 'new' | 'targets'
 export type TagKey = 'asteroid' | 'artifact' | 'brightness' | 'unsure'
@@ -291,7 +292,7 @@ export function useSkySpectrum(ra: number, dec: number, obj: string | null, enab
   return useQuery({
     queryKey: keys.skySpectrum(ra, dec, obj),
     enabled,
-    queryFn: async () => unwrap(await api.GET('/api/sky/spectrum', { params: { query: { ra, dec, ...(obj ? { obj } : {}) } } })),
+    queryFn: async () => spectrumShape(unwrap(await api.GET('/api/sky/spectrum', { params: { query: { ra, dec, v: SPECTRUM_FORMAT, ...(obj ? { obj } : {}) } } }))),
     staleTime: Infinity,
     retry: 1,
   })

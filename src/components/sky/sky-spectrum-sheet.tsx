@@ -26,7 +26,7 @@ export function SkySpectrumSheet({ open, onClose, params }: { open: boolean; onC
   const near = sky.data?.nearby.find((o) => (o.separation_deg ?? Infinity) * 3600 <= SAME_OBJECT_ARCSEC)
   const labId = obj ?? near?.id ?? null
   const data = spectrum.data
-  const gone = data?.elsewhere[0]
+  const gone = data?.elsewhere?.[0]
   const moved = data?.object && data.object.shift_arcsec > data.pixel_arcsec ? data.object : null
   const offline = spectrum.error instanceof ApiError && spectrum.error.status === 503
   const row = 'flex min-h-12 w-full items-center gap-3 border-b-[0.5px] border-divider text-left text-ui active:bg-surface'

@@ -724,6 +724,7 @@ export interface paths {
                     ra: number;
                     dec: number;
                     obj?: string;
+                    v?: number;
                 };
                 header?: never;
                 path?: never;

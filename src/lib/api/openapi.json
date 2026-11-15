@@ -4961,6 +4961,16 @@
             "in": "query",
             "name": "obj",
             "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 99
+            },
+            "in": "query",
+            "name": "v",
+            "required": false
           }
         ],
         "responses": {
