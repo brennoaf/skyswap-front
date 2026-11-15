@@ -29,6 +29,7 @@ export type CardAction<R> =
   | { type: 'tools'; open: boolean }
   | { type: 'trace'; mark: TraceMark | null }
   | { type: 'retrace'; frame: number }
+  | { type: 'back' }
   | { type: 'redo' }
   | { type: 'sending' }
   | { type: 'sent' }
@@ -68,6 +69,10 @@ export function cardReducer<R>(s: CardState<R>, a: CardAction<R>): CardState<R> 
       const marks = s.marks.map((m, i) => (i === s.at ? a.mark : m))
       const next = marks.findIndex((m, i) => i > s.at && m === undefined)
       return next < 0 ? { ...s, marks, mode: 'review' } : { ...s, marks, at: next }
+    }
+    case 'back': {
+      const back = s.mode === 'review' ? s.marks.length - 1 : s.mode === 'tracing' ? s.at - 1 : -1
+      return back < 0 ? s : { ...s, marks: s.marks.map((m, i) => (i === back ? undefined : m)), at: back, mode: 'tracing' }
     }
     case 'retrace':
       return s.mode === 'review' && a.frame >= 0 && a.frame < s.marks.length ? { ...s, marks: s.marks.map((m, i) => (i === a.frame ? undefined : m)), at: a.frame, mode: 'tracing' } : s

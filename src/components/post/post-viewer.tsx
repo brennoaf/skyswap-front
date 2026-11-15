@@ -7,27 +7,30 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject, type ReactNode } from 'react'
 import { KitChart, QrWarning } from '@/components/charts/charts'
 import { PostHeader } from '@/components/feed/post-card'
-import { IconCrosshair, IconStepBack, IconStepForward } from '@/components/icons'
+import { IconClose, IconCrosshair, IconUndo } from '@/components/icons'
 import { PlayerBar } from '@/components/player/player-bar'
 import { usePlaybackKeys } from '@/components/player/use-playback'
 import { ActionRow } from '@/components/post/action-row'
 import { EraTimeline } from '@/components/post/era-timeline'
-import { MarkResult, PredictionHelp } from '@/components/post/marking-help'
-import { MediaStage, STAGE_BOX, usePlayer, type Point, type StageMode } from '@/components/post/media-stage'
+import { PredictionHelp } from '@/components/post/marking-help'
+import { markPlan, passStarts } from '@/components/post/mark-plan'
+import { MediaStage, STAGE_BOX, usePlayer, type Point, type StageMode, type Trail } from '@/components/post/media-stage'
 import { AboutSheet, ColoursSheet, MoreSheet, NotesSheet, TagSheet } from '@/components/post/post-sheets'
 import { buildSequences, centre, framePool, nearestByWavelength, type FilterKey, type Sequence } from '@/components/post/sequences'
-import { EmptyState, Skeleton, TopBar } from '@/components/ui/primitives'
+import { Button, EmptyState, IconButton, Skeleton, TopBar } from '@/components/ui/primitives'
 import type { Frame } from '@/lib/api/client'
 import { useCelebrate, useLearn, useObject, useObjectPosts, usePost, useSaveMarks, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
+import { isTyping, plainKey } from '@/lib/keys'
 import { hasWise, LONG_BASELINE_FPS } from '@/lib/long-baseline'
+import { modalCount } from '@/lib/modal-history'
 import { postCaption, postTitle } from '@/lib/post-text'
 import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
 
 const CHART_KIND = { spectrum: 'spectrum', lightcurve: 'lightcurve', motion: 'motion' } as const
-const PASS_GAP_DAYS = 20
+const FLASH_MS = 300
 const NO_PREDICTION = new Map<number, { x: number; y: number }>()
 
 type SheetKey = 'more' | 'about' | 'tags' | 'colours' | 'notes' | null
@@ -36,9 +39,7 @@ type Dots = { count: number; active: number; onPick: (i: number) => void }
 function groupsOf(type: string, frames: Frame[]): number[] {
   if (frames.length < 2) return [0]
   if (type !== 'timelapse') return frames.map((_, i) => i)
-  const starts = [0]
-  for (let i = 1; i < frames.length; i++) if ((frames[i]?.mjd ?? 0) - (frames[i - 1]?.mjd ?? 0) > PASS_GAP_DAYS) starts.push(i)
-  return starts
+  return passStarts(frames)
 }
 
 function PostStage({
@@ -52,16 +53,18 @@ function PostStage({
   compareFrames,
   mixedReleases,
   myMarks,
-  draftMarks,
   community,
-  revealPrediction,
   saturated,
   pathMarks,
   frameRef,
-  markedCount,
-  saving,
+  markFrame,
+  flash,
+  banner,
+  markLabel,
+  trail,
+  markBar,
+  finalPanel,
   onMark,
-  onMarkDone,
   onBand,
   actions,
 }: {
@@ -75,23 +78,25 @@ function PostStage({
   compareFrames: [Frame, Frame] | null
   mixedReleases: boolean
   myMarks: Point[]
-  draftMarks: Point[]
   community: { frame: number; x: number; y: number }[] | null
-  revealPrediction: boolean
   saturated: boolean
   pathMarks: { x: number; y: number }[]
   frameRef: MutableRefObject<Frame | undefined>
-  markedCount: number
-  saving: boolean
+  markFrame: number | null
+  flash: Point | null
+  banner: ReactNode
+  markLabel: string
+  trail: Trail | null
+  markBar: ReactNode
+  finalPanel: ReactNode
   onMark: (p: Point) => void
-  onMarkDone: () => void
   onBand: (band: string) => void
   actions: (dots: Dots | null) => ReactNode
 }) {
-  const t = useTranslations('viewer')
-  const player = usePlayer(frames.length, mode === 'play', longBaseline ? LONG_BASELINE_FPS : undefined, longBaseline ? LONG_BASELINE_FPS : undefined)
+  const watching = mode === 'play' || mode === 'path'
+  const player = usePlayer(frames.length, watching, longBaseline ? LONG_BASELINE_FPS : undefined, longBaseline ? LONG_BASELINE_FPS : undefined)
   const { index, setIndex, setPlaying, playing } = player
-  usePlaybackKeys(player, mode === 'play')
+  usePlaybackKeys(player, watching)
   const [path, setPath] = useState(false)
   const [outside, setOutside] = useState<Record<string, boolean>>({})
   const current = frames[index]
@@ -116,9 +121,9 @@ function PostStage({
   }, [bestBand, frames, filterKey, setIndex])
 
   useEffect(() => {
-    if (mode !== 'play') setPlaying(false)
-    if (mode === 'mark') setIndex(0)
-  }, [mode, setPlaying, setIndex])
+    if (!watching) setPlaying(false)
+    if (mode === 'mark' && markFrame !== null && index !== markFrame) setIndex(markFrame)
+  }, [mode, watching, markFrame, index, setPlaying, setIndex])
 
   const band = current?.band
   useEffect(() => {
@@ -134,8 +139,6 @@ function PostStage({
     },
     [frames],
   )
-  const step = 'inline-flex size-11 shrink-0 items-center justify-center rounded-full disabled:opacity-40'
-
   return (
     <>
       <MediaStage
@@ -145,38 +148,22 @@ function PostStage({
         onPlaying={setPlaying}
         onIndex={setIndex}
         predicted={predicted}
-        revealPrediction={revealPrediction}
         mode={mode}
         myMarks={myMarks}
-        draftMarks={draftMarks}
+        flash={flash}
+        banner={banner}
+        markLabel={markLabel}
+        trail={trail}
         community={community}
         compareFrames={compareFrames}
         saturated={saturated}
         path={longBaseline && path ? pathMarks : null}
         onOutside={noteOutside}
         onSwipe={(dir) => pickGroup(activeGroup + dir)}
-        onMark={(p) => {
-          onMark(p)
-          if (index + 1 < frames.length) setIndex(index + 1)
-        }}
+        onMark={onMark}
       />
 
-      {mode === 'mark' ? (
-        <div className="flex h-12 items-center gap-1 px-[5px]" aria-live="polite">
-          <button type="button" aria-label={t('prev')} disabled={index <= 0} onClick={() => setIndex(index - 1)} className={step}>
-            <IconStepBack size={24} />
-          </button>
-          <span className="min-w-0 flex-1 truncate text-center text-note">{t('markProgress', { n: index + 1, total: frames.length, marked: markedCount })}</span>
-          <button type="button" aria-label={t('next')} disabled={index >= frames.length - 1} onClick={() => setIndex(index + 1)} className={step}>
-            <IconStepForward size={24} />
-          </button>
-          <button type="button" disabled={saving} onClick={onMarkDone} className="hit-44 mr-2 h-9 shrink-0 rounded-full bg-accent px-4 text-body font-semibold text-on-accent disabled:opacity-50">
-            {saving ? t('markSaving') : t('markDone')}
-          </button>
-        </div>
-      ) : (
-        actions(!longBaseline && groups.length > 1 ? { count: groups.length, active: activeGroup, onPick: pickGroup } : null)
-      )}
+      {mode === 'mark' ? markBar : mode === 'path' ? finalPanel : actions(!longBaseline && groups.length > 1 ? { count: groups.length, active: activeGroup, onPick: pickGroup } : null)}
 
       {mode === 'compare' && mixedReleases && (
         <div className="px-3 pb-2">
@@ -184,14 +171,104 @@ function PostStage({
         </div>
       )}
 
-      {mode === 'play' && frames.length > 1 && (
+      {watching && frames.length > 1 && (
         <div className="px-3 pb-2">
           <PlayerBar dense playback={player} seconds={seconds} dates={dates} outside={!!(current && outside[current.src])} thumb={thumb} />
         </div>
       )}
 
-      {longBaseline && <EraTimeline frames={frames} index={index} onPick={setIndex} path={path} onPath={setPath} />}
+      {longBaseline && mode !== 'mark' && <EraTimeline frames={frames} index={index} onPick={setIndex} path={path} onPath={setPath} />}
     </>
+  )
+}
+
+function trailOf(marks: Point[], predicted: Map<number, { x: number; y: number }>): Trail {
+  const mine = [...marks].sort((a, b) => a.frame - b.frame)
+  return { mine, predicted: mine.flatMap((m) => predicted.get(m.frame) ?? []) }
+}
+
+function MarkKeys({ onUndo, onStop }: { onUndo: () => void; onStop: () => void }) {
+  const latest = useRef({ onUndo, onStop })
+  useEffect(() => {
+    latest.current = { onUndo, onStop }
+  })
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (isTyping(e.target) || modalCount()) return
+      const undoKey = (e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey) && !e.shiftKey
+      if (undoKey || (e.key === 'Backspace' && plainKey(e))) {
+        e.preventDefault()
+        latest.current.onUndo()
+      } else if (e.key === 'Escape' && plainKey(e)) latest.current.onStop()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+  return null
+}
+
+function MarkBar({ saving, canUndo, onUndo, onStop }: { saving: boolean; canUndo: boolean; onUndo: () => void; onStop: () => void }) {
+  const t = useTranslations('viewer')
+  return (
+    <div className="flex h-12 items-center justify-between gap-2 px-2" data-testid="mark-bar">
+      <button type="button" onClick={onUndo} disabled={saving || !canUndo} className="hit-44 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-note font-medium text-text-secondary disabled:opacity-40">
+        <IconUndo size={18} />
+        {t('markUndo')}
+      </button>
+      {saving && (
+        <span role="status" className="text-note text-text-secondary">
+          {t('markSaving')}
+        </span>
+      )}
+      <IconButton label={t('markClose')} onClick={onStop}>
+        <IconClose size={24} />
+      </IconButton>
+    </div>
+  )
+}
+
+function PathPanel({ predicted, people, markAll, onMarkAll, onDone }: { predicted: boolean; people: number; markAll: number | null; onMarkAll: () => void; onDone: () => void }) {
+  const t = useTranslations('viewer')
+  return (
+    <div className="px-3 pb-1 pt-2" data-testid="mark-final">
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-ui font-semibold">{t('pathTitle')}</h2>
+          <p className="text-note leading-snug text-text-secondary">
+            {t('pathMine')}
+            {predicted && ` ${t('pathPredicted')}`}
+          </p>
+          {people > 0 && <p className="text-note text-text-secondary">{t('markPeople', { people })}</p>}
+        </div>
+        <Button variant="primary" className="h-9 shrink-0 px-4" onClick={onDone}>
+          {t('markDone')}
+        </Button>
+      </div>
+      {markAll !== null && (
+        <button type="button" onClick={onMarkAll} className="hit-44 mt-1 inline-flex min-h-8 items-center text-note text-link">
+          {t('markAll', { total: markAll })}
+        </button>
+      )}
+    </div>
+  )
+}
+
+function MarkBanner({ first, name, bright, n, total }: { first: boolean; name: string; bright: boolean; n: number; total: number }) {
+  const t = useTranslations('viewer')
+  if (first) {
+    return (
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-media-scrim px-4 pb-3 pt-2.5 text-center text-on-media" data-testid="mark-banner">
+        <p className="text-title-sm font-bold leading-tight [text-wrap:balance]">{t('markTap', { name })}</p>
+        <p className="mt-0.5 text-note leading-snug text-on-media-muted">{bright ? t('markHintBright') : t('markMoves')}</p>
+      </div>
+    )
+  }
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center" aria-live="polite">
+      <span className="rounded-full bg-media-scrim px-2.5 py-0.5 text-meta font-medium text-on-media" data-testid="mark-count">
+        {t('markCount', { n: Math.min(n, total), total })}
+      </span>
+    </div>
   )
 }
 
@@ -225,7 +302,10 @@ export function PostViewer({ id }: { id: string }) {
   const [wave, setWave] = useState<number | null>(null)
   const [mode, setMode] = useState<StageMode>(params.get('mark') ? 'mark' : params.get('compare') ? 'compare' : 'play')
   const [draft, setDraft] = useState<Point[]>([])
-  const [result, setResult] = useState<Point[] | null>(null)
+  const [plan, setPlan] = useState<number[] | null>(null)
+  const [step, setStep] = useState(0)
+  const [flash, setFlash] = useState<Point | null>(null)
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [prediction, setPrediction] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const bandsSeen = useRef(new Set<string>())
@@ -245,6 +325,11 @@ export function PostViewer({ id }: { id: string }) {
   )
   const frames = useMemo(() => seq?.frames ?? [], [seq])
   const pathMarks = useMemo(() => (data?.post.marks ?? []).map((m) => ({ x: m.x, y: m.y })), [data])
+  const originalFrames = sequences?.original.frames
+  const markFrames = useMemo(() => plan ?? markPlan(originalFrames ?? []), [plan, originalFrames])
+  const marking = mode === 'mark'
+
+  useEffect(() => () => clearTimeout(flashTimer.current), [])
 
   const userId = user?.id
   const onBand = useCallback(
@@ -285,42 +370,82 @@ export function PostViewer({ id }: { id: string }) {
   const compareFrames: [Frame, Frame] | null = pairSource.length > 1 ? [pairSource[0] as Frame, pairSource[pairSource.length - 1] as Frame] : null
   const mixedReleases = !!compareFrames && compareFrames[0].release !== compareFrames[1].release && compareFrames.every((f) => f.release.startsWith('qr'))
   const totalTags = data.tags.counts ? Object.values(data.tags.counts).reduce((a, b) => a + b, 0) : 0
-  const markedCount = new Set([...draft, ...data.my_marks].map((m) => m.frame)).size
   const original = filter === 'original'
+  const predicted = seq?.predicted ?? NO_PREDICTION
 
-  const startMark = () => {
+  const stopMark = () => {
+    clearTimeout(flashTimer.current)
+    setFlash(null)
+    setDraft([])
+    setMode('play')
+  }
+
+  const startMark = (all = false) => {
     if (!user) return ask('mark')
+    if (marking && !all) return stopMark()
+    const mine = new Set(data.my_marks.map((m) => m.frame))
+    clearTimeout(flashTimer.current)
     setFilter('original')
     setWave(null)
-    if (mode !== 'mark') setResult(null)
-    setMode(mode === 'mark' ? 'play' : 'mark')
+    setDraft([])
+    setFlash(null)
+    setStep(0)
+    setPlan(all ? sequences.original.frames.flatMap((_, i) => (mine.has(i) ? [] : [i])) : null)
+    setMode('mark')
   }
   const shareIt = () => void share({ title, path: `/p/${post.id}` })
 
-  const closeResult = () => {
-    setResult(null)
+  const closePath = () => {
+    setMode('play')
     if (gain) celebrate(gain.xp, gain.badges)
     setGain(null)
   }
 
-  const finishMarking = () => {
-    if (!draft.length) return setMode('play')
-    const marks = draft
+  const finishMarking = (marks: Point[]) => {
+    if (!user) return ask('mark')
     save.mutate(marks, {
       onSuccess: (r) => {
         setDraft([])
-        setMode('play')
-        setResult(marks)
+        setMode('path')
         setGain({ xp: r.xp, badges: r.new_badges })
       },
       onError: () => toast({ kind: 'info', key: 'viewer.markFailed' }),
     })
   }
 
+  const pick = (p: Point) => {
+    const frame = markFrames[step]
+    if (flash || save.isPending || frame === undefined) return
+    const mark = { frame, x: Math.round(p.x * 1e4) / 1e4, y: Math.round(p.y * 1e4) / 1e4 }
+    const next = [...draft.filter((m) => m.frame !== frame), mark]
+    setDraft(next)
+    setFlash(mark)
+    flashTimer.current = setTimeout(() => {
+      setFlash(null)
+      if (step + 1 < markFrames.length) setStep(step + 1)
+      else finishMarking(next)
+    }, FLASH_MS)
+  }
+
+  const undo = () => {
+    if (save.isPending) return
+    if (flash) {
+      clearTimeout(flashTimer.current)
+      setDraft((d) => d.filter((m) => m.frame !== flash.frame))
+      setFlash(null)
+      return
+    }
+    const back = step >= markFrames.length ? markFrames.length - 1 : step - 1
+    const frame = markFrames[back]
+    if (back < 0 || frame === undefined) return
+    setDraft((d) => d.filter((m) => m.frame !== frame))
+    setStep(back)
+  }
+
   const actions = (dots: Dots | null) => (
     <ActionRow
       tag={{ onClick: () => setSheet('tags') }}
-      mark={{ onClick: startMark, active: mode === 'mark' }}
+      mark={{ onClick: () => startMark(), active: marking }}
       colours={{ onClick: () => setSheet('colours'), active: !original }}
       save={{ onClick: () => toggleSaved(post.id) }}
       saved={saved}
@@ -332,7 +457,7 @@ export function PostViewer({ id }: { id: string }) {
   return (
     <main className="pb-6">
       <TopBar title={t('title')} />
-      <PostHeader item={data} onMore={() => setSheet('more')} />
+      {!marking && <PostHeader item={data} onMore={() => setSheet('more')} />}
 
       {isChart ? (
         <>
@@ -347,28 +472,39 @@ export function PostViewer({ id }: { id: string }) {
           frames={frames}
           groupType={original ? post.type : 'timelapse'}
           filterKey={filter}
-          predicted={seq?.predicted ?? NO_PREDICTION}
+          predicted={predicted}
           mode={mode}
           longBaseline={longBaseline}
           bestBand={profile?.best_bands[0]}
           compareFrames={compareFrames}
           mixedReleases={mixedReleases}
           myMarks={original ? data.my_marks : []}
-          draftMarks={original ? draft : []}
           community={original ? (data.community_marks?.frames ?? null) : null}
-          revealPrediction={!!result}
           saturated={object.saturation === 'heavy'}
           pathMarks={pathMarks}
           frameRef={frameRef}
-          markedCount={markedCount}
-          saving={save.isPending}
-          onMark={(p) => setDraft((d) => [...d.filter((x) => x.frame !== p.frame), p])}
-          onMarkDone={finishMarking}
+          markFrame={marking ? (markFrames[step] ?? null) : null}
+          flash={flash}
+          banner={<MarkBanner first={step === 0} name={object.name} bright={object.saturation === 'heavy'} n={step + 1} total={markFrames.length} />}
+          markLabel={t('markPad', { name: object.name })}
+          trail={mode === 'path' ? trailOf(data.my_marks, predicted) : null}
+          markBar={<MarkBar saving={save.isPending} canUndo={step > 0 || !!flash} onUndo={undo} onStop={stopMark} />}
+          finalPanel={
+            <PathPanel
+              predicted={predicted.size > 0}
+              people={data.community_marks?.people ?? 0}
+              markAll={data.my_marks.length < post.frames.length ? post.frames.length : null}
+              onMarkAll={() => startMark(true)}
+              onDone={closePath}
+            />
+          }
+          onMark={pick}
           onBand={onBand}
           actions={actions}
         />
       )}
 
+      {(mode === 'play' || mode === 'compare') && (
       <div className="px-3">
         {!isChart && (seq?.predicted.size ?? 0) > 0 && (
           <button type="button" onClick={() => setPrediction(true)} className="hit-44 mb-1 inline-flex min-h-9 items-center gap-1.5 text-note text-text-secondary">
@@ -403,6 +539,7 @@ export function PostViewer({ id }: { id: string }) {
           <time dateTime={post.date_range[1]}>{fmt.date(post.date_range[1] ?? post.date_range[0] ?? '')}</time>, {tp(`types.${post.type}`)}
         </p>
       </div>
+      )}
 
       <MoreSheet
         open={sheet === 'more'}
@@ -453,6 +590,7 @@ export function PostViewer({ id }: { id: string }) {
         }}
         sliderFrame={sliderFrame}
       />
+      {marking && <MarkKeys onUndo={undo} onStop={stopMark} />}
       <PredictionHelp
         open={prediction}
         onClose={() => setPrediction(false)}
@@ -461,7 +599,6 @@ export function PostViewer({ id }: { id: string }) {
           startMark()
         }}
       />
-      <MarkResult marks={result && !prediction ? result : null} predicted={seq?.predicted ?? NO_PREDICTION} onClose={closeResult} />
     </main>
   )
 }

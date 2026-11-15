@@ -551,8 +551,6 @@
     "compareB": "Later",
     "mark": "Mark",
     "markTitle": "Mark the moving dot",
-    "markHint": "Tap the dot you see in each photo",
-    "markProgress": "Photo {n} of {total}, {marked} marked",
     "markSaving": "Saving",
     "markDone": "Done",
     "markCompare": "{people, plural, one {# person} other {# people}} marked this post. Yellow = predicted, blue = you, pink = community average.",
@@ -605,7 +603,18 @@
     },
     "predictionRow": "Yellow cross: the prediction. Why mark it?",
     "markHintBright": "Centre too bright: tap the middle of the glow",
-    "markFailed": "Couldn't save your marks. Try again."
+    "markFailed": "Couldn't save your marks. Try again.",
+    "markTap": "Tap {name}",
+    "markMoves": "It moves a little in each photo",
+    "markCount": "{n} of {total}",
+    "markUndo": "Undo",
+    "markClose": "Stop marking",
+    "markPad": "Photo: tap where {name} is. With a keyboard, move with the arrows and press Enter.",
+    "markAll": "Mark all {total}",
+    "markPeople": "{people, plural, one {# person marked} other {# people marked}}",
+    "pathTitle": "Your path",
+    "pathMine": "Blue: your marks.",
+    "pathPredicted": "Dashed yellow: the prediction, which is a calculation."
   },
   "search": {
     "title": "Search",
@@ -985,17 +994,18 @@
     "retry": "Try again",
     "trace": {
       "cancel": "Cancel marking",
-      "photo": "Photo {n} of {total}",
       "reviewTitle": "Check the path",
       "reviewSub": "Tap a mark to redo it",
-      "first": "Tap the dot that moves.",
-      "next": "Now tap it in this photo.",
       "missing": "Not in this photo",
-      "count": "{n} of {total} photos marked.",
+      "count": "{n} of {total}",
       "needTwo": "Mark the dot in at least 2 photos.",
       "redoOne": "Redo the mark on photo {n}",
       "redo": "Redo",
-      "confirm": "Confirm"
+      "confirm": "Confirm",
+      "reviewCount": "{n} of {total} photos marked.",
+      "tap": "Tap where it changed",
+      "undo": "Undo",
+      "pad": "Photo {n}: tap where it changed. With a keyboard, move with the arrows and press Enter."
     },
     "confirm": {
       "still": "Nothing moved",
@@ -1422,15 +1432,7 @@
     "whyTitle": "Why mark it yourself?",
     "whyBody": "The cross is a calculation and can be wrong. Your mark shows where a person really sees the object. If many people mark far from the cross, that is a sign it is worth checking.",
     "whyHonest": "For now, marks appear here to compare. They do not yet count toward the answer to \"Did anything move?\".",
-    "markNow": "Mark it myself",
-    "resultTitle": "{n, plural, one {# photo marked} other {# photos marked}}",
-    "result": {
-      "close": "Very close to the prediction",
-      "near": "Near the prediction",
-      "far": "Away from the prediction"
-    },
-    "resultGap": "Typically {pct}% of the photo's width from the yellow cross. Bright stars are wide and tap targets are big, so small gaps are normal.",
-    "gotIt": "Got it"
+    "markNow": "Mark it myself"
   },
   "meIntro": {
     "title": "How your profile works",

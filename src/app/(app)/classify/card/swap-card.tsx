@@ -9,11 +9,12 @@ import { PhotoSourceSheet, UnderstandSheet } from '@/components/classify/swap-sh
 import { VoiceMark } from '@/components/classify/voices'
 import { usePlayback, usePlaybackKeys } from '@/components/player/use-playback'
 import { ScreenTour } from '@/components/shell/onboarding'
+import { MarkPad } from '@/components/ui/mark-pad'
 import { ApiError, type DeckCard, type VoteResult } from '@/lib/api/client'
 import { useVote } from '@/lib/api/hooks'
 import { isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
 import { SKY_FOV_DEG } from '@/lib/explore/sky-card'
-import { cx, formatDateTime, formatShortDate } from '@/lib/format'
+import { cx, formatShortDate } from '@/lib/format'
 import { isTyping, ownsArrows, plainKey } from '@/lib/keys'
 import { modalCount } from '@/lib/modal-history'
 import { greyOf, snapTap } from '@/lib/snap'
@@ -24,7 +25,7 @@ import { SwapHeader, SwapShell } from '../shell'
 import { cardReducer, initCard, isDeciding, isLooking, isSheetOpen, isTracing, tracePositions, type CardAction, type CardState, type TraceMark } from './card-machine'
 import { GuideRing, HintRings, useHintLine, useOutside, type Mark } from './marks'
 import { ConfirmSheet, FailedSheet, NotePhase, ResultSheet } from './sheets'
-import { pickMark, TraceBar, TraceHeader, TraceLayer } from './trace'
+import { pickMark, TraceBanner, TraceBar, TraceHeader, TraceLayer } from './trace'
 
 export type PlayCard = DeckCard | SkyPlayCard
 export type Lesson = 'moves' | 'still' | 'glitch'
@@ -33,7 +34,7 @@ const FRAME_MS = 700
 const SWING_PX = 64
 const SWING_S = 1.3
 const SWING_WAIT_MS = 2500
-const TRACE_STEP_MS = 350
+const TRACE_STEP_MS = 300
 const SWAP_TOUR_TIP = 'swapTour'
 const BLACK_EDGE_TIP = 'blackEdge'
 
@@ -186,6 +187,30 @@ export function SwapCard({
     if (!pending) dispatch({ type: 'trace', mark: null })
   }
 
+  const back = useCallback(() => {
+    if (pending) setPending(null)
+    else dispatch({ type: 'back' })
+  }, [pending])
+
+  const traceAt = (u: number, v: number) => {
+    if (pending) return
+    const s = snapTap(grey, state.at, u, v)
+    setPending({ x: Math.round(u * 1e4) / 1e4, y: Math.round(v * 1e4) / 1e4, ax: s.u, ay: s.v })
+  }
+
+  useEffect(() => {
+    if (mode !== 'tracing' && mode !== 'review') return
+    const onKey = (e: KeyboardEvent) => {
+      if (isTyping(e.target) || modalCount()) return
+      const undoKey = (e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey) && !e.shiftKey
+      if (!undoKey && !(e.key === 'Backspace' && plainKey(e))) return
+      e.preventDefault()
+      back()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [back, mode])
+
   useEffect(() => {
     if (lesson || !outside[panel] || blackSeen) return
     setBlackNote(true)
@@ -250,11 +275,8 @@ export function SwapCard({
   usePlaybackKeys(playback, !touring, false)
 
   const onTap = (u: number, v: number) => {
-    if (mode === 'tracing') {
-      if (pending) return
-      const s = snapTap(grey, state.at, u, v)
-      setPending({ x: Math.round(u * 1e4) / 1e4, y: Math.round(v * 1e4) / 1e4, ax: s.u, ay: s.v })
-    } else if (reviewing) {
+    if (mode === 'tracing') traceAt(u, v)
+    else if (reviewing) {
       const frame = pickMark(state.marks, u, v)
       if (frame >= 0) dispatch({ type: 'retrace', frame })
       else setPlaying(!playback.playing)
@@ -269,6 +291,9 @@ export function SwapCard({
       {hints && <HintRings hints={hints} panel={panel} />}
       {mode === 'result' && mark && verdict?.mark && <VoiceMark voice="known" u={mark.u} v={mark.v} />}
       {tracing && <TraceLayer marks={state.marks.map((m, i) => (i === state.at && pending ? pending : m))} at={state.at} review={reviewing} panel={panel} />}
+      {mode === 'tracing' && card.sprite && (
+        <MarkPad key={state.at} source={{ src: card.sprite, cols: img ? Math.max(1, Math.round((img.naturalWidth * 2) / img.naturalHeight)) : n, rows: 2, col: panel, row }} label={tt('pad', { n: state.at + 1 })} onPick={traceAt} />
+      )}
     </>
   )
 
@@ -292,15 +317,15 @@ export function SwapCard({
   const coach = lesson ? (mustLookFirst ? t('guide.look') : lesson === 'moves' ? t('guide.answer') : t(`guide.${lesson}`)) : null
 
   return (
-    <SwapShell>
+    <SwapShell wide={tracing}>
       <div className={topDim} inert={sheetOpen || mode === 'tools' || undefined}>
         <div className="px-1 pt-2.5">
           <FrameBars n={n} index={panel} />
         </div>
         {tracing ? (
           <TraceHeader
-            title={reviewing ? tt('reviewTitle') : tt('photo', { n: state.at + 1, total: n })}
-            sub={reviewing ? tt('reviewSub') : formatDateTime(new Date(Date.parse(card.t0) + (offsets[state.at] ?? 0) * 1000).toISOString(), fmt.locale)}
+            title={reviewing ? tt('reviewTitle') : null}
+            sub={reviewing ? tt('reviewSub') : null}
             onClose={undoChoice}
             onHelp={onHelp}
           />
@@ -323,12 +348,13 @@ export function SwapCard({
         onTap={onTap}
         onHold={setFrozen}
         overlay={overlay}
+        banner={mode === 'tracing' ? <TraceBanner at={state.at} total={n} /> : null}
         hint={swinging}
         ring={mode === 'tracing' ? 'yes' : deciding && !leaving ? (answer === 'moves' ? 'yes' : 'chosen') : 'rest'}
         leaving={leaving}
       />
       {tracing ? (
-        <TraceBar marks={state.marks} at={state.at} review={reviewing} onMissing={missing} onRetrace={(frame) => dispatch({ type: 'retrace', frame })} onRedo={() => dispatch({ type: 'redo' })} onConfirm={confirm} />
+        <TraceBar marks={state.marks} at={state.at} review={reviewing} onMissing={missing} onBack={back} onRetrace={(frame) => dispatch({ type: 'retrace', frame })} onRedo={() => dispatch({ type: 'redo' })} onConfirm={confirm} />
       ) : mode === 'tools' ? (
         <div className="flex min-h-0 flex-1 flex-col" data-testid="swap-lower">
           <PhotoBar playback={playback} offsets={offsets} open strip={<ToolsStrip playback={playback} sprite={card.sprite} offsets={offsets} row={row} />} onTools={() => dispatch({ type: 'tools', open: false })} />
