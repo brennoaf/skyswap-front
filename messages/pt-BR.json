@@ -848,7 +848,9 @@
         "flash": "Palpite: um ponto em uma foto só. Pode ser defeito."
       },
       "elsewhere": "Os palpites estão em outras fotos.",
-      "none": "Sem palpites neste cartão."
+      "none": "Sem palpites neste cartão.",
+      "ruler": "Comparou {n} fotos de {from} a {to}. As estrelas paradas variam {arcsec}″ entre visitas; só conta o que passa de 5 vezes isso.",
+      "rulerDay": "Comparou {n} fotos de {date}. As estrelas paradas variam {arcsec}″ entre visitas; só conta o que passa de 5 vezes isso."
     },
     "help": {
       "open": "Como olhar",
@@ -865,7 +867,9 @@
       "emptyTitle": "É normal não achar nada",
       "emptyBody": "A maioria dos cartões não tem novidade. Responder que nada mudou também ajuda.",
       "blackTitle": "Partes pretas",
-      "blackBody": "Parte preta na borda: o telescópio não fotografou essa área. Estrela com centro preto: ela é forte demais para a câmera. É normal."
+      "blackBody": "Parte preta na borda: o telescópio não fotografou essa área. Estrela com centro preto: ela é forte demais para a câmera. É normal.",
+      "robotTitle": "Os palpites da máquina",
+      "robotBody": "O robô compara as fotos e marca os pontos que podem ter mudado. Num teste em 20 pedaços do céu sorteados, ele acusou movimento em 2: um era o asteroide conhecido (2913) Horta, o outro não bateu com nada conhecido. Use os palpites para saber onde olhar, nunca como resposta."
     },
     "practice": "Treino: sem pontos.",
     "newBadge": "Selo novo: {name}.",

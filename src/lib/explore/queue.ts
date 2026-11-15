@@ -4,6 +4,7 @@ import { exploreCellsQuery, exploreMapQuery } from '@/lib/api/queries'
 import { ang2pixNest, loadCells, pickCell, type SkyCell } from '@/lib/sky'
 import { currentConnection, isMetered, prefetchCount } from './budget'
 import { runFlashlight, type CardHint } from './flashlight'
+import type { Ruler } from './ruler'
 import { randomSpot, type Spot } from './sampler'
 import { INDEX_BASE, warmSpot } from './lookup'
 import { buildSkyCard, buildSpotCard, SKY_FOV_DEG, type BuildGuard, type SkyCardDraft } from './sky-card'
@@ -15,7 +16,7 @@ const THUMB_PX = 96
 const THUMB_QUALITY = 0.7
 
 export type SkyRegistration = { ra: number; dec: number; fov_deg: number; band: string; size_px: number; frames: { key: string; mjd: number; wl_um: number; visit: number }[] }
-export type SkyPlayCard = DeckCard & { kind: 'sky'; ra: number; dec: number; band: string; hints: CardHint[]; reg: SkyRegistration; owner: string }
+export type SkyPlayCard = DeckCard & { kind: 'sky'; ra: number; dec: number; band: string; hints: CardHint[]; ruler: Ruler | null; reg: SkyRegistration; owner: string }
 
 type Sky = { cells: SkyCell[] | null; indexed: Set<number>; bytes: Map<number, number>; looks: Record<number, number> }
 
@@ -102,7 +103,7 @@ export async function registerSky(reg: SkyRegistration, thumb?: string) {
 }
 
 async function finish(draft: SkyCardDraft, reg: SkyRegistration, thumb: string | undefined, user: string): Promise<SkyPlayCard> {
-  const [done, hints] = await Promise.all([
+  const [done, robot] = await Promise.all([
     registerSky(reg, thumb),
     runFlashlight(
       draft.exposures.map((e) => e.img),
@@ -114,7 +115,7 @@ async function finish(draft: SkyCardDraft, reg: SkyRegistration, thumb: string |
   ])
   const sprite = await toBlobUrl(draft.pixels)
   const t0 = new Date(((draft.exposures[0]?.mjd ?? 40587) - 40587) * 86400000).toISOString()
-  return { id: done.id, sprite, n_frames: done.offsets_s.length, offsets_s: done.offsets_s, t0, kind: 'sky', ra: done.ra, dec: done.dec, band: draft.band, hints, reg, owner: user }
+  return { id: done.id, sprite, n_frames: done.offsets_s.length, offsets_s: done.offsets_s, t0, kind: 'sky', ra: done.ra, dec: done.dec, band: draft.band, hints: robot.hints, ruler: robot.ruler, reg, owner: user }
 }
 
 const keepBuilding: BuildGuard = () => active

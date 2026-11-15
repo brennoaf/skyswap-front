@@ -1,5 +1,6 @@
 import type { FlashlightHint } from '@/lib/sky'
 import type { TrackPoint } from './moving'
+import type { Ruler } from './ruler'
 
 export type HintKind = 'moved' | 'appeared' | 'missing' | 'flash'
 
@@ -42,18 +43,22 @@ export function visitHours(visits: number[], mjds: number[]): number[] {
   return sum.map((s, v) => s / (count[v] ?? 1))
 }
 
-export function runFlashlight(images: Float32Array[], variances: Float32Array[], visits: number[], mjds: number[], n: number): Promise<CardHint[]> {
-  if (typeof Worker === 'undefined' || new Set(visits).size < 2) return Promise.resolve([])
+export type Robot = { hints: CardHint[]; ruler: Ruler | null }
+
+export function runFlashlight(images: Float32Array[], variances: Float32Array[], visits: number[], mjds: number[], n: number): Promise<Robot> {
+  if (typeof Worker === 'undefined' || new Set(visits).size < 2) return Promise.resolve({ hints: [], ruler: null })
+  const span = { photos: images.length, fromMjd: Math.min(...mjds), toMjd: Math.max(...mjds) }
   return new Promise((resolve) => {
     const worker = new Worker(new URL('./flashlight.worker.ts', import.meta.url), { type: 'module' })
-    const finish = (hints: CardHint[]) => {
+    const finish = (robot: Robot) => {
       clearTimeout(timer)
       worker.terminate()
-      resolve(hints)
+      resolve(robot)
     }
-    const timer = setTimeout(() => finish([]), TIMEOUT_MS)
-    worker.onmessage = (e: MessageEvent<{ hints: FlashlightHint[]; moved: TrackPoint[] }>) => finish(toCardHints(e.data.hints, n, e.data.moved))
-    worker.onerror = () => finish([])
+    const timer = setTimeout(() => finish({ hints: [], ruler: null }), TIMEOUT_MS)
+    worker.onmessage = (e: MessageEvent<{ hints: FlashlightHint[]; moved: TrackPoint[]; still: { px: number; stars: number } | null }>) =>
+      finish({ hints: toCardHints(e.data.hints, n, e.data.moved), ruler: e.data.still ? { ...span, scatterPx: e.data.still.px, stars: e.data.still.stars } : null })
+    worker.onerror = () => finish({ hints: [], ruler: null })
     worker.postMessage({ id: 0, images, variances, visits, hours: visitHours(visits, mjds), n })
   })
 }

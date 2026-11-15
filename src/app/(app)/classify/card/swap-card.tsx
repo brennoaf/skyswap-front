@@ -12,7 +12,8 @@ import { ScreenTour } from '@/components/shell/onboarding'
 import { ApiError, type DeckCard, type VoteResult } from '@/lib/api/client'
 import { useVote } from '@/lib/api/hooks'
 import { isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
-import { cx, formatDateTime } from '@/lib/format'
+import { SKY_FOV_DEG } from '@/lib/explore/sky-card'
+import { cx, formatDateTime, formatShortDate } from '@/lib/format'
 import { isTyping, ownsArrows, plainKey } from '@/lib/keys'
 import { modalCount } from '@/lib/modal-history'
 import { greyOf, snapTap } from '@/lib/snap'
@@ -273,6 +274,16 @@ export function SwapCard({
 
   const labels = { still: t('still'), moves: t('moves'), glitch: t('glitch'), unsure: t('unsure') }
   const note = hintLine ?? (blackNote && outside[panel] ? tp('outside') : null)
+  const ruler = hints && sky?.ruler ? sky.ruler : null
+  const rulerLine = ruler
+    ? (() => {
+        const day = (m: number) => formatShortDate(new Date((m - 40587) * 86_400_000).toISOString(), fmt.locale)
+        const arcsec = ((ruler.scatterPx * SKY_FOV_DEG * 3600) / Math.max(1, sky?.reg.size_px ?? 1)).toLocaleString(fmt.locale, { maximumFractionDigits: 1 })
+        const from = day(ruler.fromMjd)
+        const to = day(ruler.toMjd)
+        return from === to ? t('flashlight.rulerDay', { n: ruler.photos, date: from, arcsec }) : t('flashlight.ruler', { n: ruler.photos, from, to, arcsec })
+      })()
+    : null
 
   const deciding = isDeciding(state)
   const sheetOpen = isSheetOpen(state)
@@ -339,6 +350,11 @@ export function SwapCard({
               note && (
                 <p role="status" className="mb-[18px] text-center text-ui leading-snug text-text-secondary [text-wrap:balance]">
                   {note}
+                  {rulerLine && (
+                    <span className="mt-1 block text-note" data-testid="robot-ruler">
+                      {rulerLine}
+                    </span>
+                  )}
                 </p>
               )
             )}

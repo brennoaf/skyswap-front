@@ -848,7 +848,9 @@
         "flash": "Guess: a spot in one photo only. It may be a defect."
       },
       "elsewhere": "The guesses are in other photos.",
-      "none": "No guesses for this card."
+      "none": "No guesses for this card.",
+      "ruler": "Compared {n} photos from {from} to {to}. Still stars vary by {arcsec}″ between visits; only what passes 5 times that counts.",
+      "rulerDay": "Compared {n} photos from {date}. Still stars vary by {arcsec}″ between visits; only what passes 5 times that counts."
     },
     "help": {
       "open": "How to look",
@@ -865,7 +867,9 @@
       "emptyTitle": "Finding nothing is normal",
       "emptyBody": "Most cards have nothing new. Answering that nothing moved helps too.",
       "blackTitle": "Black areas",
-      "blackBody": "Black along the edge: the telescope did not photograph this part. A star with a black center: it is too bright for the camera. This is normal."
+      "blackBody": "Black along the edge: the telescope did not photograph this part. A star with a black center: it is too bright for the camera. This is normal.",
+      "robotTitle": "The machine guesses",
+      "robotBody": "The robot compares the photos and marks spots that may have changed. In a test on 20 random patches of sky, it pointed to movement in 2: one was the known asteroid (2913) Horta, the other matched nothing known. Use its guesses to know where to look, never as the answer."
     },
     "practice": "Practice: no points.",
     "newBadge": "New badge: {name}.",
