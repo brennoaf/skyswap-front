@@ -430,7 +430,8 @@
       "coma": "O brilho é medido como se fosse um ponto só, então perde parte da cabeleira do cometa.",
       "candidate": "O catálogo SIMBAD lista este objeto como possível anã marrom.",
       "notDetected": "Não detectado: na posição prevista, o sinal ficou fraco demais para separar do ruído em todas as cores e passagens."
-    }
+    },
+    "alsoFound": "As pessoas também acharam este objeto no céu aleatório."
   },
   "charts": {
     "wavelength": "Comprimento de onda (µm)",
@@ -1453,8 +1454,6 @@
     "switchLabel": "Escolha o que ver",
     "switchPosts": "Posts",
     "switchCommunity": "Comunidade",
-    "lead": "Cada item veio de respostas às cegas das pessoas. Um candidato não é uma descoberta até alguém conferir.",
-    "skyPatch": "Pedaço do céu",
     "patchTitle": "Céu em {coords}",
     "postTitle": "Achado",
     "example": "Exemplo",
@@ -1616,9 +1615,7 @@
     "openCards": "{n, plural, one {# cartão em aberto esperando olhares} other {# cartões em aberto esperando olhares}}",
     "goalLine": "Meta do mês: {count} de {target} cartões olhados",
     "tabsLabel": "Ordem",
-    "tabNew": "Novidades",
     "tabPopular": "Popular",
-    "popularNote": "Popular mostra o que as pessoas estão olhando, não o que está certo. Confira a situação em cada item.",
     "crowd": {
       "alt": "Foto {n} com a mancha de onde as pessoas marcaram",
       "photos": "Fotos",
@@ -1646,7 +1643,18 @@
       "known": "Pode ser {name} (palpite)",
       "unknown": "Nada catalogado aqui até agora",
       "download": "Baixar posições"
-    }
+    },
+    "tabOpen": "Em aberto",
+    "tabSolved": "Resolvidos",
+    "tabLine": {
+      "popular": "Onde mais gente está olhando e discutindo.",
+      "open": "Ninguém sabe ainda o que é. Suas respostas ajudam.",
+      "solved": "Já se sabe o que é: algo dos catálogos ou um defeito da foto."
+    },
+    "nothingYet": "Nada aqui ainda.",
+    "knownAs": "Já conhecido: {name}",
+    "seeProfile": "Ver perfil de {name}",
+    "photoAlt": "Primeira foto de {title}"
   },
   "player": {
     "counter": "Foto {n} de {total}",

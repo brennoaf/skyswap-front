@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { api } from '@/lib/api/client'
@@ -17,9 +18,42 @@ const TONE: Record<string, string> = {
   in_review: 'bg-warning/15 text-warning',
 }
 
-export function StatePill({ state }: { state: string }) {
+export function StatePill({ state, reason = null }: { state: string; reason?: string | null }) {
   const t = useTranslations('community.states')
-  return <span className={cx('inline-flex h-6 items-center rounded-full px-2.5 text-meta font-semibold', TONE[state] ?? 'bg-surface text-text-secondary')}>{t(`${state}.label`)}</span>
+  const tc = useTranslations('community')
+  return (
+    <span className={cx('inline-flex h-6 min-w-0 items-center rounded-full px-2.5 text-meta font-semibold', TONE[state] ?? 'bg-surface text-text-secondary')} data-testid="state-pill">
+      <span className="truncate">{state === 'known' && reason ? tc('knownAs', { name: reason }) : t(`${state}.label`)}</span>
+    </span>
+  )
+}
+
+export function FindingPhoto({ finding, alt }: { finding: Pick<FindingSummary, 'photo' | 'photo_cols' | 'mark'>; alt: string }) {
+  if (!finding.photo) return null
+  const cols = Math.max(1, finding.photo_cols)
+  return (
+    <span className="relative block aspect-square w-full overflow-hidden bg-media-bg" data-testid="finding-photo">
+      <span
+        role="img"
+        aria-label={alt}
+        className="pixelated absolute inset-0 bg-no-repeat"
+        style={{ backgroundImage: `url(${finding.photo})`, backgroundSize: cols > 1 ? `${cols * 100}% 200%` : 'contain', backgroundPosition: cols > 1 ? '0 0' : 'center' }}
+      />
+      {finding.mark && (
+        <span aria-hidden="true" className="absolute size-9 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent/80" style={{ left: `${finding.mark.x * 100}%`, top: `${finding.mark.y * 100}%` }} data-testid="finding-mark" />
+      )}
+    </span>
+  )
+}
+
+export function ObjectLink({ objectId, name }: { objectId: string | null; name: string | null }) {
+  const t = useTranslations('community')
+  if (!objectId || !name) return null
+  return (
+    <Link href={`/o/${objectId}`} className="inline-flex min-h-11 items-center text-ui font-semibold text-link" data-testid="finding-object">
+      {t('seeProfile', { name })}
+    </Link>
+  )
 }
 
 export function ExamplePill() {

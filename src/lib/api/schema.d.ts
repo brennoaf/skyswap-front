@@ -382,6 +382,7 @@ export interface paths {
                                 gaia: string | null;
                                 wise: string | null;
                             };
+                            finding: string | null;
                             stats: {
                                 posts: number;
                                 passes: number;
@@ -2386,7 +2387,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    tab?: "new" | "popular";
+                    tab?: "new" | "popular" | "open" | "solved";
                     cursor?: number;
                 };
                 header?: never;
@@ -2443,6 +2444,13 @@ export interface paths {
                                         following: boolean;
                                     } | null;
                                 };
+                                photo: string | null;
+                                photo_cols: number;
+                                mark: {
+                                    x: number;
+                                    y: number;
+                                } | null;
+                                object_id: string | null;
                             }[];
                             next_cursor: number | null;
                         };
@@ -2523,6 +2531,13 @@ export interface paths {
                                     following: boolean;
                                 } | null;
                             };
+                            photo: string | null;
+                            photo_cols: number;
+                            mark: {
+                                x: number;
+                                y: number;
+                            } | null;
+                            object_id: string | null;
                             fov_deg: number;
                             offsets_s: number[];
                             checks: {
@@ -2669,6 +2684,13 @@ export interface paths {
                                         following: boolean;
                                     } | null;
                                 };
+                                photo: string | null;
+                                photo_cols: number;
+                                mark: {
+                                    x: number;
+                                    y: number;
+                                } | null;
+                                object_id: string | null;
                             } | null;
                             has_popular: boolean;
                         };
@@ -3467,6 +3489,13 @@ export interface components {
                     following: boolean;
                 } | null;
             };
+            photo: string | null;
+            photo_cols: number;
+            mark: {
+                x: number;
+                y: number;
+            } | null;
+            object_id: string | null;
         };
         FindingSocial: {
             interesting: number;
@@ -3530,6 +3559,13 @@ export interface components {
                         following: boolean;
                     } | null;
                 };
+                photo: string | null;
+                photo_cols: number;
+                mark: {
+                    x: number;
+                    y: number;
+                } | null;
+                object_id: string | null;
             }[];
             next_cursor: number | null;
         };
@@ -3575,6 +3611,13 @@ export interface components {
                     following: boolean;
                 } | null;
             };
+            photo: string | null;
+            photo_cols: number;
+            mark: {
+                x: number;
+                y: number;
+            } | null;
+            object_id: string | null;
             fov_deg: number;
             offsets_s: number[];
             checks: {

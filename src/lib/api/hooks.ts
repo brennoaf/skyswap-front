@@ -186,10 +186,11 @@ export function useExploreCells() {
   return useQuery({ ...exploreCellsQuery, select: (d) => d.cells })
 }
 
-export type CommunityTab = 'new' | 'popular'
+export type CommunityTab = 'popular' | 'open' | 'solved'
 
-export function useCommunityFeed(tab: CommunityTab = 'new') {
+export function useCommunityFeed(tab: CommunityTab, enabled = true) {
   return useInfiniteQuery({
+    enabled,
     queryKey: ['community', 'feed', tab],
     initialPageParam: 0,
     queryFn: async ({ pageParam }) => unwrap(await api.GET('/api/community/feed', { params: { query: { tab, cursor: pageParam } } })),

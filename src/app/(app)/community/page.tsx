@@ -5,12 +5,14 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { CommunitySwitch } from '@/components/community/community-switch'
 import { FindingActions, SocialFacts } from '@/components/community/finding-actions'
-import { ExamplePill, FindingFacts, FirstAnswer, FoundBy, stateBody, StatePill, useFindingTitle } from '@/components/community/finding-parts'
+import { ExamplePill, FindingFacts, FindingPhoto, FirstAnswer, FoundBy, ObjectLink, stateBody, StatePill, useFindingTitle } from '@/components/community/finding-parts'
 import { IconCards, IconChevronRight, IconTarget } from '@/components/icons'
-import { SkyLocator } from '@/components/sky/sky-locator'
 import { Button, Chip, EmptyState, Skeleton, Wordmark } from '@/components/ui/primitives'
 import type { FindingSummary } from '@/lib/api/client'
 import { useCommunityFeed, useCommunityOverview, useGoals, type CommunityTab } from '@/lib/api/hooks'
+
+const TABS: CommunityTab[] = ['popular', 'open', 'solved']
+const TAB_LABEL = { popular: 'tabPopular', open: 'tabOpen', solved: 'tabSolved' } as const
 
 function FindingCard({ finding }: { finding: FindingSummary }) {
   const t = useTranslations('community')
@@ -20,20 +22,19 @@ function FindingCard({ finding }: { finding: FindingSummary }) {
   return (
     <article className="pb-4" aria-label={title}>
       <Link href={href} className="block">
-        <div className="flex min-h-[54px] items-center gap-2 px-3">
+        <div className="flex min-h-[54px] items-center gap-2 px-3 py-1.5">
           <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-surface">
             <IconTarget size={22} />
           </span>
           <span className="min-w-0 flex-1 leading-tight">
             <span className="block truncate text-account font-medium">{title}</span>
-            <span className="block truncate text-meta text-text-secondary">{t('skyPatch')}</span>
+            <span className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
+              {finding.example && <ExamplePill />}
+              <StatePill state={finding.state} reason={finding.reason} />
+            </span>
           </span>
-          {finding.example && <ExamplePill />}
-          <StatePill state={finding.state} />
         </div>
-        <div className="bg-reels-bg px-10 py-3 text-on-media">
-          <SkyLocator ra={finding.ra} dec={finding.dec} name={title} />
-        </div>
+        <FindingPhoto finding={finding} alt={t('photoAlt', { title })} />
       </Link>
       <FindingActions id={finding.id} social={finding.social} lookHref={`${href}?look=1`} />
       <Link href={href} className="block space-y-1 px-3 pt-2">
@@ -42,6 +43,9 @@ function FindingCard({ finding }: { finding: FindingSummary }) {
         <FindingFacts finding={finding} />
         <FoundBy names={finding.credit_names} others={finding.credit_others} />
       </Link>
+      <div className="px-3">
+        <ObjectLink objectId={finding.object_id} name={finding.reason} />
+      </div>
       <div className="px-3 pt-1">
         <FirstAnswer id={finding.id} first={finding.first_vote} />
       </div>
@@ -55,7 +59,7 @@ function Highlight({ finding }: { finding: FindingSummary }) {
   return (
     <Link href={`/community/${encodeURIComponent(finding.id)}`} className="mx-4 mt-3 block rounded-[var(--radius-button)] bg-surface p-3">
       <span className="flex items-center gap-1.5">
-        <StatePill state={finding.state} />
+        <StatePill state={finding.state} reason={finding.reason} />
         {finding.example && <ExamplePill />}
       </span>
       <span className="mt-1.5 block truncate text-ui font-semibold">{title}</span>
@@ -87,10 +91,9 @@ function OpenCards({ n }: { n: number }) {
 export default function CommunityPage() {
   const t = useTranslations('community')
   const overview = useCommunityOverview()
-  const [pick, setPick] = useState<CommunityTab>('new')
-  const hasPopular = !!overview.data?.has_popular
-  const tab: CommunityTab = pick === 'popular' && hasPopular ? 'popular' : 'new'
-  const feed = useCommunityFeed(tab)
+  const [pick, setPick] = useState<CommunityTab | null>(null)
+  const tab: CommunityTab = pick ?? (overview.data?.has_popular ? 'popular' : 'open')
+  const feed = useCommunityFeed(tab, !!overview.data || overview.isError)
   const openCards = overview.data?.open_cards ?? 0
   const sentinel = useRef<HTMLDivElement>(null)
   const items = feed.data?.pages.flatMap((p) => p.items) ?? []
@@ -115,24 +118,25 @@ export default function CommunityPage() {
       <CommunitySwitch />
       <OpenCards n={openCards} />
       {overview.data?.highlight && <Highlight finding={overview.data.highlight} />}
-      {hasPopular && (
-        <div role="group" aria-label={t('tabsLabel')} className="flex gap-2 px-4 pt-3">
-          <Chip active={tab === 'new'} onClick={() => setPick('new')}>
-            {t('tabNew')}
+      <div role="group" aria-label={t('tabsLabel')} className="flex gap-2 px-4 pt-3">
+        {TABS.map((k) => (
+          <Chip key={k} active={tab === k} onClick={() => setPick(k)}>
+            {t(TAB_LABEL[k])}
           </Chip>
-          <Chip active={tab === 'popular'} onClick={() => setPick('popular')}>
-            {t('tabPopular')}
-          </Chip>
-        </div>
-      )}
-      {feed.isLoading && (
+        ))}
+      </div>
+      <p className="px-4 pb-1 pt-2 text-note leading-snug text-text-secondary" data-testid="community-line">
+        {t(`tabLine.${tab}`)}
+      </p>
+      {(feed.isLoading || overview.isLoading) && (
         <div className="space-y-3 p-4" aria-hidden="true">
           <Skeleton className="h-14 w-full" />
           <Skeleton className="h-48 w-full" />
         </div>
       )}
       {feed.isError && <EmptyState title={t('errorTitle')} action={<Button onClick={() => feed.refetch()}>{t('retry')}</Button>} />}
-      {!feed.isLoading && !feed.isError && !items.length && (
+      {!feed.isLoading && !overview.isLoading && !feed.isError && !items.length && tab !== 'open' && <EmptyState title={t('nothingYet')} />}
+      {!feed.isLoading && !overview.isLoading && !feed.isError && !items.length && tab === 'open' && (
         <EmptyState
           title={t('emptyTitle')}
           body={t('emptyBody')}
@@ -145,7 +149,6 @@ export default function CommunityPage() {
           }
         />
       )}
-      {items.length > 0 && <p className="px-4 py-3 text-note leading-snug text-text-secondary">{t(tab === 'popular' ? 'popularNote' : 'lead')}</p>}
       {items.map((f) => (
         <FindingCard key={f.id} finding={f} />
       ))}

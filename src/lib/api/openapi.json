@@ -151,7 +151,11 @@
           "credit_names",
           "credit_others",
           "first_vote",
-          "social"
+          "social",
+          "photo",
+          "photo_cols",
+          "mark",
+          "object_id"
         ],
         "properties": {
           "id": {
@@ -391,6 +395,51 @@
                 ]
               }
             }
+          },
+          "photo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photo_cols": {
+            "type": "integer"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "x",
+                  "y"
+                ],
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "object_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       },
@@ -527,7 +576,11 @@
                 "credit_names",
                 "credit_others",
                 "first_vote",
-                "social"
+                "social",
+                "photo",
+                "photo_cols",
+                "mark",
+                "object_id"
               ],
               "properties": {
                 "id": {
@@ -767,6 +820,51 @@
                       ]
                     }
                   }
+                },
+                "photo": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "photo_cols": {
+                  "type": "integer"
+                },
+                "mark": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "x",
+                        "y"
+                      ],
+                      "properties": {
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "object_id": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             }
@@ -805,6 +903,10 @@
           "credit_others",
           "first_vote",
           "social",
+          "photo",
+          "photo_cols",
+          "mark",
+          "object_id",
           "fov_deg",
           "offsets_s",
           "checks",
@@ -1052,6 +1154,51 @@
                 ]
               }
             }
+          },
+          "photo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "photo_cols": {
+            "type": "integer"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "x",
+                  "y"
+                ],
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "object_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "fov_deg": {
             "type": "number"
@@ -3763,6 +3910,7 @@
                     "field",
                     "pack",
                     "overlays",
+                    "finding",
                     "stats",
                     "following"
                   ],
@@ -4035,6 +4183,16 @@
                           ]
                         }
                       }
+                    },
+                    "finding": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "stats": {
                       "type": "object",
@@ -9089,6 +9247,18 @@
                   "enum": [
                     "popular"
                   ]
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "open"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "solved"
+                  ]
                 }
               ]
             },
@@ -9141,7 +9311,11 @@
                           "credit_names",
                           "credit_others",
                           "first_vote",
-                          "social"
+                          "social",
+                          "photo",
+                          "photo_cols",
+                          "mark",
+                          "object_id"
                         ],
                         "properties": {
                           "id": {
@@ -9381,6 +9555,51 @@
                                 ]
                               }
                             }
+                          },
+                          "photo": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "photo_cols": {
+                            "type": "integer"
+                          },
+                          "mark": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "required": [
+                                  "x",
+                                  "y"
+                                ],
+                                "properties": {
+                                  "x": {
+                                    "type": "number"
+                                  },
+                                  "y": {
+                                    "type": "number"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "object_id": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           }
                         }
                       }
@@ -9446,6 +9665,10 @@
                     "credit_others",
                     "first_vote",
                     "social",
+                    "photo",
+                    "photo_cols",
+                    "mark",
+                    "object_id",
                     "fov_deg",
                     "offsets_s",
                     "checks",
@@ -9693,6 +9916,51 @@
                           ]
                         }
                       }
+                    },
+                    "photo": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "photo_cols": {
+                      "type": "integer"
+                    },
+                    "mark": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "x",
+                            "y"
+                          ],
+                          "properties": {
+                            "x": {
+                              "type": "number"
+                            },
+                            "y": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "object_id": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     },
                     "fov_deg": {
                       "type": "number"
@@ -10106,7 +10374,11 @@
                             "credit_names",
                             "credit_others",
                             "first_vote",
-                            "social"
+                            "social",
+                            "photo",
+                            "photo_cols",
+                            "mark",
+                            "object_id"
                           ],
                           "properties": {
                             "id": {
@@ -10346,6 +10618,51 @@
                                   ]
                                 }
                               }
+                            },
+                            "photo": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "photo_cols": {
+                              "type": "integer"
+                            },
+                            "mark": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "x",
+                                    "y"
+                                  ],
+                                  "properties": {
+                                    "x": {
+                                      "type": "number"
+                                    },
+                                    "y": {
+                                      "type": "number"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "object_id": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
                             }
                           }
                         },

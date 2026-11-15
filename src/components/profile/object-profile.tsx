@@ -196,6 +196,11 @@ export function ObjectProfileView({ id }: { id: string }) {
               {tp('more')}
             </button>
           )}
+          {profile.finding && (
+            <Link href={`/community/${encodeURIComponent(profile.finding)}`} className="block text-note text-link" data-testid="profile-found">
+              {t('alsoFound')}
+            </Link>
+          )}
         </div>
       </section>
 

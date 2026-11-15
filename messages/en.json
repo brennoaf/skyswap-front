@@ -430,7 +430,8 @@
       "coma": "Brightness is measured as if it were a single point, so it misses part of the comet's glow.",
       "candidate": "The SIMBAD catalogue lists this object as a possible brown dwarf.",
       "notDetected": "Not detected: at the predicted position the signal was too faint to tell apart from noise in every colour and pass."
-    }
+    },
+    "alsoFound": "People also found this object in the random sky."
   },
   "charts": {
     "wavelength": "Wavelength (µm)",
@@ -1453,8 +1454,6 @@
     "switchLabel": "Choose what to see",
     "switchPosts": "Posts",
     "switchCommunity": "Community",
-    "lead": "Every item came from people's blind answers. A candidate is not a discovery until someone checks it.",
-    "skyPatch": "Patch of sky",
     "patchTitle": "Sky at {coords}",
     "postTitle": "Finding",
     "example": "Example",
@@ -1616,9 +1615,7 @@
     "openCards": "{n, plural, one {# open card waiting for a look} other {# open cards waiting for a look}}",
     "goalLine": "This month's goal: {count} of {target} cards looked at",
     "tabsLabel": "Order",
-    "tabNew": "Latest",
     "tabPopular": "Popular",
-    "popularNote": "Popular shows what people are looking at, not what is right. Check the status on each item.",
     "crowd": {
       "alt": "Photo {n} with the patch of where people marked",
       "photos": "Photos",
@@ -1646,7 +1643,18 @@
       "known": "May be {name} (a guess)",
       "unknown": "Nothing catalogued here so far",
       "download": "Download positions"
-    }
+    },
+    "tabOpen": "Open",
+    "tabSolved": "Solved",
+    "tabLine": {
+      "popular": "Where most people are looking and talking.",
+      "open": "Nobody knows what it is yet. Your answers help.",
+      "solved": "We already know what it is: something in the catalogues, or a flaw in the photo."
+    },
+    "nothingYet": "Nothing here yet.",
+    "knownAs": "Already known: {name}",
+    "seeProfile": "See {name}'s profile",
+    "photoAlt": "First photo of {title}"
   },
   "player": {
     "counter": "Photo {n} of {total}",
