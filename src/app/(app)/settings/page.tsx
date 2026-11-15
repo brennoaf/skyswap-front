@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState, type ReactNode } from 'react'
-import { IconChevronDownSmall, IconChevronRight, IconDevices, IconFollow, IconLink, IconMap, IconMore, IconNote, IconQuestion, IconSun } from '@/components/icons'
+import { IconChevronDownSmall, IconChevronRight, IconDevices, IconFollow, IconMap, IconMore, IconNote, IconQuestion, IconSun } from '@/components/icons'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { Button, Segmented, Sheet, Skeleton, Switch, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
@@ -17,7 +17,6 @@ import { useFmt } from '@/lib/use-fmt'
 import { useSwitchLocale } from '@/lib/use-switch-locale'
 
 const THEMES: ThemePref[] = ['system', 'dark', 'light']
-const API_DOCS_URL = process.env.NEXT_PUBLIC_API_DOCS_URL ?? 'http://localhost:4000/docs'
 const ROW = 'flex min-h-12 w-full items-center gap-3 px-4 text-left'
 
 function Group({ id, title, children }: { id: string; title: string; children: ReactNode }) {
@@ -164,10 +163,6 @@ function Details() {
           </section>
           <p className="text-text-secondary">{t('cubeCredit')}</p>
           <p className="text-text-secondary">{t('about')}</p>
-          <a href={API_DOCS_URL} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center gap-2 font-semibold text-link">
-            <IconLink size={20} />
-            {t('api')}
-          </a>
         </div>
       )}
     </>

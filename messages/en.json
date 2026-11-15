@@ -1384,7 +1384,6 @@
     "data": "About the data",
     "dataBody": "SkySwap shows real images from NASA's SPHEREx telescope, kept in a public NASA archive. Infrared light is shown in grey, and any colour you see is false colour. The sky index lists {images} published images, so any spot can be opened. Spots with many photos can take a few seconds the first time; after that they are kept in the browser. Data kit {version}.",
     "about": "SkySwap is a non-commercial study prototype for the NASA Space Apps 2026 challenge \"Planet X and SPHEREx\". It is not affiliated with NASA or Instagram.",
-    "api": "API docs",
     "notesCount": "{n, plural, =0 {No notes saved} one {# note saved} other {# notes saved}}",
     "loggedOut": "Pick a nickname to keep your progress.",
     "languages": {
