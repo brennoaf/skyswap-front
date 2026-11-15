@@ -758,7 +758,12 @@
       "solarSystem": "This object moves too fast for the summed map. The colours here are only the sky behind it.",
       "elsewhere": "{name} is no longer at this spot in this sum: it was {n}″ away.",
       "elsewhereGo": "See the spectrum of {name}"
-    }
+    },
+    "before": "Before SPHEREx",
+    "beforeChip": "{telescope}, {year}",
+    "beforeLoading": "Loading the older sky",
+    "beforeFailed": "The older sky is not available right now",
+    "beforeAlt": "The same patch of sky seen by {telescope} in {year}"
   },
   "classify": {
     "title": "Spot what moves",

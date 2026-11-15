@@ -21,6 +21,7 @@ import { pointHits, askServer } from '@/lib/explore/lookup'
 import { differenceGrey, differenceImages, differenceScale, SKY_CROP } from '@/lib/explore/sky-card'
 import { tileFetch } from '@/lib/explore/tiles'
 import { bandLevels } from '@/lib/band-levels'
+import { OLD_SKY_BLINK_MS, useOldSky } from '@/lib/sky/use-old-sky'
 import { nearestFrame, readView, withView, type SharedView } from '@/lib/sky-view'
 import { isControl, isTyping, ownsArrows, plainKey } from '@/lib/keys'
 import { modalCount } from '@/lib/modal-history'
@@ -283,6 +284,8 @@ function Player({
   const [colormap, setColormap] = useState<Colormap>('grey')
   const [view, setView] = useState<View>('photos')
   const [ends, setEnds] = useState(false)
+  const [before, setBefore] = useState(false)
+  const [oldPhase, setOldPhase] = useState(false)
   const asked = useRef<SharedView>(compact || typeof window === 'undefined' ? { at: null, band: null, tool: null } : readView(window.location.search))
   const shown = useMemo(() => (ends && b.frames.length > 2 ? [b.frames[0], b.frames[b.frames.length - 1]].filter((f): f is ViewFrame => !!f) : b.frames), [ends, b.frames])
   const levels = useMemo(() => (params.band ? null : bandLevels(b.frames)), [params.band, b.frames])
@@ -342,6 +345,16 @@ function Player({
   }, [playing, n, speed])
 
   const frame = shown[Math.min(cur, n - 1)]
+  const old = useOldSky(before, frame?.band ?? null, frame?.w ?? 0, params.fov, grid.wcs.pix2world)
+  useEffect(() => {
+    if (!before || old.state !== 'ready') return
+    const id = setInterval(() => setOldPhase((v) => !v), OLD_SKY_BLINK_MS)
+    return () => {
+      clearInterval(id)
+      setOldPhase(false)
+    }
+  }, [before, old.state])
+  const oldFrame = useMemo(() => (frame && old.img ? { ...frame, img: old.img, lo: 0, hi: 255 } : null), [frame, old.img])
   const frameMjd = frame?.mjd ?? null
   const frameBand = frame?.band ?? null
   useEffect(() => {
@@ -398,7 +411,16 @@ function Player({
       data-first-frame-ms={b.firstMs ?? undefined}
       data-frames={n}
     >
-      {frame && shownFrame && <FrameCanvas frame={shownFrame} colormap={colormap} diff={diff} label={diff ? t('changesAlt', { date }) : t('frameAlt', { band: bandName(frame.band), date })} />}
+      {before && oldPhase && oldFrame && old.survey ? (
+        <FrameCanvas frame={oldFrame} colormap="grey" diff={null} label={t('beforeAlt', { telescope: old.survey.telescope, year: String(old.survey.year) })} />
+      ) : (
+        frame && shownFrame && <FrameCanvas frame={shownFrame} colormap={colormap} diff={diff} label={diff ? t('changesAlt', { date }) : t('frameAlt', { band: bandName(frame.band), date })} />
+      )}
+      {before && frame && (
+        <span className="pointer-events-none absolute left-2 top-2 rounded-full bg-media-scrim px-2.5 py-1 text-meta font-semibold text-on-media" data-testid="sky-before-chip">
+          {old.state === 'ready' && old.survey ? (oldPhase ? t('beforeChip', { telescope: old.survey.telescope, year: String(old.survey.year) }) : t('beforeChip', { telescope: 'SPHEREx', year: String(new Date(mjdToMs(frame.mjd)).getUTCFullYear()) })) : t(old.state === 'failed' ? 'beforeFailed' : 'beforeLoading')}
+        </span>
+      )}
       {frame && crosshair && <TargetCrosshair frame={frame} target={target} grid={grid} />}
       {marker}
       {b.status === 'idle' && compact && (
@@ -531,6 +553,16 @@ function Player({
               {t('firstLast')}
             </Chip>
           )}
+          <Chip
+            active={before}
+            onClick={() => {
+              setBefore((v) => !v)
+              setPlaying(false)
+              setView('photos')
+            }}
+          >
+            {t('before')}
+          </Chip>
         </div>
       )}
       {view === 'changes' && diff && <p className="px-4 pt-2 text-meta text-text-secondary">{ends ? t('changesEnds') : t('changesHint')}</p>}

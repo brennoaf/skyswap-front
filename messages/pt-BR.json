@@ -758,7 +758,12 @@
       "solarSystem": "Este objeto anda rápido demais para o mapa somado. A cor aqui é só do fundo do céu.",
       "elsewhere": "{name} não está mais neste ponto nesta soma: estava a {n}″ daqui.",
       "elsewhereGo": "Ver o espectro de {name}"
-    }
+    },
+    "before": "Antes do SPHEREx",
+    "beforeChip": "{telescope}, {year}",
+    "beforeLoading": "Buscando o céu de antes",
+    "beforeFailed": "O céu de antes não está disponível agora",
+    "beforeAlt": "O mesmo pedaço do céu visto pelo {telescope} em {year}"
   },
   "classify": {
     "title": "Ache o que muda de lugar",
