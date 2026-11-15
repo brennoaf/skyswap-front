@@ -3,6 +3,7 @@ export type VoteBody = {
   choice: 'moves' | 'still' | 'unsure'
   glitch?: boolean
   position?: { frame: number; x: number; y: number }
+  positions?: ({ frame: number; x: number; y: number; ax: number; ay: number } | null)[]
   hints?: boolean
   held_ms?: number
   think_ms?: number

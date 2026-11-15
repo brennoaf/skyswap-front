@@ -3,14 +3,14 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { failureOf, type VoteResult } from '@/lib/api/client'
-import { postVote, type VotePosition } from '@/lib/api/hooks'
+import { postVote, type TracePosition } from '@/lib/api/hooks'
 import { refreshAfterVotes } from '@/lib/api/queries'
 import { isSkyCard, registerSky } from '@/lib/explore/queue'
 import type { Answer } from '@/lib/swap-verdict'
 import type { PlayCard } from './use-deck-flow'
 import { storageStore, VoteQueue, type Outcome, type QueuedVote } from './vote-queue'
 
-export type PendingVote = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; shownAt: number | null; hints: boolean }
+export type PendingVote = { card: PlayCard; answer: Answer; positions: (TracePosition | null)[] | null; at: number; shownAt: number | null; hints: boolean }
 export type SaveState = 'idle' | 'pending' | 'saved' | 'failed' | 'lost'
 export type VoteOutcome = Outcome<VoteResult>
 
@@ -47,7 +47,7 @@ function toEntry(user: string, p: PendingVote): QueuedVote {
       hints: p.hints,
       held_ms: clampMs(held),
       ...(p.shownAt !== null ? { think_ms: clampMs(answeredAt - p.shownAt), answered_at: answeredAt } : {}),
-      ...(p.spot ? { position: p.spot } : {}),
+      ...(p.positions ? { positions: p.positions } : {}),
     },
     ...(isSkyCard(p.card) ? { sky: p.card.reg } : {}),
   }

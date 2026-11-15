@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
@@ -141,12 +142,18 @@ export function PhotoSourceSheet({ open, onClose, offsets, sky }: { open: boolea
   )
 }
 
-export function KnownSheet({ name, onClose }: { name: string | null; onClose: () => void }) {
+export function KnownSheet({ known, onClose }: { known: { name: string; object: string | null } | null; onClose: () => void }) {
   const t = useTranslations('classify')
+  const name = known?.name ?? ''
   return (
-    <Sheet open={!!name} onClose={onClose} title={t('strip.knownTitle', { name: name ?? '' })}>
+    <Sheet open={!!known} onClose={onClose} title={t('strip.knownTitle', { name })}>
       <div className="flex flex-col gap-4 px-4 py-4">
-        <p className="text-[16px] leading-snug text-text-secondary">{t('strip.knownBody', { name: name ?? '' })}</p>
+        <p className="text-[16px] leading-snug text-text-secondary">{t('strip.knownBody', { name })}</p>
+        {known?.object && (
+          <Link href={`/o/${known.object}`} className={`${swapButton.primary} flex-none`}>
+            {t('strip.profile', { name })}
+          </Link>
+        )}
         <button type="button" onClick={onClose} className={`${swapButton.mid} flex-none`}>
           {t('understand.close')}
         </button>

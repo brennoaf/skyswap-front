@@ -5,6 +5,7 @@ import { use, useEffect, useState, type ReactNode } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { PhotoViewer } from '@/components/classify/photo-viewer'
 import { FindingActions, PeopleButton, SecondLookPanel, SocialFacts } from '@/components/community/finding-actions'
+import { CrowdMap } from '@/components/community/crowd-map'
 import { ExamplePill, FindingFacts, FirstAnswer, FoundBy, stateBody, StatePill, useFindingTitle } from '@/components/community/finding-parts'
 import { IconLink } from '@/components/icons'
 import { SkyViewer } from '@/components/sky/sky-viewer'
@@ -203,6 +204,7 @@ export default function FindingPage({ params }: { params: Promise<{ id: string }
         <FindingFacts finding={f} />
         <FoundBy names={f.credits} others={f.credits_anonymous} />
       </section>
+      <CrowdMap finding={f} />
       <Checks finding={f} />
       <Timeline finding={f} />
       <p className="px-4 pt-5 text-note leading-snug text-text-secondary">{t('namingNote')}</p>

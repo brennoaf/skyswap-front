@@ -10,7 +10,7 @@ import { KnownSheet } from '@/components/classify/swap-sheets'
 import { IconCards, IconCheck } from '@/components/icons'
 import { EmptyState, Sheet } from '@/components/ui/primitives'
 import { api, type VoteResult } from '@/lib/api/client'
-import { useCommunityOverview, useGoals, useGuideCard, type VotePosition } from '@/lib/api/hooks'
+import { useCommunityOverview, useGoals, useGuideCard, type TracePosition } from '@/lib/api/hooks'
 import { exploreQueue, isSkyCard } from '@/lib/explore/queue'
 import { cx } from '@/lib/format'
 import { useShare } from '@/lib/share'
@@ -54,7 +54,7 @@ export function Deck({ userId, onHelp }: { userId: string; onHelp: () => void })
   const guiding = !!lesson
   const flow = useDeckFlow(phase === 'cards' || nothingToPractice)
   const [pause, setPause] = useState(false)
-  const [knownOpen, setKnownOpen] = useState<string | null>(null)
+  const [knownOpen, setKnownOpen] = useState<{ name: string; object: string | null } | null>(null)
   const [shown, setShown] = useState<{ card: PlayCard; img: HTMLImageElement } | null>(null)
   const [openMode, setOpenMode] = useState(false)
   const [introSeen, setIntroSeen] = useState(false)
@@ -73,8 +73,9 @@ export function Deck({ userId, onHelp }: { userId: string; onHelp: () => void })
 
   const onSaved = useCallback(
     (r: VoteResult, late: boolean) => {
-      const known = r.reveal.control ? null : r.reveal.known
-      const strips: Strip[] = [...(known ? [{ kind: 'known' as const, name: knownName(known.name) }] : []), ...r.new_badges.map((b) => ({ kind: 'badge' as const, name: tb(`${b}.name`) }))]
+      const known = r.reveal.known
+      const found: Strip[] = known ? [{ kind: 'known', name: knownName(known.name), object: known.object_id }] : r.reveal.your_choice === 'moves' && !r.first ? [{ kind: 'nobody' }] : []
+      const strips: Strip[] = [...found, ...r.new_badges.map((b) => ({ kind: 'badge' as const, name: tb(`${b}.name`) }))]
       if (r.xp.reason === 'too_fast' && !late && !fastWarned) {
         fastWarned = true
         strips.push({ kind: 'fast' })
@@ -145,11 +146,11 @@ export function Deck({ userId, onHelp }: { userId: string; onHelp: () => void })
 
   const { submit } = votes
   const onAnswer = useCallback(
-    async (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => {
+    async (answer: Answer, positions: (TracePosition | null)[] | null, at: number, hints: boolean) => {
       if (!card) return false
       answered.current.add(card.id)
       const seen = shownAt.current?.id === card.id ? shownAt.current.at : null
-      const sent = submit({ card, answer, spot, at, shownAt: seen, hints })
+      const sent = submit({ card, answer, positions, at, shownAt: seen, hints })
       if (answer === 'moves') {
         const outcome = await Promise.race([sent, new Promise<null>((resolve) => setTimeout(() => resolve(null), FIRST_WAIT_MS))])
         if (outcome?.kind === 'saved' && outcome.result.first) return true
@@ -177,8 +178,10 @@ export function Deck({ userId, onHelp }: { userId: string; onHelp: () => void })
           : votes.save === 'saved'
             ? { key: 'save', text: t('confirm.saved'), saved: true }
             : strip?.kind === 'known'
-              ? { key: `known-${strip.name}`, text: t('strip.known', { name: strip.name }), action: t('strip.see'), onAction: () => setKnownOpen(strip.name) }
-              : strip?.kind === 'badge'
+              ? { key: `known-${strip.name}`, text: t('strip.known', { name: strip.name }), action: t('strip.see'), onAction: () => setKnownOpen({ name: strip.name, object: strip.object }) }
+              : strip?.kind === 'nobody'
+                ? { key: 'nobody', text: t('strip.nobody') }
+                : strip?.kind === 'badge'
                 ? { key: `badge-${strip.name}`, text: t('strip.badge', { name: strip.name }) }
                 : strip?.kind === 'fast'
                   ? { key: 'fast', text: t('strip.fast') }
@@ -208,7 +211,7 @@ export function Deck({ userId, onHelp }: { userId: string; onHelp: () => void })
     </div>
   )
 
-  const known = <KnownSheet name={knownOpen} onClose={() => setKnownOpen(null)} />
+  const known = <KnownSheet known={knownOpen} onClose={() => setKnownOpen(null)} />
 
   const plain = (body: ReactNode) => (
     <SwapShell>

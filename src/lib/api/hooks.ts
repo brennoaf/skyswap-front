@@ -285,8 +285,9 @@ export function useSky(ra: number | null, dec: number | null, fov: number, band:
 
 export type Choice = 'moves' | 'still' | 'unsure'
 export type VotePosition = { frame: number; x: number; y: number }
+export type TracePosition = { frame: number; x: number; y: number; ax: number; ay: number }
 
-export type VoteInput = { card_id: string; choice: Choice; glitch?: boolean | null; position?: VotePosition; held_ms?: number; hints?: boolean }
+export type VoteInput = { card_id: string; choice: Choice; glitch?: boolean | null; position?: VotePosition; positions?: (TracePosition | null)[]; held_ms?: number; think_ms?: number; answered_at?: number; hints?: boolean }
 
 export async function postVote(body: VoteInput, keepalive = false) {
   return unwrap(await api.POST('/api/classify/votes', { body, keepalive }))

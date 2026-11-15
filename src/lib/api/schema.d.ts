@@ -1911,6 +1911,13 @@ export interface paths {
                             y: number;
                         };
                         held_ms?: number;
+                        positions?: ({
+                            frame: number;
+                            x: number;
+                            y: number;
+                            ax?: number;
+                            ay?: number;
+                        } | null)[];
                         think_ms?: number;
                         answered_at?: number;
                         hints?: boolean;
@@ -1950,6 +1957,7 @@ export interface paths {
                                 }[];
                                 known: {
                                     name: string;
+                                    object_id: string | null;
                                     V: number | null;
                                     rate_arcsec_h: number | null;
                                 } | null;
@@ -2381,6 +2389,39 @@ export interface paths {
                             credits: string[];
                             credits_anonymous: number;
                             data_version: string;
+                            tracks: {
+                                people: number;
+                                you: boolean;
+                                size_px: number;
+                                wcs: {
+                                    [key: string]: unknown;
+                                } | null;
+                                spot: {
+                                    id: string;
+                                    ra: number;
+                                    dec: number;
+                                    fov_deg: number;
+                                    band: string;
+                                    size_px: number;
+                                    frames: {
+                                        key: string;
+                                        mjd: number;
+                                        wl_um: number;
+                                        visit: number;
+                                    }[];
+                                } | null;
+                                frames: {
+                                    mjd: number;
+                                    points: {
+                                        u: number;
+                                        v: number;
+                                    }[];
+                                    mine: {
+                                        u: number;
+                                        v: number;
+                                    } | null;
+                                }[];
+                            } | null;
                         };
                     };
                 };
@@ -2908,6 +2949,7 @@ export interface paths {
                                 }[];
                                 known: {
                                     name: string;
+                                    object_id: string | null;
                                     V: number | null;
                                     rate_arcsec_h: number | null;
                                 } | null;
@@ -3387,6 +3429,39 @@ export interface components {
             credits: string[];
             credits_anonymous: number;
             data_version: string;
+            tracks: {
+                people: number;
+                you: boolean;
+                size_px: number;
+                wcs: {
+                    [key: string]: unknown;
+                } | null;
+                spot: {
+                    id: string;
+                    ra: number;
+                    dec: number;
+                    fov_deg: number;
+                    band: string;
+                    size_px: number;
+                    frames: {
+                        key: string;
+                        mjd: number;
+                        wl_um: number;
+                        visit: number;
+                    }[];
+                } | null;
+                frames: {
+                    mjd: number;
+                    points: {
+                        u: number;
+                        v: number;
+                    }[];
+                    mine: {
+                        u: number;
+                        v: number;
+                    } | null;
+                }[];
+            } | null;
         };
         MyCards: {
             items: {
@@ -3583,6 +3658,7 @@ export interface components {
             }[];
             known: {
                 name: string;
+                object_id: string | null;
                 V: number | null;
                 rate_arcsec_h: number | null;
             } | null;

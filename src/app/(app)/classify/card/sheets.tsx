@@ -139,13 +139,13 @@ export function NotePhase({ cardId, onDone }: { cardId: string; onDone: () => vo
   )
 }
 
-export function ConfirmSheet({ card, answer, busy, past, marking, onUndo, onConfirm, onAbout, onShare, onSkip }: { card: PlayCard; answer: Answer; busy: boolean; past: boolean; marking: boolean; onUndo: () => void; onConfirm: () => void; onAbout: () => void; onShare?: () => void; onSkip: () => void }) {
+export function ConfirmSheet({ card, answer, busy, past, onUndo, onConfirm, onAbout, onShare, onSkip }: { card: PlayCard; answer: Answer; busy: boolean; past: boolean; onUndo: () => void; onConfirm: () => void; onAbout: () => void; onShare?: () => void; onSkip: () => void }) {
   const t = useTranslations('classify')
   const fmt = useFmt()
   const Icon = ANSWER_ICONS[answer]
   const sky = isSkyCard(card) ? card : null
   return (
-    <BottomSheet testId="swap-confirm" modal={!marking} onEscape={past || busy ? undefined : onUndo}>
+    <BottomSheet testId="swap-confirm" onEscape={past || busy ? undefined : onUndo}>
       <div className="flex shrink-0 items-center gap-3.5">
         <span className={cx('grid size-[52px] shrink-0 place-items-center rounded-full', answer === 'moves' ? 'bg-accent text-on-accent' : 'bg-text text-bg')} data-testid="confirm-badge">
           <Icon size={28} />

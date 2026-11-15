@@ -15,6 +15,7 @@ const WELCOME_STEPS: WelcomeStepPlan[] = [
   { key: 'intro' },
   { key: 'still', example: 'still', swipe: { x: -SWIPE, up: false, arrow: 'rotate-180' } },
   { key: 'moves', example: 'moves', follow: true, swipe: { x: SWIPE, up: false, arrow: '' } },
+  { key: 'mark', example: 'moves', trace: true },
   { key: 'particle', example: 'particle', spot: { u: 0.5, v: 0.5, r: 15 }, tap: true },
   { key: 'streak', example: 'streak', spot: { u: 0.5, v: 0.5, r: 38 }, tap: true, hold: 1 },
   { key: 'unsure', example: 'still', swipe: { x: 0, up: true, arrow: '-rotate-90' } },

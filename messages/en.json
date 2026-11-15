@@ -835,6 +835,11 @@
           "body": "One dot jumps to another place.",
           "how": "Swipe right"
         },
+        "mark": {
+          "title": "Mark the path",
+          "body": "After Yes, tap the dot in each photo. If it does not show in a photo, just say so.",
+          "how": "Tap the dot, photo by photo"
+        },
         "particle": {
           "title": "Defect",
           "body": "A dot shows up in one photo only. It is usually a particle hitting the camera.",
@@ -872,9 +877,19 @@
     "undo": "Undo",
     "failed": "Couldn't save your answer.",
     "retry": "Try again",
-    "mark": {
-      "where": "Tap the spot that moved",
-      "marked": "Spot marked"
+    "trace": {
+      "cancel": "Cancel marking",
+      "photo": "Photo {n} of {total}",
+      "reviewTitle": "Check the path",
+      "reviewSub": "Tap a mark to redo it",
+      "first": "Tap the dot that moves.",
+      "next": "Now tap it in this photo.",
+      "missing": "Not in this photo",
+      "count": "{n} of {total} photos marked.",
+      "needTwo": "Mark the dot in at least 2 photos.",
+      "redoOne": "Redo the mark on photo {n}",
+      "redo": "Redo",
+      "confirm": "Confirm"
     },
     "confirm": {
       "still": "Nothing moved",
@@ -906,7 +921,7 @@
     },
     "firstNote": {
       "title": "You marked it first",
-      "sub": "Nobody had marked movement here before",
+      "sub": "Nobody has catalogued anything here. If the community agrees with you, it becomes a finding.",
       "body": "Tell what you saw. If the community confirms it, the note goes to the post with your name.",
       "placeholder": "E.g. the dot moves up a little in each photo",
       "skip": "Skip",
@@ -919,11 +934,13 @@
       "already": "You already answered this card."
     },
     "strip": {
-      "known": "An automatic check says it may be asteroid {name}",
+      "known": "According to the catalogues, it may be asteroid {name}",
+      "nobody": "Nobody has catalogued anything here. If the community agrees with you, it becomes a finding.",
       "see": "See",
       "badge": "New badge: {name}",
       "knownTitle": "Maybe asteroid {name}",
       "knownBody": "An automatic catalogue check found asteroid {name} near this spot. It is a machine guess, not a confirmation. Your answer was saved as you gave it.",
+      "profile": "See the profile of {name}",
       "fast": "Very quick answers do not count. Take your time."
     },
     "state": {
@@ -1494,7 +1511,35 @@
     "tabsLabel": "Order",
     "tabNew": "Latest",
     "tabPopular": "Popular",
-    "popularNote": "Popular shows what people are looking at, not what is right. Check the status on each item."
+    "popularNote": "Popular shows what people are looking at, not what is right. Check the status on each item.",
+    "crowd": {
+      "alt": "Photo {n} with the patch of where people marked",
+      "photos": "Photos",
+      "photo": "Photo {n}",
+      "heat": "Where the community marked",
+      "people": "{n, plural, one {# person marked the same dot} other {# people marked the same dot}}",
+      "you": "You are one of them",
+      "how": "The patch shows where each person tapped. The circle in the middle is the average position; the smaller the patch, the more people agreed.",
+      "speed": "Moves",
+      "speedValue": "~{v}″ per hour",
+      "direction": "Direction",
+      "dir": {
+        "up": "up",
+        "down": "down",
+        "left": "to the left",
+        "right": "to the right",
+        "upLeft": "up and to the left",
+        "upRight": "up and to the right",
+        "downLeft": "down and to the left",
+        "downRight": "down and to the right"
+      },
+      "margin": "Position margin",
+      "marginValue": "± {v}″",
+      "catalogs": "Catalogues",
+      "known": "May be {name} (a guess)",
+      "unknown": "Nothing catalogued here so far",
+      "download": "Download positions"
+    }
   },
   "player": {
     "counter": "Photo {n} of {total}",

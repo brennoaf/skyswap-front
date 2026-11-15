@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-export type Strip = { kind: 'known'; name: string } | { kind: 'badge'; name: string } | { kind: 'fast' }
+export type Strip = { kind: 'known'; name: string; object: string | null } | { kind: 'nobody' } | { kind: 'badge'; name: string } | { kind: 'fast' }
 
 const NOTICE_MS = 5000
 

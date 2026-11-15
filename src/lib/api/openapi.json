@@ -754,7 +754,8 @@
           "events",
           "credits",
           "credits_anonymous",
-          "data_version"
+          "data_version",
+          "tracks"
         ],
         "properties": {
           "id": {
@@ -1117,6 +1118,168 @@
           },
           "data_version": {
             "type": "string"
+          },
+          "tracks": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "people",
+                  "you",
+                  "size_px",
+                  "wcs",
+                  "spot",
+                  "frames"
+                ],
+                "properties": {
+                  "people": {
+                    "type": "integer"
+                  },
+                  "you": {
+                    "type": "boolean"
+                  },
+                  "size_px": {
+                    "type": "integer"
+                  },
+                  "wcs": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": {}
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "spot": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "ra",
+                          "dec",
+                          "fov_deg",
+                          "band",
+                          "size_px",
+                          "frames"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "ra": {
+                            "type": "number"
+                          },
+                          "dec": {
+                            "type": "number"
+                          },
+                          "fov_deg": {
+                            "type": "number"
+                          },
+                          "band": {
+                            "type": "string"
+                          },
+                          "size_px": {
+                            "type": "integer"
+                          },
+                          "frames": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "key",
+                                "mjd",
+                                "wl_um",
+                                "visit"
+                              ],
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "mjd": {
+                                  "type": "number"
+                                },
+                                "wl_um": {
+                                  "type": "number"
+                                },
+                                "visit": {
+                                  "type": "integer"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "description": "A sky card that already exists, in the shape POST /api/classify/sky takes. Build it and register it like a fresh one."
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "frames": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "mjd",
+                        "points",
+                        "mine"
+                      ],
+                      "properties": {
+                        "mjd": {
+                          "type": "number"
+                        },
+                        "points": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "u",
+                              "v"
+                            ],
+                            "properties": {
+                              "u": {
+                                "type": "number"
+                              },
+                              "v": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        "mine": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "required": [
+                                "u",
+                                "v"
+                              ],
+                              "properties": {
+                                "u": {
+                                  "type": "number"
+                                },
+                                "v": {
+                                  "type": "number"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       },
@@ -2144,12 +2307,23 @@
                 "type": "object",
                 "required": [
                   "name",
+                  "object_id",
                   "V",
                   "rate_arcsec_h"
                 ],
                 "properties": {
                   "name": {
                     "type": "string"
+                  },
+                  "object_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "V": {
                     "anyOf": [
@@ -7249,6 +7423,53 @@
                     "minimum": 0,
                     "maximum": 600000
                   },
+                  "positions": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "frame",
+                            "x",
+                            "y"
+                          ],
+                          "properties": {
+                            "frame": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 64
+                            },
+                            "x": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "y": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "ax": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "ay": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "maxItems": 64
+                  },
                   "think_ms": {
                     "type": "integer",
                     "minimum": 0,
@@ -7445,12 +7666,23 @@
                               "type": "object",
                               "required": [
                                 "name",
+                                "object_id",
                                 "V",
                                 "rate_arcsec_h"
                               ],
                               "properties": {
                                 "name": {
                                   "type": "string"
+                                },
+                                "object_id": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
                                 },
                                 "V": {
                                   "anyOf": [
@@ -8427,7 +8659,8 @@
                     "events",
                     "credits",
                     "credits_anonymous",
-                    "data_version"
+                    "data_version",
+                    "tracks"
                   ],
                   "properties": {
                     "id": {
@@ -8790,6 +9023,168 @@
                     },
                     "data_version": {
                       "type": "string"
+                    },
+                    "tracks": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "people",
+                            "you",
+                            "size_px",
+                            "wcs",
+                            "spot",
+                            "frames"
+                          ],
+                          "properties": {
+                            "people": {
+                              "type": "integer"
+                            },
+                            "you": {
+                              "type": "boolean"
+                            },
+                            "size_px": {
+                              "type": "integer"
+                            },
+                            "wcs": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "additionalProperties": {}
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "spot": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "id",
+                                    "ra",
+                                    "dec",
+                                    "fov_deg",
+                                    "band",
+                                    "size_px",
+                                    "frames"
+                                  ],
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "ra": {
+                                      "type": "number"
+                                    },
+                                    "dec": {
+                                      "type": "number"
+                                    },
+                                    "fov_deg": {
+                                      "type": "number"
+                                    },
+                                    "band": {
+                                      "type": "string"
+                                    },
+                                    "size_px": {
+                                      "type": "integer"
+                                    },
+                                    "frames": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "required": [
+                                          "key",
+                                          "mjd",
+                                          "wl_um",
+                                          "visit"
+                                        ],
+                                        "properties": {
+                                          "key": {
+                                            "type": "string"
+                                          },
+                                          "mjd": {
+                                            "type": "number"
+                                          },
+                                          "wl_um": {
+                                            "type": "number"
+                                          },
+                                          "visit": {
+                                            "type": "integer"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "description": "A sky card that already exists, in the shape POST /api/classify/sky takes. Build it and register it like a fresh one."
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "frames": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "mjd",
+                                  "points",
+                                  "mine"
+                                ],
+                                "properties": {
+                                  "mjd": {
+                                    "type": "number"
+                                  },
+                                  "points": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "required": [
+                                        "u",
+                                        "v"
+                                      ],
+                                      "properties": {
+                                        "u": {
+                                          "type": "number"
+                                        },
+                                        "v": {
+                                          "type": "number"
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "mine": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "required": [
+                                          "u",
+                                          "v"
+                                        ],
+                                        "properties": {
+                                          "u": {
+                                            "type": "number"
+                                          },
+                                          "v": {
+                                            "type": "number"
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   }
                 }
@@ -10185,12 +10580,23 @@
                               "type": "object",
                               "required": [
                                 "name",
+                                "object_id",
                                 "V",
                                 "rate_arcsec_h"
                               ],
                               "properties": {
                                 "name": {
                                   "type": "string"
+                                },
+                                "object_id": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
                                 },
                                 "V": {
                                   "anyOf": [

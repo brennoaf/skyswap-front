@@ -10,7 +10,7 @@ import { Spotlight } from './spotlight'
 
 export type Mark = { u: number; v: number }
 export type WelcomeExample = GuideData['examples'][number]
-export type WelcomeStepPlan = { key: 'intro' | 'still' | 'moves' | 'particle' | 'streak' | 'unsure'; example?: WelcomeExample['example']; swipe?: { x: number; up: boolean; arrow: string }; follow?: boolean; spot?: { u: number; v: number; r: number }; tap?: boolean; hold?: number }
+export type WelcomeStepPlan = { key: 'intro' | 'still' | 'moves' | 'mark' | 'particle' | 'streak' | 'unsure'; example?: WelcomeExample['example']; swipe?: { x: number; up: boolean; arrow: string }; follow?: boolean; trace?: boolean; spot?: { u: number; v: number; r: number }; tap?: boolean; hold?: number }
 export type WelcomeStep = WelcomeStepPlan & { card: DeckCard; marks: Mark[] }
 
 const INTRO_FRAME_MS = 800
@@ -75,7 +75,7 @@ export function WelcomePhoto({ step, index, sprites }: { step: WelcomeStep; inde
   return (
     <>
       <div ref={gap} className="flex h-[var(--welcome-up)] shrink-0 items-center justify-center" data-testid="welcome-gap">
-        {step.tap && (
+        {(step.tap || step.trace) && (
           <p className="text-ui font-semibold leading-none" data-testid="welcome-counter">
             {tp('counter', { n: at + 1, total: frames })}
           </p>
@@ -87,6 +87,14 @@ export function WelcomePhoto({ step, index, sprites }: { step: WelcomeStep; inde
           <div className={photoInset}>
             <canvas ref={canvas} className="pixelated block size-full" />
             {spot && <Spotlight u={spot.u} v={spot.v} r={spot.r} />}
+            {step.trace &&
+              step.marks.slice(0, at + 1).map((m, i) =>
+                i === at ? (
+                  <span key={i} className="absolute size-9 -translate-x-1/2 -translate-y-1/2 rounded-full border-[2.5px] border-accent" style={{ left: `${m.u * 100}%`, top: `${m.v * 100}%` }} data-testid="welcome-trace" />
+                ) : (
+                  <span key={i} className="absolute size-8 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-dashed border-on-media-muted" style={{ left: `${m.u * 100}%`, top: `${m.v * 100}%` }} />
+                ),
+              )}
           </div>
           {swipe && !reduce && <GestureHint x={x} y={y} />}
           <SwapStamps x={x} y={y} upFull={DEMO_STAMP_UP_PX} />

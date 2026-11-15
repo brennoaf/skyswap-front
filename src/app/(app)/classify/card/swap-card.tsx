@@ -2,24 +2,26 @@
 
 import { animate, useMotionValue, useReducedMotion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from 'react'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
 import { AnswerPanel, FrameBars, PhotoBar, SwapStage, SWIPE, swapButton, ToolsPanel, ToolsStrip } from '@/components/classify/swap-photo'
 import { PhotoSourceSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
-import { IconTarget } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
 import { ScreenTour } from '@/components/shell/onboarding'
 import { ApiError, type DeckCard, type VoteResult } from '@/lib/api/client'
-import { useVote, type VotePosition } from '@/lib/api/hooks'
+import { useVote } from '@/lib/api/hooks'
 import { isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
-import { cx } from '@/lib/format'
+import { cx, formatDateTime } from '@/lib/format'
+import { greyOf, snapTap } from '@/lib/snap'
+import { useFmt } from '@/lib/use-fmt'
 import { useUi } from '@/lib/state/ui'
 import { verdictOf, type Answer } from '@/lib/swap-verdict'
 import { SwapHeader, SwapShell } from '../shell'
-import { cardReducer, initCard, isDeciding, isLooking, isMarking, isSheetOpen, type CardAction, type CardState } from './card-machine'
-import { GuideRing, HintRings, SpotMark, useHintLine, useOutside, type Mark } from './marks'
+import { cardReducer, initCard, isDeciding, isLooking, isSheetOpen, isTracing, tracePositions, type CardAction, type CardState, type TraceMark } from './card-machine'
+import { GuideRing, HintRings, useHintLine, useOutside, type Mark } from './marks'
 import { ConfirmSheet, FailedSheet, NotePhase, ResultSheet } from './sheets'
+import { pickMark, TraceBar, TraceHeader, TraceLayer } from './trace'
 
 export type PlayCard = DeckCard | SkyPlayCard
 export type Lesson = 'moves' | 'still' | 'glitch'
@@ -28,6 +30,7 @@ const FRAME_MS = 700
 const SWING_PX = 64
 const SWING_S = 1.3
 const SWING_WAIT_MS = 2500
+const TRACE_STEP_MS = 350
 const SWAP_TOUR_TIP = 'swapTour'
 const BLACK_EDGE_TIP = 'blackEdge'
 
@@ -65,7 +68,7 @@ export function SwapCard({
   onHelp: () => void
   onShare?: () => void
   onSkip?: () => void
-  onAnswer: (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => Promise<boolean>
+  onAnswer: (answer: Answer, positions: ReturnType<typeof tracePositions> | null, at: number, hints: boolean) => Promise<boolean>
   onNoteDone: () => void
   onLessonStale: () => void
   onLessonNext: () => void
@@ -73,24 +76,28 @@ export function SwapCard({
   const t = useTranslations('classify')
   const tw = useTranslations('classify.welcome')
   const tp = useTranslations('player')
+  const tt = useTranslations('classify.trace')
+  const fmt = useFmt()
   const label = useOffsetLabel()
   const reduce = useReducedMotion()
   const vote = useVote()
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const [state, dispatch] = useReducer(reducer, past, initCard<VoteResult>)
-  const { mode, answer, spot, saved, leaving, row } = state
+  const { mode, answer, saved, leaving, row } = state
   const sentOnce = useRef(false)
   const [frozen, setFrozen] = useState(false)
   const [swingOver, setSwingOver] = useState(false)
   const [blackNote, setBlackNote] = useState(false)
+  const [pending, setPending] = useState<TraceMark | null>(null)
+  const grey = useMemo(() => (img ? greyOf(img) : null), [img])
   const sky = isSkyCard(card) ? card : null
   const offsets = card.offsets_s
   const n = Math.max(1, offsets.length)
   const playback = usePlayback(n, { baseMs: FRAME_MS, autoplay: !reduce || !!lesson, frozen })
   const panel = playback.index
-  const { setPlaying, stopBlink } = playback
-  const hints = sky && state.hintsOn ? sky.hints : null
+  const { setPlaying, setIndex, stopBlink } = playback
+  const hints = sky && state.hintsOn && !isTracing(state) ? sky.hints : null
   const outside = useOutside(img, n)
   const blackSeen = useUi((s) => s.tipsSeen.includes(BLACK_EDGE_TIP))
   const markTip = useUi((s) => s.markTip)
@@ -135,12 +142,12 @@ export function SwapCard({
   const choose = (a: Answer) => {
     if (!img || !isLooking(state)) return
     settle()
-    dispatch({ type: 'choose', answer: a, at: performance.now(), lesson: !!lesson })
+    dispatch({ type: 'choose', answer: a, at: performance.now(), lesson: !!lesson, frames: n })
     if (lesson && saved) setPlaying(true)
   }
 
   const confirm = () => {
-    if (!answer || mode !== 'confirm' || sentOnce.current) return
+    if (!answer || (mode !== 'confirm' && mode !== 'review') || sentOnce.current) return
     if (lesson) {
       void sendLesson(answer)
       return
@@ -151,7 +158,29 @@ export function SwapCard({
       void onAnswer(answer, null, state.chosenAt, state.hintsUsed)
       return
     }
-    void onAnswer(answer, spot, state.chosenAt, state.hintsUsed).then((first) => dispatch({ type: 'first', first }))
+    void onAnswer(answer, state.marks.length ? tracePositions(state.marks) : null, state.chosenAt, state.hintsUsed).then((first) => dispatch({ type: 'first', first }))
+  }
+
+  const tracing = isTracing(state)
+  const reviewing = mode === 'review'
+  useEffect(() => {
+    if (mode === 'tracing') {
+      setPlaying(false)
+      setIndex(state.at)
+    } else if (mode === 'review') setPlaying(true)
+  }, [mode, setIndex, setPlaying, state.at])
+
+  useEffect(() => {
+    if (!pending) return
+    const timer = setTimeout(() => {
+      dispatch({ type: 'trace', mark: pending })
+      setPending(null)
+    }, TRACE_STEP_MS)
+    return () => clearTimeout(timer)
+  }, [pending])
+
+  const missing = () => {
+    if (!pending) dispatch({ type: 'trace', mark: null })
   }
 
   useEffect(() => {
@@ -203,11 +232,15 @@ export function SwapCard({
     else settle()
   }
 
-  const marking = isMarking(state, !!lesson)
   const onTap = (u: number, v: number) => {
-    if (marking) {
-      dispatch({ type: 'mark', lesson: false, spot: { frame: panel, x: Math.round(u * 1e4) / 1e4, y: Math.round(v * 1e4) / 1e4 } })
-      setPlaying(false)
+    if (mode === 'tracing') {
+      if (pending) return
+      const s = snapTap(grey, state.at, u, v)
+      setPending({ x: Math.round(u * 1e4) / 1e4, y: Math.round(v * 1e4) / 1e4, ax: s.u, ay: s.v })
+    } else if (reviewing) {
+      const frame = pickMark(state.marks, u, v)
+      if (frame >= 0) dispatch({ type: 'retrace', frame })
+      else setPlaying(!playback.playing)
     } else if (looking || mode === 'result' || mode === 'confirm') setPlaying(!playback.playing)
   }
 
@@ -218,7 +251,7 @@ export function SwapCard({
       {ringOn && <GuideRing mark={lessonMarks[panel] ?? lessonMarks[0]} />}
       {hints && <HintRings hints={hints} panel={panel} />}
       {mode === 'result' && mark && verdict?.mark && <VoiceMark voice="known" u={mark.u} v={mark.v} />}
-      {spot && <SpotMark u={spot.x} v={spot.y} faint={spot.frame !== panel} />}
+      {tracing && <TraceLayer marks={state.marks.map((m, i) => (i === state.at && pending ? pending : m))} at={state.at} review={reviewing} panel={panel} />}
     </>
   )
 
@@ -237,14 +270,17 @@ export function SwapCard({
         <div className="px-1 pt-2.5">
           <FrameBars n={n} index={panel} />
         </div>
-        <SwapHeader step={step} top={marking ? null : top} leave={leave} onHelp={onHelp} />
+        {tracing ? (
+          <TraceHeader
+            title={reviewing ? tt('reviewTitle') : tt('photo', { n: state.at + 1, total: n })}
+            sub={reviewing ? tt('reviewSub') : formatDateTime(new Date(Date.parse(card.t0) + (offsets[state.at] ?? 0) * 1000).toISOString(), fmt.locale)}
+            onClose={undoChoice}
+            onHelp={onHelp}
+          />
+        ) : (
+          <SwapHeader step={step} top={top} leave={leave} onHelp={onHelp} />
+        )}
       </div>
-      {marking && (
-        <p role="status" aria-live="polite" className="pointer-events-none absolute inset-x-14 top-[calc(env(safe-area-inset-top)+22px)] z-30 flex h-[52px] items-center justify-center gap-2 whitespace-nowrap text-title-sm font-semibold leading-tight" data-testid="mark-hint">
-          <IconTarget size={22} className="shrink-0 text-accent" />
-          {spot ? t('mark.marked') : t('mark.where')}
-        </p>
-      )}
       <SwapStage
         img={img}
         sprite={card.sprite}
@@ -254,17 +290,19 @@ export function SwapCard({
         x={x}
         y={y}
         canSwipe={canSwipe}
-        doubleTap={!marking}
+        doubleTap={!tracing}
         onRelease={onRelease}
         onCancel={settle}
         onTap={onTap}
         onHold={setFrozen}
         overlay={overlay}
         hint={swinging}
-        ring={deciding && !leaving ? (answer === 'moves' ? 'yes' : 'chosen') : 'rest'}
+        ring={mode === 'tracing' ? 'yes' : deciding && !leaving ? (answer === 'moves' ? 'yes' : 'chosen') : 'rest'}
         leaving={leaving}
       />
-      {mode === 'tools' ? (
+      {tracing ? (
+        <TraceBar marks={state.marks} at={state.at} review={reviewing} onMissing={missing} onRetrace={(frame) => dispatch({ type: 'retrace', frame })} onRedo={() => dispatch({ type: 'redo' })} onConfirm={confirm} />
+      ) : mode === 'tools' ? (
         <div className="flex min-h-0 flex-1 flex-col" data-testid="swap-lower">
           <PhotoBar playback={playback} offsets={offsets} open strip={<ToolsStrip playback={playback} sprite={card.sprite} offsets={offsets} row={row} />} onTools={() => dispatch({ type: 'tools', open: false })} />
           <ToolsPanel playback={playback} row={row} onRow={(next) => dispatch({ type: 'row', row: next })} hints={sky ? { on: state.hintsOn, onChange: (on) => dispatch({ type: 'hints', on }) } : undefined} />
@@ -313,7 +351,7 @@ export function SwapCard({
         />
       )}
       {deciding && mode !== 'noting' && answer && !leaving && (
-        <ConfirmSheet card={card} answer={answer} busy={mode !== 'confirm'} past={mode === 'past'} marking={marking} onUndo={undoChoice} onConfirm={confirm} onAbout={() => dispatch({ type: 'sheet', sheet: 'about' })} onShare={onShare} onSkip={() => onSkip?.()} />
+        <ConfirmSheet card={card} answer={answer} busy={mode !== 'confirm'} past={mode === 'past'} onUndo={undoChoice} onConfirm={confirm} onAbout={() => dispatch({ type: 'sheet', sheet: 'about' })} onShare={onShare} onSkip={() => onSkip?.()} />
       )}
       {mode === 'failed' && answer && <FailedSheet onRetry={() => void sendLesson(answer)} onUndo={undoChoice} />}
       {mode === 'result' && saved && answer && verdict && (
