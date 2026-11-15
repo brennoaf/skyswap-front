@@ -133,7 +133,7 @@ export function PhotoBar({ playback, offsets, onTools }: { playback: Playback; o
   const tp = useTranslations('player')
   const label = useOffsetLabel()
   return (
-    <div className="flex h-[60px] shrink-0 items-center gap-3 px-4" data-testid="player-bar">
+    <div className="flex h-[60px] min-h-12 shrink items-center gap-3 px-4" data-testid="player-bar">
       <button type="button" aria-label={playback.playing ? tp('pause') : tp('play')} onClick={() => playback.setPlaying(!playback.playing)} className="flex size-12 shrink-0 items-center justify-center rounded-full bg-surface text-text active:bg-surface-pressed">
         {playback.playing ? <IconPause size={26} /> : <IconPlay size={26} />}
       </button>

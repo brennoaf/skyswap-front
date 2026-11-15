@@ -651,10 +651,10 @@
     },
     "guide": {
       "step": "Treino {n} de {total}",
-      "look": "Algum ponto muda de lugar?",
-      "answer": "Toque ou deslize a foto para a direita.",
-      "still": "Se nada mudou, deslize para a esquerda.",
-      "glitch": "O ponto no círculo aparece em todas as fotos?",
+      "look": "Olhe as fotos passando. Viu algum ponto mudar de lugar?",
+      "answer": "Agora responda: toque em Sim, mudou ou deslize a foto para a direita.",
+      "still": "Olhe as fotos passando e responda. Deslizar a foto para a esquerda é Nada mudou.",
+      "glitch": "Olhe o círculo enquanto as fotos passam. Depois, escolha uma resposta.",
       "saw": "Vi o ponto",
       "show": "Não vi, me mostre",
       "shown": "O ponto salta de um círculo para o outro"

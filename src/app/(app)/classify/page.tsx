@@ -108,7 +108,7 @@ function GuideRing({ mark }: { mark: Mark | undefined }) {
 
 function Coach({ children }: { children: ReactNode }) {
   return (
-    <div role="note" className="flex min-h-[60px] shrink-0 items-center gap-2.5 px-4 text-[16px] font-medium leading-snug">
+    <div role="note" className="flex shrink basis-[60px] items-center gap-2.5 px-4 text-[16px] font-medium leading-tight">
       <span aria-hidden="true" className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-accent text-[18px] font-bold text-on-accent">
         !
       </span>
@@ -372,7 +372,7 @@ function SwapCard({
   }
 
   const mark = saved?.reveal.marks[panel]
-  const ringOn = mode === 'look' && (lesson === 'glitch' || (lesson === 'moves' && (shownIt || retry)))
+  const ringOn = looking && (lesson === 'glitch' || (lesson === 'moves' && (shownIt || retry)))
   const overlay = (
     <>
       {ringOn && <GuideRing mark={lessonMarks[panel] ?? lessonMarks[0]} />}
@@ -408,6 +408,7 @@ function SwapCard({
         {lesson && (mode === 'look' || mode === 'sending') && (
           <>
             <Coach>{mustLookFirst ? t('guide.look') : lesson === 'moves' ? t('guide.answer') : t(`guide.${lesson}`)}</Coach>
+            <PhotoBar playback={playback} offsets={offsets} onTools={() => mode === 'look' && setMode('tools')} />
             {mustLookFirst ? (
               <div className="mt-auto flex shrink-0 flex-col gap-2 px-4 pb-4 pt-1">
                 <button
