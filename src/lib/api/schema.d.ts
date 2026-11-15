@@ -1605,6 +1605,7 @@ export interface paths {
                         fov_deg: number;
                         band: string;
                         size_px: number;
+                        thumb?: string;
                         frames: {
                             key: string;
                             mjd: number;
@@ -2727,7 +2728,8 @@ export interface paths {
                                 created_at: number;
                                 practice: boolean;
                                 finding: string | null;
-                                status: string;
+                                thumb: string | null;
+                                thumb_cols: number;
                             }[];
                             next_cursor: number | null;
                         };
@@ -3104,7 +3106,8 @@ export interface components {
                 created_at: number;
                 practice: boolean;
                 finding: string | null;
-                status: string;
+                thumb: string | null;
+                thumb_cols: number;
             }[];
             next_cursor: number | null;
         };

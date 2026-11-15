@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { useCardGestures } from '@/components/classify/card-gestures'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
-import { IconDefect, IconMoves, IconPause, IconPlay, IconQuestion, IconSliders, IconStill } from '@/components/icons'
+import { IconMoves, IconPause, IconPlay, IconQuestion, IconSliders, IconStill, IconWarning } from '@/components/icons'
 import { PhotoStrip } from '@/components/player/player-bar'
 import type { Playback } from '@/components/player/use-playback'
 import { Skeleton } from '@/components/ui/primitives'
@@ -234,7 +234,7 @@ export function AnswerPanel({ labels, disabled, onChoose }: { labels: { still: s
       </div>
       <div className="flex gap-2">
         <button type="button" disabled={disabled} onClick={() => onChoose('glitch')} className={swapButton.mid}>
-          <IconDefect size={24} className="mr-1 shrink-0" />
+          <IconWarning size={24} className="mr-1 shrink-0" />
           {labels.glitch}
         </button>
         <button type="button" disabled={disabled} onClick={() => onChoose('unsure')} className={swapButton.mid}>

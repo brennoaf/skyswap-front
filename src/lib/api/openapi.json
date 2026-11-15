@@ -985,7 +985,8 @@
                 "created_at",
                 "practice",
                 "finding",
-                "status"
+                "thumb",
+                "thumb_cols"
               ],
               "properties": {
                 "card_id": {
@@ -1010,8 +1011,18 @@
                     }
                   ]
                 },
-                "status": {
-                  "type": "string"
+                "thumb": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "thumb_cols": {
+                  "type": "integer"
                 }
               }
             }
@@ -6401,6 +6412,11 @@
                     "minimum": 8,
                     "maximum": 400
                   },
+                  "thumb": {
+                    "type": "string",
+                    "maxLength": 30000,
+                    "pattern": "^data:image/jpeg;base64,[A-Za-z0-9+/=]+$"
+                  },
                   "frames": {
                     "type": "array",
                     "items": {
@@ -9334,7 +9350,8 @@
                           "created_at",
                           "practice",
                           "finding",
-                          "status"
+                          "thumb",
+                          "thumb_cols"
                         ],
                         "properties": {
                           "card_id": {
@@ -9359,8 +9376,18 @@
                               }
                             ]
                           },
-                          "status": {
-                            "type": "string"
+                          "thumb": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "thumb_cols": {
+                            "type": "integer"
                           }
                         }
                       }

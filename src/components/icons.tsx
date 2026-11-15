@@ -506,12 +506,6 @@ export const IconStill = (p: IconProps) => (
   </Svg>
 )
 
-export const IconDefect = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M16 6L18.4 13.6L26 16L18.4 18.4L16 26L13.6 18.4L6 16L13.6 13.6Z" fill="currentColor" />
-  </Svg>
-)
-
 export const IconSliders = (p: IconProps) => (
   <Svg {...p}>
     <path d="M6 11H17M25 11H26M6 21H7M15 21H26" {...LINE} />

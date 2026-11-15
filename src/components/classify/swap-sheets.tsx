@@ -12,7 +12,7 @@ import { TRUTH_WORD, type Answer, type Verdict } from '@/lib/swap-verdict'
 import { useFmt } from '@/lib/use-fmt'
 import { swapButton } from './swap-photo'
 
-const HELP_SECTIONS = ['look', 'answer', 'better', 'defect', 'empty'] as const
+const HELP_SECTIONS = ['look', 'answer', 'better', 'defect', 'black', 'empty'] as const
 
 export function SwapHelpSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useTranslations('classify.help')

@@ -726,7 +726,9 @@
       "defectTitle": "What a defect is",
       "defectBody": "A spot that shows up in one photo only is usually a camera defect.",
       "emptyTitle": "Finding nothing is normal",
-      "emptyBody": "Most cards have nothing new. Saying \"Nothing moved\" helps too."
+      "emptyBody": "Most cards have nothing new. Saying \"Nothing moved\" helps too.",
+      "blackTitle": "Black areas",
+      "blackBody": "Black along the edge: the telescope did not photograph this part. A star with a black center: it is too bright for the camera. This is normal."
     },
     "practice": "Practice: no points.",
     "newBadge": "New badge: {name}.",
@@ -807,7 +809,8 @@
       "see": "See",
       "badge": "New badge: {name}",
       "knownTitle": "Asteroid {name}",
-      "knownBody": "This spot matches an asteroid already in the catalogues. Your answer was saved as you gave it."
+      "knownBody": "This spot matches an asteroid already in the catalogues. Your answer was saved as you gave it.",
+      "fast": "Very quick answers do not count. Take your time."
     }
   },
   "reels": {
@@ -1153,7 +1156,7 @@
     "helpTitle": "What your answers do",
     "helpBody": "Practice sets with a known answer show how far to trust your eyes. After that, your answers change the chance that something moves.",
     "pointsTitle": "Points",
-    "pointsBody": "Answer: 2. Mark a post: 5. Tag or follow: 1. Right, wrong and \"Not sure\" earn the same, so never guess.",
+    "pointsBody": "Answer: 2. Mark a post: 5. Tag or follow: 1. Any answer earns the same, so there is no need to guess.",
     "levelsTitle": "Levels",
     "levelsBody": "{ladder}. They never drop and unlock nothing.",
     "badgesTitle": "Badges",
@@ -1246,20 +1249,10 @@
     },
     "myCards": {
       "title": "All my answers",
-      "lead": "Every card you answered. Tap one to see more.",
       "answers": {
-        "real": "Your answer: Yes, it moved",
-        "artifact": "Your answer: Nothing moved",
-        "unsure": "You said you were not sure"
-      },
-      "status": {
-        "practice": "Practice",
-        "answered": "Answered",
-        "open": "Open",
-        "artifact": "Answers say nothing moved",
-        "inconclusive": "Answers disagree",
-        "real": "Candidate",
-        "gold": "Answered"
+        "real": "Yes, it moved",
+        "artifact": "Nothing moved",
+        "unsure": "Not sure"
       },
       "emptyTitle": "You haven't answered any photos yet",
       "emptyAction": "Answer a card",
@@ -1270,7 +1263,8 @@
         "guess": "The computer's guess",
         "guessNote": "It is only a guess and can be wrong.",
         "catalog": "In the catalogues",
-        "failed": "Couldn't open it now. Try again."
+        "failed": "Couldn't open it now. Try again.",
+        "yours": "Your answer"
       }
     },
     "checksDone": "{done} of {total} checks done",

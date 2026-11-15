@@ -19,6 +19,8 @@ const ready: SkyPlayCard[] = []
 let building = 0
 let failures = 0
 let active = false
+const THUMB_PX = 96
+const THUMB_QUALITY = 0.7
 const waiters: ((c: SkyPlayCard | null) => void)[] = []
 let upcoming: Spot | null = null
 
@@ -67,6 +69,22 @@ async function toBlobUrl(pixels: SkyCardDraft['pixels']): Promise<string> {
   return URL.createObjectURL(blob)
 }
 
+function toThumb(pixels: SkyCardDraft['pixels']): string | undefined {
+  const tile = Math.round(pixels.height / 2)
+  const source = document.createElement('canvas')
+  source.width = pixels.width
+  source.height = pixels.height
+  const thumb = document.createElement('canvas')
+  thumb.width = THUMB_PX
+  thumb.height = THUMB_PX
+  const from = source.getContext('2d')
+  const to = thumb.getContext('2d')
+  if (!from || !to) return undefined
+  from.putImageData(new ImageData(new Uint8ClampedArray(pixels.data), pixels.width, pixels.height), 0, 0)
+  to.drawImage(source, 0, 0, tile, tile, 0, 0, THUMB_PX, THUMB_PX)
+  return thumb.toDataURL('image/jpeg', THUMB_QUALITY)
+}
+
 async function buildOne(): Promise<SkyPlayCard | null> {
   const s = await loadSky()
   for (let i = 0; i < TRIES_PER_CARD && active; i++) {
@@ -80,7 +98,7 @@ async function buildOne(): Promise<SkyPlayCard | null> {
         continue
       }
       const [reg, sprite, hints] = await Promise.all([
-        api.POST('/api/classify/sky', { body: { ra: draft.ra, dec: draft.dec, fov_deg: SKY_FOV_DEG, band: draft.band, size_px: draft.size_px, frames: draft.frames } }).then(unwrap),
+        api.POST('/api/classify/sky', { body: { ra: draft.ra, dec: draft.dec, fov_deg: SKY_FOV_DEG, band: draft.band, size_px: draft.size_px, frames: draft.frames, thumb: toThumb(draft.pixels) } }).then(unwrap),
         toBlobUrl(draft.pixels),
         runFlashlight(
           draft.exposures.map((e) => e.img),

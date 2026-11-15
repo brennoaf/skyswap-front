@@ -26,7 +26,7 @@ type PlayCard = DeckCard | SkyPlayCard
 type Lesson = 'moves' | 'still' | 'glitch'
 type Mode = 'look' | 'tools' | 'mark' | 'sending' | 'failed' | 'result'
 type Pending = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; hints: boolean }
-type Strip = { kind: 'saved'; answer: Answer } | { kind: 'known'; name: string } | { kind: 'badge'; name: string } | { kind: 'failed'; answer: Answer }
+type Strip = { kind: 'saved'; answer: Answer } | { kind: 'known'; name: string } | { kind: 'badge'; name: string } | { kind: 'fast' } | { kind: 'failed'; answer: Answer }
 
 const UNDO_MS = 3000
 const NOTICE_MS = 5000
@@ -37,6 +37,7 @@ const NUDGE_S = 0.7
 const NUDGE_WAIT_MS = 700
 const PAUSE_EVERY = 25
 const NO_MARKS: Mark[] = []
+const BLACK_EDGE_TIP = 'blackEdge'
 const SHELL_STYLE = { '--swap-photo': 'max(200px, min(min(100vw, var(--width-app)), calc(100dvh - 312px - env(safe-area-inset-top) - env(safe-area-inset-bottom))))' } as CSSProperties
 
 const preloaded = new Map<string, HTMLImageElement>()
@@ -266,6 +267,9 @@ function SwapCard({
   const { setPlaying } = playback
   const hints = sky && hintsOn ? sky.hints : null
   const outside = useOutside(img, n)
+  const blackSeen = useUi((s) => s.tipsSeen.includes(BLACK_EDGE_TIP))
+  const markTip = useUi((s) => s.markTip)
+  const [blackNote, setBlackNote] = useState(false)
   const hintLine = useHintLine(hints, panel)
   const verdict = lesson && saved && answer ? verdictOf(saved.reveal, answer, true) : null
 
@@ -342,6 +346,12 @@ function SwapCard({
     } else onAnswer(a, null, performance.now(), hintsUsed)
   }
 
+  useEffect(() => {
+    if (lesson || !outside[panel] || blackSeen) return
+    setBlackNote(true)
+    markTip(BLACK_EDGE_TIP)
+  }, [blackSeen, lesson, markTip, outside, panel])
+
   const looking = mode === 'look' || mode === 'tools'
   const mustLookFirst = lesson === 'moves' && !sawIt && !retry
   const canSwipe = looking && !!img && !mustLookFirst
@@ -373,7 +383,7 @@ function SwapCard({
   )
 
   const labels = { still: t('still'), moves: t('moves'), glitch: t('glitch'), unsure: t('unsure') }
-  const note = hintLine ?? (outside[panel] ? tp('outside') : null)
+  const note = hintLine ?? (blackNote && outside[panel] ? tp('outside') : null)
 
   return (
     <SwapShell>
@@ -535,6 +545,7 @@ function DeckSkeleton({ onHelp, line, strip }: { onHelp: () => void; line?: stri
 type DeckState = { status: 'loading' | 'searching' | 'ready' | 'done' | 'error'; card: PlayCard | null }
 
 let sessionLooks = 0
+let fastWarned = false
 
 async function fetchNext(not: string[]): Promise<DeckState> {
   const skip = not.length ? { not: not.join(',') } : {}
@@ -648,9 +659,10 @@ function useDelayedVotes(onNotice: (strips: Strip[]) => void, onFailed: (answer:
   const failed = useRef<Pending[]>([])
 
   const send = useCallback(
-    async (p: Pending) => {
+    async (p: Pending, keepalive = false) => {
       try {
         const r = await vote.mutateAsync({
+          keepalive,
           card_id: p.card.id,
           choice: p.answer === 'glitch' ? 'still' : p.answer,
           ...(p.answer === 'glitch' ? { glitch: true } : {}),
@@ -661,6 +673,10 @@ function useDelayedVotes(onNotice: (strips: Strip[]) => void, onFailed: (answer:
         exploreQueue.release(isSkyCard(p.card) ? p.card : null)
         const known = r.reveal.known
         const strips: Strip[] = [...(known ? [{ kind: 'known' as const, name: knownName(known.name) }] : []), ...r.new_badges.map((b) => ({ kind: 'badge' as const, name: tb(`${b}.name`) }))]
+        if (r.xp.reason === 'too_fast' && !fastWarned) {
+          fastWarned = true
+          strips.push({ kind: 'fast' })
+        }
         if (strips.length) onNotice(strips)
       } catch (err) {
         if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) return
@@ -671,9 +687,12 @@ function useDelayedVotes(onNotice: (strips: Strip[]) => void, onFailed: (answer:
     [onFailed, onNotice, tb, vote],
   )
 
-  const retryFailed = useCallback(() => {
-    for (const p of failed.current.splice(0)) void send(p)
-  }, [send])
+  const retryFailed = useCallback(
+    (keepalive = false) => {
+      for (const p of failed.current.splice(0)) void send(p, keepalive)
+    },
+    [send],
+  )
 
   return { send, retryFailed }
 }
@@ -739,26 +758,34 @@ function Deck({ onHelp }: { onHelp: () => void }) {
     pumpNotices()
   }, [clearUndo, pumpNotices, send])
 
-  const discardPending = useCallback(() => {
+  const sendNow = useCallback(() => {
     clearUndo()
     const p = pending.current
     pending.current = null
     setStrip((now) => (now?.kind === 'saved' ? null : now))
-    if (p) exploreQueue.release(isSkyCard(p.card) ? p.card : null)
-    pumpNotices()
-  }, [clearUndo, pumpNotices])
+    if (p) void send(p, true)
+    retryFailed(true)
+  }, [clearUndo, retryFailed, send])
+
+  const sendOnLeave = useRef(sendNow)
+  useEffect(() => {
+    sendOnLeave.current = sendNow
+  }, [sendNow])
 
   useEffect(() => {
     const onHide = () => {
-      if (document.visibilityState === 'hidden') discardPending()
+      if (document.visibilityState === 'hidden') sendOnLeave.current()
     }
+    const onPageHide = () => sendOnLeave.current()
     document.addEventListener('visibilitychange', onHide)
+    window.addEventListener('pagehide', onPageHide)
     return () => {
       document.removeEventListener('visibilitychange', onHide)
-      clearUndo()
+      window.removeEventListener('pagehide', onPageHide)
+      sendOnLeave.current()
       if (noticeTimer.current) clearTimeout(noticeTimer.current)
     }
-  }, [clearUndo, discardPending])
+  }, [])
 
   useEffect(() => {
     if (cardId && !lesson) void api.POST('/api/classify/shown', { body: { card_id: cardId } })
@@ -835,6 +862,8 @@ function Deck({ onHelp }: { onHelp: () => void }) {
       <SwapStrip text={t('strip.known', { name: strip.name })} action={t('strip.see')} onAction={() => setKnownOpen(strip.name)} />
     ) : strip?.kind === 'badge' ? (
       <SwapStrip text={t('strip.badge', { name: strip.name })} />
+    ) : strip?.kind === 'fast' ? (
+      <SwapStrip text={t('strip.fast')} />
     ) : strip?.kind === 'failed' ? (
       <SwapStrip
         text={t('failed')}

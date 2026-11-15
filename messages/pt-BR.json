@@ -726,7 +726,9 @@
       "defectTitle": "O que é defeito",
       "defectBody": "Um ponto que aparece em uma foto só costuma ser defeito da câmera.",
       "emptyTitle": "É normal não achar nada",
-      "emptyBody": "A maioria dos cartões não tem novidade. Dizer \"Nada mudou\" também ajuda."
+      "emptyBody": "A maioria dos cartões não tem novidade. Dizer \"Nada mudou\" também ajuda.",
+      "blackTitle": "Partes pretas",
+      "blackBody": "Parte preta na borda: o telescópio não fotografou essa área. Estrela com centro preto: ela é forte demais para a câmera. É normal."
     },
     "practice": "Treino: sem pontos.",
     "newBadge": "Selo novo: {name}.",
@@ -807,7 +809,8 @@
       "see": "Ver",
       "badge": "Selo novo: {name}",
       "knownTitle": "Asteroide {name}",
-      "knownBody": "Este ponto bate com um asteroide que já está nos catálogos. Sua resposta foi salva como você respondeu."
+      "knownBody": "Este ponto bate com um asteroide que já está nos catálogos. Sua resposta foi salva como você respondeu.",
+      "fast": "Respostas muito rápidas não contam. Olhe com calma."
     }
   },
   "reels": {
@@ -1153,7 +1156,7 @@
     "helpTitle": "O que suas respostas fazem",
     "helpBody": "Cartões de treino, com resposta conhecida, mostram o quanto confiar nos seus olhos. Depois, suas respostas mudam a chance de algo ter mudado de lugar.",
     "pointsTitle": "Pontos",
-    "pointsBody": "Responder: 2. Marcar um post: 5. Etiquetar ou seguir: 1. Certo, errado e \"Não sei dizer\" valem o mesmo, então nunca chute.",
+    "pointsBody": "Responder: 2. Marcar um post: 5. Etiquetar ou seguir: 1. Qualquer resposta vale o mesmo, então não precisa chutar.",
     "levelsTitle": "Níveis",
     "levelsBody": "{ladder}. Eles nunca caem e não liberam nada.",
     "badgesTitle": "Selos",
@@ -1246,31 +1249,22 @@
     },
     "myCards": {
       "title": "Todas as minhas respostas",
-      "lead": "Cada cartão que você respondeu. Toque em um para ver mais.",
       "answers": {
-        "real": "Sua resposta: Sim, mudou",
-        "artifact": "Sua resposta: Nada mudou",
-        "unsure": "Sua resposta: Não sei dizer"
-      },
-      "status": {
-        "practice": "Treino",
-        "answered": "Respondido",
-        "open": "Em aberto",
-        "artifact": "As respostas dizem que nada mudou",
-        "inconclusive": "As respostas não concordam",
-        "real": "Candidato",
-        "gold": "Respondido"
+        "real": "Sim, mudou",
+        "artifact": "Nada mudou",
+        "unsure": "Não sei dizer"
       },
       "emptyTitle": "Você ainda não respondeu nenhuma foto",
       "emptyAction": "Responder um cartão",
       "detail": {
         "title": "Sobre este cartão",
         "others": "Respostas até agora",
-        "othersCount": "{moves, plural, =0 {ninguém viu} one {# viu} other {# viram}} mudar, {still} não, {unsure, plural, =0 {ninguém ficou em dúvida} one {# ficou em dúvida} other {# ficaram em dúvida}}",
+        "othersCount": "{moves, plural, =0 {ninguém viu} one {# viu} other {# viram}} mudar, {still, plural, =0 {ninguém disse que não} one {# disse que não} other {# disseram que não}}, {unsure, plural, =0 {ninguém ficou em dúvida} one {# ficou em dúvida} other {# ficaram em dúvida}}",
         "guess": "Palpite do computador",
         "guessNote": "É só um palpite e pode errar.",
         "catalog": "Nos catálogos",
-        "failed": "Não deu para abrir agora. Tente de novo."
+        "failed": "Não deu para abrir agora. Tente de novo.",
+        "yours": "Sua resposta"
       }
     },
     "checksDone": "{done} de {total} checagens feitas",
