@@ -1729,14 +1729,14 @@
       "title": "Entrar na sua conta",
       "withPhone": "Entrar com o celular",
       "withOther": "Entrar com outro aparelho",
-      "passkeyComputer": "Usar passkey deste computador",
-      "passkeyPhone": "Usar passkey deste celular",
+      "passkeyComputer": "Usar a chave de acesso deste computador",
+      "passkeyPhone": "Usar a chave de acesso deste celular",
       "recover": "Tenho um código de recuperação",
       "newHere": "Ainda não tem conta?",
       "pickNickname": "Escolha um apelido",
-      "passkeyFailed": "Não deu para entrar com a passkey. Tente de novo ou use outro jeito.",
-      "passkeyUnknown": "Essa passkey não é de nenhuma conta do SkySwap.",
-      "noPasskey": "Este navegador não aceita passkey.",
+      "passkeyFailed": "Não deu para entrar com a chave de acesso. Tente de novo ou use outro jeito.",
+      "passkeyUnknown": "Essa chave de acesso não é de nenhuma conta do SkySwap.",
+      "noPasskey": "Este navegador não aceita chave de acesso.",
       "haveAccount": "Já tenho uma conta"
     },
     "qr": {
@@ -1772,11 +1772,11 @@
     "protect": {
       "title": "Proteger sua conta",
       "body": "Assim você não perde seu progresso se trocar de celular ou limpar o navegador.",
-      "create": "Criar passkey",
+      "create": "Criar chave de acesso",
       "creating": "Criando",
-      "passkeyHint": "A passkey usa a digital, o rosto ou o PIN deste aparelho. Não tem senha para decorar.",
-      "unsupported": "Este navegador não aceita passkey. Guarde um código de recuperação.",
-      "failed": "Não deu para criar a passkey. Tente de novo.",
+      "passkeyHint": "A chave de acesso usa a digital, o rosto ou o PIN deste aparelho. Não tem senha para decorar.",
+      "unsupported": "Este navegador não aceita chave de acesso. Guarde um código de recuperação.",
+      "failed": "Não deu para criar a chave de acesso. Tente de novo.",
       "codeOnly": "Continuar só com o código",
       "done": "Conta protegida",
       "nudgeTitle": "Proteja sua conta",
@@ -1803,17 +1803,17 @@
       "connectHint": "Leia o QR de outro aparelho para entrar nele",
       "current": "Este aparelho",
       "seen": "Usado {ago}",
-      "withPasskey": "com passkey",
+      "withPasskey": "com chave de acesso",
       "signOut": "Sair",
       "signOutLabel": "Sair de {device}",
       "confirmTitle": "Sair deste aparelho?",
       "confirmOther": "{device} vai precisar entrar de novo.",
-      "confirmPasskey": "A passkey criada nele também deixa de valer.",
+      "confirmPasskey": "A chave de acesso criada nele também deixa de valer.",
       "confirmCurrent": "Você vai sair da conta neste aparelho.",
-      "confirmUnprotected": "Sua conta ainda não está protegida. Sem passkey nem código, não dá para voltar.",
+      "confirmUnprotected": "Sua conta ainda não está protegida. Sem chave de acesso nem código, não dá para voltar.",
       "confirm": "Sair deste aparelho",
       "protected": "Conta protegida",
-      "protectedBody": "{passkeys, plural, =0 {Sem passkey} one {# passkey} other {# passkeys}}, {recovery, select, true {com código de recuperação} other {sem código de recuperação}}",
+      "protectedBody": "{passkeys, plural, =0 {Sem chave de acesso} one {# chave de acesso} other {# chaves de acesso}}, {recovery, select, true {com código de recuperação} other {sem código de recuperação}}",
       "newCode": "Gerar novo código de recuperação",
       "addCode": "Criar código de recuperação",
       "newCodeTitle": "Código de recuperação",
@@ -1847,6 +1847,6 @@
         "generic": "Algo deu errado. Tente de novo."
       }
     },
-    "logoutProtected": "Para voltar depois, use sua passkey, outro aparelho conectado ou o código de recuperação."
+    "logoutProtected": "Para voltar depois, use sua chave de acesso, outro aparelho conectado ou o código de recuperação."
   }
 }

@@ -6,6 +6,7 @@ const phone = { ...devices['Pixel 7'], viewport: { width: 375, height: 812 }, de
 const apiPort = Number(process.env.E2E_API_PORT ?? 4000)
 const webPort = Number(process.env.E2E_WEB_PORT ?? 3000)
 const webUrl = `http://localhost:${webPort}`
+process.env.SKYSWAP_E2E_DB ??= join(tmpdir(), `skyswap-e2e-${Date.now()}.sqlite`)
 
 export default defineConfig({
   testDir: 'e2e',
@@ -25,7 +26,7 @@ export default defineConfig({
       url: `http://127.0.0.1:${apiPort}/api/health`,
       reuseExistingServer: true,
       timeout: 60_000,
-      env: { PORT: String(apiPort), WEB_ORIGIN: webUrl, SKYSWAP_ORIGIN: webUrl, SKYSWAP_DB: join(tmpdir(), `skyswap-e2e-${Date.now()}.sqlite`) },
+      env: { PORT: String(apiPort), WEB_ORIGIN: webUrl, SKYSWAP_ORIGIN: webUrl, SKYSWAP_DB: process.env.SKYSWAP_E2E_DB },
     },
     { command: `npx next dev -p ${webPort}`, url: webUrl, reuseExistingServer: true, timeout: 120_000, env: { SKYSWAP_API_URL: `http://127.0.0.1:${apiPort}` } },
   ],

@@ -96,7 +96,7 @@ function DeviceRow({ device, onSignOut }: { device: Device; onSignOut: () => voi
       </span>
       <span className="min-w-0 flex-1 leading-tight">
         <span className="block truncate text-ui font-medium">{label}</span>
-        <span className={cx('block truncate text-note', device.current ? 'font-semibold text-success' : 'text-text-secondary')}>{details}</span>
+        <span className={cx('block text-note', device.current ? 'font-semibold text-success' : 'text-text-secondary')}>{details}</span>
       </span>
       <Button onClick={onSignOut} aria-label={t('signOutLabel', { device: label })} className="shrink-0 font-semibold">
         {t('signOut')}
