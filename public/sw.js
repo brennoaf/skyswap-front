@@ -25,6 +25,8 @@ self.addEventListener('fetch', e => {
   const range = e.request.headers.get('range')
   if ((S3_HOSTS.includes(url.hostname) || (url.origin === location.origin && url.pathname.startsWith('/api/s3/'))) && range) {
     e.respondWith(s3Range(e, range))
+  } else if (url.origin === location.origin && url.pathname.startsWith('/api/crop/') && !range) {
+    e.respondWith(cropped(e, url))
   } else if (url.origin === location.origin && /^\/kit\/(index|objects|deck)\//.test(url.pathname) && !range) {
     e.respondWith(cacheFirst(e.request))
   }
@@ -51,6 +53,18 @@ async function s3Range(e, range) {
   const buf = await r.arrayBuffer()
   e.waitUntil(storeRange(c, key, buf))
   return new Response(buf, { status: 206, headers: { 'x-sw': 'miss' } })
+}
+
+async function cropped(e, url) {
+  const c = await caches.open(VERSION)
+  const key = new Request(`${location.origin}${RANGE_PREFIX}${url.pathname.replace(/^\/api\/crop\//, '/crop/')}${url.search}`)
+  const hit = await c.match(key)
+  if (hit) return new Response(await hit.arrayBuffer(), { status: 200, headers: { 'x-sw': 'hit' } })
+  const r = await fetch(e.request)
+  if (r.status !== 200) return r
+  const buf = await r.arrayBuffer()
+  e.waitUntil(storeRange(c, key, buf))
+  return new Response(buf, { status: 200, headers: { 'x-sw': 'miss' } })
 }
 
 async function storeRange(c, key, buf) {

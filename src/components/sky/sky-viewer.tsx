@@ -18,7 +18,7 @@ import { useObject, useSky } from '@/lib/api/hooks'
 import { BAND_HUE, BANDS, cssColor, formatBytes, formatShortDate, cx } from '@/lib/format'
 import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch, type IndexRow } from '@/lib/sky'
 import { pointHits, askServer } from '@/lib/explore/lookup'
-import { differenceGrey, differenceImages, differenceScale } from '@/lib/explore/sky-card'
+import { differenceGrey, differenceImages, differenceScale, SKY_CROP } from '@/lib/explore/sky-card'
 import { tileFetch } from '@/lib/explore/tiles'
 import { useUi } from '@/lib/state/ui'
 import { useBandName } from '@/lib/use-band'
@@ -219,6 +219,8 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
         indexBase: INDEX_BASE,
         maxEpochs,
         mode: 'bilinear',
+        cropBase: SKY_CROP,
+        signal: ctrl.signal,
         bands: p.band ? [p.band] : null,
         onFrame: (_i, f) => {
           if (!live()) return
@@ -298,6 +300,13 @@ function Player({
     kicked.current = true
     void start()
   }, [autoStart, start])
+
+  useEffect(
+    () => () => {
+      kicked.current = false
+    },
+    [],
+  )
 
   useEffect(() => {
     if (b.status !== 'building' || !b.latest) return

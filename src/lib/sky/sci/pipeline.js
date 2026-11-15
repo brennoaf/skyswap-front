@@ -29,12 +29,61 @@ function pickEpochs(hits, maxEpochs) {
   return out.sort((a, b) => a.mjd - b.mjd).slice(0, maxEpochs)
 }
 
-async function getRange(url, start, len, stats) {
-  const r = await fetch(url, { headers: { Range: `bytes=${start}-${start + len - 1}` }, cache: 'no-store' })
-  if (r.status !== 206) throw new Error(`expected 206, got ${r.status}`)
-  const b = new Uint8Array(await r.arrayBuffer())
-  stats.gets++; stats.bytes += b.length
-  return b
+const CROP_MAX_PX = 640
+const RETRY_WAIT_MS = 400
+
+function linked(outer, timeoutMs) {
+  const ctrl = new AbortController()
+  const stop = () => ctrl.abort()
+  if (outer?.aborted) ctrl.abort()
+  outer?.addEventListener('abort', stop, { once: true })
+  const timer = setTimeout(stop, timeoutMs)
+  return { signal: ctrl.signal, done: () => { clearTimeout(timer); outer?.removeEventListener('abort', stop) } }
+}
+
+export async function getBytes(url, init, okStatus, stats, net) {
+  for (let attempt = 0; ; attempt++) {
+    const link = linked(net.signal, net.timeoutMs)
+    let retry = attempt < net.retries
+    try {
+      const r = await fetch(url, { ...init, signal: link.signal })
+      if (r.status === okStatus) {
+        const b = new Uint8Array(await r.arrayBuffer())
+        stats.gets++; stats.bytes += b.length
+        return b
+      }
+      retry = retry && (r.status >= 500 || r.status === 429)
+      if (!retry) throw new Error(`expected ${okStatus}, got ${r.status}`)
+    } catch (e) {
+      if (net.signal?.aborted || !retry) throw e
+    } finally {
+      link.done()
+    }
+    stats.retries++
+    await new Promise(res => setTimeout(res, RETRY_WAIT_MS * 2 ** attempt))
+    if (net.signal?.aborted) throw new Error('stopped')
+  }
+}
+
+function getRange(url, start, len, stats, net) {
+  return getBytes(url, { headers: { Range: `bytes=${start}-${start + len - 1}` }, cache: 'no-store' }, 206, stats, net)
+}
+
+function getCrop(cropBase, key, offs, box, stats, net, span = null) {
+  const rice = !span ? '' : span.desc ? `&desc=${span.desc},${span.heap}` : `&rice=${span.start},${span.len},${span.nrows},${span.skip}`
+  return getBytes(`${cropBase}${key}?off=${offs.join(',')}&x0=${box.x0}&y0=${box.y0}&w=${box.w}&h=${box.h}${rice}`, {}, 200, stats, net)
+}
+
+function riceSpan(h, y0, rows) {
+  const K = 32, c0 = Math.floor(y0 / K), c1 = Math.ceil((y0 + rows) / K), ck = Array.from(h.flags_ckpt)
+  const a = ck[c0], b = c1 < ck.length ? ck[c1] : h.flags_heap_end
+  return { start: h.off_flags + h.flags_theap + a, len: b - a, nrows: Math.min(c1 * K, NX) - c0 * K, skip: y0 - c0 * K }
+}
+
+function plane(u8, index, count, kind) {
+  const dv = new DataView(u8.buffer, u8.byteOffset + index * count * 4, count * 4), out = kind === 'i32' ? new Int32Array(count) : new Float32Array(count)
+  for (let k = 0; k < count; k++) out[k] = kind === 'i32' ? dv.getInt32(k * 4, false) : dv.getFloat32(k * 4, false)
+  return out
 }
 
 function cropBE(u8, rows, x0, w, kind) {
@@ -55,29 +104,31 @@ function boxFor(h, grid, n, margin = 10) {
   return x1 - x0 < 8 || y1 - y0 < 8 ? null : { x0, y0, w: x1 - x0, h: y1 - y0, wcsFull: w }
 }
 
-async function fetchEpoch(h, box, host, stats) {
-  const url = host + h.key, rowBytes = NX * 4, { y0, h: rows, x0, w } = box
-  const jobs = [getRange(url, h.off_image + y0 * rowBytes, rows * rowBytes, stats), getRange(url, h.off_var + y0 * rowBytes, rows * rowBytes, stats)]
-  let flagsP
-  if (!h.flags_rice) flagsP = getRange(url, h.off_flags + y0 * rowBytes, rows * rowBytes, stats).then(b => cropBE(b, rows, x0, w, 'i32'))
-  else {
-    const heap = h.off_flags + h.flags_theap
-    if (h.flags_ckpt) {
-      const K = 32, c0 = Math.floor(y0 / K), c1 = Math.ceil((y0 + rows) / K), ck = Array.from(h.flags_ckpt)
-      const a = ck[c0], b = c1 < ck.length ? ck[c1] : h.flags_heap_end
-      flagsP = getRange(url, heap + a, b - a, stats).then(span => {
-        const all = riceDecodeRows(span, Math.min(c1 * K, NX) - c0 * K, NX).data
-        return cropRows(all.subarray((y0 - c0 * K) * NX, (y0 - c0 * K + rows) * NX), rows, x0, w)
-      })
-    } else {
-      flagsP = getRange(url, h.off_flags + y0 * 8, rows * 8, stats).then(async desc => {
-        const dv = new DataView(desc.buffer, desc.byteOffset, desc.byteLength)
-        const o0 = dv.getInt32(4, false), last = dv.getInt32((rows - 1) * 8 + 4, false) + dv.getInt32((rows - 1) * 8, false)
-        const span = await getRange(url, heap + o0, last - o0, stats)
-        return cropRows(riceDecodeRows(span, rows, NX).data, rows, x0, w)
-      })
-    }
+function riceFlags(h, box, url, stats, net) {
+  const { y0, h: rows, x0, w } = box, heap = h.off_flags + h.flags_theap
+  if (h.flags_ckpt?.length) {
+    const s = riceSpan(h, y0, rows)
+    return getRange(url, s.start, s.len, stats, net).then(span => cropRows(riceDecodeRows(span, s.nrows, NX).data.subarray(s.skip * NX, (s.skip + rows) * NX), rows, x0, w))
   }
+  return getRange(url, h.off_flags + y0 * 8, rows * 8, stats, net).then(async desc => {
+    const dv = new DataView(desc.buffer, desc.byteOffset, desc.byteLength)
+    const o0 = dv.getInt32(4, false), last = dv.getInt32((rows - 1) * 8 + 4, false) + dv.getInt32((rows - 1) * 8, false)
+    const span = await getRange(url, heap + o0, last - o0, stats, net)
+    return cropRows(riceDecodeRows(span, rows, NX).data, rows, x0, w)
+  })
+}
+
+export async function fetchEpoch(h, box, host, stats, net) {
+  const url = host + h.key, rowBytes = NX * 4, { y0, h: rows, x0, w } = box
+  if (net.cropBase && w <= CROP_MAX_PX && rows <= CROP_MAX_PX) {
+    const offs = h.flags_rice ? [h.off_image, h.off_var] : [h.off_image, h.off_var, h.off_flags]
+    const span = !h.flags_rice ? null : h.flags_ckpt?.length ? riceSpan(h, y0, rows) : { desc: h.off_flags + y0 * 8, heap: h.off_flags + h.flags_theap }
+    const cut = await getCrop(net.cropBase, h.key, offs, box, stats, net, span)
+    if (cut.length !== 3 * rows * w * 4) throw new Error('short crop')
+    return { img: plane(cut, 0, rows * w, 'f32'), variance: plane(cut, 1, rows * w, 'f32'), flags: plane(cut, 2, rows * w, 'i32') }
+  }
+  const jobs = [getRange(url, h.off_image + y0 * rowBytes, rows * rowBytes, stats, net), getRange(url, h.off_var + y0 * rowBytes, rows * rowBytes, stats, net)]
+  const flagsP = h.flags_rice ? riceFlags(h, box, url, stats, net) : getRange(url, h.off_flags + y0 * rowBytes, rows * rowBytes, stats, net).then(b => cropBE(b, rows, x0, w, 'i32'))
   const [im, va, flags] = await Promise.all([...jobs, flagsP])
   return { img: cropBE(im, rows, x0, w, 'f32'), variance: cropBE(va, rows, x0, w, 'f32'), flags }
 }
@@ -89,8 +140,12 @@ function cropRows(full, rows, x0, w) {
 }
 
 export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase, maxEpochs = 48, mode = 'bilinear',
-  engine = null, onFrame = null, concurrency = 12, hosts = S3_HOSTS, bands = null, pick = null, fetchImpl = null, hits: given = null } = {}) {
-  const T0 = performance.now(), stats = { gets: 0, bytes: 0 }, tm = {}
+  engine = null, onFrame = null, concurrency = 12, hosts = S3_HOSTS, bands = null, pick = null, fetchImpl = null, hits: given = null, cropBase = null, signal = null, retries = 2, timeoutMs = 20000 } = {}) {
+  const T0 = performance.now(), stats = { gets: 0, bytes: 0, retries: 0 }, tm = {}
+  const halt = new AbortController(), net = { cropBase, retries, timeoutMs, signal: halt.signal }
+  const stopAll = () => halt.abort()
+  if (signal?.aborted) stopAll()
+  signal?.addEventListener('abort', stopAll, { once: true })
   const wave = await fetch(indexBase + 'wave.json').then(r => r.json())
   const q = given ? { hits: given, bytes: 0, candidates: given.length } : await epochsAtTile(indexBase, wave, ra, dec, { order: 5, fetchImpl })
   tm.index_ms = performance.now() - T0
@@ -99,14 +154,19 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
   hits = pick ? pick(hits) : pickEpochs(hits, maxEpochs)
   const { n, wcs: grid } = referenceGrid(ra, dec, fovDeg)
   const frames = new Array(hits.length)
-  let next = 0, firstFrame = null
+  let next = 0, firstFrame = null, failed = 0
   const worker = async (wi) => {
-    while (next < hits.length) {
+    while (next < hits.length && !halt.signal.aborted) {
       const i = next++, h = hits[i]
       const box = boxFor(h, grid, n)
       if (!box) continue
       const host = hosts[(i + wi) % hosts.length]
-      const raw = await fetchEpoch(h, box, host, stats)
+      let raw
+      try { raw = await fetchEpoch(h, box, host, stats, net) } catch (e) {
+        if (halt.signal.aborted) throw e
+        failed++
+        continue
+      }
       const bad = new Uint8Array(raw.img.length)
       for (let k = 0; k < bad.length; k++) bad[k] = ((raw.flags[k] & MASK_VALUE) !== 0 || !Number.isFinite(raw.img[k]) || !Number.isFinite(raw.variance[k])) ? 1 : 0
       const bkg = background(raw.img, bad, box.w, box.h)
@@ -129,10 +189,20 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
       onFrame?.(i, frames[i])
     }
   }
-  await Promise.all(Array.from({ length: concurrency }, (_, wi) => worker(wi)))
+  try {
+    await Promise.all(Array.from({ length: concurrency }, (_, wi) => worker(wi)))
+  } catch (e) {
+    stopAll()
+    throw e
+  } finally {
+    signal?.removeEventListener('abort', stopAll)
+  }
+  if (halt.signal.aborted) throw new Error('stopped')
   tm.all_frames_ms = performance.now() - T0
   const T1 = performance.now()
-  const ok = frames.filter(Boolean), passes = assignPasses(ok.map(f => f.h.mjd)), bandSet = [...new Set(ok.map(f => f.h.band))].sort()
+  const ok = frames.filter(Boolean)
+  if (!ok.length && failed) throw new Error(`none of ${failed} photos could be read`)
+  const passes = assignPasses(ok.map(f => f.h.mjd)), bandSet = [...new Set(ok.map(f => f.h.band))].sort()
   const co = {}
   for (const p of [...new Set(passes)]) for (const b of [...bandSet, 'white']) {
     const sel = ok.filter((f, i) => passes[i] === p && (b === 'white' || f.h.band === b))
@@ -170,7 +240,7 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
   const valid = pos.length >= 2 && pos.every(q => q.nanNear === 0 && q.moved_px < 1.5 && q.snr >= 10)
   tm.science_ms = performance.now() - T1
   tm.total_ms = performance.now() - T0
-  return { n_available: nAvailable, n_epochs: ok.length, grid_n: n, passes: ps.length, coadds: Object.keys(co).length, diffs: Object.keys(diffs).length,
+  return { n_available: nAvailable, n_epochs: ok.length, n_failed: failed, retries: stats.retries, grid_n: n, passes: ps.length, coadds: Object.keys(co).length, diffs: Object.keys(diffs).length,
     spectrum, pm: pm ? { ...pm, valid, positions: pos } : null, timings_ms: Object.fromEntries(Object.entries(tm).map(([k, v]) => [k, Math.round(v)])), gets: stats.gets, bytes: stats.bytes,
     index: { tile_bytes: q.bytes, candidates: q.candidates, hits: q.hits.length } }
 }

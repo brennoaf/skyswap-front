@@ -3,6 +3,7 @@ import type { Spot } from './sampler'
 import { INDEX_BASE, pointHits } from './lookup'
 
 export const SKY_HOSTS = ['/api/s3/']
+export const SKY_CROP = '/api/crop/'
 export const SKY_FOV_DEG = 0.105
 export const MAX_VISITS = 4
 export const MIN_VISITS = 3
@@ -228,6 +229,7 @@ async function readExposures(ra: number, dec: number, fovDeg: number, band: stri
     mode: 'bilinear',
     bands: [band],
     hosts: SKY_HOSTS,
+    cropBase: SKY_CROP,
     concurrency: 4,
     hits: rows,
     onFrame: (_i, f) => {

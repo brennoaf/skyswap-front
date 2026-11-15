@@ -39,11 +39,17 @@ export interface SkyMovieOptions {
   pick?: ((hits: IndexRow[]) => IndexRow[]) | null
   fetchImpl?: typeof fetch | null
   hits?: IndexRow[] | null
+  cropBase?: string | null
+  signal?: AbortSignal | null
+  retries?: number
+  timeoutMs?: number
 }
 
 export interface SkyMovieResult {
   n_available: number
   n_epochs: number
+  n_failed: number
+  retries: number
   grid_n: number
   passes: number
   timings_ms: Record<string, number>
