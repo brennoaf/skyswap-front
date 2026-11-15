@@ -622,8 +622,9 @@ export function HaloChart({ data }: { data: HaloData }) {
           .sort((a, b) => a.mjd - b.mjd)
           .map((p) => ({ ms: mjdMs(p.mjd), rel: p.rel, err: p.rel_err, n: 1, id: p.pass_id }))
   const s = data.summary
-  const when = s && s.brighter_mjd !== null && s.fainter_mjd !== null ? [s.brighter_mjd, s.fainter_mjd].sort((a, b) => a - b).map((m) => formatMonthYear(mjdMs(m), locale)) : null
-  const summary = s?.changes && when ? t('changes', { ratio: s.ratio.toLocaleString(locale, { maximumFractionDigits: 1 }), from: when[0] as string, to: when[1] as string }) : t('steady')
+  const dimmed = !!s && s.brighter_mjd !== null && s.fainter_mjd !== null && s.brighter_mjd < s.fainter_mjd
+  const ends = s && s.brighter_mjd !== null && s.fainter_mjd !== null ? (dimmed ? [s.brighter_mjd, s.fainter_mjd] : [s.fainter_mjd, s.brighter_mjd]).map((m) => formatMonthYear(mjdMs(m), locale)) : null
+  const summary = s?.changes && ends ? t(dimmed ? 'weakerBy' : 'strongerBy', { ratio: s.ratio.toLocaleString(locale, { maximumFractionDigits: 1 }), from: ends[0] as string, to: ends[1] as string }) : t('steady')
   const pick = (b: string) => {
     setBand(b)
     setPass(null)

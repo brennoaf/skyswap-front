@@ -1693,8 +1693,7 @@
   },
   "halo": {
     "title": "Indício pelo halo",
-    "lead": "O centro da estrela estoura a câmera. Medimos o brilho espalhado em volta (o halo), que sobe e desce junto com ela.",
-    "changes": "Mudou cerca de {ratio}× entre {from} e {to}.",
+    "lead": "Esta estrela é tão brilhante que o meio dela fica branco na foto, como uma lâmpada fotografada de perto. Em volta sobra um brilho espalhado, o halo. Quando a estrela fica mais forte, o halo também fica. É ele que medimos aqui.",
     "steady": "Sem mudança clara entre as passagens.",
     "stronger": "mais forte",
     "weaker": "mais fraco",
@@ -1708,6 +1707,8 @@
       "photo": "Cada foto sozinha tem cerca de 15% de ruído. A passagem é a média das fotos dela.",
       "rule": "Uma mudança conta quando passa de 5 vezes a incerteza, é de pelo menos 5% e vai no mesmo sentido em 2 cores ou mais.",
       "days": "Toque numa passagem para ver as fotos dela ao longo dos dias. Estrelas que variam em poucos dias mostram isso ali, não entre passagens."
-    }
+    },
+    "weakerBy": "O halo ficou cerca de {ratio}× mais fraco de {from} para {to}.",
+    "strongerBy": "O halo ficou cerca de {ratio}× mais forte de {from} para {to}."
   }
 }

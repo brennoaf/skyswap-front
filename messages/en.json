@@ -1693,8 +1693,7 @@
   },
   "halo": {
     "title": "Hint from the halo",
-    "lead": "The centre of the star saturates the camera. We measured the light spread around it (the halo), which rises and falls with the star.",
-    "changes": "It changed by about {ratio} times between {from} and {to}.",
+    "lead": "This star is so bright that its middle turns white in the photo, like a lamp photographed up close. Around it some light spreads out: the halo. When the star gets stronger, the halo does too. The halo is what we measure here.",
     "steady": "No clear change between passes.",
     "stronger": "stronger",
     "weaker": "weaker",
@@ -1708,6 +1707,8 @@
       "photo": "Each single photo carries about 15% noise. A pass is the average of its photos.",
       "rule": "A change counts past 5 times its uncertainty, at least 5%, in the same direction in 2 or more colours.",
       "days": "Tap a pass to see its photos over the days. Stars that vary in a few days show it there, not between passes."
-    }
+    },
+    "weakerBy": "The halo got about {ratio} times weaker from {from} to {to}.",
+    "strongerBy": "The halo got about {ratio} times stronger from {from} to {to}."
   }
 }
