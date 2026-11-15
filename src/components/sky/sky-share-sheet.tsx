@@ -8,6 +8,7 @@ import type { SkyParams } from '@/components/sky/sky-viewer'
 import { Button, Notice, Sheet } from '@/components/ui/primitives'
 import { useSearch } from '@/lib/api/hooks'
 import { formatDec, formatRa } from '@/lib/format'
+import { readView, withView } from '@/lib/sky-view'
 import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
 
@@ -31,15 +32,15 @@ export function SkyShareSheet({ open, onClose, params }: { open: boolean; onClos
   const found = data?.spot ?? null
   const spot = found && Math.hypot(found.ra - params.ra, found.dec - params.dec) < SAME_SPOT_DEG ? found : null
   const sourceKey = spot ? `sources.${spot.source}` : ''
-  const href = skyHref(params)
+  const href = () => withView(skyHref(params), readView(window.location.search))
   const coords = t('coordinates', { ra: formatRa(params.ra), dec: formatDec(params.dec) })
 
   const copy = async (kind: 'link' | 'embed') => {
     const origin = window.location.origin
     const text =
       kind === 'link'
-        ? `${origin}${href}`
-        : `<iframe src="${origin}${href.replace('/sky?', '/embed?')}" width="360" height="640" style="border:0;border-radius:12px" loading="lazy" allow="fullscreen" title="${ts('embedTitle')}"></iframe>`
+        ? `${origin}${href()}`
+        : `<iframe src="${origin}${href().replace('/sky?', '/embed?')}" width="360" height="640" style="border:0;border-radius:12px" loading="lazy" allow="fullscreen" title="${ts('embedTitle')}"></iframe>`
     try {
       await navigator.clipboard.writeText(text)
       setManual(null)

@@ -21,6 +21,7 @@ import { pointHits, askServer } from '@/lib/explore/lookup'
 import { differenceGrey, differenceImages, differenceScale, SKY_CROP } from '@/lib/explore/sky-card'
 import { tileFetch } from '@/lib/explore/tiles'
 import { bandLevels } from '@/lib/band-levels'
+import { nearestFrame, readView, withView, type SharedView } from '@/lib/sky-view'
 import { isControl, isTyping, ownsArrows, plainKey } from '@/lib/keys'
 import { modalCount } from '@/lib/modal-history'
 import { useUi } from '@/lib/state/ui'
@@ -282,6 +283,7 @@ function Player({
   const [colormap, setColormap] = useState<Colormap>('grey')
   const [view, setView] = useState<View>('photos')
   const [ends, setEnds] = useState(false)
+  const asked = useRef<SharedView>(compact || typeof window === 'undefined' ? { at: null, band: null, tool: null } : readView(window.location.search))
   const shown = useMemo(() => (ends && b.frames.length > 2 ? [b.frames[0], b.frames[b.frames.length - 1]].filter((f): f is ViewFrame => !!f) : b.frames), [ends, b.frames])
   const levels = useMemo(() => (params.band ? null : bandLevels(b.frames)), [params.band, b.frames])
   const n = shown.length
@@ -319,11 +321,19 @@ function Player({
   }, [b.status, b.latest, shown])
 
   useEffect(() => {
-    if (b.status === 'ready') {
-      setCur(0)
-      setPlaying(n > 1 && !prefersReducedMotion())
+    if (b.status !== 'ready') return
+    const want = asked.current
+    asked.current = { at: null, band: null, tool: null }
+    if (want.tool === 'changes') setView('changes')
+    if (want.tool === 'colour') setColormap('band')
+    if (want.at !== null) {
+      setCur(nearestFrame(b.frames, want.at, want.band))
+      setPlaying(false)
+      return
     }
-  }, [b.status, n])
+    setCur(0)
+    setPlaying(n > 1 && !prefersReducedMotion())
+  }, [b.status, n, b.frames])
 
   useEffect(() => {
     if (!playing || n < 2) return
@@ -332,6 +342,13 @@ function Player({
   }, [playing, n, speed])
 
   const frame = shown[Math.min(cur, n - 1)]
+  const frameMjd = frame?.mjd ?? null
+  const frameBand = frame?.band ?? null
+  useEffect(() => {
+    if (compact || b.status !== 'ready') return
+    const next = withView(`${location.pathname}${location.search}`, { at: playing || ends ? null : frameMjd, band: frameBand, tool: view === 'changes' ? 'changes' : colormap === 'band' ? 'colour' : null })
+    if (next !== `${location.pathname}${location.search}`) history.replaceState(history.state, '', `${next}${location.hash}`)
+  }, [compact, b.status, playing, ends, frameMjd, frameBand, view, colormap])
   const shownFrame = useMemo(() => {
     const level = frame && levels?.get(frame.band)
     return frame && level ? { ...frame, ...level } : frame
@@ -849,6 +866,15 @@ export function SkyViewer({
   useEffect(() => {
     if (!compact) window.scrollTo({ top: 0 })
   }, [stage, compact])
+
+  useEffect(() => {
+    if (compact) return
+    const shared = readView(window.location.search)
+    if (shared.at === null && shared.tool === null) return
+    setFrom('player')
+    setStage('player')
+    setRun((r) => r || 1)
+  }, [compact])
 
   const openSteps = (origin: 'intro' | 'player') => {
     setDraft(origin === 'intro' && lastChoice ? lastChoice : { band, fov })
