@@ -1678,5 +1678,24 @@
     "tooBright": "Too bright to judge: the centre saturates the camera.",
     "tooFaint": "Too faint to judge.",
     "rule": "Only what goes past 5 times its uncertainty counts."
+  },
+  "halo": {
+    "title": "Hint from the halo",
+    "lead": "The centre of the star saturates the camera. We measured the light spread around it (the halo), which rises and falls with the star.",
+    "changes": "It changed by about {ratio} times between {from} and {to}.",
+    "steady": "No clear change between passes.",
+    "stronger": "stronger",
+    "weaker": "weaker",
+    "axis": "Halo brightness",
+    "pass": "Pass of {date}",
+    "photos": "{n, plural, one {# photo} other {# photos}}",
+    "read": "{value} ± {err}",
+    "back": "All passes",
+    "info": {
+      "relative": "Each point compares the halo with its usual brightness in the same colour. It says stronger or weaker, never how bright the star is.",
+      "photo": "Each single photo carries about 15% noise. A pass is the average of its photos.",
+      "rule": "A change counts past 5 times its uncertainty, at least 5%, in the same direction in 2 or more colours.",
+      "days": "Tap a pass to see its photos over the days. Stars that vary in a few days show it there, not between passes."
+    }
   }
 }

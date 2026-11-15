@@ -585,6 +585,132 @@ export function MotionChart({ data, pixelArcsec = 6.15, technical = false, title
   )
 }
 
+export interface HaloData {
+  points: { mjd: number; band: string; pass_id: number; rel: number; rel_err: number }[]
+  passes: { band: string; pass_id: number; mjd: number; n: number; rel: number; err: number }[]
+  summary: { ratio: number; changes: boolean; brighter_mjd: number | null; fainter_mjd: number | null } | null
+}
+
+const mjdMs = (mjd: number) => (mjd - 40587) * 86_400_000
+const haloPct = (rel: number) => (Math.exp(rel) - 1) * 100
+
+export function haloBand(data: HaloData): string | null {
+  const ranked = BANDS.map((b) => {
+    const list = data.passes.filter((p) => p.band === b)
+    return { b, n: list.length, err: list.reduce((s, p) => s + p.err, 0) / Math.max(1, list.length) }
+  })
+    .filter((r) => r.n > 0)
+    .sort((a, b) => b.n - a.n || a.err - b.err)
+  return ranked[0]?.b ?? null
+}
+
+export function HaloChart({ data }: { data: HaloData }) {
+  const locale = useLocale()
+  const t = useTranslations('halo')
+  const bandName = useBandName()
+  const bands = BANDS.filter((b) => data.passes.some((p) => p.band === b))
+  const [band, setBand] = useState<string | null>(() => haloBand(data))
+  const [pass, setPass] = useState<number | null>(null)
+  const [sel, setSel] = useState<number | null>(null)
+  const [info, setInfo] = useState(false)
+  const passes = data.passes.filter((p) => p.band === band).sort((a, b) => a.mjd - b.mjd)
+  const rows =
+    pass === null
+      ? passes.map((p) => ({ ms: mjdMs(p.mjd), rel: p.rel, err: p.err, n: p.n, id: p.pass_id }))
+      : data.points
+          .filter((p) => p.band === band && p.pass_id === pass && Number.isFinite(p.rel))
+          .sort((a, b) => a.mjd - b.mjd)
+          .map((p) => ({ ms: mjdMs(p.mjd), rel: p.rel, err: p.rel_err, n: 1, id: p.pass_id }))
+  const s = data.summary
+  const when = s && s.brighter_mjd !== null && s.fainter_mjd !== null ? [s.brighter_mjd, s.fainter_mjd].sort((a, b) => a - b).map((m) => formatMonthYear(mjdMs(m), locale)) : null
+  const summary = s?.changes && when ? t('changes', { ratio: s.ratio.toLocaleString(locale, { maximumFractionDigits: 1 }), from: when[0] as string, to: when[1] as string }) : t('steady')
+  const pick = (b: string) => {
+    setBand(b)
+    setPass(null)
+    setSel(null)
+  }
+  const head = (
+    <ChartHead title={t('title')} onInfo={() => setInfo(true)}>
+      <p className="mb-2 text-body leading-snug" data-testid="halo-lead">
+        {t('lead')} {summary}
+      </p>
+      <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto py-1">
+        {pass !== null && (
+          <Chip active onClick={() => setPass(null)}>
+            {t('back')}
+          </Chip>
+        )}
+        {bands.map((b) => (
+          <Chip key={b} active={band === b} onClick={() => pick(b)}>
+            <span className="size-2 rounded-full" style={{ background: BAND_HUE[b] }} />
+            {bandName(b)}
+          </Chip>
+        ))}
+      </div>
+    </ChartHead>
+  )
+  const infoSheet = <InfoSheet open={info} onClose={() => setInfo(false)} lines={[t('info.relative'), t('info.photo'), t('info.rule'), t('info.days')]} />
+  if (!rows.length)
+    return (
+      <figure data-testid="halo-chart">
+        {head}
+        {infoSheet}
+      </figure>
+    )
+  const times = rows.map((r) => r.ms)
+  const x = linear([Math.min(...times), Math.max(...times)], [PLOT.l, PLOT.w - PLOT.r], 4, 0.08)
+  const months = pass === null ? monthTicks(x.domain[0], x.domain[1], 4) : []
+  if (months.length) x.ticks = months
+  const vals = rows.flatMap((r) => [haloPct(r.rel - r.err), haloPct(r.rel + r.err), 0])
+  const y = linear([Math.min(...vals), Math.max(...vals)], [PLOT.h - PLOT.b, PLOT.t], 5)
+  const marks = rows.map((r, i) => ({ x: x(r.ms), y: y(haloPct(r.rel)), r, i }))
+  const picked = sel !== null ? marks[sel] : undefined
+  const signed = (v: number) => `${v > 0 ? '+' : ''}${Math.round(v).toLocaleString(locale)}%`
+  const c = (band && BAND_HUE[band]) ?? 'var(--color-text)'
+  return (
+    <figure data-testid="halo-chart" data-view={pass === null ? 'passes' : 'photos'}>
+      {head}
+      <Frame
+        title={t('title')}
+        x={x}
+        y={y}
+        xLabel=""
+        yLabel={t('axis')}
+        yEnds={[t('weaker'), t('stronger')]}
+        xFormat={(v) => (months.length ? formatMonthYear(v, locale) : formatShortDate(v, locale))}
+        yFormat={signed}
+        onPick={(px, py) => {
+          const i = nearestIndex(marks, px, py)
+          const hit = marks[i]
+          if (!hit) return setSel(null)
+          if (pass === null && hit.r.n > 1) {
+            setPass(hit.r.id)
+            setSel(null)
+            return
+          }
+          setSel(i)
+        }}
+      >
+        <line x1={PLOT.l} x2={PLOT.w - PLOT.r} y1={y(0)} y2={y(0)} stroke="currentColor" strokeOpacity="0.25" strokeDasharray="3 3" />
+        {pass === null && <polyline points={marks.map((m) => `${m.x},${m.y}`).join(' ')} fill="none" stroke={c} strokeOpacity="0.5" strokeWidth="1" />}
+        {marks.map((m) => (
+          <g key={m.i}>
+            <line x1={m.x} x2={m.x} y1={y(haloPct(m.r.rel - m.r.err))} y2={y(haloPct(m.r.rel + m.r.err))} stroke={c} strokeWidth="1" />
+            <circle cx={m.x} cy={m.y} r={pass === null ? 3.4 : 2.2} fill={c} stroke={c} />
+          </g>
+        ))}
+        {picked && <Picked x={picked.x} y={picked.y} />}
+      </Frame>
+      <Readout
+        head={picked ? (pass === null ? t('pass', { date: formatShortDate(picked.r.ms, locale) }) : formatShortDate(picked.r.ms, locale)) : pass !== null ? t('pass', { date: formatShortDate(rows[0]?.ms ?? 0, locale) }) : undefined}
+        when={picked ? (pass === null ? t('photos', { n: picked.r.n }) : bandName(band ?? '')) : pass !== null ? t('photos', { n: rows.length }) : undefined}
+        body={picked ? t('read', { value: signed(haloPct(picked.r.rel)), err: `${Math.round(picked.r.err * 100).toLocaleString(locale)}%` }) : pass !== null ? ' ' : undefined}
+      />
+      {infoSheet}
+    </figure>
+  )
+}
+
 export function QrWarning() {
   const t = useTranslations('charts')
   return (
@@ -596,10 +722,10 @@ export function QrWarning() {
 
 const TITLE_KEY = { spectrum: 'spectrumTitle', lightcurve: 'lightcurveTitle', motion: 'motionTitle' } as const
 
-export function KitChart({ kind, url, technical = false, titled = false, mixedBatches = false, highlight = null }: { kind: 'spectrum' | 'lightcurve' | 'motion'; url: string; technical?: boolean; titled?: boolean; mixedBatches?: boolean; highlight?: [number, number] | null }) {
+export function KitChart({ kind, url, technical = false, titled = false, mixedBatches = false, highlight = null }: { kind: 'spectrum' | 'lightcurve' | 'motion' | 'halo'; url: string; technical?: boolean; titled?: boolean; mixedBatches?: boolean; highlight?: [number, number] | null }) {
   const t = useTranslations('charts')
   const tc = useTranslations('common')
-  const q = useKitJson<SpectraData & LightcurveData & MotionData>(url)
+  const q = useKitJson<SpectraData & LightcurveData & MotionData & HaloData>(url)
   if (q.isLoading) return <ChartSkeleton />
   if (!q.data)
     return (
@@ -610,6 +736,7 @@ export function KitChart({ kind, url, technical = false, titled = false, mixedBa
         </Button>
       </div>
     )
+  if (kind === 'halo') return <HaloChart data={q.data} />
   const title = titled ? t(TITLE_KEY[kind]) : undefined
   if (kind === 'spectrum') return <SpectrumChart data={q.data} title={title} mixedBatches={mixedBatches} highlight={highlight} />
   if (kind === 'lightcurve') return <LightCurveChart data={q.data} technical={technical} title={title} mixedBatches={mixedBatches} />

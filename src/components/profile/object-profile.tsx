@@ -259,7 +259,7 @@ export function ObjectProfileView({ id }: { id: string }) {
 
       {tab === 'measurements' && (
         <section className="space-y-8 px-4 py-4">
-          {!profile.measurements.motion && !profile.measurements.lightcurve && <EmptyState title={t('noMeasurements')} />}
+          {!profile.measurements.motion && !profile.measurements.lightcurve && !profile.measurements.halo && <EmptyState title={t('noMeasurements')} />}
           {(profile.measurements.motion || timelapse) && (
             <div>
               {profile.measurements.motion && <KitChart kind="motion" url={profile.measurements.motion} titled />}
@@ -272,6 +272,7 @@ export function ObjectProfileView({ id }: { id: string }) {
             </div>
           )}
           {profile.measurements.lightcurve && <KitChart kind="lightcurve" url={profile.measurements.lightcurve} titled mixedBatches={mixedBatches} />}
+          {profile.measurements.halo && <KitChart kind="halo" url={profile.measurements.halo} />}
         </section>
       )}
 
