@@ -1,4 +1,4 @@
-const VERSION = 'index-2026.10.29-full-1'
+const VERSION = 'index-2026.11.15-dr1-1'
 const S3_HOSTS = ['nasa-irsa-spherex.s3.amazonaws.com', 'nasa-irsa-spherex.s3.us-east-1.amazonaws.com',
   's3.us-east-1.amazonaws.com', 's3.amazonaws.com', 'nasa-irsa-spherex.s3.dualstack.us-east-1.amazonaws.com']
 const RANGE_PREFIX = '/__s3cache'
