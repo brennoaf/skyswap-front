@@ -4,14 +4,20 @@ import { INDEX_BASE, pointHits } from './lookup'
 
 export const SKY_HOSTS = ['/api/s3/']
 export const SKY_FOV_DEG = 0.105
-export const MAX_VISITS = 3
-export const EXP_PER_VISIT = 2
+export const MAX_VISITS = 4
+export const MAX_EXPOSURES = 6
 export const VISIT_GAP_DAYS = 30 / 1440
+export const WINDOW_DAYS = 8 / 24
+export const MAX_SPARES = 2
 export const MIN_COVERAGE = 0.9
+
+const DETECTOR_PX = 2040
+const PIXEL_DEG = 6.15 / 3600
 
 export interface SkyPick {
   band: string
   visits: IndexRow[][]
+  spares: IndexRow[][]
 }
 
 export interface SkyExposure {
@@ -47,32 +53,57 @@ export function groupVisits<T extends { mjd: number }>(rows: T[], gap = VISIT_GA
 
 const midMjd = (v: { mjd: number }[]) => v.reduce((a, r) => a + r.mjd, 0) / Math.max(1, v.length)
 
-export function chooseVisits(hits: IndexRow[], maxVisits = MAX_VISITS, perVisit = EXP_PER_VISIT): SkyPick | null {
+export function edgeCoverage(h: { px: number; py: number }, fovDeg = SKY_FOV_DEG): number {
+  if (!Number.isFinite(h.px) || !Number.isFinite(h.py)) return 1
+  const half = fovDeg / PIXEL_DEG / 2
+  const side = (c: number) => Math.max(0, Math.min(DETECTOR_PX, c + half) - Math.max(0, c - half))
+  return (side(h.px) * side(h.py)) / (4 * half * half)
+}
+
+function spread<T>(list: T[], n: number): T[] {
+  if (list.length <= n) return list
+  return Array.from({ length: n }, (_, k) => list[Math.round((k * (list.length - 1)) / (n - 1))] as T)
+}
+
+export function chooseVisits(hits: IndexRow[], maxVisits = MAX_VISITS, budget = MAX_EXPOSURES): SkyPick | null {
   const byBand = new Map<string, IndexRow[]>()
   for (const h of hits) {
-    if (h.dqa !== 'Pass' || !Number.isFinite(h.mjd)) continue
+    if (h.dqa !== 'Pass' || !Number.isFinite(h.mjd) || edgeCoverage(h) < MIN_COVERAGE) continue
     byBand.set(h.band, [...(byBand.get(h.band) ?? []), h])
   }
   let best: (SkyPick & { score: number }) | null = null
   for (const [band, list] of [...byBand.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     const visits = groupVisits(list)
     if (visits.length < 2) continue
-    const first = visits[0] as IndexRow[]
-    const last = visits[visits.length - 1] as IndexRow[]
-    const chosen = [first]
-    for (let k = 1; k < maxVisits - 1; k++) {
-      const target = midMjd(first) + ((midMjd(last) - midMjd(first)) * k) / (maxVisits - 1)
-      const near = visits.filter((v) => v !== last && !chosen.includes(v)).sort((a, b) => Math.abs(midMjd(a) - target) - Math.abs(midMjd(b) - target))[0]
-      if (near) chosen.push(near)
+    const mids = visits.map(midMjd)
+    let from = -1
+    let to = -1
+    let score = -Infinity
+    for (let i = 0; i < visits.length - 1; i++) {
+      let j = i
+      while (j + 1 < visits.length && (mids[j + 1] as number) - (mids[i] as number) <= WINDOW_DAYS) j++
+      if (j === i) continue
+      const s = Math.min(j - i + 1, maxVisits) * 1000 + ((mids[j] as number) - (mids[i] as number)) * 24
+      if (s > score) [from, to, score] = [i, j, s]
     }
-    chosen.push(last)
-    chosen.sort((a, b) => midMjd(a) - midMjd(b))
-    const picked = chosen.map((v) => v.slice(0, perVisit))
-    const exposures = picked.reduce((a, v) => a + v.length, 0)
-    const score = picked.length * 1000 + exposures * 10 + (midMjd(last) - midMjd(first))
-    if (!best || score > best.score) best = { band, visits: picked, score }
+    if (from < 0) {
+      for (let i = 0; i < visits.length - 1; i++) {
+        const s = 1000 - Math.min(900, (mids[i + 1] as number) - (mids[i] as number))
+        if (s > score) [from, to, score] = [i, i + 1, s]
+      }
+    }
+    const cluster = visits.slice(from, to + 1)
+    const chosen = spread(cluster, maxVisits)
+    const per = Math.max(1, Math.min(2, Math.floor(budget / chosen.length)))
+    const centre = ((mids[from] as number) + (mids[to] as number)) / 2
+    const spares = visits
+      .filter((v) => !chosen.includes(v))
+      .sort((a, b) => Math.abs(midMjd(a) - centre) - Math.abs(midMjd(b) - centre))
+      .filter((v) => Math.abs(midMjd(v) - centre) <= WINDOW_DAYS)
+      .slice(0, MAX_SPARES)
+    if (!best || score > best.score) best = { band, visits: chosen.map((v) => v.slice(0, per)), spares: spares.map((v) => v.slice(0, per)), score }
   }
-  return best ? { band: best.band, visits: best.visits } : null
+  return best ? { band: best.band, visits: best.visits, spares: best.spares } : null
 }
 
 export function meanImage(images: Float32Array[]): Float32Array {
@@ -240,10 +271,21 @@ export async function buildSkyCard(spot: Spot, tileBytes: number | null = null, 
   const choice = chooseVisits(q.hits)
   if (!choice || (keep && !keep())) return null
   const visitOf = new Map<string, number>()
-  choice.visits.forEach((v, i) => v.forEach((h) => visitOf.set(rowId(h), i)))
-  const got = await readExposures(spot.ra, spot.dec, SKY_FOV_DEG, choice.band, choice.visits.flat(), visitOf, keep)
-  if (!got) return null
-  return toDraft(spot.ra, spot.dec, choice.band, got.filter((e) => coverage(e.img) >= MIN_COVERAGE))
+  const inTime = [...choice.visits, ...choice.spares].sort((a, b) => midMjd(a) - midMjd(b))
+  inTime.forEach((v, i) => v.forEach((h) => visitOf.set(rowId(h), i)))
+  const read = async (visits: IndexRow[][]) => {
+    const got = await readExposures(spot.ra, spot.dec, SKY_FOV_DEG, choice.band, visits.flat(), visitOf, keep)
+    return got ? got.filter((e) => coverage(e.img) >= MIN_COVERAGE) : null
+  }
+  const usable = await read(choice.visits)
+  if (!usable) return null
+  const lost = choice.visits.length - new Set(usable.map((e) => e.visit)).size
+  if (lost > 0 && choice.spares.length) {
+    const extra = await read(choice.spares.slice(0, lost))
+    if (!extra) return null
+    usable.push(...extra)
+  }
+  return toDraft(spot.ra, spot.dec, choice.band, usable)
 }
 
 export async function buildSpotCard(spot: SpotFrames, tileBytes: number | null = null, keep?: BuildGuard): Promise<SkyCardDraft | null> {
