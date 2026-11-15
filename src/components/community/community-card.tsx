@@ -283,16 +283,16 @@ export function FindingCard({ finding }: { finding: FindingSummary }) {
           <span className="story-ring inline-flex shrink-0 rounded-full p-[2px]">
             <UserAvatar nickname={finding.finder?.name ?? null} src={finding.finder?.avatar} size={26} className="ring-2 ring-bg" />
           </span>
-          <span className="min-w-0">
+          <span className="flex min-w-0 max-w-[60%] shrink-0">
             <FindersLine id={finding.id} finder={finding.finder} total={finding.finders} />
           </span>
           <span className="flex shrink-0 items-center gap-1.5 text-meta text-text-secondary">
             <Dot />
             {ago(finding.updated_at)}
           </span>
-          <span className="ml-auto flex shrink-0 items-center gap-1.5">
+          <span className="ml-auto flex min-w-0 items-center gap-1.5">
             {finding.example && <ExamplePill />}
-            <span className="text-meta font-medium text-text-secondary" data-testid="state-pill">
+            <span className="min-w-0 truncate text-meta font-medium text-text-secondary" data-testid="state-pill">
               {t(`states.${finding.state}.label`)}
             </span>
           </span>

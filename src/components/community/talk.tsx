@@ -75,11 +75,11 @@ export function FindersLine({ id, finder, total }: { id: string; finder: { name:
           e.stopPropagation()
           setOpen(true)
         }}
-        className="flex min-w-0 items-center gap-1 text-left"
+        className="flex min-w-0 max-w-full items-center gap-1 text-left"
         data-testid="finders"
       >
-        <span className="truncate text-account font-semibold">{finder.name}</span>
-        {total > 1 && <span className="shrink-0 text-note text-text-secondary">{t('andOthers', { n: total - 1 })}</span>}
+        <span className="min-w-[4.5rem] truncate text-account font-semibold">{finder.name}</span>
+        {total > 1 && <span className="shrink-0 whitespace-nowrap text-note text-text-secondary">{t('andOthers', { n: total - 1 })}</span>}
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title={t('findersTitle', { n: total })}>
         <p className="px-4 pb-2 text-note leading-snug text-text-secondary">{t('findersLead')}</p>
