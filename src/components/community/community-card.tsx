@@ -292,9 +292,14 @@ export function FindingCard({ finding }: { finding: FindingSummary }) {
           </span>
           <span className="ml-auto flex min-w-0 items-center gap-1.5">
             {finding.example && <ExamplePill />}
-            <span className="min-w-0 truncate text-meta font-medium text-text-secondary" data-testid="state-pill">
-              {t(`states.${finding.state}.label`)}
-            </span>
+            {!finding.object && (
+              <span className="flex h-5 min-w-0 flex-wrap justify-end overflow-hidden" data-testid="state-slot">
+                <span className="h-5 w-0" />
+                <span className="whitespace-nowrap text-meta font-medium leading-5 text-text-secondary" data-testid="state-pill">
+                  {t(`states.${finding.state}.label`)}
+                </span>
+              </span>
+            )}
           </span>
         </>
       }
