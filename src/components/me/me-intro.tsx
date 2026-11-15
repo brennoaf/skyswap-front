@@ -26,14 +26,11 @@ export function MeIntro({ levels, dailyCap }: { levels: { key: string; min_xp: n
   const finish = useUi((s) => s.finishMeIntro)
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => setHydrated(true), [])
-  const ladder = levels.filter((l) => l.min_xp > 0).map((l) => `${tl(l.key)} ${l.min_xp}`).join(', ')
+  const ladder = levels.map((l) => t('levelStep', { name: tl(l.key), points: l.min_xp })).join(', ')
   return (
     <Sheet open={hydrated && language && !done} onClose={finish} title={t('title')}>
       <p className="px-4 pt-3 text-body leading-snug">{t('lead')}</p>
       <ul className="mt-1 px-4">
-        <Row icon={<IconCards size={24} />} title={t('helpTitle')}>
-          {t('helpBody')}
-        </Row>
         <Row icon={<IconTarget size={24} />} title={t('pointsTitle')}>
           {t('pointsBody')}
         </Row>
@@ -48,6 +45,9 @@ export function MeIntro({ levels, dailyCap }: { levels: { key: string; min_xp: n
         </Row>
         <Row icon={<IconWarning size={24} />} title={t('limitsTitle')}>
           {t('limitsBody', { cap: dailyCap })}
+        </Row>
+        <Row icon={<IconCards size={24} />} title={t('helpTitle')}>
+          {t('helpBody')}
         </Row>
       </ul>
       <div className="sticky bottom-0 -mb-[max(var(--space-gutter),env(safe-area-inset-bottom))] bg-sheet px-4 pb-[max(var(--space-gutter),env(safe-area-inset-bottom))] pt-3">

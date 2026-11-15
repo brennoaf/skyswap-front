@@ -10,6 +10,7 @@ import { UserAvatar } from '@/components/ui/user-avatar'
 import type { Me } from '@/lib/api/client'
 import { useGoals, usePost } from '@/lib/api/hooks'
 import { cx, formatNumber, formatShortDate, relativeTime } from '@/lib/format'
+import { postTitle } from '@/lib/post-text'
 
 const STATUS_KEY: Record<string, string> = { open: 'statusOpen', real: 'statusReal', artifact: 'statusArtifact', inconclusive: 'statusInconclusive', candidate: 'statusCandidate' }
 
@@ -123,6 +124,7 @@ export function GoalsCard() {
 }
 
 export function HistoryList({ items }: { items: Me['history'] }) {
+  const locale = useLocale()
   const t = useTranslations('me')
   const tt = useTranslations('tags.items')
   const ago = useAgo()
@@ -146,7 +148,7 @@ export function HistoryList({ items }: { items: Me['history'] }) {
             </li>
           )
         }
-        const title = item.post?.title ?? item.ref
+        const title = item.post ? postTitle(item.post.title, locale) : item.ref
         const text = item.type === 'mark' ? t('historyItems.mark', { n: Number(item.detail), title }) : t('historyItems.tag', { title, tag: tt(item.detail) })
         const body = (
           <>

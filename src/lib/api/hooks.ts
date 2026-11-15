@@ -115,12 +115,10 @@ export function useSetTag(postId: string) {
 
 export function useSaveMarks(postId: string) {
   const qc = useQueryClient()
-  const celebrate = useCelebrate()
   return useMutation({
     mutationFn: async (marks: { frame: number; x: number; y: number }[]) => unwrap(await api.POST('/api/posts/{id}/marks', { params: { path: { id: postId } }, body: { marks } })),
     onSuccess: (r) => {
       qc.setQueryData<PostDetail>(keys.post(postId), (d) => (d ? { ...d, my_marks: r.my_marks, community_marks: r.community_marks } : d))
-      celebrate(r.xp, r.new_badges)
       qc.invalidateQueries({ queryKey: keys.me })
       qc.invalidateQueries({ queryKey: keys.goals })
     },

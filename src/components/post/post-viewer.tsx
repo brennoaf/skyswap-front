@@ -14,7 +14,7 @@ import { AboutSheet, ColoursSheet, MoreSheet, NotesSheet, TagSheet } from '@/com
 import { buildSequences, centre, framePool, nearestByWavelength, type FilterKey, type Sequence } from '@/components/post/sequences'
 import { EmptyState, Skeleton, TopBar } from '@/components/ui/primitives'
 import type { Frame } from '@/lib/api/client'
-import { useLearn, useObject, useObjectPosts, usePost, useSaveMarks, useSession } from '@/lib/api/hooks'
+import { useCelebrate, useLearn, useObject, useObjectPosts, usePost, useSaveMarks, useSession } from '@/lib/api/hooks'
 import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
@@ -36,6 +36,8 @@ function groupsOf(type: string, frames: Frame[]): number[] {
 }
 
 export function PostViewer({ id }: { id: string }) {
+  const celebrate = useCelebrate()
+  const [gain, setGain] = useState<{ xp: Parameters<ReturnType<typeof useCelebrate>>[0]; badges: string[] } | null>(null)
   const locale = useLocale()
   const t = useTranslations('viewer')
   const tp = useTranslations('post')
@@ -155,14 +157,21 @@ export function PostViewer({ id }: { id: string }) {
   const pickGroup = (i: number) => player.setIndex(groups[Math.max(0, Math.min(groups.length - 1, i))] ?? 0)
   const shareIt = () => void share({ title: post.title, path: `/p/${post.id}` })
 
+  const closeResult = () => {
+    setResult(null)
+    if (gain) celebrate(gain.xp, gain.badges)
+    setGain(null)
+  }
+
   const finishMarking = () => {
     if (!draft.length) return setMode('play')
     const saved = draft
     save.mutate(saved, {
-      onSuccess: () => {
+      onSuccess: (r) => {
         setDraft([])
         setMode('play')
         setResult(saved)
+        setGain({ xp: r.xp, badges: r.new_badges })
       },
     })
   }
@@ -325,7 +334,7 @@ export function PostViewer({ id }: { id: string }) {
           startMark()
         }}
       />
-      <MarkResult marks={result && !prediction ? result : null} predicted={seq?.predicted ?? new Map()} onClose={() => setResult(null)} />
+      <MarkResult marks={result && !prediction ? result : null} predicted={seq?.predicted ?? new Map()} onClose={closeResult} />
     </main>
   )
 }

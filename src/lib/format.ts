@@ -23,6 +23,11 @@ export function formatDateTime(iso: string, locale: string): string {
   return Number.isNaN(d.getTime()) ? '' : `${formatShortDate(iso, locale)} ${d.toISOString().slice(11, 16)} UTC`
 }
 
+export function formatDateTimeSeconds(iso: string, locale: string): string {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : `${formatShortDate(iso, locale)} ${d.toISOString().slice(11, 19)} UTC`
+}
+
 export function relativeTime(ms: number, now = Date.now()): { unit: 'now' | 'm' | 'h' | 'd' | 'w'; value: number } {
   const s = Math.max(0, (now - ms) / 1000)
   if (s < 60) return { unit: 'now', value: 0 }

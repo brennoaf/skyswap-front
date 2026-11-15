@@ -43,7 +43,7 @@ export function PostGrid({ tiles }: { tiles: GridTile[] }) {
             <Image src={tile.src} alt="" fill sizes="157px" className={tile.pixelated ? 'pixelated object-contain' : 'object-contain'} />
             {tile.years ? <span className="absolute right-1 top-1 rounded-full bg-media-scrim px-1.5 py-0.5 text-micro font-semibold text-on-media">{tp('yearsBadge', { n: tile.years })}</span> : null}
             {tile.badge && (
-              <span className="absolute right-1 top-1 text-white drop-shadow">{tile.badge === 'reel' ? <IconReel size={24} /> : <IconCarousel size={24} />}</span>
+              <span className="absolute right-1 top-1 rounded-full bg-media-scrim p-0.5 text-on-media">{tile.badge === 'reel' ? <IconReel size={24} /> : <IconCarousel size={24} />}</span>
             )}
             {tile.label && <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 text-micro text-white">{tile.label}</span>}
           </Link>

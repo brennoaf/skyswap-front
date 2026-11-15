@@ -96,7 +96,7 @@
   },
   "stories": {
     "title": "Objects with stories",
-    "spot": "My sky spot",
+    "spot": "My spot",
     "spotLabel": "My sky spot: watch any patch of sky",
     "open": "Watch {name}'s time-lapse",
     "new": "New",
@@ -178,7 +178,7 @@
       "share": "Share"
     },
     "menuLabel": "More options",
-    "yearsBadge": "{n} yrs",
+    "yearsBadge": "{n, plural, one {# year of data} other {# years of data}}",
     "lab": "Lab",
     "labOpen": "Open {name} in the Lab"
   },
@@ -494,11 +494,12 @@
       "honest": "WISE pixels are 2.75 arcsec and SPHEREx pixels 6.15 arcsec, so SPHEREx photos look blurrier. Brightness is scaled per telescope: compare positions, not brightness. Empty corners on SPHEREx photos mean no data there.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
     },
-    "predictionRow": "Yellow cross: the prediction. Why mark it?"
+    "predictionRow": "Yellow cross: the prediction. Why mark it?",
+    "markHintBright": "Centre too bright: tap the middle of the glow"
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search objects, names or coordinates",
+    "placeholder": "Search object or coordinates",
     "label": "Search",
     "recent": "Recent",
     "clear": "Clear all",
@@ -779,10 +780,10 @@
     },
     "voices": {
       "youName": "You",
-      "programName": "Program",
+      "programName": "The app's program",
       "knownName": "Known answer",
       "othersName": "Other people",
-      "others": "{n} people looked: {moves} it moves, {still} it does not",
+      "others": "{moves} it moves, {still} it does not, {unsure} not sure",
       "hints": "these are the hints it marked."
     },
     "newBadge": "New badge: {name}.",
@@ -943,7 +944,7 @@
     },
     "tools": {
       "label": "Lab tools",
-      "date": "Date",
+      "date": "Dates",
       "colour": "Colour",
       "zoom": "Zoom",
       "layers": "Layers",
@@ -1102,8 +1103,8 @@
     "othersTitle": "Pink dot: everyone",
     "othersBody": "The average of everyone who marked this post. You only see it after marking.",
     "whyTitle": "Why mark it yourself?",
-    "whyBody": "Predictions can be off, and your eyes don't know what the prediction says. If what people see lands away from the cross, that is worth a closer look.",
-    "whyHonest": "For now, marks are compared and shown here, and they do not change any \"Does anything move?\" result.",
+    "whyBody": "The cross is a calculation and can be wrong. Your mark shows where a person really sees the object. If many people mark far from the cross, that is a sign it is worth checking.",
+    "whyHonest": "For now, marks appear here to compare. They do not yet count toward the answer to \"Does anything move?\".",
     "markNow": "Mark it myself",
     "resultTitle": "{n, plural, one {# photo marked} other {# photos marked}}",
     "result": {
@@ -1122,14 +1123,15 @@
     "pointsTitle": "Points",
     "pointsBody": "Answer: 2. Mark a post: 5. Tag or follow: 1. Right, wrong and \"Not sure\" earn the same, so never guess.",
     "levelsTitle": "Levels",
-    "levelsBody": "{ladder}. They never go down and unlock nothing.",
+    "levelsBody": "{ladder}. They never drop and unlock nothing.",
     "badgesTitle": "Badges",
     "badgesBody": "Tap one to see how to earn it. Some give 10 points. Exploring ones are just for fun.",
     "daysTitle": "Days in a row",
     "daysBody": "Your first action of the day adds 5, then 10 the next day, up to 30. Miss a day and the count restarts. You keep your points.",
     "limitsTitle": "Daily limits",
     "limitsBody": "Up to {cap} points a day. Past the limits your answers still count. Only the points stop.",
-    "action": "Got it"
+    "action": "Got it",
+    "levelStep": "{name}: {points} points"
   },
   "community": {
     "switchLabel": "Choose what to see",
@@ -1309,6 +1311,6 @@
     "pause": "Pause",
     "prev": "Previous photo",
     "next": "Next photo",
-    "outside": "Black area may be outside what was photographed"
+    "outside": "Black area: may be outside the photo"
   }
 }

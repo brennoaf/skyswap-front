@@ -304,13 +304,6 @@ function Player({ sky, params, compact, target, onLocate, marker }: { sky: SkyRe
       {frame && <FrameCanvas frame={frame} colormap={colormap} diff={diff} label={diff ? t('changesAlt', { date }) : t('frameAlt', { band: frame.band, date })} />}
       {frame && crosshair && <TargetCrosshair frame={frame} target={target} grid={grid} />}
       {marker}
-      {frame && (
-        <>
-          <span className="absolute left-2 top-2 rounded-md bg-media-scrim px-2 py-1 text-meta font-medium">{date}</span>
-          <span className="absolute bottom-2 left-2 rounded-md bg-media-scrim px-2 py-1 text-meta">{t('frameTags', { band: frame.band, release: frame.release.toUpperCase(), colours: diff ? t('viewChanges') : colormap === 'band' ? tc('falseColour') : t('grey') })}</span>
-          {n > 1 && <span className="absolute right-2 top-2 rounded-full bg-media-scrim px-2 py-0.5 text-meta font-medium">{t('frameOf', { n: Math.min(cur, n - 1) + 1, total: n })}</span>}
-        </>
-      )}
       {b.status === 'idle' && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-reels-bg px-6 text-center text-spot-star">
           <SkyLocator ra={params.ra} dec={params.dec} name={params.name ?? t('thisSpot')} className="w-full" />
@@ -385,6 +378,14 @@ function Player({ sky, params, compact, target, onLocate, marker }: { sky: SkyRe
   return (
     <div>
       {media}
+      {frame && (
+        <p className="px-3 pt-2 text-[15px] font-medium leading-5">
+          {t('frameOf', { n: Math.min(cur, n - 1) + 1, total: n })}
+          <span className="block text-note font-normal text-text-secondary">
+            {date}, {t('frameTags', { band: frame.band, release: frame.release.toUpperCase(), colours: diff ? t('viewChanges') : colormap === 'band' ? tc('falseColour') : t('grey') })}
+          </span>
+        </p>
+      )}
       <div className="flex items-center gap-0.5 px-1 pt-1">
         <IconButton label={t('prev')} onClick={() => step(-1)} disabled={!ready || n < 2}>
           <IconStepBack size={28} />

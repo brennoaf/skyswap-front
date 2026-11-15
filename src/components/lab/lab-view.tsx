@@ -196,6 +196,7 @@ function EpochGrid({ epochs, value, onChange, photoHeight }: { epochs: PackEpoch
 
 export function LabView({ id }: { id: string }) {
   const locale = useLocale()
+  const num = (v: number, digits: number) => v.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits })
   const t = useTranslations('lab')
   const tl = useTranslations('lab.layerItems')
   const tcom = useTranslations('common')
@@ -443,8 +444,8 @@ export function LabView({ id }: { id: string }) {
                 </svg>
               </div>
               {!decoded && <span className="absolute inset-0 flex items-center justify-center text-note text-text-secondary">{t('loading')}</span>}
-              <span className="absolute bottom-2 left-2 rounded bg-media-scrim px-2 py-0.5 text-meta text-on-media">{tcom('falseColour')}</span>
             </div>
+            <p className="px-3 pt-1 text-meta text-text-secondary">{tcom('falseColour')}</p>
             {ep && (
               <div className="flex items-center gap-1 px-2 pt-1">
                 <IconButton label={t('tools.prev')} onClick={() => setEpochIdx((i) => Math.max(0, i - 1))} disabled={epochIdx <= 0}>
@@ -466,9 +467,9 @@ export function LabView({ id }: { id: string }) {
             {tool === 'date' && ep && (
               <>
                 <dl className="grid grid-cols-[auto_auto_auto] justify-between gap-x-3">
-                  <Reading label={t('pixelSky')}>{t('skyDegrees', { ra: ep.target_radec[0].toFixed(2), dec: ep.target_radec[1].toFixed(2) })}</Reading>
+                  <Reading label={t('pixelSky')}>{t('skyDegrees', { ra: num(ep.target_radec[0], 2), dec: num(ep.target_radec[1], 2) })}</Reading>
                   <Reading label={t('tools.release')}>{ep.release.toUpperCase()}</Reading>
-                  <Reading label={t('tools.light')}>{t('tools.lightValue', { band, lam: ep.lam_um.toFixed(2) })}</Reading>
+                  <Reading label={t('tools.light')}>{t('tools.lightValue', { band, lam: num(ep.lam_um, 2) })}</Reading>
                 </dl>
                 <div>
                   <p className="pb-1.5 text-meta text-text-secondary">{t('pack', { n: epochs.length })}</p>
@@ -482,7 +483,7 @@ export function LabView({ id }: { id: string }) {
                 <div className="grid grid-cols-3 gap-2" role="group" aria-label={t('band')}>
                   {BANDS.filter((b) => pack.data?.bands[b]).map((b) => {
                     const info = bandInfo[b]
-                    return <BandTile key={b} label={b} hue={BAND_HUE[b] ?? ''} detail={info ? t('tools.bandWave', { min: info.min.toFixed(1), max: info.max.toFixed(1) }) : undefined} on={band === b} onClick={() => pickBand(b)} />
+                    return <BandTile key={b} label={b} hue={BAND_HUE[b] ?? ''} detail={info ? t('tools.bandWave', { min: num(info.min, 1), max: num(info.max, 1) }) : undefined} on={band === b} onClick={() => pickBand(b)} />
                   })}
                 </div>
                 <div>
@@ -505,7 +506,7 @@ export function LabView({ id }: { id: string }) {
                     </Chip>
                   ))}
                 </div>
-                <p className="text-body">{t('zoomField', { n: (((pack.data.field.fov_deg ?? 0.1) * 60) / zoom).toFixed(1) })}</p>
+                <p className="text-body">{t('zoomField', { n: num(((pack.data.field.fov_deg ?? 0.1) * 60) / zoom, 1) })}</p>
                 <p className="text-meta text-text-secondary">{t('zoomHint')}</p>
               </>
             )}
@@ -548,7 +549,7 @@ export function LabView({ id }: { id: string }) {
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 border-t-[0.5px] border-divider pt-3">
                       <Reading label={t('pixelPlace')}>{t('pixelXY', { x: pixel?.x ?? 0, y: pixel?.y ?? 0 })}</Reading>
-                      {readout.lam !== null && <Reading label={t('pixelWave')}>{t('pixelWaveValue', { lam: readout.lam.toFixed(4) })}</Reading>}
+                      {readout.lam !== null && <Reading label={t('pixelWave')}>{t('pixelWaveValue', { lam: num(readout.lam, 4) })}</Reading>}
                       <Reading label={t('pixelSky')} wide>
                         {t('pixelPos', { ra: formatRa(readout.ra), dec: formatDec(readout.dec) })}
                       </Reading>
@@ -676,7 +677,7 @@ export function LabView({ id }: { id: string }) {
                         <p className="mt-0.5">{n.text}</p>
                         <p className="mt-1 text-meta text-text-secondary">
                           {n.band}, {n.date ? formatShortDate(n.date, locale) : '-'}
-                          {n.ra !== null && n.dec !== null && `, ${t('skyDegrees', { ra: n.ra.toFixed(4), dec: n.dec.toFixed(4) })}`}
+                          {n.ra !== null && n.dec !== null && `, ${t('skyDegrees', { ra: num(n.ra, 4), dec: num(n.dec, 4) })}`}
                         </p>
                       </li>
                     ))}

@@ -12,6 +12,7 @@ import { useFollow, useLearn, useObject, useObjectPosts, useSession } from '@/li
 import { BAND_HUE, BANDS, compactNumber, cx, formatShortDate } from '@/lib/format'
 import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
+import { objectBio } from '@/lib/post-text'
 import { SkyMapSheet } from '@/components/sky/sky-map-sheet'
 
 type Tab = 'photos' | 'spectrum' | 'timelapses' | 'measurements'
@@ -145,7 +146,7 @@ export function ObjectProfileView({ id }: { id: string }) {
         </div>
 
         <div className="mt-3 space-y-1 text-body">
-          <p className={cx(!bioOpen && 'line-clamp-2')}>{profile.kind === 'candidate' ? t('candidateBody') : profile.bio}</p>
+          <p className={cx(!bioOpen && 'line-clamp-2')}>{profile.kind === 'candidate' ? t('candidateBody') : objectBio(profile.bio, locale)}</p>
           {bioOpen ? (
             <>
               {profile.aliases.length > 0 && <p className="text-text-secondary">{t('aliases', { names: profile.aliases.slice(0, 4).join(', ') })}</p>}

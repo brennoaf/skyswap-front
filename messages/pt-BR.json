@@ -96,7 +96,7 @@
   },
   "stories": {
     "title": "Objetos com stories",
-    "spot": "Meu ponto no céu",
+    "spot": "Meu ponto",
     "spotLabel": "Meu ponto no céu: acompanhe qualquer pedaço do céu",
     "open": "Ver o time-lapse de {name}",
     "new": "Novo",
@@ -178,7 +178,7 @@
       "share": "Compartilhar"
     },
     "menuLabel": "Mais opções",
-    "yearsBadge": "{n} anos",
+    "yearsBadge": "{n, plural, one {# ano de dados} other {# anos de dados}}",
     "lab": "Lab",
     "labOpen": "Abrir {name} no Lab"
   },
@@ -494,11 +494,12 @@
       "honest": "Os pixels do WISE têm 2.75 arcsec e os do SPHEREx 6.15 arcsec, então as fotos do SPHEREx parecem mais borradas. O brilho é ajustado por telescópio: compare posições, não brilho. Cantos vazios nas fotos do SPHEREx significam que não há dados ali.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
     },
-    "predictionRow": "Cruz amarela: a previsão. Por que marcar?"
+    "predictionRow": "Cruz amarela: a previsão. Por que marcar?",
+    "markHintBright": "Centro brilhante demais: toque no meio do brilho"
   },
   "search": {
     "title": "Pesquisar",
-    "placeholder": "Pesquise objetos, nomes ou coordenadas",
+    "placeholder": "Buscar objeto ou coordenada",
     "label": "Pesquisar",
     "recent": "Recentes",
     "clear": "Limpar tudo",
@@ -779,10 +780,10 @@
     },
     "voices": {
       "youName": "Você",
-      "programName": "Programa",
+      "programName": "Programa do app",
       "knownName": "Resposta conhecida",
       "othersName": "Outras pessoas",
-      "others": "{n} olharam: {moves} se move, {still} não",
+      "others": "{moves} se move, {still} não, {unsure} não sabem",
       "hints": "estas são as dicas que ele marcou."
     },
     "newBadge": "Selo novo: {name}.",
@@ -847,7 +848,7 @@
     "goals": "Metas da comunidade neste mês",
     "goalItems": {
       "motions": "Posts marcados",
-      "classifications": "Conjuntos de fotos vistos",
+      "classifications": "Cartões vistos",
       "tags": "Posts etiquetados"
     },
     "goalProgress": "{count} de {target}",
@@ -943,7 +944,7 @@
     },
     "tools": {
       "label": "Ferramentas do Lab",
-      "date": "Data",
+      "date": "Datas",
       "colour": "Cor",
       "zoom": "Zoom",
       "layers": "Camadas",
@@ -1102,8 +1103,8 @@
     "othersTitle": "Ponto rosa: todo mundo",
     "othersBody": "A média de todos que marcaram este post. Você só vê depois de marcar.",
     "whyTitle": "Por que marcar você mesmo?",
-    "whyBody": "Previsões podem errar, e seus olhos não sabem o que a previsão diz. Se o que as pessoas veem cai longe da cruz, vale olhar com mais calma.",
-    "whyHonest": "Por enquanto, as marcações são comparadas e mostradas aqui, e não mudam nenhum resultado de \"Algo se move?\".",
+    "whyBody": "A cruz é um cálculo e pode errar. Sua marca mostra onde uma pessoa realmente vê o objeto. Se muita gente marca longe da cruz, é sinal de que vale conferir.",
+    "whyHonest": "Por enquanto, as marcações aparecem aqui para comparar. Ainda não entram na resposta de \"Algo se move?\".",
     "markNow": "Marcar eu mesmo",
     "resultTitle": "{n, plural, one {# foto marcada} other {# fotos marcadas}}",
     "result": {
@@ -1118,7 +1119,7 @@
     "title": "Como seu perfil funciona",
     "lead": "Pontos, níveis e selos só marcam o seu caminho. O que ajuda são as suas respostas.",
     "helpTitle": "O que suas respostas fazem",
-    "helpBody": "Conjuntos de treino, com resposta conhecida, mostram o quanto confiar nos seus olhos. Depois, suas respostas mudam a chance de algo se mover.",
+    "helpBody": "Cartões de treino, com resposta conhecida, mostram o quanto confiar nos seus olhos. Depois, suas respostas mudam a chance de algo se mover.",
     "pointsTitle": "Pontos",
     "pointsBody": "Responder: 2. Marcar um post: 5. Etiquetar ou seguir: 1. Certo, errado e \"Não sei\" valem o mesmo, então nunca chute.",
     "levelsTitle": "Níveis",
@@ -1129,7 +1130,8 @@
     "daysBody": "Sua primeira ação do dia soma 5, depois 10 no dia seguinte, até 30. Se faltar um dia a contagem recomeça. Você mantém seus pontos.",
     "limitsTitle": "Limites por dia",
     "limitsBody": "Até {cap} pontos por dia. Passando dos limites suas respostas continuam contando. Só os pontos param.",
-    "action": "Entendi"
+    "action": "Entendi",
+    "levelStep": "{name}: {points} pontos"
   },
   "community": {
     "switchLabel": "Escolha o que ver",
@@ -1309,6 +1311,6 @@
     "pause": "Pausar",
     "prev": "Foto anterior",
     "next": "Próxima foto",
-    "outside": "Área preta pode estar fora do que foi fotografado"
+    "outside": "Área preta: pode estar fora da foto"
   }
 }

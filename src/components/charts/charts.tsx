@@ -55,7 +55,7 @@ export function SpectrumChart({ data }: { data: SpectraData }) {
   const y = linear([tf(fmin), tf(fmax)], [PLOT.h - PLOT.b, PLOT.t], 5)
   return (
     <figure>
-      <Frame title={t('spectrumTitle')} x={x} y={y} xLabel={t('wavelength')} yLabel={t('flux')} xFormat={(v) => v.toFixed(1)} yFormat={(v) => (log ? (10 ** v).toPrecision(2) : v.toPrecision(3))}>
+      <Frame title={t('spectrumTitle')} x={x} y={y} xLabel={t('wavelength')} yLabel={t('flux')} xFormat={(v) => v.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} yFormat={(v) => (log ? 10 ** v : v).toLocaleString(locale, { maximumSignificantDigits: 3 })}>
         {data.passes.map((p, i) => {
           const c = PASS_COLORS[i % PASS_COLORS.length] as string
           return (

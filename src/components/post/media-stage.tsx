@@ -24,7 +24,7 @@ export function usePlayer(length: number, enabled: boolean, fps = TIMELAPSE_FPS,
 export type Player = ReturnType<typeof usePlayer>
 
 function Pill({ children, className }: { children: ReactNode; className?: string }) {
-  return <span className={cx('pointer-events-none rounded-full bg-media-scrim px-2 py-0.5 text-meta font-medium text-on-media backdrop-blur-sm', className)}>{children}</span>
+  return <span className={cx('pointer-events-none rounded-full bg-reels-bg px-2 py-0.5 text-meta font-medium text-on-media', className)}>{children}</span>
 }
 
 function Dot({ x, y, tone }: { x: number; y: number; tone: 'mine' | 'community' }) {
@@ -175,7 +175,7 @@ export function MediaStage({
 
       <div className="pointer-events-none absolute inset-x-2 top-2 flex items-start justify-between gap-2">
         {mode === 'mark' ? (
-          <Pill className="mx-auto">{t('markHint')}</Pill>
+          <Pill className="mx-auto">{saturated ? t('markHintBright') : t('markHint')}</Pill>
         ) : mode === 'compare' && compareFrames ? (
           <>
             <Pill>

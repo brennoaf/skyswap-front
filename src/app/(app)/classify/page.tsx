@@ -15,7 +15,7 @@ import { api, ApiError, unwrap, type DeckCard, type Reveal } from '@/lib/api/cli
 import { useGuideCard, useSession, useVote, type Choice, type VotePosition } from '@/lib/api/hooks'
 import type { CardHint } from '@/lib/explore/flashlight'
 import { exploreQueue, isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
-import { cx, formatWavelength } from '@/lib/format'
+import { cx, formatDateTimeSeconds, formatWavelength } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
 
@@ -111,8 +111,8 @@ function ChoiceButton({ label, onClick, disabled, pressed, primary, children }: 
       onClick={onClick}
       className={cx(
         'inline-flex min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-2xl border-[0.5px] font-semibold motion-safe:transition-transform active:scale-[0.98] disabled:opacity-50',
-        primary ? 'h-[52px] flex-1 text-ui' : 'h-10 flex-1 text-note',
-        pressed ? 'border-accent bg-accent text-on-accent' : primary ? 'border-divider bg-bg-elevated text-text' : 'border-transparent bg-transparent text-text-secondary',
+        primary ? 'h-[52px] flex-1 text-ui' : 'h-11 flex-1 text-note',
+        pressed ? 'border-accent bg-accent text-on-accent' : primary ? 'border-divider bg-bg-elevated text-text' : 'border-transparent bg-surface text-text',
       )}
     >
       {children}
@@ -169,7 +169,7 @@ function GestureHand({ demo }: { demo: Demo }) {
   const reduce = useReducedMotion()
   const travel = demo === 'right' ? { x: [0, 56, 0] } : demo === 'left' ? { x: [0, -56, 0] } : { y: [0, -56, 0] }
   return (
-    <motion.span aria-hidden="true" data-testid="gesture-hand" className="pointer-events-none absolute bottom-[22%] left-1/2 z-20 -ml-5 text-on-media drop-shadow" animate={reduce ? undefined : travel} transition={{ duration: DEMO_S, repeat: Infinity, repeatDelay: DEMO_REST_S, ease: 'easeInOut' }}>
+    <motion.span aria-hidden="true" data-testid="gesture-hand" className="pointer-events-none absolute bottom-1 right-14 z-20 text-text" animate={reduce ? undefined : travel} transition={{ duration: DEMO_S, repeat: Infinity, repeatDelay: DEMO_REST_S, ease: 'easeInOut' }}>
       <svg viewBox="0 0 24 24" className="size-10" fill="currentColor" stroke="var(--color-mark-halo)" strokeWidth="0.8">
         <path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10l5.6 1.1c1.2.2 2 1.3 1.9 2.5l-.5 4.2A3.5 3.5 0 0 1 15.5 21h-2.2a4 4 0 0 1-3-1.4l-4-4.6a1.5 1.5 0 0 1 2.2-2L9 13.5V11Z" />
       </svg>
@@ -518,7 +518,7 @@ function AboutCardSheet({ open, onClose, reveal }: { open: boolean; onClose: () 
               <li key={f.t + i} className="flex min-h-12 items-center justify-between gap-3 py-1 text-note">
                 <span>{label((f.mjd - first) * 86400)}</span>
                 <span className="text-right text-text-secondary">
-                  <span className="block">{fmt.dateTime(f.t)}</span>
+                  <span className="block">{formatDateTimeSeconds(f.t, fmt.locale)}</span>
                   <span className="block">{t('infrared', { range: formatWavelength([f.wl_min, f.wl_max], fmt.locale) })}</span>
                 </span>
               </li>
@@ -583,7 +583,13 @@ function ResultLine({ result }: { result: VoteResult }) {
     ...result.new_badges.map((b) => t('classify.newBadge', { name: t(`badges.items.${b}.name`) })),
   ].filter((p): p is string => !!p)
   if (!parts.length) return null
-  return <p className="pt-1 text-note font-semibold leading-snug text-accent">{parts.join(' ')}</p>
+  return (
+    <div className="pt-1 text-note font-semibold leading-snug">
+      {parts.map((p) => (
+        <p key={p}>{p}</p>
+      ))}
+    </div>
+  )
 }
 
 function Understand({ card, img, answer, result, spot, pacing, hints, onNext }: { card: PlayCard; img: HTMLImageElement | null; answer: Answer; result: VoteResult; spot: VotePosition | null; pacing: boolean; hints: CardHint[] | null; onNext: () => void }) {
@@ -640,9 +646,9 @@ function Understand({ card, img, answer, result, spot, pacing, hints, onNext }: 
             {comparison && `. ${comparison}`}
           </VoiceRow>
         ) : (
-          reveal.looked > 1 && (
+          reveal.votes.real + reveal.votes.artifact + reveal.votes.unsure > 1 && (
             <VoiceRow voice="others" name={t('voices.othersName')}>
-              {t('voices.others', { n: reveal.looked, moves: reveal.votes.real, still: reveal.votes.artifact })}
+              {t('voices.others', { moves: reveal.votes.real, still: reveal.votes.artifact, unsure: reveal.votes.unsure })}
             </VoiceRow>
           )
         )}

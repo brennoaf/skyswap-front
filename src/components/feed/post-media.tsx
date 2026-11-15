@@ -152,7 +152,7 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
       {longBaseline ? (
         <span className="absolute right-2 top-2 rounded-full bg-media-scrim px-2 py-0.5 text-meta font-semibold text-on-media">{t('yearsBadge', { n: yearsSpanned(post) })}</span>
       ) : (
-        <span className="absolute right-2 top-2 flex size-8 items-center justify-center text-white drop-shadow">
+        <span className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-media-scrim text-on-media">
           {isTimelapse ? <IconReel size={26} /> : isMulti ? <IconCarousel size={26} /> : null}
         </span>
       )}

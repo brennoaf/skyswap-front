@@ -21,7 +21,7 @@ export function VoiceMark({ voice, u, v, faint = false }: { voice: Voice; u: num
   const x = u * 100
   const y = v * 100
   return (
-    <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden="true" opacity={faint ? 0.45 : 1} data-voice={voice}>
+    <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden="true" opacity={faint ? 0.6 : 1} data-voice={voice}>
       {voice === 'you' && <circle cx={x} cy={y} r="2.4" fill="var(--color-voice-you)" stroke="var(--color-mark-outline)" strokeWidth="0.6" />}
       {voice === 'program' && <rect x={x - 7} y={y - 7} width="14" height="14" fill="none" stroke="var(--color-voice-program)" strokeWidth="0.9" strokeDasharray="2.2 1.6" />}
       {voice === 'known' && <path d={`M${x} ${y - 9}L${x + 9} ${y}L${x} ${y + 9}L${x - 9} ${y}Z`} fill="none" stroke="var(--color-voice-known)" strokeWidth="0.9" />}

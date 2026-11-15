@@ -11,7 +11,7 @@ const TITLES: Rule[] = [
   [/^Predicted vs measured motion$/, 'Movimento previsto e medido'],
   [/^Pass blink in (.+)$/, 'Passagens alternadas em $1'],
   [/^Infrared spectrum$/, 'Espectro infravermelho'],
-  [/^(\S+) exposures in one pass$/, '$1 exposições em uma passagem'],
+  [/^(\S+) exposures in one pass$/, '$1 fotos em uma passagem'],
 ]
 
 const CAPTIONS: Rule[] = [
@@ -29,8 +29,8 @@ const CAPTIONS: Rule[] = [
   [/^Each frame stacks one SPHEREx pass in band (\S+); (\S+) passes from (\S+) to (\S+)\.$/, 'Cada quadro empilha uma passagem do SPHEREx na banda $1; $2 passagens de $3 a $4.'],
   [/^Stacked passes in band (\S+) from (\S+) to (\S+); the catalogue motion of (\S+) per year predicts a shift of (\S+) \((\S+) pixels\)\.$/, 'Passagens empilhadas na banda $1 de $2 a $3; o movimento de catálogo de $4 por ano prevê um deslocamento de $5 ($6 pixels).'],
   [/^(\S+) SPHEREx measurements from (\S+) to (\S+) micrometres in (\S+) passes\.$/, '$1 medidas do SPHEREx de $2 a $3 micrômetros em $4 passagens.'],
-  [/^(\S+) SPHEREx exposures taken between (\S+) and (\S+) in bands (.+)\.$/, '$1 exposições do SPHEREx feitas entre $2 e $3 nas bandas $4.'],
-  [/^(\S+) SPHEREx exposures taken on (\S+) over (\S+) hours in bands (.+)\.$/, '$1 exposições do SPHEREx feitas em $2, ao longo de $3 horas, nas bandas $4.'],
+  [/^(\S+) SPHEREx exposures taken between (\S+) and (\S+) in bands (.+)\.$/, 'De $2 a $3: $1 fotos do SPHEREx nas bandas $4.'],
+  [/^(\S+) SPHEREx exposures taken on (\S+) over (\S+) hours in bands (.+)\.$/, 'Em $2, ao longo de $3 horas: $1 fotos do SPHEREx nas bandas $4.'],
 ]
 
 function brazilian(text: string): string {
@@ -45,3 +45,46 @@ function apply(rules: Rule[], text: string, locale: string): string {
 
 export const postTitle = (title: string, locale: string) => apply(TITLES, title, locale)
 export const postCaption = (caption: string, locale: string) => apply(CAPTIONS, caption, locale)
+
+const KINDS: Record<string, string> = {
+  'BY Draconis-type variable star': 'uma estrela variável do tipo BY Draconis',
+  'Jupiter-family comet': 'um cometa da família de Júpiter',
+  'Mira-type long-period variable star': 'uma estrela variável de longo período do tipo Mira',
+  'S-type star': 'uma estrela do tipo S',
+  'T Tauri young star': 'uma estrela jovem do tipo T Tauri',
+  'brown dwarf': 'uma anã marrom',
+  'brown dwarf candidate': 'uma candidata a anã marrom',
+  'classical Cepheid variable': 'uma variável Cefeida clássica',
+  comet: 'um cometa',
+  'double star': 'uma estrela dupla',
+  'high proper-motion star': 'uma estrela de grande movimento próprio',
+  'low-mass star': 'uma estrela de baixa massa',
+  'main-belt asteroid': 'um asteroide do cinturão principal',
+  "near-Earth asteroid of the Amor group (its orbit comes close to, but does not cross, Earth's)": 'um asteroide próximo da Terra do grupo Amor (sua órbita chega perto da órbita da Terra, mas não a cruza)',
+  'outer main-belt asteroid': 'um asteroide da parte externa do cinturão principal',
+  star: 'uma estrela',
+  'white dwarf': 'uma anã branca',
+  'young variable star': 'uma estrela variável jovem',
+  'RR Lyrae variable star': 'uma estrela variável RR Lyrae',
+  'interstellar comet, the third object known to come from outside the Solar System': 'um cometa interestelar, o terceiro objeto conhecido vindo de fora do Sistema Solar',
+}
+
+const BIO: Rule[] = [
+  [/^It crosses the sky at (\S+) arcseconds per year\.$/, 'Cruza o céu a $1 segundos de arco por ano.'],
+  [/^When SPHEREx first imaged it on (\S+) it was (\S+) au from Earth and (\S+) au from the Sun\.$/, 'Na primeira foto do SPHEREx, em $1, estava a $2 UA da Terra e $3 UA do Sol.'],
+  [/^SPHEREx imaged it (\S+) times in (\S+) passes between (\S+) and (\S+), but it is too faint to be detected\.$/, 'O SPHEREx fotografou esta região $1 vezes em $2 passagens, de $3 a $4, mas o brilho é fraco demais para detectar.'],
+  [/^SPHEREx imaged it (\S+) times in (\S+) passes between (\S+) and (\S+)\.$/, 'O SPHEREx fotografou $1 vezes em $2 passagens, de $3 a $4.'],
+]
+
+function bioSentence(text: string): string {
+  const kind = /^(.+?) is an? (.+?)(?: about (\S+) light-years away)?\.$/.exec(text)
+  const pt = kind?.[2] ? KINDS[kind[2]] : undefined
+  if (kind && pt) return `${kind[1]} é ${pt}${kind[3] ? ` a cerca de ${kind[3].replace('.', ',')} anos-luz` : ''}.`
+  for (const [re, to] of BIO) if (re.test(text)) return brazilian(text.replace(re, to))
+  return text
+}
+
+export function objectBio(bio: string, locale: string): string {
+  if (!locale.startsWith('pt')) return bio
+  return bio.split(/(?<=\.)\s+(?=[A-Z])/).map(bioSentence).join(' ')
+}
