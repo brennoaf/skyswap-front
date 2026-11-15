@@ -1,4 +1,4 @@
-import { epochsAtTile, S3_HOSTS } from '../web/spherex.js'
+import { epochsAtCell, S3_HOSTS } from '../web/spherex.js'
 import { makeWcs, referenceGrid, coordMap } from './wcs.js'
 import { bilinear, adaptive } from './reproject.js'
 import { background } from './background.js'
@@ -147,7 +147,7 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
   if (signal?.aborted) stopAll()
   signal?.addEventListener('abort', stopAll, { once: true })
   const wave = await fetch(indexBase + 'wave.json').then(r => r.json())
-  const q = given ? { hits: given, bytes: 0, candidates: given.length } : await epochsAtTile(indexBase, wave, ra, dec, { order: 5, fetchImpl })
+  const q = given ? { hits: given, bytes: 0, candidates: given.length } : await epochsAtCell(indexBase, wave, ra, dec, { order: 5, fetchImpl })
   tm.index_ms = performance.now() - T0
   let hits = q.hits.filter(h => h.dqa === 'Pass' && (!bands || bands.includes(h.band)))
   const nAvailable = hits.length
@@ -242,5 +242,5 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
   tm.total_ms = performance.now() - T0
   return { n_available: nAvailable, n_epochs: ok.length, n_failed: failed, retries: stats.retries, grid_n: n, passes: ps.length, coadds: Object.keys(co).length, diffs: Object.keys(diffs).length,
     spectrum, pm: pm ? { ...pm, valid, positions: pos } : null, timings_ms: Object.fromEntries(Object.entries(tm).map(([k, v]) => [k, Math.round(v)])), gets: stats.gets, bytes: stats.bytes,
-    index: { tile_bytes: q.bytes, candidates: q.candidates, hits: q.hits.length } }
+    index: { bytes: q.bytes, candidates: q.candidates, hits: q.hits.length } }
 }

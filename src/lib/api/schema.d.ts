@@ -719,7 +719,7 @@ export interface paths {
                             source: "fragment" | "sia" | "none";
                             incomplete: boolean;
                             cell: number | null;
-                            tile_bytes: number | null;
+                            point_bytes: number | null;
                             total: number;
                             releases: string[];
                             bands: {
@@ -1918,6 +1918,7 @@ export interface paths {
                             order: number;
                             cells: number[];
                             bytes: number[];
+                            photo_bytes: number[];
                         };
                     };
                 };

@@ -19,7 +19,7 @@ import { BAND_HUE, BANDS, cssColor, formatBytes, formatShortDate, cx } from '@/l
 import { parseFitsImage, percentile, propagate, referenceGrid, skyMovie, stretch, type IndexRow } from '@/lib/sky'
 import { pointHits, askServer } from '@/lib/explore/lookup'
 import { differenceGrey, differenceImages, differenceScale, SKY_CROP } from '@/lib/explore/sky-card'
-import { tileFetch } from '@/lib/explore/tiles'
+import { indexFetch } from '@/lib/explore/index-files'
 import { bandLevels } from '@/lib/band-levels'
 import { OLD_SKY_BLINK_MS, useOldSky } from '@/lib/sky/use-old-sky'
 import { nearestFrame, readView, withView, type SharedView } from '@/lib/sky-view'
@@ -202,12 +202,13 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
       let hits: IndexRow[] | null = null
       if (sky.cell !== null) {
         let last = 0
-        if (askServer(sky.cell, sky.tile_bytes)) setScanning(true)
-        const r = await pointHits(p.ra, p.dec, sky.tile_bytes, (loaded, size) => {
+        const size = { point: sky.point_bytes }
+        if (askServer(sky.cell, size)) setScanning(true)
+        const r = await pointHits(p.ra, p.dec, size, (loaded, total) => {
           const now = performance.now()
-          if (now - last < 120 && loaded !== size) return
+          if (now - last < 120 && loaded !== total) return
           last = now
-          if (live()) setTile({ loaded, total: size ?? sky.tile_bytes })
+          if (live()) setTile({ loaded, total: total ?? sky.point_bytes })
         }).catch(() => null)
         hits = r?.hits ?? null
         if (!live()) return
@@ -216,7 +217,7 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
       }
       const result = await skyMovie({
         hits,
-        fetchImpl: ((input: RequestInfo | URL, init?: RequestInit) => tileFetch(input, { ...init, signal: ctrl.signal })) as typeof fetch,
+        fetchImpl: ((input: RequestInfo | URL, init?: RequestInit) => indexFetch()(input, { ...init, signal: ctrl.signal })) as typeof fetch,
         ra: p.ra,
         dec: p.dec,
         target,

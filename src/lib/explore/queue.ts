@@ -6,7 +6,7 @@ import { currentConnection, isMetered, prefetchCount } from './budget'
 import { runFlashlight, type CardHint } from './flashlight'
 import type { Ruler } from './ruler'
 import { randomSpot, type Spot } from './sampler'
-import { INDEX_BASE, warmSpot } from './lookup'
+import { INDEX_BASE, warmSpot, type PointSize } from './lookup'
 import { buildSkyCard, buildSpotCard, SKY_FOV_DEG, type BuildGuard, type SkyCardDraft } from './sky-card'
 
 const MAX_PARALLEL = 2
@@ -18,7 +18,9 @@ const THUMB_QUALITY = 0.7
 export type SkyRegistration = { ra: number; dec: number; fov_deg: number; band: string; size_px: number; frames: { key: string; mjd: number; wl_um: number; visit: number }[] }
 export type SkyPlayCard = DeckCard & { kind: 'sky'; ra: number; dec: number; band: string; hints: CardHint[]; ruler: Ruler | null; reg: SkyRegistration; owner: string }
 
-type Sky = { cells: SkyCell[] | null; indexed: Set<number>; bytes: Map<number, number>; looks: Record<number, number> }
+type Sky = { cells: SkyCell[] | null; indexed: Set<number>; bytes: Map<number, number>; photos: Map<number, number>; looks: Record<number, number> }
+
+const sizeAt = (s: Sky, ra: number, dec: number): PointSize => ({ cell: s.bytes.get(ang2pixNest(5, ra, dec)) ?? null, photos: s.photos })
 
 let client: QueryClient | null = null
 let owner = ''
@@ -50,7 +52,7 @@ function loadSky(): Promise<Sky> {
   if (skyPromise) return skyPromise
   const task = (async () => {
     const [cells, indexed, map] = await Promise.all([loadSummary(), qc.fetchQuery(exploreCellsQuery), qc.fetchQuery(exploreMapQuery).catch(() => null)])
-    return { cells, indexed: new Set(indexed.cells), bytes: new Map(indexed.cells.map((c, i) => [c, indexed.bytes[i] ?? 0])), looks: Object.fromEntries((map?.cells ?? []).map((c) => [c.cell, c.looks])) }
+    return { cells, indexed: new Set(indexed.cells), bytes: new Map(indexed.cells.map((c, i) => [c, indexed.bytes[i] ?? 0])), photos: new Map(indexed.cells.map((c, i) => [c, indexed.photo_bytes[i] ?? 0])), looks: Object.fromEntries((map?.cells ?? []).map((c) => [c.cell, c.looks])) }
   })()
   skyPromise = task
   task.catch(() => {
@@ -127,7 +129,7 @@ async function buildOne(): Promise<SkyPlayCard | null> {
     upcoming = null
     if (!spot) return null
     try {
-      const draft = await buildSkyCard(spot, s.bytes.get(ang2pixNest(5, spot.ra, spot.dec)) ?? null, keepBuilding)
+      const draft = await buildSkyCard(spot, sizeAt(s, spot.ra, spot.dec), keepBuilding)
       if (!active) return null
       if (!draft) {
         failures++
@@ -150,7 +152,7 @@ function warmNext() {
     .then((s) => {
       if (upcoming || !active) return
       upcoming = nextSpot(s)
-      if (upcoming) warmSpot(upcoming.ra, upcoming.dec, s.bytes.get(ang2pixNest(5, upcoming.ra, upcoming.dec)) ?? null)
+      if (upcoming) warmSpot(upcoming.ra, upcoming.dec, sizeAt(s, upcoming.ra, upcoming.dec))
     })
     .catch(() => null)
 }
@@ -241,7 +243,7 @@ export const exploreQueue = {
     const keep: BuildGuard = () => active && performance.now() < deadline
     try {
       const s = await loadSky()
-      const draft = await buildSpotCard(spot, s.bytes.get(ang2pixNest(5, spot.ra, spot.dec)) ?? null, keep)
+      const draft = await buildSpotCard(spot, sizeAt(s, spot.ra, spot.dec), keep)
       if (!draft || !keep()) return null
       const reg = { ra: spot.ra, dec: spot.dec, fov_deg: spot.fov_deg, band: spot.band, size_px: spot.size_px, frames: spot.frames }
       const card = await finish(draft, reg, undefined, user)

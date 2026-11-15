@@ -5196,7 +5196,7 @@
                     "source",
                     "incomplete",
                     "cell",
-                    "tile_bytes",
+                    "point_bytes",
                     "total",
                     "releases",
                     "bands",
@@ -5260,7 +5260,7 @@
                         }
                       ]
                     },
-                    "tile_bytes": {
+                    "point_bytes": {
                       "anyOf": [
                         {
                           "type": "integer"
@@ -8058,7 +8058,8 @@
                   "required": [
                     "order",
                     "cells",
-                    "bytes"
+                    "bytes",
+                    "photo_bytes"
                   ],
                   "properties": {
                     "order": {
@@ -8071,6 +8072,12 @@
                       }
                     },
                     "bytes": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "photo_bytes": {
                       "type": "array",
                       "items": {
                         "type": "integer"

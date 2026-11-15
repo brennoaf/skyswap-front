@@ -1,6 +1,6 @@
 import { percentile, skyMovie, type IndexRow } from '@/lib/sky'
 import type { Spot } from './sampler'
-import { INDEX_BASE, pointHits } from './lookup'
+import { INDEX_BASE, pointHits, type PointSize } from './lookup'
 
 export const SKY_HOSTS = ['/api/s3/']
 export const SKY_CROP = '/api/crop/'
@@ -265,8 +265,8 @@ export function matchSpotRows(frames: SpotFrames['frames'], hits: IndexRow[]): I
   return rows.every((r): r is IndexRow => !!r) ? rows : null
 }
 
-export async function buildSkyCard(spot: Spot, tileBytes: number | null = null, keep?: BuildGuard): Promise<SkyCardDraft | null> {
-  const q = await pointHits(spot.ra, spot.dec, tileBytes)
+export async function buildSkyCard(spot: Spot, size: PointSize = { point: null }, keep?: BuildGuard): Promise<SkyCardDraft | null> {
+  const q = await pointHits(spot.ra, spot.dec, size)
   const choice = chooseVisits(q.hits)
   if (!choice || (keep && !keep())) return null
   const visitOf = new Map<string, number>()
@@ -287,8 +287,8 @@ export async function buildSkyCard(spot: Spot, tileBytes: number | null = null, 
   return toDraft(spot.ra, spot.dec, choice.band, usable)
 }
 
-export async function buildSpotCard(spot: SpotFrames, tileBytes: number | null = null, keep?: BuildGuard): Promise<SkyCardDraft | null> {
-  const q = await pointHits(spot.ra, spot.dec, tileBytes)
+export async function buildSpotCard(spot: SpotFrames, size: PointSize = { point: null }, keep?: BuildGuard): Promise<SkyCardDraft | null> {
+  const q = await pointHits(spot.ra, spot.dec, size)
   const rows = matchSpotRows(spot.frames, q.hits)
   if (!rows || (keep && !keep())) return null
   const visitOf = new Map<string, number>()

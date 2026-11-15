@@ -3,7 +3,7 @@ import { referenceGrid as referenceGridJs } from './sci/wcs.js'
 import { detectAll as detectAllJs, differenceStack as differenceStackJs, hints as hintsJs } from './sci/detect.js'
 import { loadCells as loadCellsJs, pick as pickJs } from './web/sampler.js'
 import { ang2pixNest as ang2pixNestJs } from './web/sky.js'
-import { epochsAtTile as epochsAtTileJs, parseFitsImage as parseFitsImageJs, percentile as percentileJs, stretch as stretchJs } from './web/spherex.js'
+import { epochsAtCell as epochsAtCellJs, parseFitsImage as parseFitsImageJs, percentile as percentileJs, stretch as stretchJs } from './web/spherex.js'
 
 export interface IndexRow {
   key: string
@@ -73,7 +73,13 @@ export const propagate = propagateJs as unknown as (t: { ra: number; dec: number
 export const referenceGrid = referenceGridJs as unknown as (ra: number, dec: number, fovDeg: number) => { n: number; wcs: { world2pix: (ra: number, dec: number) => [number, number]; pix2world: (x: number, y: number) => [number, number] } }
 
 export const ang2pixNest = ang2pixNestJs as unknown as (order: number, ra: number, dec: number) => number
-export const epochsAtTile = epochsAtTileJs as unknown as (base: string, wave: unknown, ra: number, dec: number, opts?: { order?: number; fetchImpl?: typeof fetch }) => Promise<{ cell: number; hits: IndexRow[]; bytes: number }>
+export const epochsAtCell = epochsAtCellJs as unknown as (
+  base: string,
+  wave: unknown,
+  ra: number,
+  dec: number,
+  opts?: { order?: number; fetchImpl?: typeof fetch; photosOk?: (homes: number[]) => boolean },
+) => Promise<{ cell: number; hits: IndexRow[] | null; homes: number[]; bytes: number }>
 
 export interface FlashlightHint {
   kind: 'appeared' | 'missing' | 'flash' | 'residual'

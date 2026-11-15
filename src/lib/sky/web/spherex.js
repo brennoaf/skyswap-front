@@ -1,41 +1,12 @@
-import { asyncBufferFromUrl, parquetMetadataAsync, parquetReadObjects } from 'hyparquet'
+import { decompress } from 'fzstd'
+import { parquetReadObjects } from 'hyparquet'
 import { ang2pixNest, insideQuad, wavelengthAt, world2pix } from './sky.js'
 
 export const S3 = 'https://nasa-irsa-spherex.s3.amazonaws.com/'
 export const S3_HOSTS = [S3, 'https://nasa-irsa-spherex.s3.us-east-1.amazonaws.com/',
   'https://s3.us-east-1.amazonaws.com/nasa-irsa-spherex/', 'https://s3.amazonaws.com/nasa-irsa-spherex/']
 export const NX = 2040
-const COLS = ['key', 'release', 'det', 'band', 'mjd', 'c_ra', 'c_dec', 'lam_min', 'lam_max', 'off_image', 'off_flags', 'flags_rice', 'flags_theap', 'file_size', 'off_var',
-  'wcs', 'sip', 'wave_id', 'dqa']
-
-export async function openIndex(base, { order = 5, file, fetchImpl, usePageIndex = false } = {}) {
-  const url = base + (file ?? `cells_o${order}_snappy.parquet`)
-  const t0 = performance.now()
-  const stats = { requests: 0, bytes: 0 }
-  const f = countingFetch(fetchImpl ?? globalThis.fetch, stats)
-  const buf = await asyncBufferFromUrl({ url, fetch: f })
-  const metadata = await parquetMetadataAsync(buf)
-  const wave = await f(base + 'wave.json').then(r => r.json())
-  return { url, buf, metadata, order, wave, stats, usePageIndex, openMs: performance.now() - t0, fetch: f }
-}
-
-export async function epochsAt(idx, ra, dec, { band, t1, t2 } = {}) {
-  const t0 = performance.now()
-  const req0 = idx.stats.requests, bytes0 = idx.stats.bytes
-  const cell = ang2pixNest(idx.order, ra, dec)
-  const filter = { cell: { $eq: cell } }
-  const rows = await parquetReadObjects({ file: idx.buf, metadata: idx.metadata, columns: COLS, filter, rowFormat: 'object', usePageIndex: idx.usePageIndex })
-  const hits = rows.filter(r => insideQuad(ra, dec, Array.from(r.c_ra), Array.from(r.c_dec))
-    && (!band || r.band === band) && (t1 == null || r.mjd >= t1) && (t2 == null || r.mjd <= t2))
-  for (const h of hits) {
-    const [x, y] = world2pix(Array.from(h.wcs), Array.from(h.sip), ra, dec)
-    h.px = x; h.py = y
-    h.lam = wavelengthAt(idx.wave[h.wave_id], x, y)
-  }
-  hits.sort((a, b) => a.mjd - b.mjd)
-  return { cell, candidates: rows.length, hits, ms: performance.now() - t0,
-    requests: idx.stats.requests - req0, bytes: idx.stats.bytes - bytes0 }
-}
+const compressors = { ZSTD: (input, size) => decompress(input, new Uint8Array(size)) }
 
 export async function cutoutS3(h, size, { base = S3, fetchImpl, signal } = {}) {
   const f = fetchImpl ?? globalThis.fetch
@@ -73,16 +44,6 @@ export async function cutout(h, size, opts = {}) {
   throw new Error('no source available: ' + errors.join(' | '))
 }
 
-function countingFetch(f, stats) {
-  return async (url, init) => {
-    const r = await f(url, init)
-    stats.requests++
-    const len = (init?.method === 'HEAD') ? 0 : Number(r.headers.get('content-length') || 0)
-    stats.bytes += len
-    return r
-  }
-}
-
 function withTimeout(p, ms) {
   return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(`timeout ${ms} ms`)), ms))])
 }
@@ -108,33 +69,67 @@ export function mjdToIso(mjd) {
   return new Date((mjd - 40587) * 86400000).toISOString().replace('T', ' ').slice(0, 16)
 }
 
-export async function epochsAtTile(base, wave, ra, dec, { order = 5, fetchImpl } = {}) {
+export async function epochsAtCell(base, wave, ra, dec, { order = 5, fetchImpl, band, t1, t2, photosOk } = {}) {
   const f = fetchImpl ?? globalThis.fetch
   const t0 = performance.now()
   const cell = ang2pixNest(order, ra, dec)
-  const r = await f(`${base}tiles/o${order}/${cell}.parquet`)
-  if (r.status === 404) return { cell, candidates: 0, hits: [], ms: performance.now() - t0, requests: 1, bytes: 0 }
-  if (!r.ok) throw new Error(`tile ${cell}: ${r.status}`)
+  const r = await f(`${base}cells/o${order}/${cell}.parquet`)
+  if (r.status === 404) return { cell, candidates: 0, hits: [], homes: [], ms: performance.now() - t0, requests: 1, bytes: 0 }
+  if (!r.ok) throw new Error(`cell ${cell}: ${r.status}`)
   const buf = await r.arrayBuffer()
-  const rows = await parquetReadObjects({ file: buf, rowFormat: 'object' })
-  const hits = finish(rows, wave, ra, dec, {})
-  return { cell, candidates: rows.length, hits, ms: performance.now() - t0, requests: 1, bytes: buf.byteLength }
+  const rows = await readParquet(buf)
+  const near = nearRows(rows, ra, dec, { band, t1, t2 })
+  const homes = homesOf(near)
+  if (photosOk && !photosOk(homes)) return { cell, candidates: rows.length, hits: null, homes, ms: performance.now() - t0, requests: 1, bytes: buf.byteLength }
+  const files = await Promise.all(homes.map(async (home) => {
+    const p = await f(`${base}photos/o${order}/${home}.parquet`)
+    if (!p.ok) throw new Error(`photos ${home}: ${p.status}`)
+    const b = await p.arrayBuffer()
+    return { bytes: b.byteLength, rows: await readParquet(b) }
+  }))
+  const hits = placeRows(joinPhotos(near, homes, files.map(x => x.rows)), wave, ra, dec)
+  return { cell, candidates: rows.length, hits, homes, ms: performance.now() - t0, requests: 1 + homes.length,
+    bytes: files.reduce((a, x) => a + x.bytes, buf.byteLength) }
 }
 
-function finish(rows, wave, ra, dec, { band, t1, t2 }) {
-  for (const r of rows) for (const k in r) {
-    const v = r[k]
-    if (typeof v === 'bigint') r[k] = Number(v)
-    else if (Array.isArray(v) && typeof v[0] === 'bigint') r[k] = v.map(Number)
-  }
-  const hits = rows.filter(r => insideQuad(ra, dec, Array.from(r.c_ra), Array.from(r.c_dec))
-    && (!band || r.band === band) && (t1 == null || r.mjd >= t1) && (t2 == null || r.mjd <= t2))
-  for (const h of hits) {
-    const [x, y] = world2pix(Array.from(h.wcs), Array.from(h.sip), ra, dec)
+export async function readParquet(file) {
+  const rows = await parquetReadObjects({ file, rowFormat: 'object', compressors })
+  for (const r of rows) for (const k in r) r[k] = plain(r[k])
+  return rows
+}
+
+function plain(v) {
+  if (typeof v === 'bigint') return Number(v)
+  if (ArrayBuffer.isView(v) && !(v instanceof DataView)) return Array.from(v, Number)
+  if (Array.isArray(v) && typeof v[0] === 'bigint') return v.map(Number)
+  return v
+}
+
+export function nearRows(rows, ra, dec, { band, t1, t2 } = {}) {
+  return rows.filter(r => (!band || r.band === band) && (t1 == null || r.mjd >= t1) && (t2 == null || r.mjd <= t2)
+    && insideQuad(ra, dec, r.c_ra, r.c_dec))
+}
+
+export function homesOf(rows) {
+  return [...new Set(rows.map(r => r.home))]
+}
+
+export function joinPhotos(rows, homes, photos) {
+  const byHome = new Map(homes.map((h, i) => [h, new Map(photos[i].map(p => [p.img, p]))]))
+  return rows.map(r => {
+    const p = byHome.get(r.home)?.get(r.img)
+    if (!p) throw new Error(`photo ${r.home}/${r.img} missing`)
+    return { ...r, ...p }
+  })
+}
+
+export function placeRows(rows, wave, ra, dec) {
+  for (const h of rows) {
+    const [x, y] = world2pix(h.wcs, h.sip, ra, dec)
     h.px = x; h.py = y
     h.lam = wavelengthAt(wave[h.wave_id], x, y)
   }
-  return hits.sort((a, b) => a.mjd - b.mjd)
+  return rows.sort((a, b) => a.mjd - b.mjd)
 }
 
 export function parseFitsImage(buffer, extname = 'IMAGE') {

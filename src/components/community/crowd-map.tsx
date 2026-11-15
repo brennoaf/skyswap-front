@@ -25,7 +25,7 @@ function useSpriteImage(finding: FindingDetail, tracks: Tracks) {
     }
     if (sprite) load(sprite)
     else if (spot)
-      void buildSpotCard(spot, null, () => live).then((draft) => {
+      void buildSpotCard(spot, undefined, () => live).then((draft) => {
         if (!draft || !live) return
         const c = document.createElement('canvas')
         c.width = draft.pixels.width
