@@ -41,7 +41,7 @@ for (const [band, info] of Object.entries(man.bands)) {
     rejectSame++
     if (p && !p.rejected) {
       measured++
-      const z = Math.abs(p.flux_ap_mjy - r.phot.flux_mjy) / r.phot.err_mjy, dxy = Math.hypot(p.x - r.phot.x, p.y - r.phot.y)
+      const z = Math.abs(p.flux_mjy - r.phot.flux_mjy) / r.phot.err_mjy, dxy = Math.hypot(p.x - r.phot.x, p.y - r.phot.y)
       if (z < 1e-3 && dxy < 0.01) {
         agree++
         agreeWorst.flux_sigma = Math.max(agreeWorst.flux_sigma, z); agreeWorst.xy_px = Math.max(agreeWorst.xy_px, dxy)

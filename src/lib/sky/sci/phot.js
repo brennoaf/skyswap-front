@@ -1,19 +1,5 @@
 export const MASK_VALUE = [0, 1, 2, 6, 7, 9, 10, 11, 14, 15, 17, 20, 22, 23, 24, 25, 26, 27, 28, 29].reduce((s, b) => s + 2 ** b, 0)
 
-export const APERTURE_FRACTION_R2 = { D1: 0.980, D2: 0.976, D3: 0.971, D4: 0.962, D5: 0.988, D6: 0.988 }
-const BAND_UPPER_UM = [[1.095, 'D1'], [1.625, 'D2'], [2.415, 'D3'], [3.825, 'D4'], [4.415, 'D5'], [Infinity, 'D6']]
-
-export function bandOf(wavelengthUm) {
-  if (!Number.isFinite(wavelengthUm)) return null
-  for (const [upper, band] of BAND_UPPER_UM) if (wavelengthUm < upper) return band
-  return null
-}
-
-export function apertureFraction(wavelengthUm, rAp = 2) {
-  const band = bandOf(wavelengthUm)
-  return rAp === 2 && band ? APERTURE_FRACTION_R2[band] : 1
-}
-
 function median(a) {
   const s = Float64Array.from(a).sort(), n = s.length
   return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2
@@ -117,7 +103,7 @@ function bilinearGrid(grid, x, y) {
   return L(j, i) * (1 - tx) * (1 - ty) + L(j, i + 1) * tx * (1 - ty) + L(j + 1, i) * (1 - tx) * ty + L(j + 1, i + 1) * tx * ty
 }
 
-export function measureStar(img, variance, flags, w, h, wcs, ra, dec, wave, { rAp = 2, rIn = 4, rOut = 7, apFrac = null } = {}) {
+export function measureStar(img, variance, flags, w, h, wcs, ra, dec, wave, { rAp = 2, rIn = 4, rOut = 7 } = {}) {
   let [x, y] = wcs.world2pix(ra, dec)
   if (!(rOut < x && x < w - rOut - 1 && rOut < y && y < h - rOut - 1)) return null
   const xi = Math.round(x), yi = Math.round(y)
@@ -149,11 +135,8 @@ export function measureStar(img, variance, flags, w, h, wcs, ra, dec, wave, { rA
   avar /= ann.length
   const npx = apIdx.length, sbErr = Math.sqrt(sv + npx * npx * avar / ann.length)
   const pixSr = wcs.pixelAreaSr
-  const wavelength = bilinearGrid(wave, x + 1, y + 1)
-  const frac = apFrac ?? apertureFraction(wavelength, rAp)
-  const fluxAp = sb * pixSr * 1e9, errAp = sbErr * pixSr * 1e9
-  return { x, y, refined, rejected: false, bkg, sb, sb_err: sbErr, npx, pix_sr: pixSr, ap_frac: frac, flux_ap_mjy: fluxAp, err_ap_mjy: errAp,
-    flux_mjy: fluxAp / frac, err_mjy: errAp / frac, wavelength_um: wavelength }
+  return { x, y, refined, rejected: false, bkg, sb, sb_err: sbErr, npx, pix_sr: pixSr, flux_mjy: sb * pixSr * 1e9, err_mjy: sbErr * pixSr * 1e9,
+    wavelength_um: bilinearGrid(wave, x + 1, y + 1) }
 }
 
 export function properMotion(positions) {
