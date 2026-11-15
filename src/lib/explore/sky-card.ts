@@ -5,6 +5,8 @@ import { INDEX_BASE, pointHits } from './lookup'
 export const SKY_HOSTS = ['/api/s3/']
 export const SKY_FOV_DEG = 0.105
 export const MAX_VISITS = 4
+export const MIN_VISITS = 3
+export const SHORT_DAYS = 4 / 24
 export const MAX_EXPOSURES = 6
 export const VISIT_GAP_DAYS = 30 / 1440
 export const WINDOW_DAYS = 8 / 24
@@ -71,37 +73,37 @@ export function chooseVisits(hits: IndexRow[], maxVisits = MAX_VISITS, budget = 
     if (h.dqa !== 'Pass' || !Number.isFinite(h.mjd) || edgeCoverage(h) < MIN_COVERAGE) continue
     byBand.set(h.band, [...(byBand.get(h.band) ?? []), h])
   }
-  let best: (SkyPick & { score: number }) | null = null
+  let best: (SkyPick & { span: number }) | null = null
   for (const [band, list] of [...byBand.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     const visits = groupVisits(list)
-    if (visits.length < 2) continue
+    if (visits.length < MIN_VISITS) continue
     const mids = visits.map(midMjd)
+    const at = (i: number) => mids[i] as number
     let from = -1
     let to = -1
-    let score = -Infinity
-    for (let i = 0; i < visits.length - 1; i++) {
-      let j = i
-      while (j + 1 < visits.length && (mids[j + 1] as number) - (mids[i] as number) <= WINDOW_DAYS) j++
-      if (j === i) continue
-      const s = Math.min(j - i + 1, maxVisits) * 1000 + ((mids[j] as number) - (mids[i] as number)) * 24
-      if (s > score) [from, to, score] = [i, j, s]
+    let span = Infinity
+    for (let i = 0; i + MIN_VISITS - 1 < visits.length; i++) {
+      const j = i + MIN_VISITS - 1
+      const s = at(j) - at(i)
+      if (s <= WINDOW_DAYS && s < span) [from, to, span] = [i, j, s]
     }
-    if (from < 0) {
-      for (let i = 0; i < visits.length - 1; i++) {
-        const s = 1000 - Math.min(900, (mids[i + 1] as number) - (mids[i] as number))
-        if (s > score) [from, to, score] = [i, i + 1, s]
-      }
+    if (from < 0) continue
+    while (to - from + 1 < maxVisits) {
+      const before = from > 0 ? at(to) - at(from - 1) : Infinity
+      const after = to + 1 < visits.length ? at(to + 1) - at(from) : Infinity
+      if (Math.min(before, after) > SHORT_DAYS) break
+      if (after <= before) to++
+      else from--
     }
-    const cluster = visits.slice(from, to + 1)
-    const chosen = spread(cluster, maxVisits)
+    const chosen = visits.slice(from, to + 1)
     const per = Math.max(1, Math.min(2, Math.floor(budget / chosen.length)))
-    const centre = ((mids[from] as number) + (mids[to] as number)) / 2
+    const centre = (at(from) + at(to)) / 2
     const spares = visits
       .filter((v) => !chosen.includes(v))
       .sort((a, b) => Math.abs(midMjd(a) - centre) - Math.abs(midMjd(b) - centre))
-      .filter((v) => Math.abs(midMjd(v) - centre) <= WINDOW_DAYS)
+      .filter((v) => Math.abs(midMjd(v) - centre) <= WINDOW_DAYS / 2)
       .slice(0, MAX_SPARES)
-    if (!best || score > best.score) best = { band, visits: chosen.map((v) => v.slice(0, per)), spares: spares.map((v) => v.slice(0, per)), score }
+    if (!best || span < best.span || (span === best.span && chosen.length > best.visits.length)) best = { band, visits: chosen.map((v) => v.slice(0, per)), spares: spares.map((v) => v.slice(0, per)), span }
   }
   return best ? { band: best.band, visits: best.visits, spares: best.spares } : null
 }
@@ -244,7 +246,7 @@ async function readExposures(ra: number, dec: number, fovDeg: number, band: stri
 
 function toDraft(ra: number, dec: number, band: string, usable: SkyExposure[]): SkyCardDraft | null {
   const ids = [...new Set(usable.map((e) => e.visit))].sort((a, b) => a - b)
-  if (ids.length < 2) return null
+  if (ids.length < MIN_VISITS) return null
   const exposures = usable.map((e) => ({ ...e, visit: ids.indexOf(e.visit) })).sort((a, b) => a.mjd - b.mjd)
   const panels = ids.map((_, i) => meanImage(exposures.filter((e) => e.visit === i).map((e) => e.img)))
   const n = Math.round(Math.sqrt((panels[0] as Float32Array).length))

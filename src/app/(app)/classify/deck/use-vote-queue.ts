@@ -10,7 +10,7 @@ import type { Answer } from '@/lib/swap-verdict'
 import type { PlayCard } from './use-deck-flow'
 import { storageStore, VoteQueue, type Outcome, type QueuedVote } from './vote-queue'
 
-export type PendingVote = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; hints: boolean }
+export type PendingVote = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; shownAt: number | null; hints: boolean }
 export type SaveState = 'idle' | 'pending' | 'saved' | 'failed' | 'lost'
 export type VoteOutcome = Outcome<VoteResult>
 
@@ -18,6 +18,8 @@ const SAVED_MS = 1400
 const LOST_MS = 5000
 const REFRESH_EVERY = 10
 const MAX_HELD_MS = 600_000
+
+const clampMs = (ms: number) => Math.min(MAX_HELD_MS, Math.max(0, Math.round(ms)))
 
 let queue: VoteQueue<VoteResult> | null = null
 
@@ -32,15 +34,19 @@ function getQueue(): VoteQueue<VoteResult> {
 }
 
 function toEntry(user: string, p: PendingVote): QueuedVote {
+  const now = Date.now()
+  const held = performance.now() - p.at
+  const answeredAt = Math.round(now - held)
   return {
     user,
-    queuedAt: Date.now(),
+    queuedAt: now,
     body: {
       card_id: p.card.id,
       choice: p.answer === 'glitch' ? 'still' : p.answer,
       ...(p.answer === 'glitch' ? { glitch: true } : {}),
       hints: p.hints,
-      held_ms: Math.min(MAX_HELD_MS, Math.max(0, Math.round(performance.now() - p.at))),
+      held_ms: clampMs(held),
+      ...(p.shownAt !== null ? { think_ms: clampMs(answeredAt - p.shownAt), answered_at: answeredAt } : {}),
       ...(p.spot ? { position: p.spot } : {}),
     },
     ...(isSkyCard(p.card) ? { sky: p.card.reg } : {}),

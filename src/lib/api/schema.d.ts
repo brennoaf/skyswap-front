@@ -1911,6 +1911,8 @@ export interface paths {
                             y: number;
                         };
                         held_ms?: number;
+                        think_ms?: number;
+                        answered_at?: number;
                         hints?: boolean;
                     };
                 };

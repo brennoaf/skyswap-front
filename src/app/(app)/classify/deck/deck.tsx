@@ -89,6 +89,11 @@ export function Deck({ userId, onHelp }: { userId: string; onHelp: () => void })
     if (cardId && !lesson) void api.POST('/api/classify/shown', { body: { card_id: cardId } }).catch(() => null)
   }, [cardId, lesson])
 
+  const shownAt = useRef<{ id: string; at: number } | null>(null)
+  useEffect(() => {
+    if (cardId && img && !lesson && shownAt.current?.id !== cardId) shownAt.current = { id: cardId, at: Date.now() }
+  }, [cardId, img, lesson])
+
   const { prepare } = flow
   useEffect(() => {
     if (!cardId || guiding || (phase !== 'cards' && !nothingToPractice)) return
@@ -143,7 +148,8 @@ export function Deck({ userId, onHelp }: { userId: string; onHelp: () => void })
     async (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => {
       if (!card) return false
       answered.current.add(card.id)
-      const sent = submit({ card, answer, spot, at, hints })
+      const seen = shownAt.current?.id === card.id ? shownAt.current.at : null
+      const sent = submit({ card, answer, spot, at, shownAt: seen, hints })
       if (answer === 'moves') {
         const outcome = await Promise.race([sent, new Promise<null>((resolve) => setTimeout(() => resolve(null), FIRST_WAIT_MS))])
         if (outcome?.kind === 'saved' && outcome.result.first) return true

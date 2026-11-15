@@ -5,6 +5,8 @@ export type VoteBody = {
   position?: { frame: number; x: number; y: number }
   hints?: boolean
   held_ms?: number
+  think_ms?: number
+  answered_at?: number
 }
 
 export type SkyRegistration = { ra: number; dec: number; fov_deg: number; band: string; size_px: number; frames: { key: string; mjd: number; wl_um: number; visit: number }[] }

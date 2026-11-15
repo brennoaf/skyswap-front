@@ -7249,6 +7249,15 @@
                     "minimum": 0,
                     "maximum": 600000
                   },
+                  "think_ms": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 600000
+                  },
+                  "answered_at": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
                   "hints": {
                     "type": "boolean"
                   }
