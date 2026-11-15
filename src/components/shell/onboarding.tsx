@@ -206,7 +206,7 @@ function findTarget(id: string): HTMLElement | null {
   return document.querySelector<HTMLElement>(`[data-tour="${id}"]`)
 }
 
-function useTargetBox(target: string | undefined, reduce: boolean) {
+function useTargetBox(target: string | undefined, reduce: boolean, follow = true) {
   const [box, setBox] = useState<Box | null>(null)
   const [missing, setMissing] = useState(false)
   useLayoutEffect(() => {
@@ -223,7 +223,7 @@ function useTargetBox(target: string | undefined, reduce: boolean) {
       setBox({ top: r.top, left: r.left, width: r.width, height: r.height })
     }
     const keepInView = () => {
-      if (!el || el.closest('header, nav')) return
+      if (!follow || !el || el.closest('header, nav')) return
       const r = el.getBoundingClientRect()
       if (r.top < 64 || r.bottom > window.innerHeight - 220) el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' })
     }
@@ -254,8 +254,82 @@ function useTargetBox(target: string | undefined, reduce: boolean) {
       window.removeEventListener('scroll', onScroll, true)
       window.removeEventListener('resize', measure)
     }
-  }, [target, reduce])
+  }, [target, reduce, follow])
   return { box, missing }
+}
+
+const TOUR_CARD = 'pointer-events-auto rounded-2xl bg-sheet p-5 shadow-[0_12px_40px_rgb(0_0_0/0.35)] ring-1 ring-divider'
+const TOUR_PAD = 6
+
+function roomBelow(spot: Box | null) {
+  return spot ? window.innerHeight - (spot.top + spot.height) > spot.top : false
+}
+
+function TourLayer({ spot, below, reduce, reserve, children }: { spot: Box | null; below: boolean; reduce: boolean; reserve: number; children: ReactNode }) {
+  return (
+    <motion.div role="dialog" aria-modal="true" aria-labelledby="tour-title" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[65]">
+      {spot ? (
+        <motion.div
+          aria-hidden="true"
+          className="absolute rounded-2xl shadow-[0_0_0_9999px_var(--color-media-scrim)] ring-2 ring-accent"
+          initial={false}
+          animate={{ top: spot.top - TOUR_PAD, left: spot.left - TOUR_PAD, width: spot.width + TOUR_PAD * 2, height: spot.height + TOUR_PAD * 2 }}
+          transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 36 }}
+        />
+      ) : (
+        <div aria-hidden="true" className="absolute inset-0 bg-media-scrim" />
+      )}
+      <div className="pointer-events-none relative mx-auto h-full max-w-[var(--width-app)] px-4">
+        <div
+          className={cx('absolute inset-x-4', !spot && 'top-1/2 -translate-y-1/2')}
+          style={spot ? (below ? { top: Math.max(12, Math.min(spot.top + spot.height + TOUR_PAD + 12, window.innerHeight - reserve)) } : { bottom: Math.min(window.innerHeight - spot.top + TOUR_PAD + 12, window.innerHeight - reserve) }) : undefined}
+        >
+          {children}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+export function ScreenTour({ steps, labels, onClose }: { steps: { id: string; target: string; text: string }[]; labels: { skip: string; back: string; next: string }; onClose: () => void }) {
+  const reduce = useReducedMotion() ?? false
+  const [index, setIndex] = useState(0)
+  const step = steps[index]
+  const { box, missing } = useTargetBox(step?.target, reduce, false)
+  const next = useCallback(() => {
+    if (index + 1 < steps.length) setIndex(index + 1)
+    else onClose()
+  }, [index, onClose, steps.length])
+  useEffect(() => {
+    if (missing) next()
+  }, [missing, next])
+  if (!step) return null
+  const below = roomBelow(box)
+  return (
+    <TourLayer spot={box} below={below} reduce={reduce} reserve={170}>
+      {box && (
+        <motion.div key={step.id} initial={reduce ? false : { opacity: 0, y: below ? -8 : 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className={TOUR_CARD} data-testid="screen-tour" data-step={step.id}>
+          <p id="tour-title" className="text-title-sm font-semibold leading-snug">
+            {step.text}
+          </p>
+          <div className="mt-4 flex items-center gap-2">
+            <button type="button" onClick={onClose} className="h-11 px-1 text-ui font-semibold text-text-secondary">
+              {labels.skip}
+            </button>
+            <span className="flex-1" />
+            {index > 0 && (
+              <Button className="h-11 px-4" onClick={() => setIndex(index - 1)}>
+                {labels.back}
+              </Button>
+            )}
+            <Button variant="primary" className="h-11 px-5" onClick={next}>
+              {labels.next}
+            </Button>
+          </div>
+        </motion.div>
+      )}
+    </TourLayer>
+  )
 }
 
 export function Onboarding({ options }: { options: LanguageOption[] }) {
@@ -293,15 +367,14 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
   }, [missing, go])
 
   const spot = step.target ? box : null
-  const pad = 6
-  const below = spot ? window.innerHeight - (spot.top + spot.height) > spot.top : false
+  const below = roomBelow(spot)
   const card = (
     <motion.div
       key={step.id}
       initial={reduce ? false : { opacity: 0, y: below ? -8 : 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="pointer-events-auto rounded-2xl bg-sheet p-5 shadow-[0_12px_40px_rgb(0_0_0/0.35)] ring-1 ring-divider"
+      className={TOUR_CARD}
     >
       {step.id === 'language' ? (
         <LanguageStep options={options} reduce={reduce} onDone={next} />
@@ -361,27 +434,9 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
   return (
     <AnimatePresence>
       {visible && (
-        <motion.div role="dialog" aria-modal="true" aria-labelledby="tour-title" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[65]">
-          {spot ? (
-            <motion.div
-              aria-hidden="true"
-              className="absolute rounded-2xl shadow-[0_0_0_9999px_var(--color-media-scrim)] ring-2 ring-accent"
-              initial={false}
-              animate={{ top: spot.top - pad, left: spot.left - pad, width: spot.width + pad * 2, height: spot.height + pad * 2 }}
-              transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 36 }}
-            />
-          ) : (
-            <div aria-hidden="true" className="absolute inset-0 bg-media-scrim" />
-          )}
-          <div className="pointer-events-none relative mx-auto h-full max-w-[var(--width-app)] px-4">
-            <div
-              className={cx('absolute inset-x-4', !spot && 'top-1/2 -translate-y-1/2')}
-              style={spot ? (below ? { top: Math.max(12, Math.min(spot.top + spot.height + pad + 12, window.innerHeight - 300)) } : { bottom: Math.min(window.innerHeight - spot.top + pad + 12, window.innerHeight - 300) }) : undefined}
-            >
-              {(spot || !step.target) && card}
-            </div>
-          </div>
-        </motion.div>
+        <TourLayer spot={spot} below={below} reduce={reduce} reserve={300}>
+          {(spot || !step.target) && card}
+        </TourLayer>
       )}
     </AnimatePresence>
   )

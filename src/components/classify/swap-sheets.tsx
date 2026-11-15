@@ -52,18 +52,18 @@ export function TechnicalData({ reveal }: { reveal: Reveal }) {
   const label = useOffsetLabel()
   const first = reveal.frames[0]?.mjd ?? 0
   return (
-    <div className="space-y-4 pb-2 text-body">
+    <div className="space-y-4 pb-2 text-ui">
       {reveal.p_real !== null && (
         <section>
           <h4 className="font-semibold">{t('chance', { pct: Math.round(reveal.p_real * 100) })}</h4>
-          <p className="mt-1 text-note text-text-secondary">{t('chanceHint')}</p>
+          <p className="mt-1 text-ui text-text-secondary">{t('chanceHint')}</p>
         </section>
       )}
       <section>
         <h4 className="font-semibold">{t('photos')}</h4>
         <ul className="mt-1 divide-y-[0.5px] divide-divider">
           {reveal.frames.map((f, i) => (
-            <li key={f.t + i} className="flex min-h-12 items-center justify-between gap-3 py-1 text-note">
+            <li key={f.t + i} className="flex min-h-12 items-center justify-between gap-3 py-1 text-ui">
               <span>{label((f.mjd - first) * 86400)}</span>
               <span className="text-right text-text-secondary">
                 <span className="block">{formatDateTimeSeconds(f.t, fmt.locale)}</span>
@@ -73,10 +73,10 @@ export function TechnicalData({ reveal }: { reveal: Reveal }) {
           ))}
         </ul>
       </section>
-      <p className="text-note text-text-secondary">{t('field', { size: fmt.fixed(reveal.size_arcmin, 1), band: reveal.band })}</p>
+      <p className="text-ui text-text-secondary">{t('field', { size: fmt.fixed(reveal.size_arcmin, 1), band: reveal.band })}</p>
       <section>
         <h4 className="font-semibold">{t('where')}</h4>
-        <p className="mt-1 text-note text-text-secondary">{t(reveal.kind === 'sky' ? 'whereSky' : 'whereBody', { ra: fmt.fixed(reveal.ra, 4), dec: fmt.fixed(reveal.dec, 4) })}</p>
+        <p className="mt-1 text-ui text-text-secondary">{t(reveal.kind === 'sky' ? 'whereSky' : 'whereBody', { ra: fmt.fixed(reveal.ra, 4), dec: fmt.fixed(reveal.dec, 4) })}</p>
       </section>
       <CatalogLinks ra={reveal.ra} dec={reveal.dec} />
     </div>

@@ -3,16 +3,18 @@
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
-import { AnswerPanel, FrameBars, PhotoBar, SwapPanel, SwapStage, SwapStamps, SwapStrip, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
+import { AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapPanel, SwapStage, SwapStamps, SwapStrip, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
 import { KnownSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
-import { IconArrowRight, IconBack, IconCards, IconClose, IconMoves, IconQuestion } from '@/components/icons'
+import { IconArrowRight, IconBack, IconCards, IconClose, IconMoves, IconQuestion, IconWarning } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
 import { LoginForm } from '@/components/shell/login-sheet'
+import { ScreenTour } from '@/components/shell/onboarding'
 import { Button, EmptyState, IconButton, Skeleton, TopBar } from '@/components/ui/primitives'
 import { api, ApiError, unwrap, type DeckCard } from '@/lib/api/client'
+import { cx } from '@/lib/format'
 import { useGuideCard, useSession, useVote, type VotePosition } from '@/lib/api/hooks'
 import type { CardHint } from '@/lib/explore/flashlight'
 import { exploreQueue, isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
@@ -26,36 +28,46 @@ type PlayCard = DeckCard | SkyPlayCard
 type Lesson = 'moves' | 'still' | 'glitch'
 type Mode = 'look' | 'tools' | 'mark' | 'sending' | 'failed' | 'result'
 type Pending = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; hints: boolean }
+type GuideData = NonNullable<ReturnType<typeof useGuideCard>['data']>
+type WelcomeExample = GuideData['examples'][number]
+type WelcomeStepPlan = { key: 'intro' | 'still' | 'moves' | 'particle' | 'streak' | 'unsure'; example?: WelcomeExample['example']; swipe?: { x: number; up: boolean; arrow: string }; follow?: boolean; spot?: { u: number; v: number; r: number }; tap?: boolean; hold?: number }
+type WelcomeStep = WelcomeStepPlan & { card: DeckCard; marks: Mark[] }
 type Strip = { kind: 'saved'; answer: Answer } | { kind: 'known'; name: string } | { kind: 'badge'; name: string } | { kind: 'fast' } | { kind: 'failed'; answer: Answer }
 
 const UNDO_MS = 3000
 const NOTICE_MS = 5000
 const FRAME_MS = 700
 const INTRO_FRAME_MS = 800
+const EXAMPLE_FRAME_MS = 1000
 const DEMO_WAIT_MS = 300
 const DEMO_RESET_S = 0.2
 const DEMO_TOP_CLEAR_PX = 4
 const DEMO_STAMP_UP_PX = 24
-const DEMO_GESTURE = { duration: 2.2, times: [0, 0.5 / 2.2, 0.9 / 2.2, 1.4 / 2.2, 1], ease: 'easeInOut' as const, repeat: Infinity }
-const WELCOME_SWIPES = [
-  { key: 'left', x: -SWIPE, up: false, arrow: 'rotate-180' },
-  { key: 'right', x: SWIPE, up: false, arrow: '' },
-  { key: 'up', x: 0, up: true, arrow: '-rotate-90' },
-] as const
-const WELCOME_STEPS = WELCOME_SWIPES.length + 1
+const DEMO_GESTURE = { duration: 2.9, times: [0, 0.5 / 2.9, 0.9 / 2.9, 1.4 / 2.9, 1], ease: 'easeInOut' as const, repeat: Infinity }
+const SPOT_RADIUS = 12
+const WELCOME_STEPS: WelcomeStepPlan[] = [
+  { key: 'intro' },
+  { key: 'still', example: 'still', swipe: { x: -SWIPE, up: false, arrow: 'rotate-180' } },
+  { key: 'moves', example: 'moves', follow: true, swipe: { x: SWIPE, up: false, arrow: '' } },
+  { key: 'particle', example: 'particle', spot: { u: 0.5, v: 0.5, r: 15 }, tap: true },
+  { key: 'streak', example: 'streak', spot: { u: 0.5, v: 0.5, r: 38 }, tap: true, hold: 1 },
+  { key: 'unsure', example: 'still', swipe: { x: 0, up: true, arrow: '-rotate-90' } },
+]
 const WELCOME_STYLE = {
   '--welcome-up': 'clamp(28px, calc((100dvh - 560px) * 0.15 + 28px), 72px)',
-  '--welcome-photo': 'max(120px, min(calc(min(100vw, var(--width-app)) - 40px), calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--welcome-up) - var(--welcome-text) - 192px)))',
+  '--welcome-photo': 'max(120px, min(calc(min(100vw, var(--width-app)) - 40px), calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--welcome-up) - var(--welcome-text) - 198px)))',
 } as CSSProperties
+const SWAP_SHEET = 'relative -mb-[env(safe-area-inset-bottom)] flex min-h-0 flex-1 flex-col rounded-t-[var(--radius-sheet)] bg-sheet pb-[env(safe-area-inset-bottom)]'
 const STEP_TITLE = 'font-[family-name:var(--font-display)] font-bold leading-tight [text-wrap:balance]'
 const STEP_BODY = 'text-title-sm leading-[1.4] text-text-secondary [@media(min-height:700px)]:text-title-md'
-const NUDGE_PX = 44
-const NUDGE_S = 0.7
-const NUDGE_WAIT_MS = 700
+const SWING_PX = 64
+const SWING_S = 1.3
+const SWING_WAIT_MS = 2500
+const SWAP_TOUR_TIP = 'swapTour'
 const PAUSE_EVERY = 25
 const NO_MARKS: Mark[] = []
 const BLACK_EDGE_TIP = 'blackEdge'
-const SHELL_STYLE = { '--swap-photo': 'max(200px, min(min(100vw, var(--width-app)), calc(100dvh - 312px - env(safe-area-inset-top) - env(safe-area-inset-bottom))))' } as CSSProperties
+const SHELL_STYLE = { '--swap-photo': 'max(200px, min(min(100vw, var(--width-app)), calc(100dvh - 310px - env(safe-area-inset-top) - env(safe-area-inset-bottom))))' } as CSSProperties
 
 const preloaded = new Map<string, HTMLImageElement>()
 
@@ -103,7 +115,7 @@ function SwapHeader({ step, onHelp }: { step?: string | null; onHelp: () => void
         <IconClose size={28} />
       </Link>
       <div className="min-w-0 flex-1 text-center">
-        {step && <p className="truncate text-[14px] leading-tight text-text-secondary">{step}</p>}
+        {step && <p className="truncate text-ui leading-tight text-text-secondary">{step}</p>}
         <h1 className="truncate text-[18px] font-bold leading-tight">{t('question')}</h1>
       </div>
       <IconButton label={t('help.open')} onClick={onHelp} className="size-12">
@@ -125,23 +137,58 @@ function GuideRing({ mark }: { mark: Mark | undefined }) {
 
 function Coach({ children }: { children: ReactNode }) {
   return (
-    <div role="note" className="flex shrink basis-[60px] items-center gap-2.5 px-4 text-[16px] font-medium leading-tight">
-      <span aria-hidden="true" className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-accent text-[18px] font-bold text-on-accent">
-        !
-      </span>
-      <span>{children}</span>
+    <div role="note" className="flex shrink basis-[60px] items-center px-4 text-title-sm font-semibold leading-tight">
+      {children}
     </div>
   )
 }
 
-function WelcomePhoto({ sprite, frames, step }: { sprite: string; frames: number; step: number }) {
+function useSpriteSet(srcs: string[]) {
+  const [loaded, setLoaded] = useState<Record<string, HTMLImageElement>>({})
+  const key = srcs.join('|')
+  useEffect(() => {
+    let live = true
+    for (const src of new Set(key.split('|'))) {
+      const el = new Image()
+      el.onload = () => live && setLoaded((now) => ({ ...now, [src]: el }))
+      el.src = src
+    }
+    return () => {
+      live = false
+    }
+  }, [key])
+  return loaded
+}
+
+function Spotlight({ u, v, r }: { u: number; v: number; r: number }) {
+  const id = useId().replace(/\W/g, '')
+  const reduce = useReducedMotion()
+  return (
+    <svg viewBox="0 0 100 100" aria-hidden="true" className="pointer-events-none absolute inset-0 size-full" data-testid="spotlight">
+      <defs>
+        <mask id={id}>
+          <rect width="100" height="100" fill="white" />
+          <motion.circle initial={false} animate={{ cx: u * 100, cy: v * 100, r }} transition={{ duration: reduce ? 0 : 0.3, ease: 'easeInOut' }} fill="black" data-testid="spotlight-hole" />
+        </mask>
+      </defs>
+      <rect width="100" height="100" fill="var(--color-media-scrim)" mask={`url(#${id})`} />
+    </svg>
+  )
+}
+
+function WelcomePhoto({ step, index, sprites }: { step: WelcomeStep; index: number; sprites: Record<string, HTMLImageElement> }) {
+  const tp = useTranslations('player')
   const canvas = useRef<HTMLCanvasElement>(null)
   const gap = useRef<HTMLDivElement>(null)
-  const img = useSprite(sprite)
   const reduce = useReducedMotion()
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const rotate = useTransform(x, [-240, 240], [-6, 6])
+  const [frame, setFrame] = useState(0)
+  const img = sprites[step.card.sprite]
+  const frames = Math.max(1, step.card.offsets_s.length)
+  const { swipe, hold = 0 } = step
+  const frameMs = step.example ? EXAMPLE_FRAME_MS : INTRO_FRAME_MS
   useEffect(() => {
     if (reduce) {
       x.set(0)
@@ -149,7 +196,6 @@ function WelcomePhoto({ sprite, frames, step }: { sprite: string; frames: number
       return
     }
     const moves = [animate(x, 0, { duration: DEMO_RESET_S }), animate(y, 0, { duration: DEMO_RESET_S })]
-    const swipe = WELCOME_SWIPES[step - 1]
     const timer = swipe
       ? setTimeout(() => {
           const up = swipe.up ? (gap.current?.offsetHeight ?? 0) - DEMO_TOP_CLEAR_PX : 0
@@ -160,31 +206,43 @@ function WelcomePhoto({ sprite, frames, step }: { sprite: string; frames: number
       clearTimeout(timer)
       moves.forEach((m) => m.stop())
     }
-  }, [reduce, step, x, y])
+  }, [index, reduce, swipe, x, y])
+  useEffect(() => {
+    setFrame(0)
+    if (reduce || frames < 2) return
+    const timer = setInterval(() => setFrame((f) => f + 1), frameMs)
+    return () => clearInterval(timer)
+  }, [frameMs, frames, index, reduce])
+  const at = (reduce ? hold : frame) % frames
   useEffect(() => {
     const c = canvas.current
     const ctx = c?.getContext('2d')
     if (!c || !ctx || !img) return
     const tile = Math.round(img.naturalHeight / 2)
-    c.width = tile
-    c.height = tile
+    if (c.width !== tile) c.width = tile
+    if (c.height !== tile) c.height = tile
     ctx.imageSmoothingEnabled = false
-    let at = 0
-    const draw = () => {
-      ctx.drawImage(img, at * tile, 0, tile, tile, 0, 0, tile, tile)
-      at = (at + 1) % frames
-    }
-    draw()
-    if (reduce) return
-    const timer = setInterval(draw, INTRO_FRAME_MS)
-    return () => clearInterval(timer)
-  }, [frames, img, reduce])
+    ctx.drawImage(img, at * tile, 0, tile, tile, 0, 0, tile, tile)
+  }, [at, img])
+  const mark = step.marks[at] ?? step.marks[0]
+  const spot = step.follow && mark ? { u: mark.u, v: mark.v, r: SPOT_RADIUS } : step.spot
   return (
     <>
-      <div ref={gap} className="h-[var(--welcome-up)] shrink-0" data-testid="welcome-gap" />
-      <div className="flex shrink-0 justify-center overflow-x-clip" aria-hidden="true" data-testid="swipe-demo-slot">
-        <motion.div style={{ x, y, rotate, width: 'var(--welcome-photo)', height: 'var(--welcome-photo)' }} className="relative shrink-0 overflow-hidden bg-media-bg" data-testid="swipe-demo">
-          <canvas ref={canvas} className="pixelated block size-full" />
+      <div ref={gap} className="flex h-[var(--welcome-up)] shrink-0 items-center justify-center" data-testid="welcome-gap">
+        {step.tap && (
+          <p className="text-ui font-semibold leading-none" data-testid="welcome-counter">
+            {tp('counter', { n: at + 1, total: frames })}
+          </p>
+        )}
+      </div>
+      <div className="relative flex shrink-0 justify-center overflow-x-clip pb-1.5" aria-hidden="true" data-testid="swipe-demo-slot">
+        <CardBehind size="var(--welcome-photo)" />
+        <motion.div style={{ x, y, rotate, width: 'var(--welcome-photo)', height: 'var(--welcome-photo)' }} className={cx(photoFrame, 'shrink-0')} data-testid="swipe-demo" data-sprite={step.card.sprite} data-frame={at}>
+          <div className={photoInset}>
+            <canvas ref={canvas} className="pixelated block size-full" />
+            {spot && <Spotlight u={spot.u} v={spot.v} r={spot.r} />}
+          </div>
+          {swipe && !reduce && <GestureHint x={x} y={y} />}
           <SwapStamps x={x} y={y} upFull={DEMO_STAMP_UP_PX} />
         </motion.div>
       </div>
@@ -192,25 +250,37 @@ function WelcomePhoto({ sprite, frames, step }: { sprite: string; frames: number
   )
 }
 
-function Welcome({ lesson, count, onStart, onSkip }: { lesson: { card: DeckCard }; count: number; onStart: () => void; onSkip: () => void }) {
+function Welcome({ lesson, examples, count, onStart, onSkip }: { lesson: { card: DeckCard }; examples: WelcomeExample[]; count: number; onStart: () => void; onSkip: () => void }) {
   const t = useTranslations('classify.welcome')
+  const tc = useTranslations('classify')
   const reduce = useReducedMotion()
-  const [step, setStep] = useState(0)
+  const [index, setIndex] = useState(0)
   const primary = useRef<HTMLButtonElement>(null)
-  const swipe = WELCOME_SWIPES[step - 1]
-  const last = step === WELCOME_STEPS - 1
+  const steps = useMemo<WelcomeStep[]>(
+    () =>
+      WELCOME_STEPS.flatMap((plan) => {
+        if (!plan.example) return [{ ...plan, card: lesson.card, marks: [] }]
+        const found = examples.find((e) => e.example === plan.example)
+        return found ? [{ ...plan, card: found.card, marks: found.marks }] : []
+      }),
+    [examples, lesson.card],
+  )
+  const sprites = useSpriteSet(steps.map((s) => s.card.sprite))
+  const step = steps[index] ?? steps[0]
+  if (!step) return null
+  const last = index === steps.length - 1
   const back = () => {
-    setStep(step - 1)
-    if (step === 1) primary.current?.focus()
+    setIndex(index - 1)
+    if (index === 1) primary.current?.focus()
   }
   return (
     <SwapShell>
-      <div style={WELCOME_STYLE} className="flex min-h-0 flex-1 flex-col pt-2 [--welcome-text:184px] [@media(min-height:700px)]:[--welcome-text:200px]" data-testid="swap-welcome">
+      <div style={WELCOME_STYLE} className="flex min-h-0 flex-1 flex-col pt-2 [--welcome-text:180px] [@media(min-height:700px)]:[--welcome-text:200px]" data-testid="swap-welcome">
         <div className="shrink-0 px-2">
-          <FrameBars n={WELCOME_STEPS} index={step} />
+          <FrameBars n={steps.length} index={index} />
         </div>
         <div className="flex h-12 shrink-0 items-center px-2" data-testid="welcome-top">
-          {step > 0 && (
+          {index > 0 && (
             <IconButton label={t('back')} onClick={back} className="size-12">
               <IconBack size={28} />
             </IconButton>
@@ -219,29 +289,37 @@ function Welcome({ lesson, count, onStart, onSkip }: { lesson: { card: DeckCard 
             {t('skip')}
           </button>
         </div>
-        <WelcomePhoto sprite={lesson.card.sprite} frames={Math.max(1, lesson.card.offsets_s.length)} step={step} />
+        <WelcomePhoto step={step} index={index} sprites={sprites} />
         <div aria-live="polite" className="flex min-h-0 flex-1 overflow-y-auto px-5 py-6" data-testid="welcome-text-area">
-          <motion.div key={step} initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="m-auto w-full text-center" data-testid="welcome-text" data-step={step + 1}>
-            <p className="sr-only">{t('stepRead', { n: step + 1, total: WELCOME_STEPS })}</p>
-            {swipe ? (
-              <>
-                <h1 className={`${STEP_TITLE} text-wordmark`}>{t(`swipe.${swipe.key}`)}</h1>
-                <p className={`${STEP_BODY} mt-3 flex items-center justify-center gap-2`}>
-                  <IconArrowRight size={24} aria-hidden="true" className={`shrink-0 ${swipe.arrow}`} />
-                  {t(`drag.${swipe.key}`)}
-                </p>
-              </>
-            ) : (
+          <motion.div key={index} initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="m-auto w-full text-center" data-testid="welcome-text" data-step={index + 1} data-key={step.key}>
+            <p className="sr-only">{t('stepRead', { n: index + 1, total: steps.length })}</p>
+            {step.key === 'intro' ? (
               <>
                 <h1 className={`${STEP_TITLE} text-display`}>{t('title')}</h1>
                 <p className={`${STEP_BODY} mt-3`}>{t('body1')}</p>
                 <p className={`${STEP_BODY} mt-3`}>{t('body2')}</p>
               </>
+            ) : (
+              <>
+                <h1 className={`${STEP_TITLE} text-wordmark`}>{t(`steps.${step.key}.title`)}</h1>
+                <p className={`${STEP_BODY} mt-3`}>{t(`steps.${step.key}.body`)}</p>
+                <div className={`${STEP_BODY} mt-3 flex items-center justify-center gap-3 font-semibold text-text`} data-testid="welcome-how">
+                  {step.swipe && <IconArrowRight size={24} aria-hidden="true" className={`shrink-0 ${step.swipe.arrow}`} />}
+                  {step.tap && (
+                    <motion.span aria-hidden="true" className="block" animate={reduce ? undefined : { scale: [1, 1.14, 1, 1] }} transition={{ duration: 2.4, times: [0, 0.2, 0.4, 1], ease: 'easeInOut', repeat: Infinity }} data-testid="welcome-defect" title={tc('glitch')}>
+                      <AnswerFace big={false}>
+                        <IconWarning size={28} />
+                      </AnswerFace>
+                    </motion.span>
+                  )}
+                  {t(`steps.${step.key}.how`)}
+                </div>
+              </>
             )}
           </motion.div>
         </div>
         <div className="shrink-0 px-5 pb-4">
-          <button ref={primary} type="button" onClick={last ? onStart : () => setStep(step + 1)} className={`${swapButton.primary} w-full`}>
+          <button ref={primary} type="button" onClick={last ? onStart : () => setIndex(index + 1)} className={`${swapButton.primary} w-full`}>
             {last ? t('start', { n: count }) : t('next')}
           </button>
         </div>
@@ -306,6 +384,7 @@ function SwapCard({
   lesson,
   lessonMarks,
   lastLesson,
+  firstLesson,
   strip,
   onHelp,
   onChoosing,
@@ -319,6 +398,7 @@ function SwapCard({
   lesson: Lesson | null
   lessonMarks: Mark[]
   lastLesson: boolean
+  firstLesson: boolean
   strip: ReactNode
   onHelp: () => void
   onChoosing: () => void
@@ -327,6 +407,7 @@ function SwapCard({
   onLessonNext: () => void
 }) {
   const t = useTranslations('classify')
+  const tw = useTranslations('classify.welcome')
   const tp = useTranslations('player')
   const label = useOffsetLabel()
   const reduce = useReducedMotion()
@@ -344,6 +425,7 @@ function SwapCard({
   const [sawIt, setSawIt] = useState(false)
   const [shownIt, setShownIt] = useState(false)
   const [retry, setRetry] = useState(false)
+  const [swingOver, setSwingOver] = useState(false)
   const sky = isSkyCard(card) ? card : null
   const [hintsOn, setHintsOn] = useState(false)
   const [hintsUsed, setHintsUsed] = useState(false)
@@ -356,6 +438,8 @@ function SwapCard({
   const outside = useOutside(img, n)
   const blackSeen = useUi((s) => s.tipsSeen.includes(BLACK_EDGE_TIP))
   const markTip = useUi((s) => s.markTip)
+  const tourSeen = useUi((s) => s.tipsSeen.includes(SWAP_TOUR_TIP))
+  const touring = firstLesson && !tourSeen && !!img
   const [blackNote, setBlackNote] = useState(false)
   const hintLine = useHintLine(hints, panel)
   const verdict = lesson && saved && answer ? verdictOf(saved.reveal, answer, true) : null
@@ -364,13 +448,6 @@ function SwapCard({
     animate(x, 0, { type: 'spring', stiffness: 500, damping: 32 })
     animate(y, 0, { type: 'spring', stiffness: 500, damping: 32 })
   }, [x, y])
-
-  const nudge = useCallback(
-    (direction: 1 | -1) => {
-      if (!reduce) animate(x, [0, direction * NUDGE_PX, 0], { duration: NUDGE_S, ease: 'easeInOut' })
-    },
-    [reduce, x],
-  )
 
   const undoMark = useCallback(() => {
     setAnswer(null)
@@ -407,12 +484,6 @@ function SwapCard({
     return () => document.removeEventListener('visibilitychange', onHide)
   }, [mode, undoMark])
 
-  useEffect(() => {
-    if (lesson !== 'still' || !img) return
-    const timer = setTimeout(() => nudge(-1), NUDGE_WAIT_MS)
-    return () => clearTimeout(timer)
-  }, [img, lesson, nudge])
-
   const choose = (a: Answer) => {
     if (!img) return
     settle()
@@ -441,7 +512,38 @@ function SwapCard({
 
   const looking = mode === 'look' || mode === 'tools'
   const mustLookFirst = lesson === 'moves' && !sawIt && !retry
-  const canSwipe = looking && !!img && !mustLookFirst
+  const canSwipe = looking && !!img && !mustLookFirst && !touring
+  const swinging = !!lesson && !reduce && !swingOver && mode === 'look' && !!img && !mustLookFirst && !touring
+
+  useEffect(() => {
+    if (!swinging) return
+    let side = -1
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let move: ReturnType<typeof animate> | undefined
+    const queue = () => {
+      timer = setTimeout(() => {
+        const to = side * SWING_PX
+        move = animate(x, [0, to, to, 0], {
+          duration: SWING_S,
+          times: [0, 0.35, 0.65, 1],
+          ease: 'easeInOut',
+          onComplete: () => {
+            side = -side
+            queue()
+          },
+        })
+      }, SWING_WAIT_MS)
+    }
+    queue()
+    const stop = () => setSwingOver(true)
+    window.addEventListener('pointerdown', stop, { capture: true })
+    return () => {
+      clearTimeout(timer)
+      move?.stop()
+      window.removeEventListener('pointerdown', stop, { capture: true })
+      settle()
+    }
+  }, [settle, swinging, x])
 
   const onRelease = (dx: number, dy: number, vx: number, vy: number) => {
     const sideways = Math.abs(dx) >= Math.abs(dy)
@@ -490,20 +592,20 @@ function SwapCard({
         onTap={onTap}
         onHold={setFrozen}
         overlay={overlay}
+        hint={swinging}
       />
-      <div className="relative flex min-h-0 flex-1 flex-col" data-testid="swap-lower">
+      <div className={SWAP_SHEET} data-testid="swap-lower">
         {lesson && (mode === 'look' || mode === 'sending') && (
           <>
             <Coach>{mustLookFirst ? t('guide.look') : lesson === 'moves' ? t('guide.answer') : t(`guide.${lesson}`)}</Coach>
             <PhotoBar playback={playback} offsets={offsets} onTools={() => mode === 'look' && setMode('tools')} />
-            {mustLookFirst ? (
+            {mustLookFirst && !touring ? (
               <div className="mt-auto flex shrink-0 flex-col gap-2 px-4 pb-4 pt-1">
                 <button
                   type="button"
                   onClick={() => {
                     setSawIt(true)
                     setShownIt(false)
-                    nudge(1)
                   }}
                   className={`${swapButton.primary} flex-none`}
                 >
@@ -514,7 +616,7 @@ function SwapCard({
                 </button>
               </div>
             ) : (
-              <AnswerPanel labels={labels} disabled={!img || mode === 'sending'} onChoose={choose} />
+              <AnswerPanel labels={labels} disabled={!img || mode === 'sending'} x={x} y={y} onChoose={choose} />
             )}
           </>
         )}
@@ -526,7 +628,7 @@ function SwapCard({
                 {note}
               </p>
             )}
-            <AnswerPanel labels={labels} disabled={!img} onChoose={choose} />
+            <AnswerPanel labels={labels} disabled={!img} x={x} y={y} onChoose={choose} />
           </>
         )}
         {mode === 'tools' && (
@@ -609,6 +711,18 @@ function SwapCard({
         )}
       </div>
       {saved && answer && verdict && <UnderstandSheet open={understand} onClose={() => setUnderstand(false)} reveal={saved.reveal} answer={answer} verdict={verdict} />}
+      {touring && (
+        <ScreenTour
+          steps={[
+            { id: 'photo', target: 'swap-photo', text: t('tour.photo') },
+            { id: 'play', target: 'swap-play', text: t('tour.play') },
+            { id: 'tools', target: 'swap-tools', text: t('tour.tools') },
+            { id: 'answers', target: 'swap-answers', text: t('tour.answers') },
+          ]}
+          labels={{ skip: tw('skip'), back: tw('back'), next: tw('next') }}
+          onClose={() => markTip(SWAP_TOUR_TIP)}
+        />
+      )}
     </SwapShell>
   )
 }
@@ -618,10 +732,10 @@ function DeckSkeleton({ onHelp, line, strip }: { onHelp: () => void; line?: stri
     <SwapShell>
       <SwapHeader onHelp={onHelp} />
       <div className="h-3 shrink-0" />
-      <div className="flex shrink-0 justify-center" aria-hidden="true">
-        <Skeleton className="rounded-none" style={{ width: 'var(--swap-photo)', height: 'var(--swap-photo)' }} />
+      <div className="flex shrink-0 justify-center pb-1.5" aria-hidden="true">
+        <Skeleton className="rounded-[var(--radius-sheet)]" style={{ width: 'var(--swap-photo)', height: 'var(--swap-photo)' }} />
       </div>
-      <div className="flex min-h-0 flex-1 flex-col" aria-live="polite">
+      <div className={SWAP_SHEET} aria-live="polite">
         {strip}
         {line && <p className="my-auto px-6 text-center text-[15px] text-text-secondary">{line}</p>}
       </div>
@@ -976,6 +1090,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
     return (
       <Welcome
         lesson={lessons[0]}
+        examples={guideQuery.data?.examples ?? []}
         count={lessons.length}
         onStart={() => setPhase('lessons')}
         onSkip={() => {
@@ -1022,6 +1137,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
         lesson={lesson?.lesson ?? null}
         lessonMarks={lesson?.marks ?? NO_MARKS}
         lastLesson={!!lesson && lessonIndex + 1 === lessons.length}
+        firstLesson={!!lesson && lessonIndex === 0}
         strip={stripView}
         onHelp={onHelp}
         onChoosing={onChoosing}

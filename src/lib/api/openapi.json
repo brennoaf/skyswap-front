@@ -7443,7 +7443,8 @@
                 "schema": {
                   "type": "object",
                   "required": [
-                    "lessons"
+                    "lessons",
+                    "examples"
                   ],
                   "properties": {
                     "lessons": {
@@ -7474,6 +7475,91 @@
                                 "type": "string",
                                 "enum": [
                                   "glitch"
+                                ]
+                              }
+                            ]
+                          },
+                          "card": {
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "sprite",
+                              "n_frames",
+                              "offsets_s"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "sprite": {
+                                "type": "string"
+                              },
+                              "n_frames": {
+                                "type": "integer"
+                              },
+                              "offsets_s": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          },
+                          "marks": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "u",
+                                "v"
+                              ],
+                              "properties": {
+                                "u": {
+                                  "type": "number"
+                                },
+                                "v": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "examples": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "example",
+                          "card",
+                          "marks"
+                        ],
+                        "properties": {
+                          "example": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "still"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "moves"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "particle"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "streak"
                                 ]
                               }
                             ]

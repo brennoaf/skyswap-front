@@ -2093,6 +2093,19 @@ export interface paths {
                                     v: number;
                                 }[];
                             }[];
+                            examples: {
+                                example: "still" | "moves" | "particle" | "streak";
+                                card: {
+                                    id: string;
+                                    sprite: string;
+                                    n_frames: number;
+                                    offsets_s: number[];
+                                };
+                                marks: {
+                                    u: number;
+                                    v: number;
+                                }[];
+                            }[];
                         };
                     };
                 };

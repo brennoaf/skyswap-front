@@ -791,21 +791,44 @@
       "title": "Spot what moves in the sky",
       "body1": "Real photos of the same piece of sky, taken at different times.",
       "body2": "Stars stay still. Asteroids and comets change place.",
-      "swipe": {
-        "right": "It moved",
-        "left": "Nothing moved",
-        "up": "Not sure"
-      },
-      "drag": {
-        "right": "Swipe right",
-        "left": "Swipe left",
-        "up": "Swipe up"
+      "steps": {
+        "still": {
+          "title": "Nothing moved",
+          "body": "Every dot stays in the same place.",
+          "how": "Swipe left"
+        },
+        "moves": {
+          "title": "It moved",
+          "body": "One dot jumps to another place.",
+          "how": "Swipe right"
+        },
+        "particle": {
+          "title": "Defect",
+          "body": "A dot shows up in one photo only. It is usually a particle hitting the camera.",
+          "how": "Tap Defect"
+        },
+        "streak": {
+          "title": "Defect",
+          "body": "A streak in one photo only. It is usually a satellite going by.",
+          "how": "Tap Defect"
+        },
+        "unsure": {
+          "title": "Not sure",
+          "body": "When in doubt, no need to guess.",
+          "how": "Swipe up"
+        }
       },
       "stepRead": "Step {n} of {total}",
       "next": "Next",
       "back": "Back",
       "start": "{n, plural, one {Practice with # card} other {Practice with # cards}}",
       "skip": "Skip"
+    },
+    "tour": {
+      "photo": "Photos of the same sky go by here.",
+      "play": "Pause to look calmly.",
+      "tools": "Change the speed and compare the photos.",
+      "answers": "Tap to answer or swipe the photo."
     },
     "trained": {
       "title": "Practice done",

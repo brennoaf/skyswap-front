@@ -791,21 +791,44 @@
       "title": "Ache o que muda de lugar no céu",
       "body1": "Fotos reais do mesmo pedaço do céu, tiradas em momentos diferentes.",
       "body2": "As estrelas ficam paradas. Asteroides e cometas mudam de lugar.",
-      "swipe": {
-        "right": "Mudou de lugar",
-        "left": "Nada mudou",
-        "up": "Não sei"
-      },
-      "drag": {
-        "right": "Arraste para a direita",
-        "left": "Arraste para a esquerda",
-        "up": "Arraste para cima"
+      "steps": {
+        "still": {
+          "title": "Nada mudou",
+          "body": "Todos os pontos ficam no mesmo lugar.",
+          "how": "Arraste para a esquerda"
+        },
+        "moves": {
+          "title": "Mudou de lugar",
+          "body": "Um ponto salta para outro lugar.",
+          "how": "Arraste para a direita"
+        },
+        "particle": {
+          "title": "Defeito",
+          "body": "Um ponto surge em uma foto só. Costuma ser uma partícula batendo na câmera.",
+          "how": "Toque em Defeito"
+        },
+        "streak": {
+          "title": "Defeito",
+          "body": "Um risco em uma foto só. Costuma ser um satélite passando.",
+          "how": "Toque em Defeito"
+        },
+        "unsure": {
+          "title": "Não sei",
+          "body": "Na dúvida, não precisa chutar.",
+          "how": "Arraste para cima"
+        }
       },
       "stepRead": "Passo {n} de {total}",
       "next": "Próximo",
       "back": "Voltar",
       "start": "{n, plural, one {Treinar com # cartão} other {Treinar com # cartões}}",
       "skip": "Pular"
+    },
+    "tour": {
+      "photo": "As fotos do mesmo céu passam aqui.",
+      "play": "Pause para olhar com calma.",
+      "tools": "Mude a velocidade e compare as fotos.",
+      "answers": "Toque para responder ou arraste a foto."
     },
     "trained": {
       "title": "Treino concluído",
