@@ -16,7 +16,7 @@ export function CommunitySwitch() {
   return (
     <nav aria-label={t('switchLabel')} className="flex border-b-[0.5px] border-divider">
       {items.map((item) => (
-        <Link key={item.href} href={item.href} aria-current={item.on ? 'page' : undefined} className={cx('relative flex h-11 flex-1 items-center justify-center text-ui font-semibold', item.on ? 'text-text' : 'text-icon-muted')}>
+        <Link key={item.href} href={item.href} data-tour={item.href === '/community' ? 'home-community' : undefined} aria-current={item.on ? 'page' : undefined} className={cx('relative flex h-11 flex-1 items-center justify-center text-ui font-semibold', item.on ? 'text-text' : 'text-icon-muted')}>
           {item.label}
           {item.on && <span className="absolute bottom-0 h-[2px] w-12 rounded-full bg-text" />}
         </Link>

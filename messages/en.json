@@ -323,12 +323,16 @@
       "body": "Every profile here is a real object in the sky."
     },
     "stories": {
-      "title": "New photos",
-      "body": "Tap a circle to watch that object's newest photos."
+      "title": "Stories",
+      "body": "Tap a circle to see in a few seconds what the photos show about that object. A coloured ring means there are photos you have not seen yet."
     },
-    "spot": {
-      "title": "Any place in the sky",
-      "body": "Type a place and watch how it changes over time."
+    "colours": {
+      "title": "Every colour tells a story",
+      "body": "SPHEREx photographs the sky in 6 infrared colours. Measuring the brightness in each colour gives the spectrum. A cold brown dwarf, for example, only shines in the last ones:"
+    },
+    "tools": {
+      "title": "Tools",
+      "body": "My spot: watch any patch of sky. Lab: study any photo up close."
     },
     "photo": {
       "title": "Real infrared photos",
@@ -338,9 +342,9 @@
       "title": "Help find what moves",
       "body": "Open the cards here and say if anything moved."
     },
-    "lab": {
-      "title": "The Lab",
-      "body": "Tools to study any photo up close."
+    "community": {
+      "title": "Finds from people",
+      "body": "Patches of sky where many people saw something change place. They are candidates: they only become discoveries after someone checks them."
     },
     "finish": {
       "title": "Your turn",

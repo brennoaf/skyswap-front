@@ -323,12 +323,16 @@
       "body": "Aqui, cada perfil é um objeto de verdade no céu."
     },
     "stories": {
-      "title": "Fotos novas",
-      "body": "Toque em um círculo para assistir às fotos mais novas daquele objeto."
+      "title": "Stories",
+      "body": "Toque num círculo para ver em poucos segundos o que as fotos mostram daquele objeto. Anel colorido: tem foto que você ainda não viu."
     },
-    "spot": {
-      "title": "Qualquer lugar do céu",
-      "body": "Digite um lugar e veja como ele muda com o tempo."
+    "colours": {
+      "title": "Cada cor conta uma história",
+      "body": "O SPHEREx fotografa o céu em 6 cores de infravermelho. Medir o brilho em cada cor dá o espectro. Uma anã marrom fria, por exemplo, só brilha nas últimas:"
+    },
+    "tools": {
+      "title": "Ferramentas",
+      "body": "Meu ponto: acompanhe qualquer pedaço do céu. Lab: estude qualquer foto de perto."
     },
     "photo": {
       "title": "Fotos reais em infravermelho",
@@ -338,9 +342,9 @@
       "title": "Ajude a achar o que muda de lugar",
       "body": "Abra os cartões aqui e diga se algo mudou de lugar."
     },
-    "lab": {
-      "title": "O Lab",
-      "body": "Ferramentas para estudar qualquer foto de perto."
+    "community": {
+      "title": "Achados das pessoas",
+      "body": "Pedaços do céu em que muita gente viu algo mudar de lugar. São candidatos: só viram descoberta depois que alguém confere."
     },
     "finish": {
       "title": "Sua vez",

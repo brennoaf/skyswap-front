@@ -69,10 +69,10 @@ export default function HomePage() {
           <IconChevronDown className="mb-0.5" />
         </button>
         <div className="flex items-center">
-          <button type="button" aria-label={ts('title')} className="inline-flex size-11 items-center justify-center" onClick={() => setSpot(true)} data-testid="home-spot">
-            <IconTarget />
-          </button>
-          <span data-tour="home-lab" className="inline-flex">
+          <span data-tour="home-tools" className="inline-flex items-center">
+            <button type="button" aria-label={ts('title')} className="inline-flex size-11 items-center justify-center" onClick={() => setSpot(true)} data-testid="home-spot">
+              <IconTarget />
+            </button>
             <LabChip href="/lab" label={t('lab')} description={t('labOpen')} />
           </span>
           <Link href="/alerts" aria-label={t('alerts')} className="relative inline-flex size-11 items-center justify-center">

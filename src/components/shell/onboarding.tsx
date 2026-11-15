@@ -8,6 +8,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { IconCheck } from '@/components/icons'
 import { Button, useModal } from '@/components/ui/primitives'
 import { defaultLocale, isLocale, type Locale } from '@/i18n/locales'
+import { useStories } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 import { useSwitchLocale } from '@/lib/use-switch-locale'
@@ -16,16 +17,17 @@ export type LanguageOption = { locale: Locale; name: string; greeting: string; t
 
 export type TourStep = { id: string; target: string | string[]; text: string; body?: string; icon?: ReactNode }
 
-type HomeStep = { id: 'language' | 'welcome' | 'stories' | 'spot' | 'photo' | 'cards' | 'lab' | 'finish'; art?: 'sky' | 'blink'; target?: string }
+type HomeStep = { id: 'language' | 'welcome' | 'stories' | 'colours' | 'tools' | 'photo' | 'cards' | 'community' | 'finish'; art?: 'sky' | 'blink'; target?: string }
 
 const HOME_STEPS: HomeStep[] = [
   { id: 'language' },
   { id: 'welcome', art: 'sky' },
   { id: 'stories', target: '[data-tour="home-stories"] li:nth-child(2) button' },
-  { id: 'spot', target: '[data-tour="home-stories"] li:first-child button' },
+  { id: 'colours', target: 'home-stories' },
+  { id: 'tools', target: 'home-tools' },
   { id: 'photo', target: '[data-tour="home-feed"] article a[href^="/p/"] .aspect-square' },
   { id: 'cards', target: 'nav-classify' },
-  { id: 'lab', target: 'home-lab' },
+  { id: 'community', target: 'home-community' },
   { id: 'finish', art: 'blink' },
 ]
 const CROSS_TIP = 'crossFeed'
@@ -174,6 +176,35 @@ function LanguageStep({ options, reduce, onDone }: { options: LanguageOption[]; 
   )
 }
 
+const COLD_EXAMPLE = 'wise-0855-0714'
+
+function ColourBars() {
+  const { data } = useStories()
+  const screen = data?.stories.find((s) => s.object.id === COLD_EXAMPLE)?.screens.find((s) => s.kind === 'colours')
+  if (screen?.kind !== 'colours') return null
+  const max = Math.max(1, ...screen.signal.map((v) => v ?? 0))
+  return (
+    <div className="mt-3 grid grid-cols-6 gap-1.5" data-testid="tour-colours">
+      {screen.signal.map((v, i) => (
+        <div key={i} className="flex flex-col items-center gap-0.5 text-micro text-text-secondary">
+          <span className="flex h-9 w-full items-end overflow-hidden rounded-md bg-surface">
+            <span className="block w-full rounded-t-md bg-warning" style={{ height: `${Math.max(v ? 4 : 0, ((v ?? 0) / max) * 100)}%` }} />
+          </span>
+          {`D${i + 1}`}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function pinned(el: HTMLElement): boolean {
+  for (let n: HTMLElement | null = el; n; n = n.parentElement) {
+    const p = getComputedStyle(n).position
+    if (p === 'fixed' || p === 'sticky') return true
+  }
+  return false
+}
+
 function findTarget(target: string | string[]): HTMLElement | null {
   for (const one of typeof target === 'string' ? [target] : target) {
     const el = document.querySelector<HTMLElement>(/^[\w-]+$/.test(one) ? `[data-tour="${one}"]` : one)
@@ -213,7 +244,7 @@ function useTargetBox(target: string | string[] | undefined, reduce: boolean, fo
       setBox((b) => (b && b.top === r.top && b.left === r.left && b.width === r.width && b.height === r.height ? b : { top: r.top, left: r.left, width: r.width, height: r.height }))
     }
     const keepInView = () => {
-      if (!follow || !el || el.closest('header, nav')) return
+      if (!follow || !el || pinned(el)) return
       const r = el.getBoundingClientRect()
       const delta = r.top - TOUR_TOP
       const hidden = r.top < TOUR_TOP - TOUR_PAD * 2 || r.bottom > window.innerHeight - room.current - TOUR_PAD - TOUR_GAP - TOUR_EDGE
@@ -472,6 +503,7 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
         <motion.div key={step.id} {...enter} className={cx(TOUR_CARD, 'p-4')} data-testid="home-tour" data-step={step.id}>
           {dots}
           <StepText title={t(`${step.id}.title`)} body={t(`${step.id}.body`)} />
+          {step.id === 'colours' && <ColourBars />}
           <TourButtons labels={labels} back onSkip={close} onBack={() => go(-1)} onNext={next} />
         </motion.div>
       )
