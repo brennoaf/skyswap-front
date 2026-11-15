@@ -410,13 +410,7 @@ function Player({
       {media}
       {ready && frame && (
         <>
-          <p className="px-3 pt-2 text-[15px] font-medium leading-5">
-            {t('frameOf', { n: Math.min(cur, n - 1) + 1, total: n })}
-            <span className="block text-note font-normal text-text-secondary">
-              {date}, {t('frameTags', { band: frame.band, release: frame.release.toUpperCase(), colours: diff ? t('viewChanges') : colormap === 'band' ? tc('falseColour') : t('grey') })}
-            </span>
-          </p>
-          <div className="flex items-center gap-0.5 px-1 pt-1" data-testid="sky-player-bar">
+          <div className="flex items-center gap-0.5 px-1 pt-2" data-testid="sky-player-bar">
             <IconButton label={t('prev')} onClick={() => step(-1)} disabled={n < 2}>
               <IconStepBack size={28} />
             </IconButton>
@@ -638,12 +632,13 @@ function Steps({
   const t = useTranslations('sky')
   const all = Object.values(sky.bands).reduce((s, v) => s + v, 0)
   const photos = photosFor(sky, draft.fov, draft.band)
+  const total = sky.source === 'sia' ? sky.images.length : draft.band ? (sky.bands[draft.band] ?? 0) : all
   const big = draft.fov >= 0.25
   return (
     <div className="flex min-h-[calc(100dvh-var(--height-topbar)-var(--height-bottomnav)-env(safe-area-inset-bottom))] flex-col" data-testid={`sky-step-${stage}`}>
       <div className="flex-1 px-4 pb-4 pt-3">
         <StepDots at={stage === 'band' ? 1 : 2} />
-        <h2 className="pt-3 text-title-sm font-bold leading-tight">{stage === 'band' ? t('band') : t('fov')}</h2>
+        <h2 className="pt-3 text-title-lg font-bold leading-tight tracking-[-0.01em]">{stage === 'band' ? t('band') : t('fov')}</h2>
         <p className="pt-1 text-note text-text-secondary">{stage === 'band' ? t('bandLine') : t('fovHint')}</p>
         {stage === 'band' ? (
           <div className="grid grid-cols-4 gap-2 pt-4" role="group" aria-label={t('band')}>
@@ -674,9 +669,9 @@ function Steps({
         ) : (
           <>
             {photos > 0 && (
-              <p className={cx('flex items-center gap-1.5 pb-2 text-meta', big ? 'text-warning' : 'text-text-secondary')}>
-                <IconWarning size={16} className="shrink-0" />
-                {big ? t('readLineBig', { n: photos }) : t('readLine', { n: photos })}
+              <p className={cx('flex items-start gap-1.5 pb-2 text-meta', big ? 'text-warning' : 'text-text-secondary')}>
+                <IconWarning size={16} className="mt-0.5 shrink-0" />
+                {photos < total ? t('readLine', { n: photos, total }) : t('readLineAll', { n: photos })}
               </p>
             )}
             <Button variant="primary" full className="h-11 font-semibold" onClick={onBuild}>
