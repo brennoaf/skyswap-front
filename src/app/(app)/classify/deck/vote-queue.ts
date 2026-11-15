@@ -78,6 +78,8 @@ export type QueueDeps<R> = {
 export class VoteQueue<R> {
   private list: QueuedVote[]
   private readonly inflight = new Map<string, Promise<Outcome<R>>>()
+  private tail: Promise<unknown> = Promise.resolve()
+  private queued = 0
 
   constructor(private readonly deps: QueueDeps<R>) {
     this.list = deps.store.load()
@@ -113,7 +115,13 @@ export class VoteQueue<R> {
     const key = this.keyOf(entry)
     const running = this.inflight.get(key)
     if (running) return running
-    const task = this.run(entry, keepalive).finally(() => this.inflight.delete(key))
+    const start = () => this.run(entry, keepalive)
+    const task = (this.queued ? this.tail.then(start) : start()).finally(() => {
+      this.queued--
+      this.inflight.delete(key)
+    })
+    this.queued++
+    this.tail = task.catch(() => undefined)
     this.inflight.set(key, task)
     return task
   }
