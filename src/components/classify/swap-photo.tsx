@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue } from 'framer-motion'
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { useCardGestures } from '@/components/classify/card-gestures'
@@ -212,28 +212,61 @@ export function SwapStage({
   )
 }
 
-export function PhotoBar({ playback, offsets, onTools }: { playback: Playback; offsets: number[]; onTools: () => void }) {
+export function PhotoBar({ playback, offsets, onTools, open = false, strip }: { playback: Playback; offsets: number[]; onTools: () => void; open?: boolean; strip?: ReactNode }) {
   const t = useTranslations('classify')
   const tp = useTranslations('player')
   const label = useOffsetLabel()
+  const reduce = useReducedMotion()
   return (
     <div className="flex items-center gap-3 px-4 pt-3.5" data-testid="player-bar">
       <div className="flex min-w-0 flex-1 items-center gap-3" data-tour="swap-play">
         <button type="button" aria-label={playback.playing ? tp('pause') : tp('play')} onClick={() => playback.setPlaying(!playback.playing)} className={cx(answerCircle, 'size-11 shrink-0 text-text active:bg-surface-pressed')}>
           {playback.playing ? <IconPause size={24} /> : <IconPlay size={24} />}
         </button>
-        <div className="min-w-0 flex-1">
-          <p className="text-[16px] font-semibold leading-tight" data-testid="player-counter">
-            {tp('counter', { n: playback.index + 1, total: playback.n })}
-          </p>
-          <p className="truncate text-ui leading-snug text-text-secondary">{label(offsets[playback.index] ?? 0)}</p>
-        </div>
+        {open && strip ? (
+          <div className="min-w-0 flex-1 [&_[role=slider]]:!h-11" onPointerDownCapture={playback.stopBlink}>
+            {strip}
+          </div>
+        ) : (
+          <div className="min-w-0 flex-1">
+            <p className="text-[16px] font-semibold leading-tight" data-testid="player-counter">
+              {tp('counter', { n: playback.index + 1, total: playback.n })}
+            </p>
+            <p className="truncate text-ui leading-snug text-text-secondary">{label(offsets[playback.index] ?? 0)}</p>
+          </div>
+        )}
       </div>
-      <button type="button" aria-label={t('tools.open')} onClick={onTools} className={cx(answerCircle, 'size-11 shrink-0 text-text active:bg-surface-pressed')} data-tour="swap-tools">
-        <IconSliders size={24} />
+      <button
+        type="button"
+        aria-label={open ? t('tools.close') : t('tools.open')}
+        aria-expanded={open}
+        onClick={onTools}
+        className={cx(answerCircle, 'relative size-11 shrink-0 overflow-hidden transition-colors duration-150', open ? 'bg-text text-bg ring-text' : 'text-text active:bg-surface-pressed')}
+        data-tour="swap-tools"
+        data-testid="tools-toggle"
+      >
+        <AnimatePresence initial={false} mode="popLayout">
+          <motion.span
+            key={open ? 'close' : 'open'}
+            initial={reduce ? false : { opacity: 0, rotate: -90, scale: 0.6 }}
+            animate={{ opacity: 1, rotate: 0, scale: 1 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, rotate: 90, scale: 0.6 }}
+            transition={{ duration: 0.18 }}
+            className="grid place-items-center"
+          >
+            {open ? <IconClose size={24} /> : <IconSliders size={24} />}
+          </motion.span>
+        </AnimatePresence>
       </button>
     </div>
   )
+}
+
+export function ToolsStrip({ playback, sprite, offsets, row }: { playback: Playback; sprite: string; offsets: number[]; row: 0 | 1 }) {
+  const tp = useTranslations('player')
+  const n = playback.n
+  const thumb = (i: number) => <span className="pixelated mx-auto block aspect-square h-full bg-no-repeat" style={{ backgroundImage: `url(${sprite})`, backgroundSize: `${n * 100}% 200%`, backgroundPosition: `${n > 1 ? (i / (n - 1)) * 100 : 0}% ${row * 100}%` }} />
+  return <PhotoStrip playback={playback} seconds={offsets} thumb={thumb} label={tp('strip')} tone="surface" />
 }
 
 function ToolRow({ name, note, checked, onChange }: { name: string; note?: string; checked: boolean; onChange: (on: boolean) => void }) {
@@ -250,30 +283,20 @@ function ToolRow({ name, note, checked, onChange }: { name: string; note?: strin
 
 export function ToolsPanel({
   playback,
-  sprite,
-  offsets,
   row,
   onRow,
   hints,
 }: {
   playback: Playback
-  sprite: string
-  offsets: number[]
   row: 0 | 1
   onRow: (row: 0 | 1) => void
   hints?: { on: boolean; onChange: (on: boolean) => void }
 }) {
   const t = useTranslations('classify')
-  const tp = useTranslations('player')
   const setSpeed = useUi((s) => s.setSpeed)
-  const n = playback.n
-  const thumb = (i: number) => <span className="pixelated mx-auto block aspect-square h-full bg-no-repeat" style={{ backgroundImage: `url(${sprite})`, backgroundSize: `${n * 100}% 200%`, backgroundPosition: `${n > 1 ? (i / (n - 1)) * 100 : 0}% ${row * 100}%` }} />
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-2" data-testid="tools-panel">
-      <div className="shrink-0" onPointerDownCapture={playback.stopBlink}>
-        <PhotoStrip playback={playback} seconds={offsets} thumb={thumb} label={tp('strip')} tone="surface" />
-      </div>
-      <div role="group" aria-label={t('tools.speed')} className="mt-1 flex shrink-0 rounded-[14px] bg-surface">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-1" data-testid="tools-panel">
+      <div role="group" aria-label={t('tools.speed')} className="flex shrink-0 rounded-[14px] bg-surface">
         {SPEED_CHOICES.map((s) => (
           <button key={s.key} type="button" aria-pressed={playback.speed === s.value} onClick={() => setSpeed(s.value)} className={cx('h-11 flex-1 rounded-[14px] text-[15px] font-semibold', playback.speed === s.value ? 'bg-text text-bg' : 'text-text-secondary')}>
             {t(`tools.${s.key}`)}

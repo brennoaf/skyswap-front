@@ -741,6 +741,7 @@
     "changesShort": "Diferenças",
     "leave": "Sair",
     "tools": {
+      "close": "Fechar ajustes",
       "open": "Ajustes",
       "speed": "Velocidade",
       "slower": "Mais lento",

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
-import { ANSWER_ICONS, AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapStage, SwapStamps, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
+import { ANSWER_ICONS, AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapStage, SwapStamps, SWIPE, swapButton, ToolsPanel, ToolsStrip } from '@/components/classify/swap-photo'
 import { KnownSheet, PhotoSourceSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
 import { IconArrowRight, IconBack, IconCards, IconCheck, IconClose, IconInfo, IconMoves, IconQuestion, IconShare, IconTarget, IconUndo, IconWarning } from '@/components/icons'
@@ -110,21 +110,15 @@ function SwapShell({ children }: { children: ReactNode }) {
   )
 }
 
-function SwapHeader({ step, top, leave = '/', onHelp, onToolsBack }: { step?: string | null; top?: ReactNode; leave?: string; onHelp: () => void; onToolsBack?: () => void }) {
+function SwapHeader({ step, top, leave = '/', onHelp }: { step?: string | null; top?: ReactNode; leave?: string; onHelp: () => void }) {
   const t = useTranslations('classify')
   return (
     <header className="flex h-[52px] shrink-0 items-center gap-1 px-1">
-      {onToolsBack ? (
-        <IconButton label={t('tools.back')} onClick={onToolsBack} className="size-12">
-          <IconBack size={28} />
-        </IconButton>
-      ) : (
-        <Link href={leave} aria-label={t('leave')} className="flex size-12 shrink-0 items-center justify-center rounded-full text-text active:bg-surface">
-          <IconClose size={28} />
-        </Link>
-      )}
+      <Link href={leave} aria-label={t('leave')} className="flex size-12 shrink-0 items-center justify-center rounded-full text-text active:bg-surface">
+        <IconClose size={28} />
+      </Link>
       <div className="min-w-0 flex-1 text-center">
-        {onToolsBack ? <h1 className="truncate text-[18px] font-bold leading-tight">{t('tools.open')}</h1> : (top ?? (step && <p className="truncate text-ui font-semibold leading-tight text-text-secondary">{step}</p>))}
+        {top ?? (step && <p className="truncate text-ui font-semibold leading-tight text-text-secondary">{step}</p>)}
       </div>
       <IconButton label={t('help.open')} onClick={onHelp} className="size-12">
         <IconQuestion size={26} />
@@ -771,15 +765,16 @@ function SwapCard({
   const deciding = !!answer && (mode === 'confirm' || mode === 'sending' || mode === 'sent' || mode === 'noting' || mode === 'past')
   const sheetOpen = deciding || mode === 'result' || mode === 'failed'
   const dim = cx('shrink-0 transition-opacity duration-200', sheetOpen && 'pointer-events-none opacity-30')
+  const topDim = cx('shrink-0 transition-opacity duration-200', (sheetOpen || mode === 'tools') && 'pointer-events-none opacity-30')
   const coach = lesson ? (mustLookFirst ? t('guide.look') : lesson === 'moves' ? t('guide.answer') : t(`guide.${lesson}`)) : null
 
   return (
     <SwapShell>
-      <div className={dim} aria-hidden={sheetOpen || undefined}>
+      <div className={topDim} aria-hidden={sheetOpen || mode === 'tools' || undefined}>
         <div className="px-1 pt-2.5">
           <FrameBars n={n} index={panel} />
         </div>
-        <SwapHeader step={step} top={marking ? null : top} leave={leave} onHelp={onHelp} onToolsBack={mode === 'tools' ? () => setMode('look') : undefined} />
+        <SwapHeader step={step} top={marking ? null : top} leave={leave} onHelp={onHelp} />
       </div>
       {marking && (
         <p role="status" aria-live="polite" className="pointer-events-none absolute inset-x-14 top-[calc(env(safe-area-inset-top)+22px)] z-30 flex h-[52px] items-center justify-center gap-2 whitespace-nowrap text-title-sm font-semibold leading-tight" data-testid="mark-hint">
@@ -806,10 +801,10 @@ function SwapCard({
         leaving={leaving}
       />
       {mode === 'tools' ? (
+        <div className="flex min-h-0 flex-1 flex-col" data-testid="swap-lower">
+          <PhotoBar playback={playback} offsets={offsets} open strip={<ToolsStrip playback={playback} sprite={card.sprite} offsets={offsets} row={row} />} onTools={() => setMode('look')} />
         <ToolsPanel
           playback={playback}
-          sprite={card.sprite}
-          offsets={offsets}
           row={row}
           onRow={setRow}
           hints={
@@ -824,6 +819,7 @@ function SwapCard({
               : undefined
           }
         />
+        </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-testid="swap-lower">
           <div className={dim} aria-hidden={sheetOpen || undefined}>
