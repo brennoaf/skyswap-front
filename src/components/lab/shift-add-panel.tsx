@@ -52,7 +52,7 @@ function StackCanvas({ r, lo, hi, target, label }: { r: StackResult; lo: number;
   )
 }
 
-function MotionPad({ motion, reach, onChange }: { motion: Motion; reach: number; onChange: (m: Motion) => void }) {
+function MotionPad({ motion, reach, north, east, onChange }: { motion: Motion; reach: number; north: string; east: string; onChange: (m: Motion) => void }) {
   const drag = useRef(false)
   const x = 50 - (motion.pmra / reach) * 100 * PAD_REACH
   const y = 50 - (motion.pmdec / reach) * 100 * PAD_REACH
@@ -76,6 +76,9 @@ function MotionPad({ motion, reach, onChange }: { motion: Motion; reach: number;
       onPointerUp={() => {
         drag.current = false
       }}
+      onPointerCancel={() => {
+        drag.current = false
+      }}
     >
       <defs>
         <marker id="pad-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
@@ -84,8 +87,8 @@ function MotionPad({ motion, reach, onChange }: { motion: Motion; reach: number;
       </defs>
       <circle cx="50" cy="50" r={100 * PAD_REACH} fill="none" stroke="var(--color-divider)" strokeWidth="0.8" />
       <path d="M50 6V94M6 50H94" stroke="var(--color-divider)" strokeWidth="0.8" />
-      <text x="50" y="5" textAnchor="middle" dominantBaseline="hanging" fontSize="9" fill="var(--color-text-secondary)">N</text>
-      <text x="5" y="50" dominantBaseline="middle" fontSize="9" fill="var(--color-text-secondary)">E</text>
+      <text x="50" y="5" textAnchor="middle" dominantBaseline="hanging" fontSize="9" fill="var(--color-text-secondary)">{north}</text>
+      <text x="5" y="50" dominantBaseline="middle" fontSize="9" fill="var(--color-text-secondary)">{east}</text>
       {(motion.pmra !== 0 || motion.pmdec !== 0) && <line x1="50" y1="50" x2={x} y2={y} stroke="var(--color-accent)" strokeWidth="2.4" strokeLinecap="round" markerEnd="url(#pad-head)" />}
       <circle cx={x} cy={y} r="5" fill="var(--color-accent)" />
     </svg>
@@ -98,6 +101,13 @@ export function ShiftAddPanel({ epochs, parts, refEpoch, catalog }: { epochs: Pa
   const [motion, setMotion] = useState<Motion>(catalog ?? { pmra: 0, pmdec: 0 })
   const [run, setRun] = useState<Run>({ status: 'idle' })
   const reach = Math.max(1000, 2 * Math.hypot(catalog?.pmra ?? 0, catalog?.pmdec ?? 0))
+  const alive = useRef(true)
+  useEffect(() => {
+    alive.current = true
+    return () => {
+      alive.current = false
+    }
+  }, [])
 
   const start = async () => {
     if (!parts) return
@@ -112,7 +122,8 @@ export function ShiftAddPanel({ epochs, parts, refEpoch, catalog }: { epochs: Pa
         { ...motion, refMjd: refEpoch.mjd },
         { pmra: 0, pmdec: 0, refMjd: refEpoch.mjd },
       ],
-    )
+    ).catch(() => null)
+    if (!alive.current) return
     const [along, still] = res ?? []
     setRun(along && still ? { status: 'done', along, still, motion, ref: refEpoch } : { status: 'error' })
   }
@@ -142,7 +153,7 @@ export function ShiftAddPanel({ epochs, parts, refEpoch, catalog }: { epochs: Pa
       </h3>
       <p className="mt-1 text-note leading-snug text-text-secondary">{t('body')}</p>
       <div className="mt-3 flex items-start gap-3">
-        <MotionPad motion={motion} reach={reach} onChange={setMotion} />
+        <MotionPad motion={motion} reach={reach} north={t('padNorth')} east={t('padEast')} onChange={setMotion} />
         <div className="min-w-0 flex-1 space-y-2">
           {field('pmra')}
           {field('pmdec')}
@@ -151,11 +162,11 @@ export function ShiftAddPanel({ epochs, parts, refEpoch, catalog }: { epochs: Pa
       <p className="mt-2 text-meta leading-snug text-text-secondary">{t('unit')}</p>
       <div className="mt-2 flex gap-2">
         {catalog && (
-          <Button variant="ghost" className="h-10 flex-1 bg-bg px-2 text-body" onClick={() => setMotion(catalog)}>
+          <Button variant="ghost" className="h-11 flex-1 bg-bg px-2 text-body" onClick={() => setMotion(catalog)}>
             {t('useCatalog')}
           </Button>
         )}
-        <Button variant="ghost" className="h-10 flex-1 bg-bg px-2 text-body" onClick={() => setMotion({ pmra: 0, pmdec: 0 })}>
+        <Button variant="ghost" className="h-11 flex-1 bg-bg px-2 text-body" onClick={() => setMotion({ pmra: 0, pmdec: 0 })}>
           {t('zero')}
         </Button>
       </div>

@@ -2,6 +2,7 @@
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, unwrap, type PostDetail, type TagSummary } from './client'
+import { exploreCellsQuery, exploreKeys, exploreMapQuery } from './queries'
 import { useUi } from '../state/ui'
 
 export type FeedTab = 'for_you' | 'following' | 'new' | 'targets'
@@ -23,8 +24,8 @@ export const keys = {
   search: (q: string) => ['search', q] as const,
   sky: (ra: number, dec: number, fov: number, band: string | null) => ['sky', ra, dec, fov, band] as const,
   health: ['health'] as const,
-  exploreMap: ['explore-map'] as const,
-  exploreCells: ['explore-cells'] as const,
+  exploreMap: exploreKeys.map,
+  exploreCells: exploreKeys.cells,
 }
 
 export function useSession() {
@@ -176,11 +177,11 @@ export function useReadAlerts() {
 }
 
 export function useExploreMap() {
-  return useQuery({ queryKey: keys.exploreMap, queryFn: async () => unwrap(await api.GET('/api/explore/map')), staleTime: 60_000 })
+  return useQuery(exploreMapQuery)
 }
 
 export function useExploreCells() {
-  return useQuery({ queryKey: keys.exploreCells, queryFn: async () => unwrap(await api.GET('/api/explore/cells')).cells, staleTime: Infinity })
+  return useQuery({ ...exploreCellsQuery, select: (d) => d.cells })
 }
 
 export type CommunityTab = 'new' | 'popular'
@@ -260,8 +261,8 @@ export function useCredit(enabled: boolean) {
   return { visible: credit.data?.visible ?? true, set }
 }
 
-export function useGoals() {
-  return useQuery({ queryKey: keys.goals, queryFn: async () => unwrap(await api.GET('/api/community/goals')).goals, staleTime: 60_000 })
+export function useGoals(enabled = true) {
+  return useQuery({ queryKey: keys.goals, enabled, queryFn: async () => unwrap(await api.GET('/api/community/goals')).goals, staleTime: 60_000 })
 }
 
 export function useSearch(q: string) {
@@ -285,18 +286,14 @@ export function useSky(ra: number | null, dec: number | null, fov: number, band:
 export type Choice = 'moves' | 'still' | 'unsure'
 export type VotePosition = { frame: number; x: number; y: number }
 
+export type VoteInput = { card_id: string; choice: Choice; glitch?: boolean | null; position?: VotePosition; held_ms?: number; hints?: boolean }
+
+export async function postVote(body: VoteInput, keepalive = false) {
+  return unwrap(await api.POST('/api/classify/votes', { body, keepalive }))
+}
+
 export function useVote() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async ({ keepalive, ...body }: { card_id: string; choice: Choice; glitch?: boolean | null; position?: VotePosition; held_ms?: number; hints?: boolean; keepalive?: boolean }) => unwrap(await api.POST('/api/classify/votes', { body, keepalive })),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.me })
-      qc.invalidateQueries({ queryKey: keys.alerts })
-      qc.invalidateQueries({ queryKey: keys.goals })
-      qc.invalidateQueries({ queryKey: keys.exploreMap })
-      qc.invalidateQueries({ queryKey: ['community', 'overview'] })
-    },
-  })
+  return useMutation({ mutationFn: async ({ keepalive, ...body }: VoteInput & { keepalive?: boolean }) => postVote(body, keepalive) })
 }
 
 export function useGuideCard(enabled: boolean) {

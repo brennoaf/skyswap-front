@@ -104,7 +104,7 @@ function Profile({ me }: { me: Me }) {
   const tl = useTranslations('levels')
   const tn = useTranslations('nav')
   const saved = useUi((s) => s.saved)
-  const showIntro = useUi((s) => s.showMeIntro)
+  const [intro, setIntro] = useState(false)
   const [tab, setTab] = useState<Tab>('activity')
   const [badge, setBadge] = useState<string | null>(null)
   const [avatarOpen, setAvatarOpen] = useState(false)
@@ -125,14 +125,14 @@ function Profile({ me }: { me: Me }) {
         title={me.user.nickname}
         actions={
           <>
-            <IconButton label={t('intro')} onClick={showIntro}>
+            <IconButton label={t('intro')} onClick={() => setIntro(true)}>
               <IconQuestion size={26} />
             </IconButton>
             <SettingsLink />
           </>
         }
       />
-      <MeIntro levels={me.levels} dailyCap={me.daily_cap} />
+      <MeIntro open={intro} onClose={() => setIntro(false)} levels={me.levels} dailyCap={me.daily_cap} />
 
       <section className="px-4 pt-1" aria-label={tn('me')}>
         <div className="flex items-center gap-5">
@@ -147,20 +147,14 @@ function Profile({ me }: { me: Me }) {
         </div>
 
         <div className="mt-3 text-body leading-snug">
-          <p className="font-semibold">{t('level', { n: me.level.level, name: tl(me.level.key) })}</p>
-          <ProgressBar value={me.level.progress} label={t('progress')} className="my-2" />
-          <p className="text-text-secondary">
-            <span className="font-semibold text-text">{t('xp', { xp: me.xp })}</span>
-            {', '}
-            {next && me.level.next_min_xp !== null ? t('toNext', { xp: me.level.next_min_xp - me.xp, name: tl(next.key) }) : t('maxLevel')}
+          <p className="flex items-baseline justify-between gap-3">
+            <span className="min-w-0 truncate font-semibold">{t('level', { n: me.level.level, name: tl(me.level.key) })}</span>
+            <span className="shrink-0 text-note text-text-secondary">{next && me.level.next_min_xp !== null ? t('toNext', { xp: me.level.next_min_xp - me.xp, name: tl(next.key) }) : t('xp', { xp: me.xp })}</span>
           </p>
-          {me.streak > 1 && <p className="mt-0.5">{t('streak', { n: me.streak })}</p>}
-          {me.xp_today >= me.daily_cap * 0.8 && <p className="mt-0.5 text-text-secondary">{t('today', { xp: me.xp_today, cap: me.daily_cap })}</p>}
+          <ProgressBar value={me.level.progress} label={t('progress')} className="mt-2" />
+          {me.streak > 1 && <p className="mt-2 text-note text-text-secondary">{t('streak', { n: me.streak })}</p>}
+          {me.xp_today >= me.daily_cap * 0.8 && <p className="mt-1 text-note text-text-secondary">{t('today', { xp: me.xp_today, cap: me.daily_cap })}</p>}
         </div>
-
-        <Link href="/classify" className="mt-3 flex h-11 w-full items-center justify-center rounded-[var(--radius-button)] bg-accent text-ui font-semibold text-on-accent active:bg-accent-pressed">
-          {t('answerMore')}
-        </Link>
       </section>
 
       <div className="pt-4">

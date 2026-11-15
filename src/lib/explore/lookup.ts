@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api/client'
 import { ang2pixNest, epochsAtTile, type IndexRow } from '@/lib/sky'
 import { hasTile, loadTile, tileFetch, tileUrl, type TileProgress } from './tiles'
 
@@ -24,7 +25,7 @@ export function askServer(cell: number, tileBytes: number | null | undefined): b
 
 export async function serverHits(ra: number, dec: number, max = SERVER_MAX_ROWS): Promise<{ hits: IndexRow[]; total: number }> {
   const q = new URLSearchParams({ ra: String(ra), dec: String(dec), max: String(max) })
-  const r = await fetch(`/api/index/at?${q}`)
+  const r = await apiFetch(`/api/index/at?${q}`)
   if (!r.ok) throw new Error(`lookup ${r.status}`)
   const body = (await r.json()) as { rows: IndexRow[]; total: number }
   return { hits: body.rows, total: body.total }

@@ -52,20 +52,22 @@ export function formatWavelength(range: readonly number[] | null | undefined, lo
   return Math.abs(a - b) < 0.005 ? `${n(a)} µm` : `${n(a)} ${locale.startsWith('pt') ? 'a' : 'to'} ${n(b)} µm`
 }
 
+function sexagesimal(value: number, decimals: number): [number, number, number] {
+  const scale = 10 ** decimals
+  const units = Math.round(value * 3600 * scale)
+  const perMinute = 60 * scale
+  return [Math.floor(units / (60 * perMinute)), Math.floor(units / perMinute) % 60, (units % perMinute) / scale]
+}
+
 export function formatRa(deg: number): string {
-  const h = deg / 15
-  const hh = Math.floor(h)
-  const mm = Math.floor((h - hh) * 60)
-  const ss = ((h - hh) * 60 - mm) * 60
-  return `${String(hh).padStart(2, '0')}h ${String(mm).padStart(2, '0')}m ${ss.toFixed(1).padStart(4, '0')}s`
+  const turn = ((deg % 360) + 360) % 360
+  const [hh, mm, ss] = sexagesimal(turn / 15, 1)
+  return `${String(hh % 24).padStart(2, '0')}h ${String(mm).padStart(2, '0')}m ${ss.toFixed(1).padStart(4, '0')}s`
 }
 
 export function formatDec(deg: number): string {
   const sign = deg < 0 ? '−' : '+'
-  const a = Math.abs(deg)
-  const dd = Math.floor(a)
-  const mm = Math.floor((a - dd) * 60)
-  const ss = ((a - dd) * 60 - mm) * 60
+  const [dd, mm, ss] = sexagesimal(Math.abs(deg), 0)
   return `${sign}${String(dd).padStart(2, '0')}° ${String(mm).padStart(2, '0')}′ ${ss.toFixed(0).padStart(2, '0')}″`
 }
 

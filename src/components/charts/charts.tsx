@@ -7,6 +7,8 @@ import { Frame, Legend, linear, PLOT } from '@/components/charts/plot'
 import { Chip, Notice, Skeleton } from '@/components/ui/primitives'
 import { IconWarning } from '@/components/icons'
 import { BAND_HUE, BANDS, formatShortDate } from '@/lib/format'
+import { motionVerdictText } from '@/lib/post-text'
+import { useBandName } from '@/lib/use-band'
 
 export interface SpectraData {
   passes: { pass: number; t: string; points: { wavelength_um: number; flux_mjy: number; err: number; saturated: boolean }[] }[]
@@ -15,13 +17,19 @@ export interface LightcurveData {
   bands: Record<string, { t: string; mag_ab: number; err: number; saturated: boolean; n?: number }[]>
   colour_corrected: boolean
   zp_note?: string
+  variability?: Record<string, { verdict?: string; spread_mag?: number; weakness?: string } | undefined>
 }
 export interface MotionData {
   predicted: { pass: number; t: string; ra: number; dec: number }[]
   measured: { pass: number; t: string; ra: number; dec: number; err_mas: number }[]
   verdict: string
+  verdict_text?: string
+  comparison?: { offset_arcsec?: number; uncertainty_arcsec?: number; systematic_floor_arcsec?: number } | null
   note?: string
 }
+
+const MEASURED_VS = ['consistent', 'marginal', 'deviates', 'inconsistent']
+const POSSIBLE_CHANGE = ['varied', 'hint', 'indicative']
 
 const PASS_COLORS = [1, 2, 3, 4, 5, 6].map((i) => `var(--color-series-${i})`)
 
@@ -83,9 +91,11 @@ export function SpectrumChart({ data }: { data: SpectraData }) {
   )
 }
 
-export function LightCurveChart({ data }: { data: LightcurveData }) {
+export function LightCurveChart({ data, technical = false }: { data: LightcurveData; technical?: boolean }) {
+  const locale = useLocale()
   const t = useTranslations('charts')
   const tp = useTranslations('profile')
+  const bandName = useBandName()
   const bands = BANDS.filter((b) => data.bands[b]?.length)
   const [only, setOnly] = useState<string | null>(null)
   const shown = only ? [only] : bands
@@ -95,20 +105,26 @@ export function LightCurveChart({ data }: { data: LightcurveData }) {
   const x = linear([Math.min(...times), Math.max(...times)], [PLOT.l, PLOT.w - PLOT.r], 4)
   const mags = pts.flatMap((p) => [p.mag_ab - p.err, p.mag_ab + p.err])
   const y = linear([Math.max(...mags), Math.min(...mags)], [PLOT.h - PLOT.b, PLOT.t], 5)
+  const fixed = (v: number, digits: number) => v.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits })
+  const notes = shown.flatMap((b) => {
+    const v = data.variability?.[b]
+    return v?.verdict && POSSIBLE_CHANGE.includes(v.verdict) && typeof v.spread_mag === 'number' ? [{ band: b, verdict: v.verdict, spread: v.spread_mag }] : []
+  })
+  const tested = shown.some((b) => data.variability?.[b]?.verdict === 'no_change')
   return (
     <figure>
       <div className="no-scrollbar -mt-1 mb-1 flex gap-1.5 overflow-x-auto py-1">
-        <Chip active={!only} onClick={() => setOnly(null)} className="hit-44">
+        <Chip active={!only} onClick={() => setOnly(null)}>
           {tp('filterAll')}
         </Chip>
         {bands.map((b) => (
-          <Chip key={b} active={only === b} onClick={() => setOnly(b)} className="hit-44">
+          <Chip key={b} active={only === b} onClick={() => setOnly(b)}>
             <span className="size-2 rounded-full" style={{ background: BAND_HUE[b] }} />
-            {b}
+            {bandName(b)}
           </Chip>
         ))}
       </div>
-      <Frame title={t('lightcurveTitle')} x={x} y={y} xLabel={t('date')} yLabel={t('magnitude')} xFormat={(v) => new Date(v).toISOString().slice(2, 7)} yFormat={(v) => v.toFixed(1)}>
+      <Frame title={t('lightcurveTitle')} x={x} y={y} xLabel={t('date')} yLabel={t('magnitude')} xFormat={(v) => new Date(v).toISOString().slice(2, 7)} yFormat={(v) => v.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}>
         {shown.map((b) => {
           const list = data.bands[b] ?? []
           const c = BAND_HUE[b] ?? 'var(--color-text)'
@@ -126,8 +142,14 @@ export function LightCurveChart({ data }: { data: LightcurveData }) {
         })}
       </Frame>
       <figcaption className="mt-2 space-y-2 text-meta text-text-secondary">
+        {notes.map((n) => (
+          <p key={n.band} className="text-text">
+            {t(`variability.${n.verdict}`, { band: bandName(n.band), spread: fixed(n.spread, 2) })}
+          </p>
+        ))}
+        {!notes.length && tested && <p className="text-text">{t('variability.none')}</p>}
         <p>{t('lightcurveHint')}</p>
-        {data.zp_note && <p>{data.zp_note}</p>}
+        {technical && data.zp_note && <p>{data.zp_note}</p>}
       </figcaption>
     </figure>
   )
@@ -137,8 +159,14 @@ function offsets(ra: number, dec: number, ra0: number, dec0: number): [number, n
   return [(ra - ra0) * Math.cos((dec0 * Math.PI) / 180) * 3600, (dec - dec0) * 3600]
 }
 
-export function MotionChart({ data, pixelArcsec = 6.15 }: { data: MotionData; pixelArcsec?: number }) {
+export function MotionChart({ data, pixelArcsec = 6.15, technical = false }: { data: MotionData; pixelArcsec?: number; technical?: boolean }) {
+  const locale = useLocale()
   const t = useTranslations('charts')
+  const fixed = (v: number) => v.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+  const c = data.comparison
+  const numbers = MEASURED_VS.includes(data.verdict) && c && typeof c.offset_arcsec === 'number' && typeof c.uncertainty_arcsec === 'number' ? { offset: fixed(c.offset_arcsec), margin: fixed(c.uncertainty_arcsec) } : null
+  const floor = numbers && c && typeof c.systematic_floor_arcsec === 'number' && c.systematic_floor_arcsec > 0 ? fixed(c.systematic_floor_arcsec) : null
+  const measuredText = numbers ? null : motionVerdictText(data.verdict_text, locale)
   const [view, setView] = useState<'residuals' | 'path'>('residuals')
   const p0 = data.predicted[0]
   if (!p0 || !data.measured.length) return <p className="text-text-secondary">{t('noData')}</p>
@@ -210,9 +238,11 @@ export function MotionChart({ data, pixelArcsec = 6.15 }: { data: MotionData; pi
       </Frame>
       <Legend items={[{ color: 'var(--color-warning)', label: t('predicted'), hollow: true }, { color: PASS_COLORS[0] as string, label: `${t('measured')}, ${t('points', { n: data.measured.length })}` }, { color: 'var(--color-warning)', label: `- - ${t('pixel')}`, hollow: true }]} />
       <figcaption className="mt-2 space-y-2 text-meta text-text-secondary">
-        <p className="font-semibold text-text">{t.has(`verdict.${data.verdict}`) ? t(`verdict.${data.verdict}`) : data.verdict}</p>
+        <p className="font-semibold text-text">{numbers ? t(`measuredVs.${data.verdict}`, numbers) : t.has(`verdict.${data.verdict}`) ? t(`verdict.${data.verdict}`) : t('verdict.unknown')}</p>
+        {floor && <p>{t('marginAssumed', { floor })}</p>}
+        {measuredText && <p>{measuredText}</p>}
         <p>{view === 'residuals' ? t('residualHint') : t('motionHint')}</p>
-        {data.note && <p>{data.note}</p>}
+        {technical && data.note && <p>{data.note}</p>}
       </figcaption>
     </figure>
   )
@@ -227,11 +257,11 @@ export function QrWarning() {
   )
 }
 
-export function KitChart({ kind, url }: { kind: 'spectrum' | 'lightcurve' | 'motion'; url: string }) {
+export function KitChart({ kind, url, technical = false }: { kind: 'spectrum' | 'lightcurve' | 'motion'; url: string; technical?: boolean }) {
   const q = useKitJson<SpectraData & LightcurveData & MotionData>(url)
   if (q.isLoading) return <ChartSkeleton />
   if (!q.data) return null
   if (kind === 'spectrum') return <SpectrumChart data={q.data} />
-  if (kind === 'lightcurve') return <LightCurveChart data={q.data} />
-  return <MotionChart data={q.data} />
+  if (kind === 'lightcurve') return <LightCurveChart data={q.data} technical={technical} />
+  return <MotionChart data={q.data} technical={technical} />
 }

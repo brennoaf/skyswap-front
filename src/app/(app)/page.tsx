@@ -2,15 +2,15 @@
 
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { HomeHint } from '@/components/feed/home-hint'
 import { PostCard } from '@/components/feed/post-card'
 import { CommunitySwitch } from '@/components/community/community-switch'
 import { StoriesRow } from '@/components/feed/stories-row'
-import { IconCheck, IconChevronDown, IconClose, IconDirect, IconLike } from '@/components/icons'
-import { Button, EmptyState, IconButton, LabChip, Sheet, Skeleton, Wordmark } from '@/components/ui/primitives'
-import { useAlerts, useFeed, useMe, useSession, type FeedTab } from '@/lib/api/hooks'
+import { IconCheck, IconChevronDown, IconDirect, IconLike } from '@/components/icons'
+import { Button, EmptyState, LabChip, Sheet, Skeleton, Wordmark } from '@/components/ui/primitives'
+import { useAlerts, useFeed, useSession, type FeedTab } from '@/lib/api/hooks'
 import { useShare } from '@/lib/share'
-import { useUi } from '@/lib/state/ui'
 
 const TABS: FeedTab[] = ['for_you', 'following', 'new', 'targets']
 
@@ -26,28 +26,6 @@ function FeedSkeleton() {
   )
 }
 
-function HomeHint() {
-  const t = useTranslations('home.hint')
-  const dismissed = useUi((s) => s.homeHintDismissed)
-  const dismiss = useUi((s) => s.dismissHomeHint)
-  const { data: user, isLoading } = useSession()
-  const me = useMe(!!user)
-  const [hydrated, setHydrated] = useState(false)
-  useEffect(() => setHydrated(true), [])
-  if (!hydrated || dismissed || isLoading || (user && (me.data?.counts.votes ?? 1) > 0)) return null
-  return (
-    <div className="mx-4 mb-2 flex min-h-11 items-center gap-2 rounded-xl bg-surface pl-3 text-note">
-      <p className="min-w-0 flex-1 py-1.5 text-text-secondary">{t('text')}</p>
-      <Link href="/classify" className="inline-flex h-11 shrink-0 items-center font-semibold text-link">
-        {t('action')}
-      </Link>
-      <IconButton label={t('dismiss')} onClick={dismiss}>
-        <IconClose size={20} />
-      </IconButton>
-    </div>
-  )
-}
-
 export default function HomePage() {
   const t = useTranslations('home')
   const [tab, setTab] = useState<FeedTab>('for_you')
@@ -57,18 +35,27 @@ export default function HomePage() {
   const feed = useFeed(tab)
   const share = useShare()
   const sentinel = useRef<HTMLDivElement>(null)
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = feed
+  const more = useRef({ hasNextPage, isFetchingNextPage, fetchNextPage })
+  useEffect(() => {
+    more.current = { hasNextPage, isFetchingNextPage, fetchNextPage }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   useEffect(() => {
     const el = sentinel.current
     if (!el) return
-    const io = new IntersectionObserver(([e]) => {
-      if (e?.isIntersecting && feed.hasNextPage && !feed.isFetchingNextPage) void feed.fetchNextPage()
-    }, { rootMargin: '600px' })
+    const io = new IntersectionObserver(
+      ([e]) => {
+        const m = more.current
+        if (e?.isIntersecting && m.hasNextPage && !m.isFetchingNextPage) void m.fetchNextPage()
+      },
+      { rootMargin: '600px' },
+    )
     io.observe(el)
     return () => io.disconnect()
-  }, [feed])
+  }, [])
 
-  const items = feed.data?.pages.flatMap((p) => p.items) ?? []
+  const items = useMemo(() => feed.data?.pages.flatMap((p) => p.items) ?? [], [feed.data])
   const notice = feed.data?.pages[0]?.notice ?? null
 
   return (
@@ -97,7 +84,7 @@ export default function HomePage() {
       {tab !== 'for_you' && (
         <div className="flex items-center justify-between px-4 pb-2 pt-1">
           <p className="text-ui font-semibold">{t(`tabs.${tab}`)}</p>
-          <button type="button" className="text-body font-semibold text-accent" onClick={() => setTab('for_you')}>
+          <button type="button" className="hit-44 text-body font-semibold text-link" onClick={() => setTab('for_you')}>
             {t('backToForYou')}
           </button>
         </div>

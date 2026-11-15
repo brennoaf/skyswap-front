@@ -10,7 +10,7 @@ import { dotPositions, FrameTimeline } from '@/components/classify/photo-viewer'
 import { SkyLocator } from '@/components/sky/sky-locator'
 import { BandTile } from '@/components/ui/band-tile'
 import { CatalogLinks } from '@/components/ui/catalog-links'
-import { Button, Chip, EmptyState, IconButton, Notice, ObjectAvatar, Segmented, Skeleton, useLoopRestart } from '@/components/ui/primitives'
+import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Segmented, Skeleton, useLoopRestart } from '@/components/ui/primitives'
 import { QrWarning } from '@/components/charts/charts'
 import type { SkyResult } from '@/lib/api/client'
 import { useObject, useSky } from '@/lib/api/hooks'
@@ -20,6 +20,7 @@ import { pointHits, askServer } from '@/lib/explore/lookup'
 import { differenceGrey, differenceImages, differenceScale } from '@/lib/explore/sky-card'
 import { tileFetch } from '@/lib/explore/tiles'
 import { useUi } from '@/lib/state/ui'
+import { useBandName } from '@/lib/use-band'
 
 export const FOVS = [0.05, 0.1, 0.25, 0.5] as const
 export const INDEX_BASE = '/kit/index/'
@@ -33,6 +34,15 @@ type ViewFrame = { key: string; img: Float32Array; w: number; h: number; mjd: nu
 type Colormap = 'grey' | 'band'
 type View = 'photos' | 'changes'
 type Status = 'idle' | 'building' | 'ready' | 'error'
+type Diffs = { d: Float32Array[]; scale: number }
+
+const KNOWN_SOURCES = ['fragment', 'sia', 'none']
+
+export function couldNotCheck(sky: SkyResult): boolean {
+  return (sky.incomplete === true && sky.images.length === 0) || !KNOWN_SOURCES.includes(sky.source)
+}
+
+const canBuildFrom = (sky: SkyResult) => !couldNotCheck(sky) && (sky.source === 'fragment' || (sky.source === 'sia' && sky.images.length > 0))
 
 export type SkyParams = { ra: number; dec: number; fov: number; band: string | null; name: string | null; obj: string | null }
 
@@ -103,10 +113,12 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
   const [scanning, setScanning] = useState(false)
   const [firstMs, setFirstMs] = useState<number | null>(null)
   const alive = useRef(true)
+  const abort = useRef<AbortController | null>(null)
   useEffect(() => {
     alive.current = true
     return () => {
       alive.current = false
+      abort.current?.abort()
     }
   }, [])
 
@@ -135,6 +147,10 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
   }, [])
 
   const start = useCallback(async () => {
+    abort.current?.abort()
+    const ctrl = new AbortController()
+    abort.current = ctrl
+    const live = () => alive.current && abort.current === ctrl
     setFrames([])
     setDone(0)
     setLatest(null)
@@ -152,25 +168,27 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
       let next = 0
       let read = 0
       const worker = async () => {
-        while (next < picks.length && alive.current) {
+        while (next < picks.length && live()) {
           const im = picks[next++]
           if (!im) continue
           try {
             const q = new URLSearchParams({ key: im.key, ra: String(p.ra), dec: String(p.dec), size: String(size) })
-            const r = await fetch(`/api/cutout?${q}`)
+            const r = await fetch(`/api/cutout?${q}`, { signal: ctrl.signal })
             if (!r.ok) throw new Error(String(r.status))
             const buf = await r.arrayBuffer()
             read += buf.byteLength
             const fits = parseFitsImage(buf, 'IMAGE')
+            if (!live()) return
             count++
             add(toFrame(im.key, fits.data, fits.nx, fits.ny, im.mjd, im.band, im.release))
           } catch {
-            if (alive.current) setDone((d) => d + 1)
+            if (live()) setDone((d) => d + 1)
           }
         }
       }
       await Promise.all([worker(), worker()])
-      if (alive.current) setBytes(read)
+      if (!live()) return
+      setBytes(read)
       finish(count, t0, 'cutoutsFailed')
       return
     }
@@ -183,17 +201,16 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
           const now = performance.now()
           if (now - last < 120 && loaded !== size) return
           last = now
-          if (alive.current) setTile({ loaded, total: size ?? sky.tile_bytes })
+          if (live()) setTile({ loaded, total: size ?? sky.tile_bytes })
         }).catch(() => null)
         hits = r?.hits ?? null
-        if (alive.current) {
-          setTile(null)
-          setScanning(true)
-        }
+        if (!live()) return
+        setTile(null)
+        setScanning(true)
       }
       const result = await skyMovie({
         hits,
-        fetchImpl: tileFetch,
+        fetchImpl: ((input: RequestInfo | URL, init?: RequestInit) => tileFetch(input, { ...init, signal: ctrl.signal })) as typeof fetch,
         ra: p.ra,
         dec: p.dec,
         target,
@@ -203,15 +220,17 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
         mode: 'bilinear',
         bands: p.band ? [p.band] : null,
         onFrame: (_i, f) => {
+          if (!live()) return
           const n = Math.round(Math.sqrt(f.img.length))
           count++
           add(toFrame(f.h.key, f.img, n, n, f.h.mjd, f.h.band, f.h.release))
         },
       })
-      if (alive.current) setBytes(result.bytes)
+      if (!live()) return
+      setBytes(result.bytes)
       finish(count, t0, 'noFrames')
     } catch {
-      if (!alive.current) return
+      if (!live()) return
       if (count) finish(count, t0, 'noFrames')
       else {
         setErrorKey('failed')
@@ -249,6 +268,8 @@ function Player({
   const setCrosshair = useUi((s) => s.setCrosshair)
   const speed = useUi((s) => s.speed)
   const b = useBuilder(sky, params, target)
+  const bandName = useBandName()
+  const diffCache = useRef(new WeakMap<ViewFrame[], Diffs>())
   const grid = useMemo(() => referenceGrid(params.ra, params.dec, params.fov), [params.ra, params.dec, params.fov])
   const [cur, setCur] = useState(0)
   const [playing, setPlaying] = useState(false)
@@ -260,8 +281,12 @@ function Player({
   const sameGrid = n > 1 && shown.every((f) => f.w === shown[0]?.w && f.h === shown[0]?.h)
   const diffs = useMemo(() => {
     if (view !== 'changes' || !sameGrid || b.status !== 'ready') return null
+    const hit = diffCache.current.get(shown)
+    if (hit) return hit
     const d = differenceImages(shown.map((f) => f.img))
-    return { d, scale: differenceScale(d) }
+    const made = { d, scale: differenceScale(d) }
+    diffCache.current.set(shown, made)
+    return made
   }, [view, sameGrid, b.status, shown])
   const restart = useLoopRestart(cur, playing)
   const kicked = useRef(false)
@@ -300,8 +325,8 @@ function Player({
   }
   const ready = b.status === 'ready' && n > 0
   const date = frame ? formatShortDate(mjdToMs(frame.mjd), locale) : ''
-  const frameLabel = frame ? t('frameDate', { date, band: frame.band }) : ''
-  const canBuild = sky.source === 'fragment' || (sky.source === 'sia' && sky.images.length > 0)
+  const frameLabel = frame ? t('frameDate', { date, band: bandName(frame.band) }) : ''
+  const canBuild = canBuildFrom(sky)
 
   const media = (
     <div
@@ -330,7 +355,7 @@ function Player({
       data-first-frame-ms={b.firstMs ?? undefined}
       data-frames={n}
     >
-      {frame && <FrameCanvas frame={frame} colormap={colormap} diff={diff} label={diff ? t('changesAlt', { date }) : t('frameAlt', { band: frame.band, date })} />}
+      {frame && <FrameCanvas frame={frame} colormap={colormap} diff={diff} label={diff ? t('changesAlt', { date }) : t('frameAlt', { band: bandName(frame.band), date })} />}
       {frame && crosshair && <TargetCrosshair frame={frame} target={target} grid={grid} />}
       {marker}
       {b.status === 'idle' && compact && (
@@ -340,12 +365,12 @@ function Player({
             <>
               <Button variant="primary" className="h-11 px-5" onClick={() => void b.start()}>
                 <IconPlay size={22} />
-                {sky.source === 'sia' ? t('fetchCutouts', { n: b.total }) : t('start')}
+                {t('start')}
               </Button>
-              <p className="max-w-72 text-meta text-on-media-muted">{sky.source === 'sia' ? t('siaList') : t('liveNote')}</p>
+              <p className="max-w-72 text-meta text-on-media-muted">{t('liveNote')}</p>
             </>
           ) : (
-            <p className="text-body text-on-media-muted">{t('none')}</p>
+            <p className="text-body text-on-media-muted">{couldNotCheck(sky) ? t('unchecked') : t('none')}</p>
           )}
         </div>
       )}
@@ -358,8 +383,6 @@ function Player({
                 : t('readingIndexNoSize', { loaded: formatBytes(b.tile.loaded) })
               : b.scanning
                 ? t('scanningIndex', { n: sky.total })
-                : sky.source === 'sia'
-                ? t('fetchingCutouts', { done: b.done, total: b.total })
                 : t('building', { done: b.done, total: b.total })}
           </p>
           <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-on-media/20">
@@ -420,7 +443,7 @@ function Player({
             </IconButton>
             <div className="min-w-0 flex-1 px-1 leading-tight">
               <p className="truncate text-body font-semibold">{frameLabel}</p>
-              <p className="truncate text-meta text-text-secondary">{t('releaseFrame', { release: frame.release.toUpperCase(), n: Math.min(cur, n - 1) + 1, total: n })}</p>
+              <p className="truncate text-meta text-text-secondary">{t('photoOf', { n: Math.min(cur, n - 1) + 1, total: n })}</p>
             </div>
             <IconButton label={t('crosshair')} aria-pressed={crosshair} onClick={() => setCrosshair(!crosshair)} className={crosshair ? 'text-warning' : 'text-icon-muted'}>
               <IconCrosshair size={26} />
@@ -482,18 +505,8 @@ function Player({
               </Chip>
             </div>
           )}
-          {sky.releases.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="pr-0.5 text-note text-text-secondary">{t('releases')}</span>
-              {sky.releases.map((r) => (
-                <span key={r} className="rounded-full bg-surface px-2.5 py-0.5 text-meta font-medium">
-                  {t('batch', { release: r.toUpperCase() })}
-                </span>
-              ))}
-            </div>
-          )}
           <p className="text-meta text-text-secondary">
-            {t('images', { n: sky.total })} {t(`source.${sky.source === 'sia' || sky.source === 'fragment' ? sky.source : 'none'}`)}
+            {t('images', { n: sky.total })}
             {b.bytes !== null && <span className="block">{t('downloaded', { size: formatBytes(b.bytes) })}</span>}
           </p>
           {new Set(b.frames.map((f) => f.release)).size > 1 && <QrWarning />}
@@ -501,28 +514,6 @@ function Player({
       )}
       {b.status === 'ready' && <p className="sr-only" role="status">{t('built', { n })}</p>}
     </div>
-  )
-}
-
-function SiaList({ sky }: { sky: SkyResult }) {
-  const locale = useLocale()
-  const t = useTranslations('sky')
-  const shown = sky.images.slice(0, 12)
-  return (
-    <section className="px-4 pt-4">
-      <p className="text-note text-text-secondary">{t('siaList')}</p>
-      <ul className="mt-2 divide-y-[0.5px] divide-divider">
-        {shown.map((im) => (
-          <li key={im.key} className="flex min-h-10 items-center gap-2 text-body">
-            <span className="size-2.5 shrink-0 rounded-full" style={{ background: BAND_HUE[im.band] }} aria-hidden="true" />
-            <span className="w-8 font-medium">{im.band}</span>
-            <span className="flex-1">{formatShortDate(im.iso, locale)}</span>
-            <span className="text-text-secondary">{im.release.toUpperCase()}</span>
-          </li>
-        ))}
-      </ul>
-      {sky.images.length > shown.length && <p className="pt-2 text-note text-text-secondary">{t('moreImages', { n: sky.images.length - shown.length })}</p>}
-    </section>
   )
 }
 
@@ -547,16 +538,14 @@ function TargetCrosshair({ frame, target, grid }: { frame: ViewFrame; target: Sk
 type Stage = 'intro' | 'band' | 'fov' | 'player'
 type Choice = { band: string | null; fov: number }
 
-const DEFAULT_CHOICE: Choice = { band: null, fov: 0.1 }
-
 const arcmin = (fov: number) => +(fov * 60).toFixed(1)
 
-function Intro({ sky, params, photos, onBegin, onQuick }: { sky: SkyResult; params: SkyParams; photos: number; onBegin: () => void; onQuick: () => void }) {
+function Intro({ sky, params, photos, onBuild, onChoose, onRetry }: { sky: SkyResult; params: SkyParams; photos: number; onBuild: () => void; onChoose: () => void; onRetry: () => void }) {
   const t = useTranslations('sky')
   const tm = useTranslations('sky.map')
+  const tc = useTranslations('common')
   const toast = useUi((s) => s.toast)
-  const introDone = useUi((s) => s.skyIntroDone)
-  const canBuild = sky.source === 'fragment' || (sky.source === 'sia' && sky.images.length > 0)
+  const canBuild = canBuildFrom(sky)
   const region = params.dec > 10 ? 'regionNorth' : params.dec < -10 ? 'regionSouth' : 'regionEquator'
   const copy = async () => {
     const done = await navigator.clipboard?.writeText(`${params.ra.toFixed(5)} ${params.dec.toFixed(5)}`).then(
@@ -573,7 +562,7 @@ function Intro({ sky, params, photos, onBegin, onQuick }: { sky: SkyResult; para
           <h2 className="text-title-sm font-bold leading-tight">{params.name ? t('introTitle', { name: params.name }) : t('introTitleSpot')}</h2>
           <div className="flex items-center gap-1">
             <p className="min-w-0 truncate text-meta text-text-secondary">{tm(region)}</p>
-            <IconButton label={tm('copy')} onClick={() => void copy()} className="-my-1.5 size-9 text-text-secondary">
+            <IconButton label={tm('copy')} onClick={() => void copy()} className="-my-2.5 text-text-secondary">
               <IconCopy size={18} />
             </IconButton>
           </div>
@@ -581,21 +570,25 @@ function Intro({ sky, params, photos, onBegin, onQuick }: { sky: SkyResult; para
       </div>
       {canBuild ? (
         <>
-          <p className="pt-3 text-body">{t('introBody', { n: photos })}</p>
-          {!introDone && (
-            <p className="pt-2 text-note text-text-secondary" data-testid="sky-intro-more">
-              {t('introMore')}
-            </p>
-          )}
-          <Button variant="primary" full className="mt-4 h-11 font-semibold" onClick={onBegin}>
-            {t('begin')}
+          <p className="pt-4 text-body leading-relaxed">{t('introBody', { n: photos })}</p>
+          <Button variant="primary" full className="mt-5 h-12 font-semibold" onClick={onBuild}>
+            <IconPlay size={20} />
+            {t('start')}
           </Button>
-          <Button variant="ghost" full className="mt-1 h-11" onClick={onQuick}>
-            {t('quick')}
+          <button type="button" onClick={onChoose} className="mx-auto mt-1 flex min-h-11 items-center gap-1.5 px-3 text-note font-semibold text-text-secondary">
+            <IconSliders size={18} />
+            {t('choose')}
+          </button>
+        </>
+      ) : couldNotCheck(sky) ? (
+        <>
+          <p className="pt-4 text-body text-text-secondary">{t('unchecked')}</p>
+          <Button full className="mt-4 h-11" onClick={onRetry}>
+            {tc('retry')}
           </Button>
         </>
       ) : (
-        <p className="pt-3 text-body text-text-secondary">{t('none')}</p>
+        <p className="pt-4 text-body text-text-secondary">{t('none')}</p>
       )}
     </section>
   )
@@ -630,6 +623,7 @@ function Steps({
   onBuild: () => void
 }) {
   const t = useTranslations('sky')
+  const bandName = useBandName()
   const all = Object.values(sky.bands).reduce((s, v) => s + v, 0)
   const photos = photosFor(sky, draft.fov, draft.band)
   const total = sky.source === 'sia' ? sky.images.length : draft.band ? (sky.bands[draft.band] ?? 0) : all
@@ -641,10 +635,10 @@ function Steps({
         <h2 className="pt-3 text-title-lg font-bold leading-tight tracking-[-0.01em]">{stage === 'band' ? t('band') : t('fov')}</h2>
         <p className="pt-1 text-note text-text-secondary">{stage === 'band' ? t('bandLine') : t('fovHint')}</p>
         {stage === 'band' ? (
-          <div className="grid grid-cols-4 gap-2 pt-4" role="group" aria-label={t('band')}>
+          <div className="grid grid-cols-3 gap-2 pt-4" role="group" aria-label={t('band')}>
             <BandTile label={t('allBands')} hue="var(--gradient-bands)" detail={String(all)} on={!draft.band} onClick={() => onDraft({ ...draft, band: null })} />
             {BANDS.map((k) => (
-              <BandTile key={k} label={k} hue={BAND_HUE[k] ?? ''} detail={String(sky.bands[k] ?? 0)} on={draft.band === k} onClick={() => onDraft({ ...draft, band: k })} />
+              <BandTile key={k} label={bandName(k)} hue={BAND_HUE[k] ?? ''} detail={String(sky.bands[k] ?? 0)} on={draft.band === k} onClick={() => onDraft({ ...draft, band: k })} />
             ))}
           </div>
         ) : (
@@ -678,7 +672,7 @@ function Steps({
               <IconPlay size={20} />
               {again ? t('rebuild') : t('start')}
             </Button>
-            <p className="pt-2 text-micro leading-snug text-text-secondary">{sky.source === 'sia' ? t('siaList') : t('liveNote')}</p>
+            <p className="pt-2 text-micro leading-snug text-text-secondary">{t('liveNote')}</p>
           </>
         )}
       </div>
@@ -688,7 +682,8 @@ function Steps({
 
 function ChoiceLine({ band, fov, onOpen }: { band: string | null; fov: number; onOpen: () => void }) {
   const t = useTranslations('sky')
-  const bandName = band ?? t('allBands')
+  const nameOf = useBandName()
+  const bandName = band ? nameOf(band) : t('allBands')
   const fovName = t('fovValue', { arcmin: arcmin(fov) })
   return (
     <button type="button" onClick={onOpen} aria-label={t('choices', { band: bandName, fov: fovName })} className="flex min-h-11 w-full items-center gap-2 px-4 text-left active:bg-surface" data-testid="sky-choices">
@@ -707,12 +702,6 @@ function Nearby({ sky, params }: { sky: SkyResult; params: SkyParams }) {
   const t = useTranslations('sky')
   return (
     <>
-      {!params.name && (
-        <div className="px-4 pt-4">
-          <Notice icon={<IconWarning size={20} />}>{t('staleTyped')}</Notice>
-        </div>
-      )}
-      {sky.source === 'sia' && <SiaList sky={sky} />}
       {sky.nearby.length > 0 && (
         <section className="pt-6">
           <h2 className="px-4 text-ui font-semibold">{t('nearby')}</h2>
@@ -753,7 +742,6 @@ export function SkyViewer({
   const { ra, dec, fov, band, obj } = params
   const sky = useSky(ra, dec, fov, band)
   const { data: object } = useObject(obj ?? '')
-  const finishIntro = useUi((s) => s.finishSkyIntro)
   const target = useMemo<SkyTarget | null>(() => {
     if (!object || object.pm_ra_cosdec === null || object.pm_dec === null) return null
     const epoch = Number(/([0-9]{4}(?:\.[0-9]+)?)/.exec(object.epoch)?.[1] ?? 2016)
@@ -776,7 +764,6 @@ export function SkyViewer({
     setStage('band')
   }
   const build = (next: Choice) => {
-    finishIntro()
     setWant(next)
     if (next.band !== band || next.fov !== fov) onChange?.(next)
     setRun((r) => r + 1)
@@ -808,12 +795,13 @@ export function SkyViewer({
   const playerFor = (extra: { compact: boolean; choices?: ReactNode; autoStart?: boolean }) => <Player key={`${playerKey}|${target ? 'pm' : 'fixed'}`} sky={d} params={params} target={target} onLocate={onLocate} marker={marker} {...extra} />
 
   if (compact) {
+    if (couldNotCheck(d)) return <EmptyState title={t('unchecked')} action={<Button onClick={() => sky.refetch()}>{tc('retry')}</Button>} />
     if (d.source === 'none') return <EmptyState title={t('none')} />
     return playerFor({ compact: true })
   }
 
   const steps = stage === 'band' || stage === 'fov'
-  const built = run > 0 && d.source !== 'none' && (stage === 'player' || from === 'player')
+  const built = run > 0 && canBuildFrom(d) && (stage === 'player' || from === 'player')
 
   return (
     <div>
@@ -821,11 +809,13 @@ export function SkyViewer({
       {steps && <Steps stage={stage} sky={d} draft={draft} onDraft={setDraft} again={from === 'player'} onNext={() => setStage('fov')} onBuild={() => build(draft)} />}
       <div className={cx('pb-6', steps && 'hidden')}>
         {built ? (
-          playerFor({ compact: false, autoStart: true, choices: <ChoiceLine band={band} fov={fov} onOpen={() => openSteps('player')} /> })
+          <>
+            {playerFor({ compact: false, autoStart: true, choices: <ChoiceLine band={band} fov={fov} onOpen={() => openSteps('player')} /> })}
+            <Nearby sky={d} params={params} />
+          </>
         ) : (
-          <Intro sky={d} params={params} photos={Object.values(d.bands).reduce((s, v) => s + v, 0)} onBegin={() => openSteps('intro')} onQuick={() => build(DEFAULT_CHOICE)} />
+          <Intro sky={d} params={params} photos={Object.values(d.bands).reduce((s, v) => s + v, 0)} onBuild={() => build({ band, fov })} onChoose={() => openSteps('intro')} onRetry={() => void sky.refetch()} />
         )}
-        <Nearby sky={d} params={params} />
       </div>
     </div>
   )

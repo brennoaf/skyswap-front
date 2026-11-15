@@ -16,9 +16,7 @@ interface PersistedUi {
   languageChosen: boolean
   onboardingDone: boolean
   labIntroDone: boolean
-  meIntroDone: boolean
   classifyGuideDone: boolean
-  skyIntroDone: boolean
   tipsSeen: string[]
   homeHintDismissed: boolean
   saved: string[]
@@ -37,11 +35,7 @@ interface UiState extends PersistedUi {
   finishOnboarding: () => void
   resetOnboarding: () => void
   finishLabIntro: () => void
-  showLabIntro: () => void
-  finishMeIntro: () => void
-  showMeIntro: () => void
   finishClassifyGuide: () => void
-  finishSkyIntro: () => void
   markTip: (key: string) => void
   dismissHomeHint: () => void
   toggleSaved: (postId: string) => void
@@ -66,9 +60,7 @@ export const useUi = create<UiState>()(
       languageChosen: false,
       onboardingDone: false,
       labIntroDone: false,
-      meIntroDone: false,
       classifyGuideDone: false,
-      skyIntroDone: false,
       tipsSeen: [],
       homeHintDismissed: false,
       saved: [],
@@ -82,13 +74,9 @@ export const useUi = create<UiState>()(
       markStorySeen: (id) => set((s) => (s.seenStories.includes(id) ? s : { seenStories: [...s.seenStories, id] })),
       chooseLanguage: () => set({ languageChosen: true }),
       finishOnboarding: () => set({ onboardingDone: true }),
-      resetOnboarding: () => set({ onboardingDone: false, labIntroDone: false, meIntroDone: false, classifyGuideDone: false, skyIntroDone: false }),
+      resetOnboarding: () => set({ onboardingDone: false, labIntroDone: false, classifyGuideDone: false, tipsSeen: [], homeHintDismissed: false }),
       finishLabIntro: () => set({ labIntroDone: true }),
-      showLabIntro: () => set({ labIntroDone: false }),
-      finishMeIntro: () => set({ meIntroDone: true }),
-      showMeIntro: () => set({ meIntroDone: false }),
       finishClassifyGuide: () => set({ classifyGuideDone: true }),
-      finishSkyIntro: () => set({ skyIntroDone: true }),
       markTip: (key) => set((s) => (s.tipsSeen.includes(key) ? s : { tipsSeen: [...s.tipsSeen, key] })),
       dismissHomeHint: () => set({ homeHintDismissed: true }),
       toggleSaved: (postId) => set((s) => ({ saved: s.saved.includes(postId) ? s.saved.filter((p) => p !== postId) : [postId, ...s.saved] })),
@@ -111,9 +99,7 @@ export const useUi = create<UiState>()(
         languageChosen: s.languageChosen,
         onboardingDone: s.onboardingDone,
         labIntroDone: s.labIntroDone,
-        meIntroDone: s.meIntroDone,
         classifyGuideDone: s.classifyGuideDone,
-        skyIntroDone: s.skyIntroDone,
         tipsSeen: s.tipsSeen,
         homeHintDismissed: s.homeHintDismissed,
         saved: s.saved,

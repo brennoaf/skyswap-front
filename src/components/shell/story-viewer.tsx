@@ -8,13 +8,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { IconClose } from '@/components/icons'
 import { PlayerBar } from '@/components/player/player-bar'
 import { usePlayback } from '@/components/player/use-playback'
-import { IconButton, ObjectAvatar } from '@/components/ui/primitives'
+import { IconButton, ObjectAvatar, useModal } from '@/components/ui/primitives'
 import { useStories } from '@/lib/api/hooks'
 import { formatShortDate } from '@/lib/format'
 import { frameYear, LONG_BASELINE_FPS, telescopeOf } from '@/lib/long-baseline'
 import { useUi } from '@/lib/state/ui'
+import { useBandName } from '@/lib/use-band'
 
 const FPS = 8
+const HOLD_MS = 250
 
 export function StoryViewer() {
   const locale = useLocale()
@@ -27,7 +29,9 @@ export function StoryViewer() {
   const list = useMemo(() => (stories ?? []).filter((s) => s.frames.length > 0), [stories])
   const [index, setIndex] = useState(0)
   const [held, setHeld] = useState(false)
-  const holdRef = useRef(false)
+  const downAt = useRef<number | null>(null)
+  const dialog = useRef<HTMLDivElement>(null)
+  const bandName = useBandName()
 
   useEffect(() => {
     if (!start) return
@@ -67,7 +71,6 @@ export function StoryViewer() {
   useEffect(() => {
     if (!story) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close()
       if (e.key === 'ArrowRight') go(1)
       if (e.key === 'ArrowLeft') go(-1)
     }
@@ -84,12 +87,15 @@ export function StoryViewer() {
   }, [story, frame])
 
   const current = story?.frames[Math.min(frame, (story?.frames.length ?? 1) - 1)]
+  useModal(dialog, !!story && !!current, close)
 
   return (
     <AnimatePresence>
       {story && current && (
         <motion.div
           key="story"
+          ref={dialog}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-label={t('label', { name: story.object.name })}
@@ -101,7 +107,7 @@ export function StoryViewer() {
           dragConstraints={{ top: 0, bottom: 0 }}
           dragElastic={{ top: 0, bottom: 0.6 }}
           onDragEnd={(_, info) => info.offset.y > 120 && close()}
-          className="fixed inset-0 z-[60] mx-auto flex max-w-[var(--width-app)] flex-col bg-black text-white"
+          className="fixed inset-0 z-[60] mx-auto flex max-w-[var(--width-app)] flex-col bg-black text-white outline-none"
         >
           <div className="absolute inset-x-0 top-0 z-10 bg-gradient-to-b from-black/70 to-transparent px-2 pb-6 pt-[max(8px,env(safe-area-inset-top))]">
             <div className="flex gap-1 px-1" aria-hidden="true">
@@ -128,25 +134,29 @@ export function StoryViewer() {
           <div
             className="relative flex flex-1 items-center justify-center"
             onPointerDown={() => {
-              holdRef.current = false
-              setTimeout(() => (holdRef.current = true), 250)
+              downAt.current = performance.now()
               setHeld(true)
             }}
-            onPointerUp={(e) => {
-              const long = holdRef.current
+            onPointerCancel={() => {
+              downAt.current = null
               setHeld(false)
-              if (long) return
+            }}
+            onPointerUp={(e) => {
+              const start = downAt.current
+              downAt.current = null
+              setHeld(false)
+              if (start === null || performance.now() - start > HOLD_MS) return
               const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect()
               go(e.clientX - rect.left < rect.width / 3 ? -1 : 1)
             }}
           >
             <div className="relative aspect-square w-full">
-              <Image src={current.src} alt={t('frameAlt', { name: story.object.name, band: current.band, date: formatShortDate(current.t, locale) })} fill sizes="470px" className="pixelated object-contain" priority />
+              <Image src={current.src} alt={t('frameAlt', { name: story.object.name, band: bandName(current.band), date: formatShortDate(current.t, locale) })} fill sizes="470px" className="pixelated object-contain" priority />
             </div>
             <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2 py-1 text-meta">
               {current.telescope && current.telescope !== 'SPHEREx' || story.frames.some((f) => f.telescope && f.telescope !== 'SPHEREx')
                 ? t('yearLabel', { year: frameYear(current), telescope: telescopeOf({ telescope: current.telescope, release: '' }), n: frame + 1, total: story.frames.length })
-                : t('frameLabel', { band: current.band, n: frame + 1, total: story.frames.length })}
+                : t('frameLabel', { band: bandName(current.band), n: frame + 1, total: story.frames.length })}
             </span>
             <span className="absolute bottom-3 right-3 rounded-md bg-black/60 px-2 py-1 text-meta">{t('infrared')}</span>
           </div>

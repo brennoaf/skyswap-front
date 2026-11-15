@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, useEffect, useId, useRef, useState } from 'react'
+import { type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type RefObject, useEffect, useId, useRef, useState } from 'react'
 import { IconBack, IconFlask, IconSaturated, IconVerified } from '@/components/icons'
 import { cx } from '@/lib/format'
 
@@ -15,7 +15,7 @@ export function Button({ variant = 'secondary', className, full, ...rest }: Butt
     <button
       {...rest}
       className={cx(
-        'inline-flex min-h-8 items-center justify-center gap-1 rounded-[var(--radius-button)] px-3 text-ui font-medium leading-none transition-colors disabled:opacity-50',
+        'hit-44 inline-flex min-h-8 items-center justify-center gap-1 rounded-[var(--radius-button)] px-3 text-ui font-medium leading-none transition-colors disabled:opacity-50',
         variant === 'primary' && 'bg-accent text-on-accent active:bg-accent-pressed',
         variant === 'secondary' && 'bg-surface text-text active:bg-surface-pressed',
         variant === 'ghost' && 'text-text active:bg-surface',
@@ -27,9 +27,9 @@ export function Button({ variant = 'secondary', className, full, ...rest }: Butt
   )
 }
 
-export function LabChip({ href, label, description, tour }: { href: string; label: string; description: string; tour?: string }) {
+export function LabChip({ href, label, description }: { href: string; label: string; description: string }) {
   return (
-    <Link href={href} aria-label={description} data-tour={tour} className="inline-flex h-11 shrink-0 items-center">
+    <Link href={href} aria-label={description} className="inline-flex h-11 shrink-0 items-center">
       <span className="inline-flex h-8 items-center gap-1 rounded-full bg-surface pl-2 pr-3 text-body font-semibold active:bg-surface-pressed">
         <IconFlask size={18} />
         {label}
@@ -122,6 +122,54 @@ export const isSaturated = (saturation: string) => saturation === 'heavy'
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
+const modalStack: object[] = []
+
+export function useModal(ref: RefObject<HTMLElement | null>, open: boolean, onClose: () => void) {
+  const closeRef = useRef(onClose)
+  useEffect(() => {
+    closeRef.current = onClose
+  }, [onClose])
+  useEffect(() => {
+    if (!open) return
+    const token = {}
+    const prev = document.activeElement as HTMLElement | null
+    modalStack.push(token)
+    if (modalStack.length === 1) document.body.style.overflow = 'hidden'
+    ref.current?.focus()
+    const onKey = (e: KeyboardEvent) => {
+      if (modalStack[modalStack.length - 1] !== token) return
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        closeRef.current()
+        return
+      }
+      if (e.key !== 'Tab' || !ref.current) return
+      const items = Array.from(ref.current.querySelectorAll<HTMLElement>(FOCUSABLE))
+      if (!items.length) {
+        e.preventDefault()
+        return
+      }
+      const first = items[0] as HTMLElement
+      const last = items[items.length - 1] as HTMLElement
+      const inside = ref.current.contains(document.activeElement)
+      if (e.shiftKey && (!inside || document.activeElement === first || document.activeElement === ref.current)) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && (!inside || document.activeElement === last)) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      modalStack.splice(modalStack.indexOf(token), 1)
+      if (!modalStack.length) document.body.style.overflow = ''
+      prev?.focus()
+    }
+  }, [open, ref])
+}
+
 export function Sheet({
   open,
   onClose,
@@ -141,44 +189,14 @@ export function Sheet({
 }) {
   const id = useId()
   const ref = useRef<HTMLDivElement>(null)
-  const closeRef = useRef(onClose)
   const dragStart = useRef<number | null>(null)
   const [drag, setDrag] = useState(0)
   const t = useTranslations('common')
+  useModal(ref, open, onClose)
   useEffect(() => {
-    closeRef.current = onClose
-  }, [onClose])
-  useEffect(() => {
-    if (!open) return
-    const prev = document.activeElement as HTMLElement | null
-    ref.current?.focus()
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation()
-        closeRef.current()
-        return
-      }
-      if (e.key !== 'Tab' || !ref.current) return
-      const items = Array.from(ref.current.querySelectorAll<HTMLElement>(FOCUSABLE))
-      if (!items.length) return
-      const first = items[0] as HTMLElement
-      const last = items[items.length - 1] as HTMLElement
-      if (e.shiftKey && (document.activeElement === first || document.activeElement === ref.current)) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-      setDrag(0)
-      prev?.focus()
-    }
+    if (open) return
+    dragStart.current = null
+    setDrag(0)
   }, [open])
   if (!open) return null
   return (
@@ -207,6 +225,10 @@ export function Sheet({
             if (drag > 90) onClose()
             else setDrag(0)
             dragStart.current = null
+          }}
+          onPointerCancel={() => {
+            dragStart.current = null
+            setDrag(0)
           }}
         >
           <div className="mx-auto h-1 w-10 rounded-full bg-ring-seen" aria-hidden="true" />
@@ -295,7 +317,7 @@ export function Chip({ active, children, onClick, className }: { active?: boolea
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={cx('inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-[var(--radius-button)] border-[0.5px] px-3 text-body font-medium', active ? 'border-text bg-text text-bg' : 'border-divider bg-surface text-text', className)}
+      className={cx('hit-44 inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-[var(--radius-button)] border-[0.5px] px-3 text-body font-medium', active ? 'border-text bg-text text-bg' : 'border-divider bg-surface text-text', className)}
     >
       {children}
     </button>
@@ -331,7 +353,7 @@ export function Segmented<T extends string>({ label, value, options, onChange, c
           aria-checked={value === o.value}
           disabled={o.disabled}
           onClick={() => onChange(o.value)}
-          className={cx('min-h-9 flex-1 whitespace-nowrap rounded-[6px] px-3 text-meta font-semibold disabled:opacity-40', value === o.value ? 'bg-bg text-text shadow-sm' : 'text-text-secondary')}
+          className={cx('hit-44 min-h-9 flex-1 whitespace-nowrap rounded-[6px] px-3 text-meta font-semibold disabled:opacity-40', value === o.value ? 'bg-bg text-text shadow-sm' : 'text-text-secondary')}
         >
           {o.label}
         </button>

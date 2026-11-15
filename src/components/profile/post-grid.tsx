@@ -7,6 +7,7 @@ import { IconCarousel, IconReel } from '@/components/icons'
 import type { Post } from '@/lib/api/client'
 import { yearsSpanned } from '@/lib/long-baseline'
 import { formatShortDate } from '@/lib/format'
+import { postTitle } from '@/lib/post-text'
 
 export interface GridTile {
   key: string
@@ -19,12 +20,12 @@ export interface GridTile {
   pixelated?: boolean
 }
 
-export function tilesFromPosts(posts: Post[]): GridTile[] {
+export function tilesFromPosts(posts: Post[], locale = 'en'): GridTile[] {
   return posts.map((p) => ({
     key: p.id,
     href: `/p/${p.id}`,
     src: p.cover,
-    alt: p.title,
+    alt: postTitle(p.title, locale),
     badge: p.type === 'long_baseline' ? null : p.type === 'timelapse' ? 'reel' : p.frames.length > 1 ? 'carousel' : null,
     years: p.type === 'long_baseline' ? yearsSpanned(p) : null,
     pixelated: p.frames.length > 0,
@@ -60,7 +61,7 @@ export function frameTiles(posts: Post[], band: string, locale: string): GridTil
     for (const f of p.frames) {
       if (f.band !== band || seen.has(f.src)) continue
       seen.add(f.src)
-      out.push({ key: f.src, href: `/p/${p.id}`, src: f.src, alt: `${p.title}, ${f.band}, ${formatShortDate(f.t, locale)}`, label: formatShortDate(f.t, locale), pixelated: true, mjd: f.mjd })
+      out.push({ key: f.src, href: `/p/${p.id}`, src: f.src, alt: `${postTitle(p.title, locale)}, ${formatShortDate(f.t, locale)}`, label: formatShortDate(f.t, locale), pixelated: true, mjd: f.mjd })
     }
   }
   return out.sort((a, b) => a.mjd - b.mjd)

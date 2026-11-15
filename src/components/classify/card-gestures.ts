@@ -2,33 +2,22 @@
 
 import type { MotionValue } from 'framer-motion'
 import { useCallback, useEffect, useRef, useState, type PointerEvent, type RefObject } from 'react'
+import { clampZoom, NO_ZOOM, startsAtEdge, type BoxSize, type CardZoom } from './zoom'
 
 const MOVE_START = 8
 const HOLD_MS = 180
 const TAP_MS = 260
 const DOUBLE_PX = 30
-const MAX_ZOOM = 6
 const DOUBLE_ZOOM = 2.5
 
-export type CardZoom = { scale: number; x: number; y: number }
-
-const NO_ZOOM: CardZoom = { scale: 1, x: 0, y: 0 }
-
 type Mode = 'idle' | 'swipe' | 'pan' | 'pinch'
-
-function clampZoom(z: CardZoom, box: DOMRect | undefined): CardZoom {
-  const scale = Math.min(MAX_ZOOM, Math.max(1, z.scale))
-  if (scale === 1 || !box) return NO_ZOOM
-  const maxX = (box.width * (scale - 1)) / 2
-  const maxY = (box.height * (scale - 1)) / 2
-  return { scale, x: Math.min(maxX, Math.max(-maxX, z.x)), y: Math.min(maxY, Math.max(-maxY, z.y)) }
-}
 
 export function useCardGestures({
   box,
   x,
   y,
   canSwipe,
+  doubleTap = true,
   threshold,
   onRelease,
   onCancel,
@@ -39,6 +28,7 @@ export function useCardGestures({
   x: MotionValue<number>
   y: MotionValue<number>
   canSwipe: boolean
+  doubleTap?: boolean
   threshold: number
   onRelease: (dx: number, dy: number, vx: number, vy: number) => void
   onCancel: () => void
@@ -47,14 +37,32 @@ export function useCardGestures({
 }) {
   const [zoom, setZoom] = useState<CardZoom>(NO_ZOOM)
   const zoomRef = useRef(zoom)
-  zoomRef.current = zoom
+  const size = useRef<BoxSize | null>(null)
+  const paint = useRef(0)
   const pointers = useRef(new Map<number, { x: number; y: number }>())
-  const gesture = useRef({ mode: 'idle' as Mode, x: 0, y: 0, t: 0, lastX: 0, lastY: 0, lastT: 0, vx: 0, vy: 0, crossed: false })
+  const gesture = useRef({ mode: 'idle' as Mode, x: 0, y: 0, t: 0, lastX: 0, lastY: 0, lastT: 0, vx: 0, vy: 0, crossed: false, edge: false })
   const pinch = useRef({ dist: 1, cx: 0, cy: 0, zoom: NO_ZOOM })
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastTap = useRef<{ x: number; y: number; t: number } | null>(null)
   const held = useRef(false)
+
+  const applyZoom = useCallback((z: CardZoom, now = false) => {
+    zoomRef.current = z
+    if (now) {
+      cancelAnimationFrame(paint.current)
+      paint.current = 0
+      setZoom(z)
+      return
+    }
+    if (paint.current) return
+    paint.current = requestAnimationFrame(() => {
+      paint.current = 0
+      setZoom(zoomRef.current)
+    })
+  }, [])
+
+  const resetZoom = useCallback(() => applyZoom(NO_ZOOM, true), [applyZoom])
 
   const clearHold = useCallback(() => {
     if (holdTimer.current) clearTimeout(holdTimer.current)
@@ -69,9 +77,15 @@ export function useCardGestures({
     () => () => {
       if (holdTimer.current) clearTimeout(holdTimer.current)
       if (tapTimer.current) clearTimeout(tapTimer.current)
+      cancelAnimationFrame(paint.current)
     },
     [],
   )
+
+  const measure = () => {
+    const el = box.current
+    size.current = el ? { width: el.offsetWidth, height: el.offsetHeight } : null
+  }
 
   const startPinch = () => {
     const [a, b] = [...pointers.current.values()]
@@ -90,8 +104,10 @@ export function useCardGestures({
       return
     }
     if (pointers.current.size > 2) return
+    measure()
     const now = performance.now()
-    gesture.current = { mode: 'idle', x: e.clientX, y: e.clientY, t: now, lastX: e.clientX, lastY: e.clientY, lastT: now, vx: 0, vy: 0, crossed: false }
+    const edge = e.pointerType === 'touch' && startsAtEdge(e.clientX, window.innerWidth)
+    gesture.current = { mode: 'idle', x: e.clientX, y: e.clientY, t: now, lastX: e.clientX, lastY: e.clientY, lastT: now, vx: 0, vy: 0, crossed: false, edge }
     holdTimer.current = setTimeout(() => {
       held.current = true
       onHold(true)
@@ -107,7 +123,7 @@ export function useCardGestures({
       if (!a || !b) return
       const p = pinch.current
       const scale = p.zoom.scale * (Math.hypot(a.x - b.x, a.y - b.y) / p.dist)
-      setZoom(clampZoom({ scale, x: p.zoom.x + (a.x + b.x) / 2 - p.cx, y: p.zoom.y + (a.y + b.y) / 2 - p.cy }, box.current?.getBoundingClientRect()))
+      applyZoom(clampZoom({ scale, x: p.zoom.x + (a.x + b.x) / 2 - p.cx, y: p.zoom.y + (a.y + b.y) / 2 - p.cy }, size.current))
       return
     }
     const dx = e.clientX - g.x
@@ -115,11 +131,12 @@ export function useCardGestures({
     if (g.mode === 'idle') {
       if (Math.hypot(dx, dy) < MOVE_START) return
       if (holdTimer.current) clearTimeout(holdTimer.current)
-      g.mode = zoomRef.current.scale > 1 ? 'pan' : canSwipe ? 'swipe' : 'idle'
+      g.mode = zoomRef.current.scale > 1 ? 'pan' : canSwipe && !g.edge ? 'swipe' : 'idle'
       if (g.mode === 'idle') return
     }
     if (g.mode === 'pan') {
-      setZoom((z) => clampZoom({ scale: z.scale, x: z.x + e.clientX - g.lastX, y: z.y + e.clientY - g.lastY }, box.current?.getBoundingClientRect()))
+      const z = zoomRef.current
+      applyZoom(clampZoom({ scale: z.scale, x: z.x + e.clientX - g.lastX, y: z.y + e.clientY - g.lastY }, size.current))
     } else {
       x.set(dx)
       y.set(Math.min(0, dy) + Math.max(0, dy) / 4)
@@ -144,7 +161,7 @@ export function useCardGestures({
       else {
         const [rest] = [...pointers.current.values()]
         const now = performance.now()
-        if (rest) gesture.current = { mode: 'pan', x: rest.x, y: rest.y, t: now, lastX: rest.x, lastY: rest.y, lastT: now, vx: 0, vy: 0, crossed: false }
+        if (rest) gesture.current = { mode: 'pan', x: rest.x, y: rest.y, t: now, lastX: rest.x, lastY: rest.y, lastT: now, vx: 0, vy: 0, crossed: false, edge: false }
       }
       return
     }
@@ -156,19 +173,26 @@ export function useCardGestures({
       return
     }
     if (g.mode !== 'idle' || wasHeld || Math.hypot(e.clientX - g.x, e.clientY - g.y) >= MOVE_START) return
+    const { clientX, clientY } = e
+    if (!doubleTap) {
+      if (tapTimer.current) clearTimeout(tapTimer.current)
+      tapTimer.current = null
+      lastTap.current = null
+      onTap?.(clientX, clientY)
+      return
+    }
     const now = performance.now()
     const last = lastTap.current
-    if (last && now - last.t < TAP_MS + 60 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < DOUBLE_PX) {
+    if (last && now - last.t < TAP_MS + 60 && Math.hypot(clientX - last.x, clientY - last.y) < DOUBLE_PX) {
       if (tapTimer.current) clearTimeout(tapTimer.current)
       tapTimer.current = null
       lastTap.current = null
       const r = box.current?.getBoundingClientRect()
-      if (zoomRef.current.scale > 1 || !r) setZoom(NO_ZOOM)
-      else setZoom(clampZoom({ scale: DOUBLE_ZOOM, x: (r.left + r.width / 2 - e.clientX) * (DOUBLE_ZOOM - 1), y: (r.top + r.height / 2 - e.clientY) * (DOUBLE_ZOOM - 1) }, r))
+      if (zoomRef.current.scale > 1 || !r) applyZoom(NO_ZOOM, true)
+      else applyZoom(clampZoom({ scale: DOUBLE_ZOOM, x: (r.left + r.width / 2 - clientX) * (DOUBLE_ZOOM - 1), y: (r.top + r.height / 2 - clientY) * (DOUBLE_ZOOM - 1) }, { width: r.width, height: r.height }), true)
       return
     }
-    lastTap.current = { x: e.clientX, y: e.clientY, t: now }
-    const { clientX, clientY } = e
+    lastTap.current = { x: clientX, y: clientY, t: now }
     if (onTap) tapTimer.current = setTimeout(() => onTap(clientX, clientY), TAP_MS)
   }
 
@@ -179,5 +203,5 @@ export function useCardGestures({
     gesture.current.mode = 'idle'
   }
 
-  return { zoom, bind: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel } }
+  return { zoom, resetZoom, bind: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel } }
 }

@@ -4,10 +4,9 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
-import { IconCards, IconCheck, IconColours, IconFlask, IconHome, IconLike, IconMore, IconReel, IconSave, IconSearch, IconTag, IconTarget } from '@/components/icons'
-import { Button } from '@/components/ui/primitives'
-import { UserAvatar } from '@/components/ui/user-avatar'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { IconCheck } from '@/components/icons'
+import { Button, useModal } from '@/components/ui/primitives'
 import { defaultLocale, isLocale, type Locale } from '@/i18n/locales'
 import { cx } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
@@ -15,48 +14,9 @@ import { useSwitchLocale } from '@/lib/use-switch-locale'
 
 export type LanguageOption = { locale: Locale; name: string; greeting: string; title: string; body: string; pick: string; action: string }
 
-type Item = { icon: ReactNode; key: string }
-type Step = { id: string; target?: string; items?: Item[]; art?: 'sky' | 'blink' }
+type Step = { id: 'language' | 'welcome' | 'help'; art?: 'sky' | 'blink' }
 
-const STEPS: Step[] = [
-  { id: 'language' },
-  { id: 'welcome', art: 'sky' },
-  { id: 'help', art: 'blink' },
-  { id: 'stories', target: 'stories' },
-  { id: 'photo', target: 'post-media' },
-  {
-    id: 'actions',
-    target: 'post-actions',
-    items: [
-      { icon: <IconTag size={22} />, key: 'tag' },
-      { icon: <IconTarget size={22} />, key: 'mark' },
-      { icon: <IconColours size={22} />, key: 'colours' },
-      { icon: <IconSave size={22} />, key: 'save' },
-    ],
-  },
-  {
-    id: 'where',
-    target: 'post-lab',
-    items: [
-      { icon: <IconFlask size={22} />, key: 'post' },
-      { icon: <IconFlask size={22} />, key: 'top' },
-      { icon: <IconLike size={22} />, key: 'heart' },
-      { icon: <IconMore size={22} />, key: 'dots' },
-    ],
-  },
-  {
-    id: 'nav',
-    target: 'nav',
-    items: [
-      { icon: <IconHome size={22} />, key: 'home' },
-      { icon: <IconSearch size={22} />, key: 'search' },
-      { icon: <IconCards size={22} />, key: 'classify' },
-      { icon: <IconReel size={22} />, key: 'reels' },
-      { icon: <UserAvatar nickname={null} size={22} />, key: 'me' },
-    ],
-  },
-  { id: 'finish' },
-]
+const STEPS: Step[] = [{ id: 'language' }, { id: 'welcome', art: 'sky' }, { id: 'help', art: 'blink' }]
 
 const STARS = [
   [18, 22, 1.4, 'text'],
@@ -265,9 +225,13 @@ function roomBelow(spot: Box | null) {
   return spot ? window.innerHeight - (spot.top + spot.height) > spot.top : false
 }
 
-function TourLayer({ spot, below, reduce, reserve, children }: { spot: Box | null; below: boolean; reduce: boolean; reserve: number; children: ReactNode }) {
+const ignoreEscape = () => undefined
+
+function TourLayer({ spot, below, reduce, reserve, onEscape = ignoreEscape, children }: { spot: Box | null; below: boolean; reduce: boolean; reserve: number; onEscape?: () => void; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useModal(ref, true, onEscape)
   return (
-    <motion.div role="dialog" aria-modal="true" aria-labelledby="tour-title" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[65]">
+    <motion.div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tour-title" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[65] outline-none">
       {spot ? (
         <motion.div
           aria-hidden="true"
@@ -306,7 +270,7 @@ export function ScreenTour({ steps, labels, onClose }: { steps: { id: string; ta
   if (!step) return null
   const below = roomBelow(box)
   return (
-    <TourLayer spot={box} below={below} reduce={reduce} reserve={170}>
+    <TourLayer spot={box} below={below} reduce={reduce} reserve={170} onEscape={onClose}>
       {box && (
         <motion.div key={step.id} initial={reduce ? false : { opacity: 0, y: below ? -8 : 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className={TOUR_CARD} data-testid="screen-tour" data-step={step.id}>
           <p id="tour-title" className="text-title-sm font-semibold leading-snug">
@@ -354,7 +318,6 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
   }, [reduce, visible])
 
   const step = STEPS[index] ?? STEPS[0]!
-  const { box, missing } = useTargetBox(visible ? step.target : undefined, reduce)
   const last = index === STEPS.length - 1
   const go = useCallback((d: number) => setIndex((i) => Math.max(0, Math.min(STEPS.length - 1, i + d))), [])
   const next = useCallback(() => go(1), [go])
@@ -362,20 +325,9 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
     finish()
     setIndex(0)
   }
-  useEffect(() => {
-    if (missing) go(1)
-  }, [missing, go])
 
-  const spot = step.target ? box : null
-  const below = roomBelow(spot)
   const card = (
-    <motion.div
-      key={step.id}
-      initial={reduce ? false : { opacity: 0, y: below ? -8 : 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className={TOUR_CARD}
-    >
+    <motion.div key={step.id} initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className={TOUR_CARD}>
       {step.id === 'language' ? (
         <LanguageStep options={options} reduce={reduce} onDone={next} />
       ) : (
@@ -385,22 +337,15 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
               <Art kind={step.art} tick={tick} />
             </div>
           )}
-          <p className="text-meta font-semibold uppercase tracking-wide text-accent">{t('step', { n: index, total: STEPS.length - 1 })}</p>
-          <h2 id="tour-title" className="mt-1 font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">
+          <p className="flex items-center gap-1.5" role="img" aria-label={t('step', { n: index, total: STEPS.length - 1 })}>
+            {STEPS.slice(1).map((s, i) => (
+              <span key={s.id} className={cx('h-1.5 rounded-full transition-all', i + 1 === index ? 'w-5 bg-text' : 'w-1.5 bg-divider')} />
+            ))}
+          </p>
+          <h2 id="tour-title" className="mt-4 font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">
             {t(`${step.id}.title`)}
           </h2>
-          {step.items ? (
-            <ul className="mt-3 flex flex-col gap-2.5">
-              {step.items.map((it) => (
-                <li key={it.key} className="flex items-center gap-3 text-body">
-                  <span className="inline-flex size-8 shrink-0 items-center justify-center">{it.icon}</span>
-                  <span>{t(`${step.id}.${it.key}`)}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-2 text-body leading-relaxed text-text-secondary">{t(`${step.id}.body`)}</p>
-          )}
+          <p className="mt-2 text-ui leading-relaxed text-text-secondary">{t(`${step.id}.body`)}</p>
           {last ? (
             <div className="mt-5 flex flex-col gap-2">
               <Link href="/classify" onClick={close} className="inline-flex h-12 items-center justify-center rounded-[var(--radius-button)] bg-accent text-ui font-semibold text-on-accent active:bg-accent-pressed">
@@ -434,8 +379,8 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
   return (
     <AnimatePresence>
       {visible && (
-        <TourLayer spot={spot} below={below} reduce={reduce} reserve={300}>
-          {(spot || !step.target) && card}
+        <TourLayer spot={null} below={false} reduce={reduce} reserve={300}>
+          {card}
         </TourLayer>
       )}
     </AnimatePresence>

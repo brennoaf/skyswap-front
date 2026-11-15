@@ -3,14 +3,17 @@
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { QrWarning } from '@/components/charts/charts'
-import { IconCompare, IconDirect, IconFlask, IconLink, IconNote, IconWarning } from '@/components/icons'
+import { IconCompare, IconCrosshair, IconDirect, IconFlask, IconLink, IconNote, IconWarning } from '@/components/icons'
+import { SPEEDS } from '@/components/player/use-playback'
 import { NotesPanel } from '@/components/post/notes-panel'
 import { centre, FILTERS, type FilterKey, type Sequence } from '@/components/post/sequences'
 import { TagPanel } from '@/components/post/tag-panel'
 import { CatalogLinks } from '@/components/ui/catalog-links'
-import { Notice, Sheet, SheetRow } from '@/components/ui/primitives'
+import { Notice, Segmented, Sheet, SheetRow, Switch } from '@/components/ui/primitives'
 import type { Frame, ObjectProfile, PostDetail } from '@/lib/api/client'
 import { cx, formatWavelength } from '@/lib/format'
+import { useUi } from '@/lib/state/ui'
+import { useBandName } from '@/lib/use-band'
 import { useFmt } from '@/lib/use-fmt'
 
 export function ColoursSheet({
@@ -36,6 +39,7 @@ export function ColoursSheet({
 }) {
   const t = useTranslations('viewer')
   const fmt = useFmt()
+  const bandName = useBandName()
   const value = t('wavelengthValue', { value: fmt.fixed(wave, 2) })
   return (
     <Sheet open={open} onClose={onClose} title={t('filters')} dim={false}>
@@ -56,7 +60,7 @@ export function ColoursSheet({
           )
         })}
       </ul>
-      <p className="px-4 pt-2 text-meta text-text-secondary">{active === 'slider' ? (sliderFrame ? `${sliderFrame.band}, ${formatWavelength(sliderFrame.wavelength_um, fmt.locale)}, ${fmt.shortDate(sliderFrame.t)}` : t('filterEmpty')) : sequences[active as FilterKey]?.frames.length ? t(`filterHints.${active}`) : t('filterEmpty')}</p>
+      <p className="px-4 pt-2 text-meta text-text-secondary">{active === 'slider' ? (sliderFrame ? `${bandName(sliderFrame.band)}, ${formatWavelength(sliderFrame.wavelength_um, fmt.locale)}, ${fmt.shortDate(sliderFrame.t)}` : t('filterEmpty')) : sequences[active as FilterKey]?.frames.length ? t(`filterHints.${active}`) : t('filterEmpty')}</p>
       <div className="px-4 pb-2 pt-4">
         <div className="flex items-baseline justify-between">
           <label htmlFor="wavelength" className="text-body font-semibold">
@@ -115,20 +119,45 @@ export function MoreSheet({
   onShare,
   onCopy,
   labHref,
+  playback = false,
 }: {
   open: boolean
   onClose: () => void
   onAbout: () => void
   onNotes: () => void
+  playback?: boolean
   onCompare: (() => void) | null
   onShare: () => void
   onCopy: () => void
   labHref: string
 }) {
   const t = useTranslations('post.menu')
+  const tv = useTranslations('viewer')
+  const tpl = useTranslations('player')
+  const crosshair = useUi((s) => s.crosshair)
+  const setCrosshair = useUi((s) => s.setCrosshair)
+  const speed = useUi((s) => s.speed)
+  const setSpeed = useUi((s) => s.setSpeed)
   return (
     <Sheet open={open} onClose={onClose}>
       <div className="py-1">
+        {playback && (
+          <>
+            <label className="flex min-h-12 items-center gap-3 px-4 py-2 text-ui active:bg-surface">
+              <IconCrosshair size={26} className="shrink-0" />
+              <span className="min-w-0 flex-1">
+                <span className="block">{tv('crosshair')}</span>
+                <span className="block text-meta text-text-secondary">{tv('crosshairHint')}</span>
+              </span>
+              <Switch checked={crosshair} onChange={(e) => setCrosshair(e.target.checked)} />
+            </label>
+            <div className="flex min-h-12 items-center gap-3 px-4 py-2 text-ui">
+              <span className="min-w-0 flex-1 pl-[38px]">{tv('speed')}</span>
+              <Segmented label={tv('speed')} value={String(speed)} onChange={(v) => setSpeed(Number(v))} options={SPEEDS.map((s) => ({ value: String(s), label: tpl('speedValue', { value: s }) }))} className="w-44" />
+            </div>
+            <div className="mx-4 my-1 border-t-[0.5px] border-divider" />
+          </>
+        )}
         <SheetRow icon={<IconWarning size={26} />} label={t('about')} hint={t('aboutHint')} onClick={onAbout} />
         {onCompare && <SheetRow icon={<IconCompare size={26} />} label={t('compare')} onClick={onCompare} />}
         <SheetRow icon={<IconNote size={26} />} label={t('notes')} hint={t('notesHint')} onClick={onNotes} />
@@ -144,6 +173,8 @@ export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open
   const t = useTranslations('viewer')
   const tp = useTranslations('post')
   const tc = useTranslations('common')
+  const tb = useTranslations('bands')
+  const bandName = useBandName()
   const fmt = useFmt()
   const { post, object } = data
   const fs = post.flags_summary
@@ -155,7 +186,7 @@ export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open
         {frame && (
           <dl className="grid grid-cols-2 gap-x-3 gap-y-2">
             <dt className="text-text-secondary">{t('aboutBand')}</dt>
-            <dd>{frame.band || '-'}</dd>
+            <dd>{frame.band ? (bandName(frame.band) === frame.band ? frame.band : tb('withCode', { name: bandName(frame.band), code: frame.band })) : '-'}</dd>
             <dt className="text-text-secondary">{t('wavelength')}</dt>
             <dd>{c !== null ? `${formatWavelength(frame.wavelength_um, fmt.locale)}` : '-'}</dd>
             <dt className="text-text-secondary">{t('aboutDate')}</dt>

@@ -13,6 +13,7 @@ import { BAND_HUE, BANDS, compactNumber, cx, formatShortDate } from '@/lib/forma
 import { useShare } from '@/lib/share'
 import { useUi } from '@/lib/state/ui'
 import { objectBio } from '@/lib/post-text'
+import { useBandList, useBandName } from '@/lib/use-band'
 import { SkyMapSheet } from '@/components/sky/sky-map-sheet'
 
 type Tab = 'photos' | 'spectrum' | 'timelapses' | 'measurements'
@@ -42,7 +43,7 @@ function FollowButton({ profile }: { profile: ObjectProfile }) {
   return (
     <Button
       variant={on ? 'secondary' : 'primary'}
-      className="hit-44 h-8 flex-1"
+      className="h-8 flex-1"
       aria-pressed={on}
       disabled={follow.isPending}
       onClick={() => (user ? follow.mutate(!on) : ask('follow'))}
@@ -63,6 +64,8 @@ export function ObjectProfileView({ id }: { id: string }) {
   const { data: user } = useSession()
   const learn = useLearn()
   const share = useShare()
+  const bandName = useBandName()
+  const bandList = useBandList()
   const seen = useUi((s) => s.seenStories.includes(id))
   const openStory = useUi((s) => s.openStory)
   const [tab, setTab] = useState<Tab>('photos')
@@ -101,7 +104,7 @@ export function ObjectProfileView({ id }: { id: string }) {
 
   const unmeasurable = profile.verdict === 'not_measurable' || profile.verdict === 'not_detected'
   const verdictKey = isSaturated(profile.saturation) && (profile.verdict === 'clear' || profile.verdict === 'with_help') ? `${profile.verdict}_bright` : profile.verdict
-  const tiles = band ? frameTiles(posts ?? [], band, locale) : tilesFromPosts(posts ?? [])
+  const tiles = band ? frameTiles(posts ?? [], band, locale) : tilesFromPosts(posts ?? [], locale)
 
   return (
     <main>
@@ -131,14 +134,16 @@ export function ObjectProfileView({ id }: { id: string }) {
               <ObjectBadges verified={isVerified(profile.verdict)} saturated={isSaturated(profile.saturation)} size={15} />
             </p>
             <dl className="mt-2 flex gap-[23px]">
-              {[
-                [profile.stats.posts, t('posts')],
-                [profile.stats.passes, t('passes')],
-                [profile.stats.followers, t('followers')],
-              ].map(([v, l]) => (
-                <div key={String(l)} className="flex flex-col-reverse leading-tight">
-                  <dt className="text-body">{l}</dt>
-                  <dd className="text-title-sm font-semibold">{compactNumber(Number(v), locale)}</dd>
+              {(
+                [
+                  ['posts', profile.stats.posts],
+                  ['passes', profile.stats.passes],
+                  ['followers', profile.stats.followers],
+                ] as const
+              ).map(([k, v]) => (
+                <div key={k} className="flex flex-col-reverse leading-tight">
+                  <dt className="text-body">{t(k, { n: v })}</dt>
+                  <dd className="text-title-sm font-semibold">{compactNumber(v, locale)}</dd>
                 </div>
               ))}
             </dl>
@@ -151,7 +156,7 @@ export function ObjectProfileView({ id }: { id: string }) {
             <>
               {profile.aliases.length > 0 && <p className="text-text-secondary">{t('aliases', { names: profile.aliases.slice(0, 4).join(', ') })}</p>}
               <p className="text-text-secondary">{t('seen', { n: profile.n_images, from: formatShortDate(profile.first_seen, locale), to: formatShortDate(profile.last_seen, locale) })}</p>
-              {profile.best_bands.length > 0 && <p className="text-text-secondary">{t('bestBands', { bands: profile.best_bands.join(', ') })}</p>}
+              {profile.best_bands.length > 0 && <p className="text-text-secondary">{t('bestBands', { bands: bandList(profile.best_bands) })}</p>}
               {profile.facts.length > 0 && (
                 <dl className="grid grid-cols-2 gap-2 py-1">
                   {profile.facts.map((f, i) => (
@@ -176,7 +181,7 @@ export function ObjectProfileView({ id }: { id: string }) {
               </p>
             </>
           ) : (
-            <button type="button" onClick={() => setBioOpen(true)} className="text-text-secondary">
+            <button type="button" onClick={() => setBioOpen(true)} className="hit-44 text-text-secondary">
               {tp('more')}
             </button>
           )}
@@ -185,7 +190,7 @@ export function ObjectProfileView({ id }: { id: string }) {
 
       <div className="mt-3 flex gap-[6px] px-4">
         <FollowButton profile={profile} />
-        <Button className="hit-44 h-8 flex-1 whitespace-nowrap px-2 text-body" onClick={() => setMap(true)}>
+        <Button className="h-8 flex-1 whitespace-nowrap px-2 text-body" onClick={() => setMap(true)}>
           {t('skyMap')}
         </Button>
         <Link href={`/lab/${profile.id}`} className="hit-44 inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-[var(--radius-button)] bg-surface text-ui font-medium active:bg-surface-pressed">
@@ -221,13 +226,13 @@ export function ObjectProfileView({ id }: { id: string }) {
       {tab === 'photos' && (
         <>
           <div className="no-scrollbar flex gap-1.5 overflow-x-auto px-3 py-2">
-            <Chip active={!band} onClick={() => setBand(null)} className="hit-44">
+            <Chip active={!band} onClick={() => setBand(null)}>
               {t('filterAll')}
             </Chip>
             {bandsPresent.map((b) => (
-              <Chip key={b} active={band === b} onClick={() => setBand(b)} className="hit-44">
+              <Chip key={b} active={band === b} onClick={() => setBand(b)}>
                 <span className="size-2 rounded-full" style={{ background: BAND_HUE[b] }} />
-                {b}
+                {bandName(b)}
               </Chip>
             ))}
           </div>
@@ -235,7 +240,7 @@ export function ObjectProfileView({ id }: { id: string }) {
         </>
       )}
 
-      {tab === 'timelapses' && <PostGrid tiles={tilesFromPosts((posts ?? []).filter((p) => p.type === 'long_baseline' || p.type === 'timelapse' || p.type === 'pass_blink'))} />}
+      {tab === 'timelapses' && <PostGrid tiles={tilesFromPosts((posts ?? []).filter((p) => p.type === 'long_baseline' || p.type === 'timelapse' || p.type === 'pass_blink'), locale)} />}
 
       {tab === 'spectrum' && (
         <section className="space-y-3 px-4 py-4">

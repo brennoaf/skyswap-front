@@ -15,22 +15,6 @@ export const STRONG_SNR = 8
 const MAX_HINTS = 3
 const TIMEOUT_MS = 8000
 
-let worker: Worker | null = null
-let seq = 0
-const pending = new Map<number, (h: FlashlightHint[]) => void>()
-
-function getWorker(): Worker | null {
-  if (typeof Worker === 'undefined') return null
-  if (!worker) {
-    worker = new Worker(new URL('./flashlight.worker.ts', import.meta.url), { type: 'module' })
-    worker.onmessage = (e: MessageEvent<{ id: number; hints: FlashlightHint[] }>) => {
-      pending.get(e.data.id)?.(e.data.hints)
-      pending.delete(e.data.id)
-    }
-  }
-  return worker
-}
-
 export function toCardHints(raw: FlashlightHint[], n: number): CardHint[] {
   return raw
     .filter((h): h is FlashlightHint & { kind: HintKind } => h.kind !== 'residual')
@@ -43,18 +27,17 @@ export function isStrong(hints: CardHint[]): boolean {
 }
 
 export function runFlashlight(images: Float32Array[], variances: Float32Array[], visits: number[], n: number): Promise<CardHint[]> {
-  const w = getWorker()
-  if (!w || new Set(visits).size < 2) return Promise.resolve([])
-  const id = ++seq
+  if (typeof Worker === 'undefined' || new Set(visits).size < 2) return Promise.resolve([])
   return new Promise((resolve) => {
-    const timer = setTimeout(() => {
-      pending.delete(id)
-      resolve([])
-    }, TIMEOUT_MS)
-    pending.set(id, (raw) => {
+    const worker = new Worker(new URL('./flashlight.worker.ts', import.meta.url), { type: 'module' })
+    const finish = (hints: CardHint[]) => {
       clearTimeout(timer)
-      resolve(toCardHints(raw, n))
-    })
-    w.postMessage({ id, images, variances, visits, n })
+      worker.terminate()
+      resolve(hints)
+    }
+    const timer = setTimeout(() => finish([]), TIMEOUT_MS)
+    worker.onmessage = (e: MessageEvent<{ hints: FlashlightHint[] }>) => finish(toCardHints(e.data.hints, n))
+    worker.onerror = () => finish([])
+    worker.postMessage({ id: 0, images, variances, visits, n })
   })
 }

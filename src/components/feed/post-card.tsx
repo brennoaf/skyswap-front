@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { useState } from 'react'
+import { useFirstVisitHints } from '@/components/feed/home-hint'
 import { PostMedia } from '@/components/feed/post-media'
 import { IconCompare, IconCrosshair, IconFlask, IconLink, IconMore } from '@/components/icons'
 import { ActionRow } from '@/components/post/action-row'
@@ -27,7 +28,7 @@ export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | '
         <span className="block truncate text-account font-medium">{item.object.name}</span>
         <span className="block truncate text-meta text-text-secondary">{t(`kinds.${item.object.kind}`)}</span>
       </Link>
-      <LabChip href={`/lab/${item.object.id}`} label={t('lab')} description={t('labOpen', { name: item.object.name })} tour="post-lab" />
+      <LabChip href={`/lab/${item.object.id}`} label={t('lab')} description={t('labOpen', { name: item.object.name })} />
       <IconButton label={t('menuLabel')} onClick={onMore}>
         <IconMore />
       </IconButton>
@@ -37,6 +38,7 @@ export function PostHeader({ item, onMore }: { item: Pick<FeedItem, 'object' | '
 
 export function PostMoreSheet({ open, onClose, item }: { open: boolean; onClose: () => void; item: Pick<FeedItem, 'object' | 'post'> }) {
   const t = useTranslations('post.menu')
+  const locale = useLocale()
   const share = useShare()
   return (
     <Sheet open={open} onClose={onClose}>
@@ -47,7 +49,7 @@ export function PostMoreSheet({ open, onClose, item }: { open: boolean; onClose:
           icon={<IconLink size={26} />}
           label={t('copyLink')}
           onClick={() => {
-            share({ title: item.post.title, path: `/p/${item.post.id}` })
+            share({ title: postTitle(item.post.title, locale), path: `/p/${item.post.id}` })
             onClose()
           }}
         />
@@ -60,7 +62,8 @@ export function PostCard({ item, priority = false }: { item: FeedItem; priority?
   const crosshairOn = useUi((s) => s.crosshair)
   const crossSeen = useUi((s) => s.tipsSeen.includes('crossFeed'))
   const markTip = useUi((s) => s.markTip)
-  const crossShown = crosshairOn && !crossSeen && item.post.marks.length > 0
+  const hints = useFirstVisitHints()
+  const crossShown = priority && hints.ready && !hints.homeHint && crosshairOn && !crossSeen && item.post.marks.length > 0
   const locale = useLocale()
   const t = useTranslations('post')
   const [more, setMore] = useState(false)
@@ -73,10 +76,10 @@ export function PostCard({ item, priority = false }: { item: FeedItem; priority?
   return (
     <article className="pb-4" aria-labelledby={`post-${post.id}`}>
       <PostHeader item={item} onMore={() => setMore(true)} />
-      <Link href={`/p/${post.id}`} aria-label={t('open', { title: post.title })} data-tour="post-media" className="block">
+      <Link href={`/p/${post.id}`} aria-label={t('open', { title: postTitle(post.title, locale) })} className="block">
         <PostMedia post={post} priority={priority} />
       </Link>
-      {priority && crossShown && (
+      {crossShown && (
         <div className="flex items-center gap-2 bg-surface px-3 py-1.5" role="note">
           <IconCrosshair size={18} className="shrink-0 text-crosshair" />
           <p className="min-w-0 flex-1 text-note leading-snug">{t('crossNote')}</p>
@@ -110,7 +113,6 @@ export function PostCard({ item, priority = false }: { item: FeedItem; priority?
         )}
         <p className="mt-1 text-meta text-text-muted">
           <time dateTime={post.date_range[1]}>{formatDate(post.date_range[1] ?? post.date_range[0] ?? '', locale)}</time>
-          {post.frames[0] && `, ${t('dataBatch', { release: [...new Set(post.frames.flatMap((f) => f.release.split('+')).map((r) => r.trim().toUpperCase()))].join(' + ') })}`}
         </p>
       </div>
       <PostMoreSheet open={more} onClose={() => setMore(false)} item={item} />

@@ -176,12 +176,14 @@ export function HistoryList({ items }: { items: Me['history'] }) {
 }
 
 function SavedTile({ id }: { id: string }) {
+  const locale = useLocale()
   const { data, isError } = usePost(id)
+  const title = data ? postTitle(data.post.title, locale) : id
   if (isError) return null
   return (
     <li>
-      <Link href={`/p/${id}`} className="relative block aspect-[3/4] overflow-hidden bg-media-bg" aria-label={data?.post.title ?? id}>
-        {data ? <Image src={data.post.cover} alt={data.post.title} fill sizes="(max-width: 470px) 33vw, 157px" className="pixelated object-contain" /> : <Skeleton className="absolute inset-0 rounded-none" />}
+      <Link href={`/p/${id}`} className="relative block aspect-[3/4] overflow-hidden bg-media-bg" aria-label={title}>
+        {data ? <Image src={data.post.cover} alt="" fill sizes="(max-width: 470px) 33vw, 157px" className="pixelated object-contain" /> : <Skeleton className="absolute inset-0 rounded-none" />}
       </Link>
     </li>
   )

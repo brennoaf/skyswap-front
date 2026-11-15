@@ -20,12 +20,21 @@ const CAPTIONS: Rule[] = [
   [/^Exposure of (\S+ \S+) minus one (\S+) hours earlier: the object moved (\S+) from the black spot to the white one\.$/, 'Exposição de $1 menos outra $2 horas antes: o objeto andou $3 da mancha preta até a branca.'],
   [/^Pass of (\S+) minus pass of (\S+) in (\S+): white is brighter now, black was brighter before\.$/, 'Passagem de $1 menos passagem de $2 em $3: branco está mais brilhante agora, preto estava mais brilhante antes.'],
   [/^In (\S+) the brightness appears to change by (\S+) magnitudes, indicative only because the core is saturated, across (\S+) passes after correcting for wavelength\.$/, 'Em $1 o brilho parece mudar $2 magnitudes, só como indicação porque o centro está saturado, em $3 passagens, depois de corrigir o comprimento de onda.'],
-  [/^In (\S+) the brightness changed by (\S+) ± (\S+) magnitudes across (\S+) passes after correcting for wavelength\.$/, 'Em $1 o brilho mudou $2 ± $3 magnitudes em $4 passagens, depois de corrigir o comprimento de onda.'],
-  [/^In (\S+) the brightness stayed constant within the errors \((\S+) ± (\S+) magnitudes\) across (\S+) passes after correcting for wavelength\.$/, 'Em $1 o brilho ficou constante dentro dos erros ($2 ± $3 magnitudes) em $4 passagens, depois de corrigir o comprimento de onda.'],
+  [/^In (\S+) the brightness changed by (\S+) ± (\S+) magnitudes across (\S+) passes after correcting for wavelength\.$/, 'Em $1, nossas medidas diferem em $2 ± $3 magnitudes ao longo de $4 passagens, depois de corrigir o comprimento de onda. É um cálculo feito com estas fotos, não uma mudança confirmada.'],
+  [/^In (\S+) the brightness stayed constant within the errors \((\S+) ± (\S+) magnitudes\) across (\S+) passes after correcting for wavelength\.$/, 'Em $1, nossas medidas ficam iguais dentro da margem de erro ($2 ± $3 magnitudes) em $4 passagens, depois de corrigir o comprimento de onda.'],
   [/^(\S+) WISE\/NEOWISE visits from (\S+) to (\S+) and (\S+) SPHEREx passes on the same sky grid; over (\S+) years the catalogue motion of (\S+) per year adds up to (\S+) \((\S+) WISE pixels\); WISE saturates on a star this bright, so its centre looks flat\.$/, '$1 visitas do WISE/NEOWISE de $2 a $3 e $4 passagens do SPHEREx na mesma grade do céu; em $5 anos, o movimento de catálogo de $6 por ano soma $7 ($8 pixels do WISE); o WISE satura em uma estrela tão brilhante, então o centro parece achatado.'],
   [/^(\S+) WISE\/NEOWISE visits from (\S+) to (\S+) and (\S+) SPHEREx passes on the same sky grid; over (\S+) years the catalogue motion of (\S+) per year adds up to (\S+) \((\S+) WISE pixels\)\.$/, '$1 visitas do WISE/NEOWISE de $2 a $3 e $4 passagens do SPHEREx na mesma grade do céu; em $5 anos, o movimento de catálogo de $6 por ano soma $7 ($8 pixels do WISE).'],
   [/^Between (\S+) and (\S+) the catalogue predicts a shift of (\S+) and SPHEREx measured (\S+) ± (\S+)\.$/, 'Entre $1 e $2 o catálogo prevê um deslocamento de $3 e o SPHEREx mediu $4 ± $5.'],
   [/^In (\S+) exposures the measured position was a median (\S+) from the JPL Horizons prediction\.$/, 'Em $1 exposições, a posição medida ficou a uma mediana de $2 da previsão do JPL Horizons.'],
+  [/^Over (\S+) exposures the median offset between the measured position and the JPL Horizons prediction as seen from SPHEREx itself was (\S+), with an estimated uncertainty of (\S+)\.$/, 'Em $1 fotos, a distância típica entre a posição medida e a previsão do JPL Horizons, vista do próprio SPHEREx, foi de $2, com incerteza estimada de $3.'],
+  [/^Between (\S+) and (\S+) the catalogue predicts a shift of (\S+) and SPHEREx measured (\S+) ± (\S+) \(statistical scatter plus an assumed systematic error\)\.$/, 'Entre $1 e $2 o catálogo prevê um deslocamento de $3 e o SPHEREx mediu $4 ± $5 (variação das medidas mais um erro sistemático suposto).'],
+  [/^In (\S+), after correcting for wavelength, the brightness of (\S+) passes spreads over (\S+) magnitudes, a little more than the errors \(between (\S+) and (\S+) magnitudes per pass\) predict; noise alone would do this about (\S+) in (\S+) times, so this is not enough to call it a change\.$/, 'Em $1, depois de corrigir o comprimento de onda, o brilho de $2 passagens varia $3 magnitudes, um pouco mais do que os erros (entre $4 e $5 magnitudes por passagem) preveem; só o ruído faria isso cerca de $6 em cada $7 vezes, então não dá para chamar de mudança.'],
+  [/^In (\S+), after correcting for wavelength, the brightness of (\S+) passes spreads over (\S+) magnitudes, which is what the errors \(between (\S+) and (\S+) magnitudes per pass\) allow: no change detected\.$/, 'Em $1, depois de corrigir o comprimento de onda, o brilho de $2 passagens varia $3 magnitudes, o que cabe nos erros (entre $4 e $5 magnitudes por passagem): nenhuma mudança detectada.'],
+  [/^In (\S+), after correcting for wavelength, the brightness of (\S+) passes spreads over (\S+) magnitudes, more than the errors \(between (\S+) and (\S+) magnitudes per pass\) explain: noise alone would do this about 1 in (\S+) times\.$/, 'Em $1, depois de corrigir o comprimento de onda, o brilho de $2 passagens varia $3 magnitudes, mais do que os erros (entre $4 e $5 magnitudes por passagem) explicam: só o ruído faria isso cerca de 1 em cada $6 vezes.'],
+  [/^In (\S+), after correcting for wavelength, the brightness of (\S+) passes spreads over (\S+) magnitudes, more than the errors \(between (\S+) and (\S+) magnitudes per pass\) explain: noise alone would do this less than 1 in a million times\.$/, 'Em $1, depois de corrigir o comprimento de onda, o brilho de $2 passagens varia $3 magnitudes, mais do que os erros (entre $4 e $5 magnitudes por passagem) explicam: só o ruído faria isso menos de 1 em cada 1 milhão de vezes.'],
+  [/^In (\S+), after correcting for wavelength, the brightness of (\S+) passes spreads over (\S+) magnitudes, a little more than the errors \(between (\S+) and (\S+) magnitudes per pass\) predict; noise alone would do this less than 1 in a million times, so this is not enough to call it a change\.$/, 'Em $1, depois de corrigir o comprimento de onda, o brilho de $2 passagens varia $3 magnitudes, um pouco mais do que os erros (entre $4 e $5 magnitudes por passagem) preveem; só o ruído faria isso menos de 1 em cada 1 milhão de vezes, então não dá para chamar de mudança.'],
+  [/^In (\S+) the brightness appears to spread over (\S+) magnitudes across (\S+) passes; indicative only, because some passes have too few or too noisy exposures\.$/, 'Em $1 o brilho parece variar $2 magnitudes em $3 passagens; é só uma indicação, porque algumas passagens têm fotos de menos ou com ruído demais.'],
+  [/^In (\S+) the brightness appears to spread over (\S+) magnitudes across (\S+) passes; indicative only, because the core is saturated\.$/, 'Em $1 o brilho parece variar $2 magnitudes em $3 passagens; é só uma indicação, porque o centro da estrela é brilhante demais para a câmera.'],
   [/^Each frame stacks one SPHEREx pass in band (\S+); (\S+) passes from (\S+) to (\S+)\.$/, 'Cada quadro empilha uma passagem do SPHEREx na banda $1; $2 passagens de $3 a $4.'],
   [/^Stacked passes in band (\S+) from (\S+) to (\S+); the catalogue motion of (\S+) per year predicts a shift of (\S+) \((\S+) pixels\)\.$/, 'Passagens empilhadas na banda $1 de $2 a $3; o movimento de catálogo de $4 por ano prevê um deslocamento de $5 ($6 pixels).'],
   [/^(\S+) SPHEREx measurements from (\S+) to (\S+) micrometres in (\S+) passes\.$/, '$1 medidas do SPHEREx de $2 a $3 micrômetros em $4 passagens.'],
@@ -34,7 +43,11 @@ const CAPTIONS: Rule[] = [
 ]
 
 function brazilian(text: string): string {
-  return text.replace(/(\d{4})-(\d\d)-(\d\d)/g, '$3/$2/$1').replace(/(\d)\.(\d)/g, '$1,$2')
+  return text
+    .replace(/(\d{4})-(\d\d)-(\d\d)/g, '$3/$2/$1')
+    .replace(/(\d),(\d{3})(?!\d)/g, '$1\u0000$2')
+    .replace(/(\d)\.(\d)/g, '$1,$2')
+    .replace(/\u0000/g, '.')
 }
 
 function apply(rules: Rule[], text: string, locale: string): string {
@@ -45,6 +58,32 @@ function apply(rules: Rule[], text: string, locale: string): string {
 
 export const postTitle = (title: string, locale: string) => apply(TITLES, title, locale)
 export const postCaption = (caption: string, locale: string) => apply(CAPTIONS, caption, locale)
+
+const VERDICT_HEAD: Rule[] = [
+  [/^Median offset (\S+) from the prediction over (\S+) exposures; estimated uncertainty (\S+) \(scatter between exposures (\S+), plus an assumed (\S+) for systematic errors\)\.$/, 'Distância típica de $1 até a previsão em $2 fotos; incerteza estimada de $3 (variação entre as fotos de $4, mais $5 supostos para erros sistemáticos).'],
+  [/^Largest per-pass median offset \(pass (\S+) of (\S+)\): (\S+) from the prediction over (\S+) exposures; estimated uncertainty (\S+) \(scatter between exposures (\S+), plus an assumed (\S+) for systematic errors\)\.$/, 'Maior distância típica por passagem (passagem $1 de $2): $3 até a previsão em $4 fotos; incerteza estimada de $5 (variação entre as fotos de $6, mais $7 supostos para erros sistemáticos).'],
+  [/^Too few measurements to compare with the prediction\.$/, 'Poucas medidas para comparar com a previsão.'],
+]
+
+const VERDICT_TAIL: Rule[] = [
+  [/^The measurement cannot tell the two apart\.$/, 'A medida não consegue separar uma da outra.'],
+  [/^That is (\S+) times the uncertainty: measurement and prediction disagree, and this alone does not say which one is off\.$/, 'Isso é $1 vezes a incerteza: medida e previsão não batem, e só isso não diz qual das duas está errada.'],
+  [/^That is (\S+) times the uncertainty: larger than expected, but not strong evidence of a real difference\.$/, 'Isso é $1 vezes a incerteza: maior que o esperado, mas não é sinal forte de uma diferença real.'],
+]
+
+function translated(rules: Rule[], text: string): string | null {
+  for (const [re, to] of rules) if (re.test(text)) return brazilian(text.replace(re, to))
+  return null
+}
+
+export function motionVerdictText(text: string | null | undefined, locale: string): string | null {
+  if (!text) return null
+  if (!locale.startsWith('pt')) return text
+  const cut = text.indexOf('). ')
+  const parts = cut < 0 ? [text] : [text.slice(0, cut + 2), text.slice(cut + 3)]
+  const out = parts.map((p, i) => translated(i === 0 ? VERDICT_HEAD : VERDICT_TAIL, p))
+  return out.every((p): p is string => p !== null) ? out.join(' ') : null
+}
 
 const KINDS: Record<string, string> = {
   'BY Draconis-type variable star': 'uma estrela variável do tipo BY Draconis',

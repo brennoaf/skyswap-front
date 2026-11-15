@@ -14,11 +14,12 @@ import type { FeedItem } from '@/lib/api/client'
 import { useFeed } from '@/lib/api/hooks'
 import { formatShortDate } from '@/lib/format'
 import { useShare } from '@/lib/share'
+import { useBandName } from '@/lib/use-band'
 import { frameYear, isLongBaseline, LONG_BASELINE_FPS, telescopeOf } from '@/lib/long-baseline'
 import { useUi } from '@/lib/state/ui'
 import { postCaption, postTitle } from '@/lib/post-text'
 
-const REEL_H = 'h-[calc(100dvh-var(--height-bottomnav))]'
+const REEL_H = 'h-[calc(100dvh-var(--height-bottomnav)-env(safe-area-inset-bottom))]'
 const REEL_CAPTION = 88
 const REEL_BAR = 228
 const ON_BLACK = '[--color-text:var(--color-on-media)] [--color-text-secondary:var(--color-on-media-muted)]'
@@ -35,6 +36,31 @@ function useReducedMotionPref() {
   return reduce
 }
 
+function useSettledFrames(srcs: string[], active: boolean): Set<string> {
+  const [settled, setSettled] = useState<Set<string>>(() => new Set())
+  const asked = useRef(new Set<string>())
+  useEffect(() => {
+    if (!active) return
+    let alive = true
+    for (const src of srcs) {
+      if (asked.current.has(src)) continue
+      asked.current.add(src)
+      const img = new window.Image()
+      const done = () => {
+        if (alive) setSettled((s) => new Set(s).add(src))
+        else asked.current.delete(src)
+      }
+      img.onload = done
+      img.onerror = done
+      img.src = src
+    }
+    return () => {
+      alive = false
+    }
+  }, [active, srcs])
+  return settled
+}
+
 function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; index: number; active: boolean; onVisible: (i: number) => void; onTags: (postId: string) => void }) {
   const tv = useTranslations('viewer.longBaseline')
   const locale = useLocale()
@@ -47,11 +73,18 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
   const toggleSaved = useUi((s) => s.toggleSaved)
   const seen = useUi((s) => s.seenStories.includes(item.object.id))
   const share = useShare()
+  const bandName = useBandName()
   const [expanded, setExpanded] = useState(false)
   const { post, object } = item
   const n = post.frames.length
-  const playback = usePlayback(n, { baseMs: isLongBaseline(post) ? 1000 / LONG_BASELINE_FPS : 125, autoplay: true, enabled: active && !reduce })
+  const srcs = useMemo(() => post.frames.map((f) => f.src), [post.frames])
+  const settled = useSettledFrames(srcs, active)
+  const [at, setAt] = useState(0)
+  const nextSrc = srcs[(at + 1) % Math.max(1, n)]
+  const playback = usePlayback(n, { baseMs: isLongBaseline(post) ? 1000 / LONG_BASELINE_FPS : 125, autoplay: true, enabled: active && !reduce, frozen: !nextSrc || !settled.has(nextSrc) })
   const frame = playback.index
+  useEffect(() => setAt(frame), [frame])
+  const title = postTitle(post.title, locale)
   const total = item.tags.counts ? Object.values(item.tags.counts).reduce((a, b) => a + b, 0) : 0
 
   useEffect(() => {
@@ -62,29 +95,22 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
     return () => io.disconnect()
   }, [onVisible, index])
 
-  useEffect(() => {
-    if (!active) return
-    for (const f of post.frames) {
-      const img = new window.Image()
-      img.src = f.src
-    }
-  }, [active, post.frames])
-
   const shown = post.frames[frame]
+  const ready = !!shown && settled.has(shown.src)
   const mark = post.marks.find((m) => m.frame === frame)
 
   return (
-    <section ref={ref} aria-label={`${object.name}, ${post.title}`} className={`relative w-full shrink-0 snap-start snap-always overflow-hidden bg-reels-bg ${REEL_H}`}>
+    <section ref={ref} aria-label={`${object.name}, ${title}`} className={`relative w-full shrink-0 snap-start snap-always overflow-hidden bg-reels-bg ${REEL_H}`}>
       {shown && isLongBaseline(post) && (
         <span className="pointer-events-none absolute left-3 top-14 z-10 rounded-full bg-media-scrim px-2.5 py-1 text-note font-semibold text-on-media">
           {tv('pill', { year: frameYear(shown), telescope: telescopeOf(shown) })}
         </span>
       )}
-      <button type="button" className="absolute inset-x-0 top-0 block" style={{ bottom: n > 1 ? REEL_BAR : REEL_CAPTION }} aria-label={playback.playing ? t('pause') : t('play')} aria-pressed={!playback.playing} onClick={() => playback.setPlaying(!playback.playing)}>
+      <button type="button" className="absolute inset-x-0 top-0 block [container-type:size]" style={{ bottom: n > 1 ? REEL_BAR : REEL_CAPTION }} aria-label={playback.playing ? t('pause') : t('play')} aria-pressed={!playback.playing} onClick={() => playback.setPlaying(!playback.playing)}>
         {shown && (
           <Image
             src={shown.src}
-            alt={tp('frameAlt', { band: shown.band, date: formatShortDate(shown.t, locale) })}
+            alt={tp('frameAlt', { band: bandName(shown.band), date: formatShortDate(shown.t, locale) })}
             fill
             sizes="(max-width: 470px) 100vw, 470px"
             className="pixelated object-contain"
@@ -92,8 +118,9 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
             priority={active}
           />
         )}
-        {crosshair && mark && (
-          <span className="pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[min(100%,calc(100dvh-var(--height-bottomnav)))] -translate-x-1/2 -translate-y-1/2">
+        {!ready && <Skeleton className="absolute left-1/2 top-1/2 aspect-square w-[min(100cqw,100cqh)] -translate-x-1/2 -translate-y-1/2 rounded-none opacity-20" />}
+        {ready && crosshair && mark && (
+          <span className="pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[min(100cqw,100cqh)] -translate-x-1/2 -translate-y-1/2">
             <Crosshair x={mark.x} y={mark.y} />
           </span>
         )}
@@ -121,7 +148,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
           </Link>
         </div>
         <button type="button" onClick={() => setExpanded((e) => !e)} className={expanded ? 'mt-2 block text-left text-body' : 'mt-2 line-clamp-2 text-left text-body'}>
-          <span className="font-semibold">{postTitle(post.title, locale)}.</span> {postCaption(post.caption, locale)}
+          <span className="font-semibold">{title}.</span> {postCaption(post.caption, locale)}
         </button>
       </div>
 
@@ -135,7 +162,7 @@ function Reel({ item, index, active, onVisible, onTags }: { item: FeedItem; inde
         <Link href={`/p/${post.id}?mark=1`} aria-label={tp('actions.mark')} title={tp('actions.mark')} className="inline-flex size-11 items-center justify-center rounded-full text-white active:scale-90">
           <IconTarget />
         </Link>
-        <IconButton label={tp('actions.share')} onClick={() => share({ title: post.title, path: `/p/${post.id}` })}>
+        <IconButton label={tp('actions.share')} onClick={() => share({ title, path: `/p/${post.id}` })}>
           <IconDirect />
         </IconButton>
         <IconButton label={saved ? tp('actions.unsave') : tp('actions.save')} aria-pressed={saved} onClick={() => toggleSaved(post.id)}>

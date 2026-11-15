@@ -40,7 +40,7 @@ export function ActionRow({
 }) {
   const t = useTranslations('post.actions')
   return (
-    <div className="relative flex h-12 items-center px-[5px]" data-tour="post-actions">
+    <div className="relative flex h-12 items-center px-[5px]">
       <ActionButton label={t('tag')} action={tag}>
         <IconTag />
       </ActionButton>
@@ -52,20 +52,14 @@ export function ActionRow({
         <IconColours />
       </ActionButton>
       {dots && dots.count > 1 && (
-        <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2" role="tablist" aria-label={t('passes')}>
-          {Array.from({ length: Math.min(dots.count, 7) }).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              role="tab"
-              aria-selected={i === dots.active}
-              aria-label={t('pass', { n: i + 1, total: dots.count })}
-              onClick={() => dots.onPick?.(i)}
-              className="flex h-11 w-4 items-center justify-center"
-            >
-              <span className={cx('size-1.5 rounded-full', i === dots.active ? 'bg-accent' : 'bg-ring-seen')} />
-            </button>
-          ))}
+        <div className="flex h-11 min-w-0 flex-1" role="group" aria-label={t('pass', { n: dots.active + 1, total: dots.count })}>
+          <button type="button" aria-label={t('prevPass')} disabled={dots.active <= 0} onClick={() => dots.onPick?.(dots.active - 1)} className="h-full min-w-11 flex-1" />
+          <button type="button" aria-label={t('nextPass')} disabled={dots.active >= dots.count - 1} onClick={() => dots.onPick?.(dots.active + 1)} className="h-full min-w-11 flex-1" />
+          <span className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 gap-2.5" aria-hidden="true">
+            {Array.from({ length: Math.min(dots.count, 7) }).map((_, i) => (
+              <span key={i} className={cx('size-1.5 rounded-full', i === Math.min(dots.active, 6) ? 'bg-accent' : 'bg-ring-seen')} />
+            ))}
+          </span>
         </div>
       )}
       <div className="ml-auto">

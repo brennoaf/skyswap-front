@@ -19,9 +19,12 @@
   --color-icon-muted: #9eaab6;
   --color-accent: #0098fe;
   --color-accent-pressed: #0077c8;
+  --color-accent-fill: #0077c8;
+  --color-accent-fill-pressed: #0062a8;
   --color-on-accent: #ffffff;
   --color-danger: #ff000c;
   --color-warning: #ffc800;
+  --color-on-warning: #0a1014;
   --color-success: #2ecc71;
   --color-overlay: rgb(0 0 0 / 0.6);
   --color-scrim: rgb(10 16 20 / 0.92);
@@ -37,19 +40,22 @@
   --color-sheet: #ffffff;
   --color-text: #0a1014;
   --color-text-secondary: #5b646f;
-  --color-text-muted: #737b85;
+  --color-text-muted: #68707a;
   --color-surface: #f1f5f7;
   --color-surface-pressed: #e3e9ed;
   --color-border: #e7edf0;
   --color-divider: #dde3e7;
-  --color-link: #0074eb;
+  --color-link: #006edb;
   --color-ring-seen: #c4ccd3;
-  --color-icon-muted: #9eaab6;
+  --color-icon-muted: #66717d;
   --color-accent: #0098fe;
   --color-accent-pressed: #0077c8;
+  --color-accent-fill: #0077c8;
+  --color-accent-fill-pressed: #0062a8;
   --color-on-accent: #ffffff;
   --color-danger: #ff000c;
-  --color-warning: #c78a00;
+  --color-warning: #8f6000;
+  --color-on-warning: #ffffff;
   --color-success: #1e9e57;
   --color-overlay: rgb(0 0 0 / 0.45);
   --color-scrim: rgb(248 248 249 / 0.94);
@@ -85,7 +91,6 @@
   --color-on-media-muted: rgb(248 248 249 / 0.75);
   --color-media-scrim: rgb(0 0 0 / 0.55);
   --color-reels-bg: #000000;
-  --color-on-warning: #0a1014;
   --color-layer-gaia: #7fe0ff;
   --color-layer-wise: #ff00d7;
   --color-layer-saturation: #ff5a4f;
@@ -149,6 +154,8 @@
   --color-icon-muted: var(--color-icon-muted);
   --color-accent: var(--color-accent);
   --color-accent-pressed: var(--color-accent-pressed);
+  --color-accent-fill: var(--color-accent-fill);
+  --color-accent-fill-pressed: var(--color-accent-fill-pressed);
   --color-on-accent: var(--color-on-accent);
   --color-danger: var(--color-danger);
   --color-warning: var(--color-warning);
@@ -257,17 +264,28 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-.hit-44 {
-  position: relative;
+@layer components {
+  .hit-44 {
+    position: relative;
+  }
+
+  .hit-44::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
 }
 
-.hit-44::after {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  top: 50%;
-  height: 44px;
-  transform: translateY(-50%);
+.bg-accent.text-on-accent {
+  background-color: var(--color-accent-fill);
+}
+
+.bg-accent.text-on-accent:active {
+  background-color: var(--color-accent-fill-pressed);
 }
 
 @keyframes skeleton-pulse {

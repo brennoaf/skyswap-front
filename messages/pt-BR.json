@@ -30,7 +30,7 @@
       "d": "{value} d",
       "w": "{value} sem"
     },
-    "arcmin": "{n} arcmin"
+    "arcmin": "{n} minutos de arco"
   },
   "nav": {
     "label": "Principal",
@@ -66,7 +66,7 @@
     "empty": {
       "for_you": {
         "title": "Nada por aqui ainda",
-        "body": "O kit de dados não tem posts."
+        "body": "Ainda não há posts para mostrar."
       },
       "following": {
         "title": "Você ainda não segue nada",
@@ -78,12 +78,12 @@
       },
       "targets": {
         "title": "Nenhum alvo",
-        "body": "Os alvos do desafio não estão no kit de dados."
+        "body": "Os alvos do desafio não estão disponíveis agora."
       }
     },
     "explore": "Explorar objetos",
     "errorTitle": "Não foi possível carregar o feed",
-    "errorBody": "Verifique se a API do SkySwap está rodando.",
+    "errorBody": "Verifique sua conexão e tente de novo.",
     "retry": "Tentar de novo",
     "end": "Você já viu tudo",
     "lab": "Lab",
@@ -106,7 +106,7 @@
     "close": "Fechar story",
     "profile": "Ver perfil",
     "openPost": "Abrir post",
-    "frameAlt": "{name} na banda {band} em {date}",
+    "frameAlt": "{name} em {band}, {date}",
     "frameLabel": "{band}, foto {n} de {total}",
     "infrared": "Infravermelho",
     "yearLabel": "{year}, {telescope}, {n} de {total}"
@@ -120,7 +120,7 @@
     "resolving": "Procurando",
     "notFound": "Não encontramos esse nome. Tente coordenadas em graus, como 269.45 4.74.",
     "failed": "A busca falhou. Tente de novo daqui a pouco.",
-    "stale": "As posições do catálogo são antigas. Este objeto se moveu {moved} arcsec desde então, por isso levamos o alvo para onde ele está agora.",
+    "stale": "As posições do catálogo são antigas. Este objeto se moveu {moved} segundos de arco desde então, por isso levamos o alvo para onde ele está agora.",
     "staleUnknown": "Esta posição vem de um catálogo feito para o ano 2000. Estrelas que se movem rápido podem ter mudado de lugar desde então.",
     "watchAnyway": "Ver o ponto corrigido"
   },
@@ -150,7 +150,7 @@
     "more": "mais",
     "open": "Abrir post: {title}",
     "openStory": "Ver o story de {name}",
-    "frameAlt": "Imagem do SPHEREx na banda {band} feita em {date}",
+    "frameAlt": "Imagem do SPHEREx em {band}, feita em {date}",
     "chartAlt": "Gráfico: {title}",
     "taggedBy": "Etiquetado por {total, plural, one {# pessoa} other {# pessoas}}",
     "tagPrompt": "Etiquete o que você vê",
@@ -163,7 +163,9 @@
       "colours": "Cores",
       "passes": "Passagens",
       "pass": "Passagem {n} de {total}",
-      "compare": "Comparar datas"
+      "compare": "Comparar datas",
+      "prevPass": "Passagem anterior",
+      "nextPass": "Próxima passagem"
     },
     "menu": {
       "lab": "Abrir no Lab",
@@ -172,7 +174,7 @@
       "mark": "Marcar o ponto que muda de lugar",
       "copyLink": "Copiar link",
       "about": "Sobre esta imagem",
-      "aboutHint": "Avisos de qualidade, versão, fontes",
+      "aboutHint": "Avisos de qualidade, lote de dados, fontes",
       "notes": "Notas privadas",
       "notesHint": "Só neste navegador",
       "share": "Compartilhar"
@@ -182,8 +184,7 @@
     "lab": "Lab",
     "labOpen": "Abrir {name} no Lab",
     "crossNote": "Cruz amarela: onde os catálogos preveem o objeto. É um cálculo, não uma medida.",
-    "crossOk": "Entendi",
-    "dataBatch": "lote {release} da NASA"
+    "crossOk": "Entendi"
   },
   "tags": {
     "title": "O que você vê?",
@@ -244,7 +245,7 @@
       },
       "all_colours": {
         "name": "Viu as 6 cores",
-        "how": "Veja um objeto em todas as cores do SPHEREx, de D1 a D6."
+        "how": "Veja um objeto em cada uma das 6 cores do SPHEREx."
       },
       "first_spectrum": {
         "name": "Primeiro espectro",
@@ -256,7 +257,7 @@
       },
       "too_bright": {
         "name": "Brilhante demais",
-        "how": "Descubra por que estrelas muito brilhantes saturam o SPHEREx."
+        "how": "Descubra por que estrelas muito brilhantes são demais para o SPHEREx."
       },
       "week_streak": {
         "name": "Sequência de 7 dias",
@@ -285,47 +286,15 @@
     "step": "{n} de {total}",
     "welcome": {
       "title": "Boas-vindas ao SkySwap",
-      "body": "Uma rede social em que cada conta é um objeto de verdade no céu, postando fotos reais do telescópio SPHEREx, da NASA. Toque em um nome para abrir o perfil."
+      "body": "Uma rede social em que cada perfil é um objeto de verdade no céu, com fotos reais do telescópio SPHEREx, da NASA."
     },
     "help": {
       "title": "Você ajuda a achar o que muda de lugar",
-      "body": "Alterne entre fotos do mesmo ponto: a maioria das estrelas fica parada, mas asteroides, cometas e estrelas próximas mudam de lugar. Suas respostas se somam às de todo mundo. Quando respostas cuidadosas suficientes dizem que algo se move, aquele pedaço do céu entra numa lista de candidatos. Ninguém revisa essa lista ainda, e você não consegue estragar nada."
-    },
-    "stories": {
-      "title": "Objetos com fotos novas",
-      "body": "Cada círculo é uma estrela, um asteroide ou um cometa. Um anel colorido quer dizer que chegaram fotos novas. Toque em um para ver as fotos como um story."
-    },
-    "photo": {
-      "title": "Fotos reais de telescópio",
-      "body": "Fotos reais em infravermelho, que nossos olhos não enxergam. A cruz amarela mostra onde o objeto deveria estar. Deslize para o lado para passar as fotos, ou toque para abrir."
-    },
-    "actions": {
-      "title": "O que cada ícone faz",
-      "tag": "Etiquetar o que você vê",
-      "mark": "Marcar o ponto que muda de lugar",
-      "colours": "Ver a foto em cada cor",
-      "save": "Salvar para depois"
-    },
-    "where": {
-      "title": "Onde fica o modo pro",
-      "post": "O Lab no post abre aquele objeto com as ferramentas pro",
-      "top": "O Lab no topo da tela inicial deixa você escolher qualquer objeto",
-      "dots": "Os três pontinhos têm o resto: comparar datas, copiar o link",
-      "heart": "O coração traz novidades dos objetos que você segue"
-    },
-    "nav": {
-      "title": "A barra de baixo",
-      "home": "Início: posts do céu",
-      "search": "Pesquisar: objetos e qualquer lugar do céu",
-      "classify": "Ache o que muda de lugar: responder \"algo mudou de lugar?\", o jeito principal de ajudar",
-      "reels": "Reels: sequências de fotos em tela cheia",
-      "me": "Perfil: seu nível, selos e notas"
+      "body": "Olhe fotos do mesmo ponto e diga se algo mudou de lugar. Suas respostas se somam às de todo mundo e mostram onde vale olhar com mais calma."
     },
     "finish": {
-      "title": "Tudo pronto",
       "classify": "Tentar um primeiro cartão",
-      "explore": "Explorar por conta própria",
-      "body": "Comece com um cartão ou dê uma olhada antes. Você pode rever este tour em Configurações."
+      "explore": "Explorar por conta própria"
     }
   },
   "languageSetup": {
@@ -337,9 +306,9 @@
     "action": "Continuar"
   },
   "profile": {
-    "posts": "posts",
-    "passes": "vezes vista",
-    "followers": "seguidores",
+    "posts": "{n, plural, =0 {posts} one {post} other {posts}}",
+    "passes": "{n, plural, =0 {vezes visto} one {vez visto} other {vezes visto}}",
+    "followers": "{n, plural, =0 {seguidores} one {seguidor} other {seguidores}}",
     "follow": "Seguir",
     "following": "Seguindo",
     "unfollow": "Deixar de seguir",
@@ -357,13 +326,13 @@
     },
     "aliases": "Também conhecido como {names}",
     "verdicts": {
-      "clear": "Este telescópio vê com clareza.",
-      "with_help": "Difícil para este telescópio ver sozinho. A cruz amarela e a visão O que mudou ajudam você a achar.",
-      "indicative": "Este telescópio só dá números aproximados para este. Use como referência.",
-      "not_measurable": "Este telescópio não consegue medir este.",
-      "not_detected": "Este telescópio não consegue achar este nestas fotos.",
-      "clear_bright": "Este telescópio vê com clareza, mas o centro é brilhante demais para medir bem.",
-      "with_help_bright": "Brilhante demais para este telescópio medir bem. A cruz amarela ajuda você a achar."
+      "clear": "Este telescópio vê este objeto com clareza.",
+      "with_help": "Difícil de ver sem ajuda. A cruz amarela e a visão O que mudou ajudam a achar.",
+      "indicative": "Os números deste objeto são só aproximados. Use como referência.",
+      "not_measurable": "Este telescópio não consegue medir este objeto.",
+      "not_detected": "Este objeto não aparece nestas fotos.",
+      "clear_bright": "Dá para ver com clareza, mas o centro é brilhante demais para medir bem.",
+      "with_help_bright": "Brilhante demais para este telescópio medir bem. A cruz amarela ajuda a achar."
     },
     "whyTitle": "Por que este telescópio não consegue medir",
     "candidateTitle": "Candidato #{id}",
@@ -374,46 +343,62 @@
     "seen": "Visto {n, plural, one {# vez} other {# vezes}} entre {from} e {to}",
     "filterAll": "Todos",
     "noPosts": "Ainda não há posts deste tipo",
-    "noSpectrum": "Não há espectro deste objeto no kit de dados.",
+    "noSpectrum": "Ainda não há espectro deste objeto.",
     "noTimelapse": "Ainda não há sequência de fotos deste objeto.",
-    "noMeasurements": "Não há medições deste objeto no kit de dados.",
+    "noMeasurements": "Ainda não há medições deste objeto.",
     "skyMapTitle": "Mapa do céu",
     "skyMapCredit": "Aladin Lite (CDS), levantamento colorido DSS2 servido pela ESA",
     "why": "Por quê"
   },
   "charts": {
     "wavelength": "Comprimento de onda (µm)",
-    "flux": "Brilho (mJy)",
-    "magnitude": "Magnitude (AB)",
+    "flux": "Brilho",
+    "magnitude": "Magnitude",
     "date": "Data",
     "pass": "Passagem {n}",
-    "saturated": "Saturado (aproximado)",
+    "saturated": "Brilhante demais (valor aproximado)",
     "predicted": "Previsto pelo catálogo",
     "measured": "Medido pelo SkySwap a partir de imagens do SPHEREx",
     "community": "Marcações da comunidade",
     "yours": "Suas marcações",
     "spectrumTitle": "Espectro infravermelho",
-    "spectrumHint": "Cada ponto é uma medição do SPHEREx; as barras mostram a incerteza. Pontos vazados estão saturados.",
+    "spectrumHint": "Cada ponto é uma medida do SPHEREx, e as barras mostram a incerteza. Pontos vazados: a estrela era brilhante demais para medir bem. O comprimento de onda está em micrômetros (µm) e o brilho em milijanskys (mJy), unidades que astrônomos usam.",
     "lightcurveTitle": "Curva de luz",
-    "lightcurveHint": "Brilho ao longo do tempo em cada cor do SPHEREx. Magnitude menor significa mais brilhante.",
+    "lightcurveHint": "Brilho ao longo do tempo em cada cor do SPHEREx. Magnitude é a escala de brilho dos astrônomos: número menor quer dizer mais brilhante.",
     "motionTitle": "Movimento pelo céu",
     "motionHint": "Onde o catálogo prevê o objeto (círculos vazados) e onde o SkySwap o mediu a partir de imagens do SPHEREx (pontos com barras de erro). Os deslocamentos estão em segundos de arco a partir da primeira passagem.",
     "verdict": {
-      "consistent": "O SPHEREx concorda com o catálogo",
-      "inconsistent": "O SPHEREx discorda do catálogo",
-      "deviates": "As posições do SPHEREx se afastam da previsão (veja os limites)",
+      "consistent": "Cálculo: posições medidas e previstas batem dentro da incerteza",
+      "inconsistent": "Cálculo: posições medidas e previstas não batem. Só isso não diz qual das duas está errada.",
+      "deviates": "Cálculo: posições medidas e previstas não batem. Só isso não diz qual das duas está errada.",
       "not_measured": "Não medido",
-      "insufficient": "Dados insuficientes"
+      "insufficient": "Poucas medidas para comparar",
+      "unknown": "Sem comparação automática para este objeto",
+      "marginal": "Cálculo: diferença um pouco maior que o esperado, sem base para dizer que são diferentes",
+      "not_enough_data": "Poucas medidas para comparar"
     },
     "path": "Caminho",
     "residuals": "Medido menos previsto",
-    "residualHint": "Quanto cada posição do SPHEREx está longe da previsão no mesmo momento, em segundos de arco. Um pixel do SPHEREx tem 6.15 arcsec.",
+    "residualHint": "Quanto cada posição do SPHEREx está longe da previsão no mesmo momento, em segundos de arco. Um pixel do SPHEREx tem 6,15 segundos de arco.",
     "pixel": "1 pixel",
     "points": "{n, plural, one {# ponto} other {# pontos}}",
-    "east": "Leste (arcsec)",
-    "north": "Norte (arcsec)",
-    "qrWarning": "QR2 e QR3 foram processados de jeitos diferentes. Não compare pequenas mudanças de brilho entre eles.",
-    "noData": "Sem dados"
+    "east": "Leste (segundos de arco)",
+    "north": "Norte (segundos de arco)",
+    "qrWarning": "A NASA publicou estas fotos em dois lotes, processados de jeitos diferentes. Não compare pequenas mudanças de brilho entre um lote e outro.",
+    "noData": "Sem dados",
+    "measuredVs": {
+      "consistent": "A medida ficou a {offset} segundos de arco da previsão, dentro da margem de {margin}.",
+      "marginal": "A medida ficou a {offset} segundos de arco da previsão, fora da margem de {margin}, mas não o bastante para dizer que são diferentes.",
+      "deviates": "A medida ficou a {offset} segundos de arco da previsão, bem fora da margem de {margin}. Só isso não diz qual das duas está errada.",
+      "inconsistent": "A medida ficou a {offset} segundos de arco da previsão, bem fora da margem de {margin}. Só isso não diz qual das duas está errada."
+    },
+    "marginAssumed": "Parte dessa margem ({floor} segundos de arco) é um valor suposto, não uma medida.",
+    "variability": {
+      "varied": "{band}: o brilho variou {spread} magnitudes, mais do que os erros de medida explicam.",
+      "hint": "{band}: o brilho variou {spread} magnitudes, um pouco mais do que os erros preveem. Pode ter mudado, mas isso não basta para afirmar.",
+      "indicative": "{band}: o brilho parece variar {spread} magnitudes, mas estas medidas são fracas (brilho demais, poucas fotos ou muito ruído), então pode não ser real.",
+      "none": "Nenhuma mudança além do que os erros de medida permitem."
+    }
   },
   "viewer": {
     "title": "Post",
@@ -423,7 +408,7 @@
     "next": "Próxima foto",
     "speed": "Velocidade",
     "frame": "Foto {n} de {total}",
-    "crosshair": "Mira",
+    "crosshair": "Cruz amarela",
     "crosshairHint": "Mostra onde o catálogo prevê o objeto em cada foto",
     "filters": "Filtros de cor",
     "wavelength": "Comprimento de onda",
@@ -437,8 +422,8 @@
     },
     "filterHints": {
       "original": "O post como foi publicado",
-      "warm": "Só as cores mais longas, D5 e D6",
-      "rainbow": "Três cores juntas: azul D1, verde D3, vermelho D6",
+      "warm": "Só as cores 5 e 6, as mais longas, onde objetos frios brilham",
+      "rainbow": "Três cores juntas: a cor 1 em azul, a cor 3 em verde e a cor 6 em vermelho",
       "water": "Perto de 3 µm, onde o gelo de água absorve luz",
       "changed": "Uma passagem menos outra: branco ficou mais brilhante, preto ficou mais fraco"
     },
@@ -463,23 +448,23 @@
     "notesImported": "{n, plural, one {# nota importada} other {# notas importadas}}",
     "flags": "Qualidade",
     "flagItems": {
-      "saturated": "Saturado",
+      "saturated": "Brilhante demais",
       "cosmic_ray": "Raios cósmicos",
       "satellite": "Rastros de satélite",
-      "persistence": "Persistência"
+      "persistence": "Brilho que sobrou"
     },
     "flagFrac": "{pct}% das fotos",
     "satelliteNote": "O SPHEREx não sinaliza rastros de satélite.",
-    "saturatedWarning": "Esta estrela é brilhante demais para o SPHEREx: o centro dela estoura o detector, então o brilho aqui é só uma referência aproximada.",
-    "frameInfo": "{band}, {wavelength}, {date}, {release}",
-    "dataNotice": "Imagens: dados públicos do SPHEREx, da NASA (QR2/QR3, IRSA). Infravermelho, mostrado em cinza; qualquer cor que você vê é cor falsa.",
+    "saturatedWarning": "Os avisos da própria câmera mostram que o centro desta estrela é brilhante demais para o SPHEREx, então o brilho aqui é só uma referência aproximada.",
+    "frameInfo": "{band}, {wavelength}, {date}",
+    "dataNotice": "Fotos: dados públicos do SPHEREx, da NASA. São de infravermelho, mostradas em cinza; qualquer cor que você vê é cor falsa.",
     "loading": "Carregando post",
     "notFound": "Post não encontrado",
     "saturatedPill": "Brilhante demais",
     "markedBy": "{people, plural, one {# pessoa marcou} other {# pessoas marcaram}} o movimento",
-    "aboutBand": "Banda de cor",
+    "aboutBand": "Cor",
     "aboutDate": "Feita em",
-    "aboutRelease": "Versão dos dados",
+    "aboutRelease": "Lote de dados da NASA",
     "aboutKind": "Tipo de imagem",
     "aboutFov": "Campo de visão",
     "notFlagged": "não sinalizado",
@@ -498,11 +483,12 @@
       "path": "Mostrar caminho",
       "telescope": "Telescópio",
       "exposures": "Fotos combinadas",
-      "honest": "Os pixels do WISE têm 2.75 arcsec e os do SPHEREx 6.15 arcsec, então as fotos do SPHEREx parecem mais borradas. O brilho é ajustado por telescópio: compare posições, não brilho. Cantos vazios nas fotos do SPHEREx significam que não há dados ali.",
+      "honest": "Os pixels do WISE cobrem 2,75 segundos de arco e os do SPHEREx 6,15, então as fotos do SPHEREx parecem mais borradas. O brilho é ajustado por telescópio: compare posições, não brilho. Cantos vazios nas fotos do SPHEREx significam que não há dados ali.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
     },
     "predictionRow": "Cruz amarela: a previsão. Por que marcar?",
-    "markHintBright": "Centro brilhante demais: toque no meio do brilho"
+    "markHintBright": "Centro brilhante demais: toque no meio do brilho",
+    "markFailed": "Não deu para salvar suas marcações. Tente de novo."
   },
   "search": {
     "title": "Pesquisar",
@@ -518,12 +504,12 @@
     "resolvedBy": "Posição de {source}",
     "sources": {
       "coordinates": "suas coordenadas",
-      "kit": "o kit de dados do SkySwap",
-      "sesame": "CDS Sesame",
-      "mast": "busca de nomes do MAST",
-      "horizons": "JPL Horizons (hoje)"
+      "kit": "a lista do SkySwap",
+      "sesame": "o serviço de nomes do CDS",
+      "mast": "o serviço de nomes do MAST",
+      "horizons": "JPL Horizons, da NASA (hoje)"
     },
-    "stale": "A posição do catálogo é de {epoch}. O objeto se moveu {moved} arcsec desde então, por isso o ponto foi levado para agora.",
+    "stale": "A posição do catálogo é de {epoch}. O objeto se moveu {moved} segundos de arco desde então, por isso o ponto foi levado para agora.",
     "staleUnknown": "A posição do catálogo é do ano 2000. Estrelas que se movem rápido podem ter mudado de lugar.",
     "separation": "a {deg}°",
     "deepLink": "Link direto",
@@ -543,14 +529,9 @@
     "title": "Ponto do céu",
     "loadingIndex": "Procurando imagens do SPHEREx",
     "images": "{n, plural, one {# imagem cobre} other {# imagens cobrem}} este ponto",
-    "source": {
-      "fragment": "do dicionário de imagens do SkySwap",
-      "sia": "do arquivo do IRSA (ao vivo)",
-      "none": "nenhuma imagem encontrada"
-    },
     "none": "Nenhuma imagem do SPHEREx cobre este ponto ainda.",
     "fov": "Campo de visão",
-    "fovValue": "{arcmin} arcmin",
+    "fovValue": "{arcmin} minutos de arco",
     "band": "Cor",
     "allBands": "Todas",
     "start": "Montar a sequência",
@@ -564,32 +545,27 @@
     "embedTitle": "Ponto do céu SkySwap",
     "openInSkySwap": "Abrir no SkySwap",
     "frameDate": "{date}, {band}",
-    "crosshairCentre": "A mira marca o centro do ponto",
-    "siaList": "Lista de imagens do IRSA. Os recortes são baixados quando você pede.",
-    "fetchCutouts": "Baixar {n} recortes",
-    "invalid": "Adicione ra e dec ao endereço, por exemplo /sky?ra=269.45&dec=4.74",
+    "crosshairCentre": "A cruz amarela marca o centro do ponto",
+    "invalid": "Este link veio sem o lugar no céu. Busque um nome ou coordenadas.",
     "lookupFailed": "Não foi possível procurar as imagens deste ponto.",
-    "releases": "Versões dos dados",
-    "colormap": "Mapa de cores",
+    "colormap": "Cor da foto",
     "grey": "Cinza",
-    "bandHue": "Cor da banda",
+    "bandHue": "Colorida",
     "play": "Reproduzir",
     "pause": "Pausar",
     "prev": "Foto anterior",
     "next": "Próxima foto",
-    "crosshair": "Mira",
+    "crosshair": "Cruz amarela",
     "player": "Sequência deste ponto",
-    "frameAlt": "Imagem do SPHEREx deste ponto na banda {band} feita em {date}",
-    "cutoutsFailed": "Não foi possível baixar os recortes do IRSA. Tente de novo daqui a pouco.",
-    "fetchingCutouts": "Baixando recortes: {done} de {total}",
-    "moreImages": "{n, plural, one {mais # imagem} other {mais # imagens}}",
+    "frameAlt": "Imagem do SPHEREx deste ponto em {band}, feita em {date}",
+    "cutoutsFailed": "Não foi possível buscar as fotos no arquivo da NASA. Tente de novo daqui a pouco.",
     "rebuild": "Montar de novo",
     "noFrames": "Nenhuma das imagens deste ponto pôde ser lida.",
     "coordinates": "Posição: {ra}, {dec}",
     "downloaded": "{size} baixados da NASA para esta sequência.",
-    "crosshairMoving": "A mira acompanha o objeto até onde ele estava em cada data (movimento do catálogo).",
-    "readingIndex": "Lendo o índice do céu desta área: {loaded} de {total}. Partes movimentadas do céu levam alguns segundos na primeira vez.",
-    "readingIndexNoSize": "Lendo o índice do céu desta área: {loaded}",
+    "crosshairMoving": "A cruz amarela acompanha o objeto até onde ele estava em cada data (movimento do catálogo).",
+    "readingIndex": "Procurando as fotos desta área: {loaded} de {total}. Partes do céu com muitas fotos levam alguns segundos na primeira vez.",
+    "readingIndexNoSize": "Procurando as fotos desta área: {loaded}",
     "scanningIndex": "Procurando as melhores fotos entre {n, plural, one {# imagem} other {# imagens}} deste ponto",
     "timeline": "Quando cada foto foi feita",
     "timelineDot": "Foto {n}, {date}",
@@ -600,15 +576,11 @@
     "changesHint": "Cada foto menos o valor do meio das outras. Escuro: algo saiu. Claro: algo chegou.",
     "changesEnds": "Só a foto mais antiga e a mais nova, uma menos a outra.",
     "changesAlt": "O que mudou em {date}",
-    "releaseFrame": "{release}, foto {n} de {total}",
-    "fovHint": "Quanto céu cabe na foto. A Lua cheia tem cerca de 30 arcmin de largura.",
+    "fovHint": "Quanto céu cabe na foto, em minutos de arco (60 fazem um grau). A Lua cheia tem cerca de 30 de largura.",
     "thisSpot": "Este ponto",
     "introTitle": "{name} ao longo do tempo",
     "introTitleSpot": "Este ponto ao longo do tempo",
-    "introBody": "O SPHEREx fotografou este ponto {n, plural, one {# vez} other {# vezes}}. Junte as fotos em sequência para ver o que muda de lugar ou de brilho.",
-    "introMore": "Uma sequência passa as fotos uma depois da outra, como um filme curto. Quase tudo fica parado. Algo que anda, como um asteroide ou uma estrela próxima, aparece num lugar diferente em cada foto.",
-    "begin": "Começar",
-    "quick": "Montar com o padrão",
+    "introBody": "O SPHEREx fotografou este ponto {n, plural, one {# vez} other {# vezes}}. Veja as fotos em sequência para achar o que muda de lugar ou de brilho.",
     "stepOf": "Passo {n} de {total}",
     "nextStep": "Próximo",
     "bandLine": "São cores do infravermelho, invisíveis ao olho.",
@@ -640,7 +612,10 @@
       "zoomOut": "Afastar"
     },
     "share": "Compartilhar este ponto",
-    "batch": "Lote {release}"
+    "photoOf": "Foto {n} de {total}",
+    "choose": "Escolher cor e tamanho",
+    "unchecked": "Não deu para conferir agora se há fotos deste ponto.",
+    "goSearch": "Pesquisar"
   },
   "classify": {
     "title": "Ache o que muda de lugar",
@@ -862,7 +837,8 @@
       "source": "SPHEREx, NASA, {date}",
       "where": "{ra}°, {dec}°",
       "yours": "Sua resposta",
-      "saved": "Salvo"
+      "saved": "Salvo",
+      "saving": "Salvando"
     },
     "open": {
       "title": "Cartões em aberto",
@@ -886,7 +862,8 @@
       "body": "Conte o que você viu. Se a comunidade confirmar, o recado vai para o post com o seu nome.",
       "placeholder": "Ex.: o ponto sobe um pouco a cada foto",
       "skip": "Pular",
-      "save": "Salvar recado"
+      "save": "Salvar recado",
+      "failed": "Não deu para salvar o recado."
     },
     "share": {
       "label": "Compartilhar cartão",
@@ -900,6 +877,14 @@
       "knownTitle": "Asteroide {name}",
       "knownBody": "Este ponto bate com um asteroide que já está nos catálogos. Sua resposta foi salva como você respondeu.",
       "fast": "Respostas muito rápidas não contam. Olhe com calma."
+    },
+    "state": {
+      "offline": "Você está sem internet",
+      "failed": "Não deu para carregar",
+      "slow": "O próximo cartão está demorando"
+    },
+    "zoom": {
+      "reset": "Tirar o zoom"
     }
   },
   "reels": {
@@ -963,13 +948,12 @@
     "noLeaderboard": "Sem ranking aqui. Você não está competindo com ninguém.",
     "settings": "Configurações",
     "statusOpen": "aberto",
-    "statusReal": "comunidade: real",
-    "statusArtifact": "comunidade: defeito da imagem",
+    "statusReal": "comunidade: mudou de lugar",
+    "statusArtifact": "comunidade: nada mudou",
     "statusInconclusive": "comunidade: indefinido",
     "progress": "Progresso até o próximo nível",
     "levelBadge": "Nível {n}",
     "earnedOn": "Conquistado em {date}",
-    "answerMore": "Responder mais fotos",
     "noteUntitled": "Post sem título",
     "errorTitle": "Não foi possível carregar seu perfil",
     "statusCandidate": "candidato",
@@ -1005,17 +989,17 @@
     "title": "Lab",
     "subtitle": "Ferramentas científicas para {name}",
     "band": "Cor",
-    "epoch": "Exposição",
+    "epoch": "Foto",
     "fov": "Campo de visão",
     "zoom": "Zoom",
-    "zoomHint": "O zoom vai para o centro da foto.",
+    "zoomHint": "Arraste a foto para andar por ela.",
     "layers": "Camadas",
     "layerItems": {
-      "gaia": "Estrelas do Gaia DR3",
-      "wise": "Posições do WISE",
-      "saturation": "Pixels saturados",
+      "gaia": "Estrelas do catálogo Gaia",
+      "wise": "Posições do telescópio WISE",
+      "saturation": "Pixels brilhantes demais",
       "cosmic": "Raios cósmicos",
-      "persistence": "Persistência",
+      "persistence": "Brilho que sobrou",
       "satellite": "Rastros de satélite",
       "target": "Alvo previsto"
     },
@@ -1023,10 +1007,10 @@
     "pixelHint": "Toque na imagem para ler um pixel.",
     "pixelWave": "Comprimento de onda",
     "pixelFlags": "Avisos",
-    "pixelPos": "AR {ra}, Dec {dec}",
+    "pixelPos": "{ra}, {dec}",
     "noFlags": "Nenhum",
     "spectrum": "Espectro",
-    "spectrumLive": "Medir de novo nestas fotos",
+    "spectrumLive": "Estimativa rápida com estas fotos",
     "spectrumMeasuring": "Medindo {done} de {total}",
     "lightcurve": "Curva de luz",
     "calibration": "Calibração",
@@ -1037,15 +1021,15 @@
     "export": "Exportar",
     "exportCsv": "Tabela do espectro (CSV)",
     "exportJson": "Minhas notas (JSON)",
-    "loading": "Carregando pacote científico",
-    "noPack": "Não há pacote científico para este objeto.",
+    "loading": "Carregando as fotos",
+    "noPack": "O Lab ainda não tem fotos deste objeto.",
     "pack": "{n} fotos nesta cor",
-    "sources": "Dados: SPHEREx QR2/QR3 (IRSA), Gaia DR3 (ESA), AllWISE (IRSA)",
+    "sources": "Dados: fotos públicas do SPHEREx, da NASA (arquivo IRSA), catálogo de estrelas Gaia, da ESA, e catálogo do WISE, da NASA.",
     "hypotheses": {
       "moving_object": "Objeto em movimento",
       "variable": "Mudança de brilho",
-      "artifact": "Defeito do detector",
-      "saturation": "Efeito de saturação",
+      "artifact": "Defeito da câmera",
+      "saturation": "Efeito de estrela brilhante demais",
       "unknown": "Desconhecido"
     },
     "longBaseline": "Animação de {n} anos: {title}",
@@ -1064,7 +1048,9 @@
       "snr": "Pico no alvo: {v} vezes o ruído. É um pico, não uma prova. {n} fotos usadas.",
       "sameStretch": "As duas pilhas usam a mesma escala de brilho. O anel é o alvo na data de referência.",
       "failed": "Não foi possível empilhar estas fotos.",
-      "unit": "Em milissegundos de arco por ano. Arraste no círculo ou digite os números."
+      "unit": "Em milésimos de segundo de arco por ano, a unidade que os catálogos usam para a velocidade de uma estrela no céu. Arraste no círculo ou digite os números.",
+      "padNorth": "N",
+      "padEast": "L"
     },
     "tools": {
       "label": "Ferramentas do Lab",
@@ -1085,10 +1071,10 @@
       "photoBigger": "Aumentar a foto",
       "photoHide": "Esconder a foto",
       "photoShow": "Mostrar a foto",
-      "release": "Lote",
+      "release": "Lote de dados",
       "light": "Luz",
       "lightValue": "{band}, {lam} µm",
-      "bandWave": "{min}-{max} µm",
+      "bandWave": "{min} a {max} µm",
       "colourShort": "Mais perto da luz visível",
       "colourLong": "Mais calor de objetos frios"
     },
@@ -1097,7 +1083,7 @@
       "intro": "O modo pro: as mesmas fotos reais, com ferramentas para datas, cores, pixels, movimento e espectro. Nada do que você faz aqui muda os dados."
     },
     "pixelBrightness": "Brilho",
-    "pixelUnit": "MJy/sr, ± {e}",
+    "pixelUnit": "± {e} MJy/sr",
     "pixelPlace": "Na imagem",
     "pixelXY": "x {x}, y {y}",
     "pixelWaveValue": "{lam} µm",
@@ -1122,14 +1108,13 @@
     "exportJsonEmpty": "Salve uma nota primeiro",
     "intro": {
       "title": "Boas-vindas ao Lab",
-      "body": "Este é o modo avançado, com o tipo de ferramenta que cientistas usam. Pode parecer técnico, mas é livre para qualquer pessoa explorar. Teste à vontade: nada do que você faz aqui muda os dados.",
+      "body": "As mesmas fotos reais, com as ferramentas que cientistas usam. Mexa à vontade: nada do que você faz aqui muda os dados.",
       "action": "Começar a explorar",
-      "again": "Como o Lab funciona",
-      "againHint": "Veja de novo o que cada ferramenta faz",
+      "again": "O que cada ferramenta faz",
       "tools": {
         "date": "Passe pelas datas das fotos",
         "colour": "Veja a foto em cada faixa de luz infravermelha",
-        "zoom": "Chegue mais perto do centro da foto",
+        "zoom": "Chegue mais perto e arraste a foto para olhar em volta",
         "layers": "Mostre estrelas conhecidas e pixels com problema por cima",
         "pixel": "Toque na foto para ler o brilho de um ponto",
         "motion": "Empilhe as fotos num caminho reto para achar estrelas fracas que andam ao longo de meses, não asteroides rápidos",
@@ -1137,7 +1122,36 @@
         "notes": "Anote o que você viu",
         "more": "Baixe dados e confira catálogos"
       }
-    }
+    },
+    "pixelUnitHint": "Em megajanskys por esterradiano (MJy/sr), a unidade que o SPHEREx usa para dizer quanta luz chega de cada pedacinho do céu.",
+    "spectrumFailed": "Não foi possível medir estas fotos. Tente de novo.",
+    "flagNames": {
+      "TRANSIENT": "Batida de partícula",
+      "OVERFLOW": "Brilhante demais: o pixel estourou",
+      "SUR_ERROR": "Erro na leitura",
+      "NONFUNC": "Pixel que não funciona",
+      "DICHROIC": "Borda do filtro de cor",
+      "MISSING_DATA": "Dado faltando",
+      "HOT": "Pixel que sempre lê claro demais",
+      "COLD": "Pixel que sempre lê escuro demais",
+      "FULLSAMPLE": "Leitura completa guardada",
+      "PHANMISS": "Faltou dado de calibração",
+      "NONLINEAR": "Quase brilhante demais",
+      "PERSIST": "Brilho que sobrou de uma fonte forte",
+      "OUTLIER": "Valor estranho",
+      "CROSSTALK": "Vazamento de um vizinho forte",
+      "SOURCE": "Em cima de uma estrela ou galáxia conhecida",
+      "GHOST": "Reflexo dentro do telescópio",
+      "GHOST_FPA": "Reflexo dentro do telescópio",
+      "GHOST_EXT": "Reflexo dentro do telescópio",
+      "STREAK": "Risco na foto",
+      "BLOOM": "Sobra de uma estrela muito forte",
+      "SNOWBALL": "Batida grande de partícula",
+      "HALO": "Anel em volta de uma batida de partícula",
+      "SATELLITE_HALO": "Brilho em volta de um rastro de satélite",
+      "other": "Outro aviso da câmera"
+    },
+    "spectrumLiveNote": "Estimativa rápida feita agora no seu navegador. O espectro de cima é a medida cuidadosa."
   },
   "alerts": {
     "title": "Alertas",
@@ -1155,7 +1169,7 @@
       "goal": "A comunidade bateu a meta: {target} {goal} neste mês.",
       "finding": {
         "candidate": "Um pedaço do céu que você respondeu virou candidato. Sua resposta contou.",
-        "known": "Um pedaço do céu que você respondeu já era conhecido. Sua resposta contou.",
+        "known": "Um pedaço do céu que você respondeu bate com um objeto que já está nos catálogos, segundo uma checagem automática. Sua resposta contou.",
         "likely_artifact": "Um pedaço do céu que você respondeu é provavelmente defeito. Sua resposta contou.",
         "package_ready": "Um pedaço do céu que você respondeu passou nas checagens automáticas.",
         "in_review": "Um pedaço do céu que você respondeu está em revisão.",
@@ -1182,7 +1196,7 @@
     "notes": "Notas privadas",
     "notesHint": "Suas notas ficam só neste navegador.",
     "data": "Sobre os dados",
-    "dataBody": "O SkySwap mostra imagens reais do SPHEREx, da NASA, das versões públicas QR2 e QR3 (IRSA). A luz infravermelha aparece em cinza, e qualquer cor que você vê é cor falsa. O índice do céu lista {images} imagens publicadas, então qualquer ponto pode ser aberto. A primeira olhada num ponto de campo profundo, onde o SPHEREx volta várias e várias vezes perto dos polos da eclíptica, pode levar alguns segundos enquanto essa parte do índice é baixada; depois disso ela fica guardada no navegador. Kit de dados {version}.",
+    "dataBody": "O SkySwap mostra imagens reais do SPHEREx, da NASA, dos lotes públicos de dados QR2 e QR3, guardados no arquivo IRSA, da NASA. A luz infravermelha aparece em cinza, e qualquer cor que você vê é cor falsa. O índice do céu lista {images} imagens publicadas, então qualquer ponto pode ser aberto. A primeira olhada num ponto de campo profundo, onde o SPHEREx volta várias e várias vezes perto dos polos da eclíptica, pode levar alguns segundos enquanto essa parte do índice é baixada; depois disso ela fica guardada no navegador. Kit de dados {version}.",
     "about": "O SkySwap é um protótipo de estudo sem fins comerciais para o desafio \"Planet X and SPHEREx\" do NASA Space Apps 2026. Não tem vínculo com a NASA nem com o Instagram.",
     "api": "Documentação da API",
     "notesCount": "{n, plural, =0 {Nenhuma nota salva} one {# nota salva} other {# notas salvas}}",
@@ -1195,7 +1209,7 @@
     "preferences": "Preferências",
     "yourData": "Seus dados",
     "help": "Ajuda",
-    "tutorialHint": "Um tour rápido por cada parte da tela",
+    "tutorialHint": "Mostra de novo as boas-vindas e as dicas de primeiro uso",
     "details": "Detalhes",
     "detailsHint": "Dados, documentação da API e o projeto",
     "credit": "Mostrar meu apelido nos créditos",
@@ -1212,8 +1226,8 @@
       "sky": "Visualizador do céu SkySwap"
     },
     "what": {
-      "simbad": "Estrelas e galáxias conhecidas a até 1 arcmin",
-      "vizier": "Catálogos publicados a até 1 arcmin",
+      "simbad": "Estrelas e galáxias conhecidas bem perto deste ponto",
+      "vizier": "Catálogos publicados bem perto deste ponto",
       "legacy": "Imagens infravermelhas do WISE e NEOWISE (unWISE)",
       "irsa": "Levantamentos antigos do céu: DSS, 2MASS, WISE",
       "sky": "Todas as fotos do SPHEREx deste ponto"
@@ -1315,8 +1329,8 @@
         "body": "Respostas cuidadosas dizem que algo mudou de lugar aqui. Ninguém confirmou ainda."
       },
       "known": {
-        "label": "Já conhecido",
-        "body": "As pessoas reencontraram {name}. Isso mostra que o método funciona, então suas respostas contaram."
+        "label": "Bate com um objeto conhecido",
+        "body": "Uma checagem automática ligou este ponto a {name}, que já está nos catálogos. Isso mostra que o método funciona, e suas respostas contaram."
       },
       "likely_artifact": {
         "label": "Provável defeito",
@@ -1449,5 +1463,13 @@
     "prev": "Foto anterior",
     "next": "Próxima foto",
     "outside": "Parte preta: o telescópio não fotografou essa área."
+  },
+  "errors": {
+    "title": "Algo deu errado",
+    "body": "Esta tela teve um problema."
+  },
+  "bands": {
+    "name": "Cor {n}",
+    "withCode": "{name} ({code})"
   }
 }

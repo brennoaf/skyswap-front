@@ -7,7 +7,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { KitChart, QrWarning, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
 import { IconCrosshair, IconDownload, IconExpand, IconEye, IconEyeOff, IconQuestion, IconShrink, IconStepBack, IconStepForward } from '@/components/icons'
-import { TOOLS, type Tool } from '@/components/lab/lab-intro'
+import { LabToolHint, LabToolsSheet, TOOLS, type Tool } from '@/components/lab/lab-intro'
 import { ShiftAddPanel } from '@/components/lab/shift-add-panel'
 import { BandTile } from '@/components/ui/band-tile'
 import { CatalogLinks } from '@/components/ui/catalog-links'
@@ -16,7 +16,8 @@ import { useObject, useObjectPosts } from '@/lib/api/hooks'
 import { yearsSpanned } from '@/lib/long-baseline'
 import { BAND_HUE, BANDS, cssColor, cx, formatDate, formatDateTime, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { download, labNotes, saveLabNote, type LabNote } from '@/lib/notes'
-import { useUi } from '@/lib/state/ui'
+import { postTitle } from '@/lib/post-text'
+import { useBandName } from '@/lib/use-band'
 import { decodeSxq, FLAG_LAYERS, flagNames, lambdaAt, makeWcs, measureStar, percentileOf, unpack, type Decoded, type Pack, type PackEpoch } from '@/lib/sky/lab'
 
 type LayerKey = 'target' | 'gaia' | 'wise' | 'saturation' | 'cosmic' | 'persistence' | 'satellite'
@@ -64,10 +65,20 @@ function useBand(pack: Pack | undefined, dir: string | null, band: string) {
   })
 }
 
-function bandRgb(band: string): [number, number, number] {
-  const n = parseInt(cssColor(`--color-band-${band.toLowerCase()}`).slice(1), 16)
+const FLAG_KEYS = ['saturation', 'cosmic', 'persistence', 'satellite'] as const
+const FLAG_ALPHA = 153
+
+function tokenRgb(token: string): [number, number, number] {
+  const n = parseInt(cssColor(token).slice(1), 16)
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
 }
+
+const bandRgb = (band: string) => tokenRgb(`--color-band-${band.toLowerCase()}`)
+
+const clampCentre = (v: number, zoom: number) => Math.min(1 - 0.5 / zoom, Math.max(0.5 / zoom, v))
+
+type LivePoint = { iso: string; lam: number; flux: number; err: number; release: string }
+type Live = { done: number; total: number; points: LivePoint[]; failed: boolean }
 
 function draw(canvas: HTMLCanvasElement, d: Decoded, nx: number, ny: number, hue: [number, number, number]) {
   const ctx = canvas.getContext('2d')
@@ -131,19 +142,19 @@ function Toolbar({ value, onChange }: { value: Tool; onChange: (t: Tool) => void
 
 function PhotoButton({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
   return (
-    <button type="button" aria-label={label} title={label} onClick={onClick} className="inline-flex h-11 w-9 items-center justify-center text-text active:scale-90">
+    <button type="button" aria-label={label} title={label} onClick={onClick} className="inline-flex size-11 items-center justify-center text-text active:scale-90">
       {children}
     </button>
   )
 }
 
-function ActionRow({ icon, title, hint, disabled, onClick }: { icon: ReactNode; title: string; hint: string; disabled?: boolean; onClick: () => void }) {
+function ActionRow({ icon, title, hint, disabled, onClick }: { icon: ReactNode; title: string; hint?: string; disabled?: boolean; onClick: () => void }) {
   return (
     <button type="button" disabled={disabled} onClick={onClick} className="flex min-h-14 w-full items-center gap-3 px-3 py-2 text-left active:bg-surface-pressed disabled:opacity-50">
       <span className="shrink-0">{icon}</span>
       <span className="min-w-0 flex-1">
         <span className="block text-body font-medium">{title}</span>
-        <span className="block text-meta text-text-secondary">{hint}</span>
+        {hint && <span className="block text-meta text-text-secondary">{hint}</span>}
       </span>
     </button>
   )
@@ -214,15 +225,27 @@ export function LabView({ id }: { id: string }) {
   const [photo, setPhoto] = useState<PhotoSize>('large')
   const [decoded, setDecoded] = useState<Decoded | null>(null)
   const [zoom, setZoom] = useState(1)
+  const [centre, setCentre] = useState({ x: 0.5, y: 0.5 })
+  const pan = useRef<{ x: number; y: number; cx: number; cy: number; w: number; h: number; moved: boolean } | null>(null)
+  const panned = useRef(false)
+  const [guide, setGuide] = useState(false)
+  const bandName = useBandName()
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>({ target: true, gaia: false, wise: false, saturation: false, cosmic: false, persistence: false, satellite: false })
   const [pixel, setPixel] = useState<{ x: number; y: number } | null>(null)
-  const [live, setLive] = useState<{ done: number; total: number; points: { iso: string; lam: number; flux: number; err: number; release: string }[] } | null>(null)
+  const [live, setLive] = useState<Live | null>(null)
   const [notes, setNotes] = useState<LabNote[]>([])
   const [hypothesis, setHypothesis] = useState<(typeof HYPOTHESES)[number]>('moving_object')
   const [noteText, setNoteText] = useState('')
   const [tool, setTool] = useState<Tool>('date')
-  const showIntro = useUi((s) => s.showLabIntro)
   const canvas = useRef<HTMLCanvasElement>(null)
+  const flagCanvas = useRef<HTMLCanvasElement>(null)
+  const alive = useRef(true)
+  useEffect(() => {
+    alive.current = true
+    return () => {
+      alive.current = false
+    }
+  }, [])
 
   const epochs = useMemo(() => (pack.data?.epochs ?? []).filter((e) => e.band === band).sort((a, b) => a.mjd - b.mjd), [pack.data, band])
   const ep: PackEpoch | undefined = epochs[Math.min(epochIdx, epochs.length - 1)]
@@ -274,7 +297,6 @@ export function LabView({ id }: { id: string }) {
     void labNotes(id).then(setNotes)
   }, [id])
 
-  const toPct = (x: number, y: number) => (ep ? { left: `${((x + 0.5) / ep.nx) * 100}%`, top: `${((y + 0.5) / ep.ny) * 100}%` } : {})
   const year = ep ? 2000 + (ep.mjd - 51544.5) / 365.25 : 2016
 
   const gaiaMarks = useMemo(() => {
@@ -296,15 +318,30 @@ export function LabView({ id }: { id: string }) {
     return wise.data.map((s, i) => ({ i, xy: wcs.world2pix(s.ra, s.dec), epoch: s.epoch })).filter((s) => s.xy[0] > -1 && s.xy[1] > -1 && s.xy[0] < ep.nx && s.xy[1] < ep.ny)
   }, [wcs, ep, wise.data])
 
-  const flagPixels = useMemo(() => {
-    if (!decoded || !ep) return [] as { k: LayerKey; x: number; y: number }[]
-    const out: { k: LayerKey; x: number; y: number }[] = []
-    for (const k of ['saturation', 'cosmic', 'persistence', 'satellite'] as const) {
-      if (!layers[k]) continue
-      for (let i = 0; i < ep.nx * ep.ny; i++) if (((decoded.flags[i] as number) & FLAG_LAYERS[k]) !== 0) out.push({ k, x: i % ep.nx, y: Math.floor(i / ep.nx) })
-    }
-    return out
-  }, [decoded, ep, layers])
+  const flagsOn = FLAG_KEYS.map((k) => layers[k]).join()
+  useEffect(() => {
+    const c = flagCanvas.current
+    const ctx = c?.getContext('2d')
+    if (!c || !ctx || !ep) return
+    c.width = ep.nx
+    c.height = ep.ny
+    if (!decoded) return
+    const on = flagsOn.split(',')
+    const img = ctx.createImageData(ep.nx, ep.ny)
+    FLAG_KEYS.forEach((k, j) => {
+      if (on[j] !== 'true') return
+      const [r, g, b] = tokenRgb(`--color-layer-${k}`)
+      const mask = FLAG_LAYERS[k]
+      for (let i = 0; i < ep.nx * ep.ny; i++) {
+        if (((decoded.flags[i] as number) & mask) === 0) continue
+        img.data[i * 4] = r
+        img.data[i * 4 + 1] = g
+        img.data[i * 4 + 2] = b
+        img.data[i * 4 + 3] = FLAG_ALPHA
+      }
+    })
+    ctx.putImageData(img, 0, 0)
+  }, [decoded, ep, flagsOn])
 
   const readout = useMemo(() => {
     if (!pixel || !decoded || !ep || !wcs) return null
@@ -323,28 +360,42 @@ export function LabView({ id }: { id: string }) {
   const measureLive = async () => {
     if (!pack.data || !dir) return
     const list = pack.data.epochs.filter((e) => e.inside)
-    setLive({ done: 0, total: list.length, points: [] })
-    const points: { iso: string; lam: number; flux: number; err: number; release: string }[] = []
+    const points: LivePoint[] = []
+    setLive({ done: 0, total: list.length, points, failed: false })
     const cache = new Map<string, Uint8Array[]>()
     let done = 0
-    for (const e of list) {
-      let p = cache.get(e.band)
-      if (!p) {
-        const info = pack.data.bands[e.band]
-        if (!info) continue
-        p = unpack(await (await fetch(`${dir}${info.file}`)).arrayBuffer())
-        cache.set(e.band, p)
+    try {
+      for (const e of list) {
+        if (!alive.current) return
+        let p = cache.get(e.band)
+        if (!p) {
+          const info = pack.data.bands[e.band]
+          if (!info) continue
+          const r = await fetch(`${dir}${info.file}`)
+          if (!r.ok) throw new Error(String(r.status))
+          p = unpack(await r.arrayBuffer())
+          cache.set(e.band, p)
+        }
+        const part = p[e.index]
+        if (part) {
+          const d = await decodeSxq(part)
+          const m = measureStar(d.image, d.variance, d.flags, e.nx, e.ny, makeWcs({ wcs: e.wcs, sip: e.sip }), e.target_radec[0], e.target_radec[1], e.wave)
+          if (m && !m.rejected && Number.isFinite(m.flux_mjy)) points.push({ iso: e.iso, lam: m.wavelength_um, flux: m.flux_mjy, err: m.err_mjy, release: e.release })
+        }
+        done++
+        if (alive.current && done % 10 === 0) setLive({ done, total: list.length, points: [...points], failed: false })
       }
-      const part = p[e.index]
-      if (part) {
-        const d = await decodeSxq(part)
-        const m = measureStar(d.image, d.variance, d.flags, e.nx, e.ny, makeWcs({ wcs: e.wcs, sip: e.sip }), e.target_radec[0], e.target_radec[1], e.wave)
-        if (m && !m.rejected && Number.isFinite(m.flux_mjy)) points.push({ iso: e.iso, lam: m.wavelength_um, flux: m.flux_mjy, err: m.err_mjy, release: e.release })
-      }
-      done++
-      if (done % 10 === 0 || done === list.length) setLive({ done, total: list.length, points: [...points] })
+      if (alive.current) setLive({ done: list.length, total: list.length, points: [...points], failed: false })
+    } catch {
+      if (alive.current) setLive({ done: list.length, total: list.length, points: [...points], failed: true })
     }
   }
+  const measuring = !!live && !live.failed && live.done < live.total
+  const pickZoom = (z: number) => {
+    setZoom(z)
+    setCentre((c) => ({ x: clampCentre(c.x, z), y: clampCentre(c.y, z) }))
+  }
+  const flagLabels = (names: string[]) => [...new Set(names.map((f) => (t.has(`flagNames.${f}`) ? t(`flagNames.${f}`) : t('flagNames.other'))))]
 
   const csv = () => {
     const rows = ['source,pass_or_date,release,wavelength_um,flux_mjy,err_mjy,saturated']
@@ -398,10 +449,40 @@ export function LabView({ id }: { id: string }) {
         <>
           <div className="sticky top-[var(--height-topbar)] z-20 bg-bg">
             <div
-              className={cx('relative mx-auto overflow-hidden bg-media-bg motion-safe:transition-[width]', photo === 'hidden' && 'hidden')}
+              className={cx('relative mx-auto overflow-hidden bg-media-bg motion-safe:transition-[width]', photo === 'hidden' && 'hidden', zoom > 1 && 'touch-none')}
               style={{ aspectRatio: ep ? `${ep.nx} / ${ep.ny}` : '1 / 1', width: ep ? `min(100%, calc(${PHOTO_HEIGHT[photo]} * ${ep.nx / ep.ny}))` : `min(100%, ${PHOTO_HEIGHT[photo]})` }}
+              onPointerDown={(e) => {
+                if (zoom <= 1) return
+                const r = e.currentTarget.getBoundingClientRect()
+                pan.current = { x: e.clientX, y: e.clientY, cx: centre.x, cy: centre.y, w: r.width, h: r.height, moved: false }
+              }}
+              onPointerMove={(e) => {
+                const p = pan.current
+                if (!p) return
+                const dx = e.clientX - p.x
+                const dy = e.clientY - p.y
+                if (!p.moved && Math.hypot(dx, dy) < 6) return
+                if (!p.moved) {
+                  p.moved = true
+                  panned.current = true
+                  e.currentTarget.setPointerCapture(e.pointerId)
+                }
+                setCentre({ x: clampCentre(p.cx - dx / (p.w * zoom), zoom), y: clampCentre(p.cy - dy / (p.h * zoom), zoom) })
+              }}
+              onPointerUp={() => {
+                pan.current = null
+              }}
+              onPointerCancel={() => {
+                pan.current = null
+                panned.current = false
+              }}
+              onClickCapture={(e) => {
+                if (!panned.current) return
+                panned.current = false
+                e.stopPropagation()
+              }}
             >
-              <div className="absolute inset-0 origin-center transition-transform" style={{ transform: `scale(${zoom})` }}>
+              <div className="absolute inset-0 origin-center" style={{ transform: `translate(${(0.5 - centre.x) * 100 * zoom}%, ${(0.5 - centre.y) * 100 * zoom}%) scale(${zoom})` }}>
                 <canvas
                   ref={canvas}
                   className="pixelated size-full"
@@ -416,12 +497,9 @@ export function LabView({ id }: { id: string }) {
                     const r = e.currentTarget.getBoundingClientRect()
                     setPixel({ x: Math.floor(((e.clientX - r.left) / r.width) * ep.nx), y: Math.floor(((e.clientY - r.top) / r.height) * ep.ny) })
                   }}
-                  onWheel={(e) => setZoom((z) => Math.min(8, Math.max(1, z * (e.deltaY < 0 ? 1.2 : 1 / 1.2))))}
                   aria-label={t('pixelHint')}
                 />
-                {flagPixels.map((p, i) => (
-                  <span key={i} className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 opacity-60" style={{ ...toPct(p.x, p.y), width: `${100 / (ep?.nx ?? 1)}%`, height: `${100 / (ep?.ny ?? 1)}%`, background: LAYER_COLOR[p.k] }} />
-                ))}
+                <canvas ref={flagCanvas} aria-hidden="true" className="pixelated pointer-events-none absolute inset-0 size-full" />
                 <svg className="pointer-events-none absolute inset-0 size-full" viewBox={`0 0 ${ep?.nx ?? 1} ${ep?.ny ?? 1}`} preserveAspectRatio="none" aria-hidden="true">
                   {layers.gaia &&
                     gaiaMarks.map((s) => (
@@ -464,12 +542,13 @@ export function LabView({ id }: { id: string }) {
           </div>
 
           <div id="lab-panel" role="tabpanel" aria-labelledby={`lab-tab-${tool}`} className="space-y-3 px-4 pt-3">
+            <LabToolHint tool={tool} />
             {tool === 'date' && ep && (
               <>
                 <dl className="grid grid-cols-[auto_auto_auto] justify-between gap-x-3">
                   <Reading label={t('pixelSky')}>{t('skyDegrees', { ra: num(ep.target_radec[0], 2), dec: num(ep.target_radec[1], 2) })}</Reading>
                   <Reading label={t('tools.release')}>{ep.release.toUpperCase()}</Reading>
-                  <Reading label={t('tools.light')}>{t('tools.lightValue', { band, lam: num(ep.lam_um, 2) })}</Reading>
+                  <Reading label={t('tools.light')}>{t('tools.lightValue', { band: bandName(band), lam: num(ep.lam_um, 2) })}</Reading>
                 </dl>
                 <div>
                   <p className="pb-1.5 text-meta text-text-secondary">{t('pack', { n: epochs.length })}</p>
@@ -483,7 +562,7 @@ export function LabView({ id }: { id: string }) {
                 <div className="grid grid-cols-3 gap-2" role="group" aria-label={t('band')}>
                   {BANDS.filter((b) => pack.data?.bands[b]).map((b) => {
                     const info = bandInfo[b]
-                    return <BandTile key={b} label={b} hue={BAND_HUE[b] ?? ''} detail={info ? t('tools.bandWave', { min: num(info.min, 1), max: num(info.max, 1) }) : undefined} on={band === b} onClick={() => pickBand(b)} />
+                    return <BandTile key={b} label={bandName(b)} hue={BAND_HUE[b] ?? ''} detail={info ? t('tools.bandWave', { min: num(info.min, 1), max: num(info.max, 1) }) : undefined} on={band === b} onClick={() => pickBand(b)} />
                   })}
                 </div>
                 <div>
@@ -493,7 +572,7 @@ export function LabView({ id }: { id: string }) {
                     <span className="text-right">{t('tools.colourLong')}</span>
                   </div>
                 </div>
-                <p className="text-note leading-snug text-text-secondary">{t('tools.colourHint', { band, n: bandInfo[band]?.n ?? 0 })}</p>
+                <p className="text-note leading-snug text-text-secondary">{t('tools.colourHint', { band: bandName(band), n: bandInfo[band]?.n ?? 0 })}</p>
               </>
             )}
 
@@ -501,13 +580,13 @@ export function LabView({ id }: { id: string }) {
               <>
                 <div className="grid grid-cols-4 gap-2" role="group" aria-label={t('zoom')}>
                   {[1, 2, 4, 8].map((z) => (
-                    <Chip key={z} active={Math.abs(zoom - z) < 0.01} onClick={() => setZoom(z)} className="min-h-12 w-full justify-center text-ui">
+                    <Chip key={z} active={zoom === z} onClick={() => pickZoom(z)} className="min-h-12 w-full justify-center text-ui">
                       {z}x
                     </Chip>
                   ))}
                 </div>
                 <p className="text-body">{t('zoomField', { n: num(((pack.data.field.fov_deg ?? 0.1) * 60) / zoom, 1) })}</p>
-                <p className="text-meta text-text-secondary">{t('zoomHint')}</p>
+                {zoom > 1 && <p className="text-meta text-text-secondary">{t('zoomHint')}</p>}
               </>
             )}
 
@@ -542,6 +621,7 @@ export function LabView({ id }: { id: string }) {
                         <span className="font-[family-name:var(--font-display)] text-title-lg font-bold">{Number.isFinite(readout.v) ? readout.v.toPrecision(4) : '-'}</span>
                         <span className="text-note text-text-secondary">{t('pixelUnit', { e: Number.isFinite(readout.e) ? readout.e.toPrecision(2) : '-' })}</span>
                       </dd>
+                      <dd className="mt-1 text-meta leading-snug text-text-secondary">{t('pixelUnitHint')}</dd>
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 border-t-[0.5px] border-divider pt-3">
                       <Reading label={t('pixelPlace')}>{t('pixelXY', { x: pixel?.x ?? 0, y: pixel?.y ?? 0 })}</Reading>
@@ -552,7 +632,7 @@ export function LabView({ id }: { id: string }) {
                       <Reading label={t('pixelFlags')} wide>
                         {readout.flags.length ? (
                           <span className="flex flex-wrap gap-1 pt-0.5">
-                            {readout.flags.map((f) => (
+                            {flagLabels(readout.flags).map((f) => (
                               <span key={f} className="rounded-full bg-bg px-2 py-0.5 text-meta font-medium text-warning">
                                 {f}
                               </span>
@@ -597,11 +677,17 @@ export function LabView({ id }: { id: string }) {
                       <SpectrumChart data={spectra.data} />
                     </div>
                   )}
-                  <Button variant="ghost" className="mt-2 h-11 w-full bg-bg" onClick={() => void measureLive()} disabled={!!live && live.done < live.total}>
-                    {live && live.done < live.total ? t('spectrumMeasuring', { done: live.done, total: live.total }) : t('spectrumLive')}
+                  <Button variant="ghost" className="mt-2 h-11 w-full bg-bg" onClick={() => void measureLive()} disabled={measuring}>
+                    {measuring && live ? t('spectrumMeasuring', { done: live.done, total: live.total }) : t('spectrumLive')}
                   </Button>
+                  {live?.failed && (
+                    <p className="mt-2 text-note text-danger" role="alert">
+                      {t('spectrumFailed')}
+                    </p>
+                  )}
                   {live && live.points.length > 0 && (
                     <div className="mt-2">
+                      <p className="pb-1 text-note leading-snug text-text-secondary">{t('spectrumLiveNote')}</p>
                       <SpectrumChart data={{ passes: [{ pass: 0, t: live.points[0]?.iso ?? '', points: live.points.map((p) => ({ wavelength_um: p.lam, flux_mjy: p.flux, err: p.err, saturated: false })) }] }} />
                     </div>
                   )}
@@ -610,7 +696,7 @@ export function LabView({ id }: { id: string }) {
                   <section className="rounded-2xl bg-surface p-3">
                     <h3 className="text-ui font-semibold">{t('lightcurve')}</h3>
                     <p className="mt-0.5 text-note leading-snug text-text-secondary">{t('lightcurveHint')}</p>
-                    <KitChart kind="lightcurve" url={profile.measurements.lightcurve} />
+                    <KitChart kind="lightcurve" url={profile.measurements.lightcurve} technical />
                   </section>
                 )}
                 <QrWarning />
@@ -621,14 +707,14 @@ export function LabView({ id }: { id: string }) {
               <>
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl bg-surface p-3">
                   <Reading label={t('tools.date')}>{ep ? formatShortDate(ep.iso, locale) : '-'}</Reading>
-                  <Reading label={t('tools.colour')}>{band}</Reading>
+                  <Reading label={t('tools.colour')}>{bandName(band)}</Reading>
                   <Reading label={t('pixelSky')} wide>
                     {readout ? t('pixelPos', { ra: formatRa(readout.ra), dec: formatDec(readout.dec) }) : <span className="text-text-secondary">{t('notePickSpot')}</span>}
                   </Reading>
                 </dl>
                 <div>
                   <p className="pb-1.5 text-note font-medium">{t('noteHypothesis')}</p>
-                  <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('noteHypothesis')}>
+                  <div className="flex flex-wrap gap-2" role="group" aria-label={t('noteHypothesis')}>
                     {HYPOTHESES.map((h) => (
                       <Chip key={h} active={hypothesis === h} onClick={() => setHypothesis(h)}>
                         {t(`hypotheses.${h}`)}
@@ -672,7 +758,7 @@ export function LabView({ id }: { id: string }) {
                         <p className="font-semibold">{t(`hypotheses.${n.hypothesis}`)}</p>
                         <p className="mt-0.5">{n.text}</p>
                         <p className="mt-1 text-meta text-text-secondary">
-                          {n.band}, {n.date ? formatShortDate(n.date, locale) : '-'}
+                          {bandName(n.band)}, {n.date ? formatShortDate(n.date, locale) : '-'}
                           {n.ra !== null && n.dec !== null && `, ${t('skyDegrees', { ra: num(n.ra, 4), dec: num(n.dec, 4) })}`}
                         </p>
                       </li>
@@ -685,7 +771,7 @@ export function LabView({ id }: { id: string }) {
             {tool === 'more' && (
               <>
                 <section className="overflow-hidden rounded-2xl bg-surface">
-                  <ActionRow icon={<IconQuestion size={22} />} title={t('intro.again')} hint={t('intro.againHint')} onClick={showIntro} />
+                  <ActionRow icon={<IconQuestion size={22} />} title={t('intro.again')} onClick={() => setGuide(true)} />
                 </section>
                 <section className="overflow-hidden rounded-2xl bg-surface">
                   <h3 className="px-3 pt-3 text-ui font-semibold">{t('export')}</h3>
@@ -695,7 +781,7 @@ export function LabView({ id }: { id: string }) {
                 <CatalogLinks ra={profile.ra} dec={profile.dec} className="rounded-2xl bg-surface p-3" />
                 {flipbook && (
                   <Link href={`/p/${flipbook.id}`} className="block rounded-2xl bg-surface p-3 text-body text-link">
-                    {t('longBaseline', { n: yearsSpanned(flipbook), title: flipbook.title })}
+                    {t('longBaseline', { n: yearsSpanned(flipbook), title: postTitle(flipbook.title, locale) })}
                   </Link>
                 )}
                 <p className="px-1 text-meta leading-snug text-text-secondary">{t('sources')}</p>
@@ -706,6 +792,7 @@ export function LabView({ id }: { id: string }) {
       ) : (
         <EmptyState title={t('noPack')} />
       )}
+      <LabToolsSheet open={guide} onClose={() => setGuide(false)} />
     </main>
   )
 }

@@ -25,7 +25,7 @@ export function BottomNav() {
         overlay ? 'border-white/15 bg-reels-bg text-on-media [--color-text:var(--color-on-media)]' : 'border-border bg-bg',
       )}
     >
-      <ul className="flex h-[var(--height-bottomnav)] items-center justify-around px-3" data-tour="nav">
+      <ul className="flex h-[var(--height-bottomnav)] items-center justify-around px-3">
         <li>
           <Link href="/" aria-label={t('home')} aria-current={is('/') ? 'page' : undefined} className={item}>
             <IconHome filled={is('/')} />

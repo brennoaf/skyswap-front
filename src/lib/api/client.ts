@@ -1,7 +1,36 @@
 import createClient from 'openapi-fetch'
 import type { components, paths } from './schema'
 
-export const api = createClient<paths>({ baseUrl: typeof window === 'undefined' ? (process.env.SKYSWAP_API_URL ?? 'http://127.0.0.1:4000') : '', credentials: 'include' })
+export const API_TIMEOUT_MS = 15_000
+export const SLOW_API_TIMEOUT_MS = 45_000
+const SLOW_PATHS = ['/api/search', '/api/sky', '/api/cutout', '/api/index/at']
+
+export function timeoutFor(url: string): number {
+  const path = url.replace(/^[a-z]+:\/\/[^/]+/i, '').split('?')[0] ?? ''
+  return SLOW_PATHS.some((p) => path === p || path.startsWith(`${p}/`)) ? SLOW_API_TIMEOUT_MS : API_TIMEOUT_MS
+}
+
+export function tzOffsetMinutes(now: Date = new Date()): number {
+  return -now.getTimezoneOffset() || 0
+}
+
+export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const request = new Request(input, init)
+  if (typeof window !== 'undefined') request.headers.set('X-TZ-Offset', String(tzOffsetMinutes()))
+  const ctrl = new AbortController()
+  const stop = () => ctrl.abort(request.signal.reason)
+  if (request.signal.aborted) stop()
+  else request.signal.addEventListener('abort', stop, { once: true })
+  const timer = setTimeout(() => ctrl.abort(new DOMException('timeout', 'TimeoutError')), timeoutFor(request.url))
+  try {
+    return await fetch(request, { signal: ctrl.signal })
+  } finally {
+    clearTimeout(timer)
+    request.signal.removeEventListener('abort', stop)
+  }
+}
+
+export const api = createClient<paths>({ baseUrl: typeof window === 'undefined' ? (process.env.SKYSWAP_API_URL ?? 'http://127.0.0.1:4000') : '', credentials: 'include', fetch: apiFetch })
 
 type Ok<P extends keyof paths, M extends keyof paths[P]> = paths[P][M] extends { responses: { 200: { content: { 'application/json': infer T } } } } ? T : never
 
@@ -23,11 +52,19 @@ export type Me = Ok<'/api/me', 'get'>
 export type SearchResult = Ok<'/api/search', 'get'>
 export type SkyResult = Ok<'/api/sky', 'get'>
 export type Alert = Ok<'/api/alerts', 'get'>['alerts'][number]
+export type NextCard = Ok<'/api/classify/next', 'get'>
+export type SkySpot = NonNullable<NextCard['spot']>
+export type VoteResult = Ok<'/api/classify/votes', 'post'>
+export type GuideData = Ok<'/api/classify/guide', 'get'>
 
 export class ApiError extends Error {
   constructor(readonly status: number, readonly code: string) {
     super(code)
   }
+}
+
+export function failureOf(err: unknown): { status: number | null; code: string | null } {
+  return err instanceof ApiError ? { status: err.status, code: err.code } : { status: null, code: null }
 }
 
 export function unwrap<T>(r: { data?: T; error?: unknown; response: Response }): T {

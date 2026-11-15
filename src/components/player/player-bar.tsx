@@ -12,6 +12,8 @@ const MAX_CELL = 64
 const WINDOW = 6
 const BIG_GAP_S = 3600
 const BIG_GAP_RATIO = 5
+const BLINK_TAP_MS = 300
+const BLINK_DEMO_MS = 1500
 
 export function useGapLabel() {
   const t = useTranslations('player')
@@ -122,6 +124,7 @@ export function PlayerBar({
   extra,
   tone = 'surface',
   compact = false,
+  dense = false,
   outside = false,
   reserve = false,
   note,
@@ -134,6 +137,7 @@ export function PlayerBar({
   extra?: ReactNode
   tone?: 'surface' | 'media'
   compact?: boolean
+  dense?: boolean
   outside?: boolean
   reserve?: boolean
   note?: ReactNode
@@ -143,13 +147,21 @@ export function PlayerBar({
   const locale = useLocale()
   const gap = useGapLabel()
   const reduce = useReducedMotion()
-  const { n, index, running, blinking } = playback
+  const { n, index, running, blinking, startBlink, stopBlink } = playback
+  const blinkDown = useRef(0)
+  const blinkTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(
+    () => () => {
+      if (blinkTimer.current) clearTimeout(blinkTimer.current)
+    },
+    [],
+  )
   if (n < 2) return null
   const after = (seconds[index] ?? 0) - (seconds[0] ?? 0)
   const date = dates?.[index]
   const fullDate = date ? new Date(date).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' }) : null
   const soft = tone === 'media' ? 'bg-media-scrim text-on-media' : 'bg-surface text-text active:bg-surface-pressed'
-  const small = cx('inline-flex size-10 shrink-0 items-center justify-center rounded-full', tone === 'media' ? 'text-on-media' : 'text-text')
+  const small = cx('inline-flex size-11 shrink-0 items-center justify-center rounded-full', tone === 'media' ? 'text-on-media' : 'text-text')
   const counter = t('counter', { n: index + 1, total: n })
   const tools = !playback.playing
   const steps = (
@@ -161,6 +173,29 @@ export function PlayerBar({
         <IconStepForward size={26} />
       </button>
     </div>
+  )
+  const blink = (
+    <button
+      type="button"
+      aria-label={t('blinkHint')}
+      aria-pressed={blinking}
+      onPointerDown={(e) => {
+        e.currentTarget.setPointerCapture(e.pointerId)
+        if (blinkTimer.current) clearTimeout(blinkTimer.current)
+        blinkDown.current = performance.now()
+        startBlink()
+      }}
+      onPointerUp={() => {
+        const held = performance.now() - blinkDown.current
+        if (held >= BLINK_TAP_MS) stopBlink()
+        else blinkTimer.current = setTimeout(stopBlink, BLINK_DEMO_MS - held)
+      }}
+      onPointerCancel={stopBlink}
+      onContextMenu={(e) => e.preventDefault()}
+      className={cx('hit-44 h-10 shrink-0 touch-none select-none whitespace-nowrap rounded-full px-3 text-note font-semibold', blinking ? 'bg-accent text-on-accent' : soft)}
+    >
+      {t('blink')}
+    </button>
   )
   return (
     <div className={cx('space-y-1', tone === 'media' && 'text-on-media', className)} data-testid="player-bar">
@@ -180,33 +215,22 @@ export function PlayerBar({
             !running && fullDate && <p className={cx('truncate text-note leading-5', tone === 'media' ? 'text-on-media-muted' : 'text-text-secondary')}>{fullDate}</p>
           )}
         </div>
-        {compact && tools && steps}
+        {(compact || dense) && tools && steps}
+        {dense && tools && blink}
+        {dense && tools && extra}
       </div>
       <AnimatePresence initial={false}>
-      {!compact && (tools || reserve) && (
+      {dense && tools && <PhotoStrip key="strip" playback={playback} seconds={seconds} thumb={thumb} label={t('strip')} tone={tone} />}
+      {!compact && !dense && (tools || reserve) && (
         <motion.div key="tools" initial={reduce ? false : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={reduce ? undefined : { height: 0, opacity: 0 }} transition={{ duration: 0.18 }} className={cx('space-y-1 overflow-hidden', !tools && 'invisible')} aria-hidden={!tools}>
           <PhotoStrip playback={playback} seconds={seconds} thumb={thumb} label={t('strip')} tone={tone} />
           <div className="flex items-center justify-between gap-1">
             {steps}
             <div className="flex shrink-0 items-center gap-1">
-              <button type="button" aria-label={t('speed', { value: playback.speed })} onClick={playback.cycleSpeed} className={cx('h-10 min-w-10 shrink-0 rounded-full px-1 text-note font-semibold', soft)}>
+              <button type="button" aria-label={t('speed', { value: playback.speed })} onClick={playback.cycleSpeed} className={cx('hit-44 h-10 min-w-10 shrink-0 rounded-full px-1 text-note font-semibold', soft)}>
                 {t('speedValue', { value: playback.speed })}
               </button>
-              <button
-                type="button"
-                aria-label={t('blinkHint')}
-                aria-pressed={blinking}
-                onPointerDown={(e) => {
-                  e.currentTarget.setPointerCapture(e.pointerId)
-                  playback.startBlink()
-                }}
-                onPointerUp={playback.stopBlink}
-                onPointerCancel={playback.stopBlink}
-                onContextMenu={(e) => e.preventDefault()}
-                className={cx('h-10 touch-none select-none whitespace-nowrap rounded-full px-3 text-note font-semibold', blinking ? 'bg-accent text-on-accent' : soft)}
-              >
-                {t('blink')}
-              </button>
+              {blink}
               {extra}
             </div>
           </div>

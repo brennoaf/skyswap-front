@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Suspense, useCallback, useState } from 'react'
@@ -29,7 +30,15 @@ function SkyScreen() {
     return (
       <main>
         <TopBar title={t('title')} />
-        <EmptyState title={t('title')} body={t('invalid')} />
+        <EmptyState
+          title={t('title')}
+          body={t('invalid')}
+          action={
+            <Link href="/search" className="inline-flex h-11 items-center rounded-[var(--radius-button)] bg-accent px-5 text-ui font-semibold text-on-accent">
+              {t('goSearch')}
+            </Link>
+          }
+        />
       </main>
     )
 

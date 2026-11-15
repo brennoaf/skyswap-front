@@ -3,8 +3,8 @@
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
-import { IconColours, IconCompare, IconCrosshair, IconLayers, IconMore, IconMoves, IconNote, IconSearch, IconSpectrum } from '@/components/icons'
-import { Button, Sheet } from '@/components/ui/primitives'
+import { IconClose, IconColours, IconCompare, IconCrosshair, IconLayers, IconMore, IconMoves, IconNote, IconSearch, IconSpectrum } from '@/components/icons'
+import { Button, IconButton, Sheet } from '@/components/ui/primitives'
 import { useUi } from '@/lib/state/ui'
 
 export const TOOLS = [
@@ -21,9 +21,10 @@ export const TOOLS = [
 
 export type Tool = (typeof TOOLS)[number]['key']
 
+const SELF_EXPLAINED: readonly Tool[] = ['pixel', 'motion', 'spectrum', 'more']
+
 export function LabIntro() {
   const t = useTranslations('lab.intro')
-  const tools = useTranslations('lab.tools')
   const path = usePathname()
   const language = useUi((s) => s.languageChosen)
   const done = useUi((s) => s.labIntroDone)
@@ -33,23 +34,49 @@ export function LabIntro() {
   const open = hydrated && language && !done && (path === '/lab' || path.startsWith('/lab/'))
   return (
     <Sheet open={open} onClose={finish} title={t('title')}>
-      <p className="px-4 pt-3 text-body leading-snug">{t('body')}</p>
-      <ul className="mt-2 px-4">
-        {TOOLS.map((tool) => (
-          <li key={tool.key} className="flex items-center gap-3 py-1.5">
-            <span className="inline-flex size-8 shrink-0 items-center justify-center">{tool.icon}</span>
-            <span className="min-w-0 flex-1 leading-tight">
-              <span className="block text-body font-medium">{tools(tool.key)}</span>
-              <span className="block text-meta text-text-secondary">{t(`tools.${tool.key}`)}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-      <div className="sticky bottom-0 -mb-[max(var(--space-gutter),env(safe-area-inset-bottom))] bg-sheet px-4 pb-[max(var(--space-gutter),env(safe-area-inset-bottom))] pt-3">
+      <p className="px-4 pt-4 text-ui leading-relaxed">{t('body')}</p>
+      <div className="px-4 pt-5">
         <Button variant="primary" className="h-12 w-full" onClick={finish}>
           {t('action')}
         </Button>
       </div>
+    </Sheet>
+  )
+}
+
+export function LabToolHint({ tool }: { tool: Tool }) {
+  const t = useTranslations('lab.intro')
+  const tc = useTranslations('common')
+  const key = `lab-${tool}`
+  const seen = useUi((s) => s.tipsSeen.includes(key))
+  const markTip = useUi((s) => s.markTip)
+  if (seen || SELF_EXPLAINED.includes(tool)) return null
+  return (
+    <div role="note" className="flex items-center gap-1 rounded-xl bg-surface pl-3 text-note leading-snug">
+      <p className="min-w-0 flex-1 py-2.5">{t(`tools.${tool}`)}</p>
+      <IconButton label={tc('close')} onClick={() => markTip(key)} className="text-text-secondary">
+        <IconClose size={18} />
+      </IconButton>
+    </div>
+  )
+}
+
+export function LabToolsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useTranslations('lab.intro')
+  const tools = useTranslations('lab.tools')
+  return (
+    <Sheet open={open} onClose={onClose} title={t('again')}>
+      <ul className="px-4 pt-2">
+        {TOOLS.map((tool) => (
+          <li key={tool.key} className="flex items-center gap-3 py-2">
+            <span className="inline-flex size-8 shrink-0 items-center justify-center">{tool.icon}</span>
+            <span className="min-w-0 flex-1 leading-snug">
+              <span className="block text-body font-medium">{tools(tool.key)}</span>
+              <span className="block text-note text-text-secondary">{t(`tools.${tool.key}`)}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
     </Sheet>
   )
 }

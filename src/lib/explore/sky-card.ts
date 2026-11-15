@@ -178,41 +178,81 @@ export function composeSprite(images: Float32Array[], n: number): { width: numbe
   return { width, height, data }
 }
 
-export async function buildSkyCard(spot: Spot, tileBytes: number | null = null): Promise<SkyCardDraft | null> {
-  const q = await pointHits(spot.ra, spot.dec, tileBytes)
-  const choice = chooseVisits(q.hits)
-  if (!choice) return null
-  const visitOf = new Map<string, number>()
-  choice.visits.forEach((v, i) => v.forEach((h) => visitOf.set(`${h.key}|${h.mjd}`, i)))
+export type BuildGuard = () => boolean
+
+export interface SpotFrames {
+  ra: number
+  dec: number
+  fov_deg: number
+  band: string
+  frames: { key: string; mjd: number; wl_um: number; visit: number }[]
+}
+
+const rowId = (h: { key: string; mjd: number }) => `${h.key}|${h.mjd}`
+
+async function readExposures(ra: number, dec: number, fovDeg: number, band: string, rows: IndexRow[], visitOf: Map<string, number>, keep?: BuildGuard): Promise<SkyExposure[] | null> {
   const got: SkyExposure[] = []
   await skyMovie({
-    ra: spot.ra,
-    dec: spot.dec,
-    fovDeg: SKY_FOV_DEG,
+    ra,
+    dec,
+    fovDeg,
     indexBase: INDEX_BASE,
     mode: 'bilinear',
-    bands: [choice.band],
+    bands: [band],
     hosts: SKY_HOSTS,
     concurrency: 4,
-    hits: choice.visits.flat(),
+    hits: rows,
     onFrame: (_i, f) => {
+      if (keep && !keep()) throw new Error('stopped')
       const lam = Number.isFinite(f.h.lam) ? f.h.lam : (f.h.lam_min + f.h.lam_max) / 2
-      got.push({ key: f.h.key, mjd: f.h.mjd, wl_um: Math.round(lam * 1000) / 1000, visit: visitOf.get(`${f.h.key}|${f.h.mjd}`) ?? 0, img: f.img, variance: f.variance })
+      got.push({ key: f.h.key, mjd: f.h.mjd, wl_um: Math.round(lam * 1000) / 1000, visit: visitOf.get(rowId(f.h)) ?? 0, img: f.img, variance: f.variance })
     },
   }).catch(() => null)
-  const usable = got.filter((e) => coverage(e.img) >= MIN_COVERAGE)
+  return keep && !keep() ? null : got
+}
+
+function toDraft(ra: number, dec: number, band: string, usable: SkyExposure[]): SkyCardDraft | null {
   const ids = [...new Set(usable.map((e) => e.visit))].sort((a, b) => a - b)
   if (ids.length < 2) return null
   const exposures = usable.map((e) => ({ ...e, visit: ids.indexOf(e.visit) })).sort((a, b) => a.mjd - b.mjd)
   const panels = ids.map((_, i) => meanImage(exposures.filter((e) => e.visit === i).map((e) => e.img)))
   const n = Math.round(Math.sqrt((panels[0] as Float32Array).length))
   return {
-    ra: spot.ra,
-    dec: spot.dec,
-    band: choice.band,
+    ra,
+    dec,
+    band,
     size_px: n,
     frames: exposures.map((e) => ({ key: e.key, mjd: e.mjd, wl_um: e.wl_um, visit: e.visit })),
     exposures,
     pixels: composeSprite(panels, n),
   }
+}
+
+export function matchSpotRows(frames: SpotFrames['frames'], hits: IndexRow[]): IndexRow[] | null {
+  const byKey = new Map<string, IndexRow>()
+  for (const h of hits) if (!byKey.has(h.key)) byKey.set(h.key, h)
+  const rows = frames.map((f) => byKey.get(f.key))
+  return rows.every((r): r is IndexRow => !!r) ? rows : null
+}
+
+export async function buildSkyCard(spot: Spot, tileBytes: number | null = null, keep?: BuildGuard): Promise<SkyCardDraft | null> {
+  const q = await pointHits(spot.ra, spot.dec, tileBytes)
+  const choice = chooseVisits(q.hits)
+  if (!choice || (keep && !keep())) return null
+  const visitOf = new Map<string, number>()
+  choice.visits.forEach((v, i) => v.forEach((h) => visitOf.set(rowId(h), i)))
+  const got = await readExposures(spot.ra, spot.dec, SKY_FOV_DEG, choice.band, choice.visits.flat(), visitOf, keep)
+  if (!got) return null
+  return toDraft(spot.ra, spot.dec, choice.band, got.filter((e) => coverage(e.img) >= MIN_COVERAGE))
+}
+
+export async function buildSpotCard(spot: SpotFrames, tileBytes: number | null = null, keep?: BuildGuard): Promise<SkyCardDraft | null> {
+  const q = await pointHits(spot.ra, spot.dec, tileBytes)
+  const rows = matchSpotRows(spot.frames, q.hits)
+  if (!rows || (keep && !keep())) return null
+  const visitOf = new Map<string, number>()
+  rows.forEach((h, i) => visitOf.set(rowId(h), (spot.frames[i] as SpotFrames['frames'][number]).visit))
+  const got = await readExposures(spot.ra, spot.dec, spot.fov_deg, spot.band, rows, visitOf, keep)
+  if (!got || got.length !== rows.length) return null
+  return toDraft(spot.ra, spot.dec, spot.band, got)
 }

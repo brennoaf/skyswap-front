@@ -3,7 +3,7 @@
   "info": {
     "title": "SkySwap API",
     "version": "0.1.0",
-    "description": "Sky objects from real NASA SPHEREx images, served from the SkySwap data kit."
+    "description": "Sky objects from real NASA SPHEREx images, served from the SkySwap data kit. Send the header x-tz-offset (minutes east of UTC, for example -180 in Brasilia) so days for streaks and daily limits follow the local calendar."
   },
   "components": {
     "securitySchemes": {
@@ -14,6 +14,65 @@
       }
     },
     "schemas": {
+      "SkySpot": {
+        "type": "object",
+        "required": [
+          "id",
+          "ra",
+          "dec",
+          "fov_deg",
+          "band",
+          "size_px",
+          "frames"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ra": {
+            "type": "number"
+          },
+          "dec": {
+            "type": "number"
+          },
+          "fov_deg": {
+            "type": "number"
+          },
+          "band": {
+            "type": "string"
+          },
+          "size_px": {
+            "type": "integer"
+          },
+          "frames": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "key",
+                "mjd",
+                "wl_um",
+                "visit"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "mjd": {
+                  "type": "number"
+                },
+                "wl_um": {
+                  "type": "number"
+                },
+                "visit": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "description": "A sky card that already exists, in the shape POST /api/classify/sky takes. Build it and register it like a fresh one."
+      },
       "FindingSummary": {
         "type": "object",
         "required": [
@@ -2185,7 +2244,8 @@
           "p_real": {
             "anyOf": [
               {
-                "type": "number"
+                "type": "number",
+                "description": "Estimate, not a verdict: the chance that it moves, computed from the answers so far."
               },
               {
                 "type": "null"
@@ -4319,6 +4379,7 @@
                     "fov",
                     "band",
                     "source",
+                    "incomplete",
                     "cell",
                     "tile_bytes",
                     "total",
@@ -4349,7 +4410,30 @@
                       ]
                     },
                     "source": {
-                      "type": "string"
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "fragment"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "sia"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "none"
+                          ]
+                        }
+                      ]
+                    },
+                    "incomplete": {
+                      "type": "boolean",
+                      "description": "True when the archive could not be asked (offline) or did not answer for every collection: an empty or short list is then not proof that no image exists."
                     },
                     "cell": {
                       "anyOf": [
@@ -6394,7 +6478,7 @@
                     "done",
                     "card",
                     "sky",
-                    "interesting"
+                    "spot"
                   ],
                   "properties": {
                     "done": {
@@ -6440,8 +6524,71 @@
                     "sky": {
                       "type": "boolean"
                     },
-                    "interesting": {
-                      "type": "boolean"
+                    "spot": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "ra",
+                            "dec",
+                            "fov_deg",
+                            "band",
+                            "size_px",
+                            "frames"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "ra": {
+                              "type": "number"
+                            },
+                            "dec": {
+                              "type": "number"
+                            },
+                            "fov_deg": {
+                              "type": "number"
+                            },
+                            "band": {
+                              "type": "string"
+                            },
+                            "size_px": {
+                              "type": "integer"
+                            },
+                            "frames": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "key",
+                                  "mjd",
+                                  "wl_um",
+                                  "visit"
+                                ],
+                                "properties": {
+                                  "key": {
+                                    "type": "string"
+                                  },
+                                  "mjd": {
+                                    "type": "number"
+                                  },
+                                  "wl_um": {
+                                    "type": "number"
+                                  },
+                                  "visit": {
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "description": "A sky card that already exists, in the shape POST /api/classify/sky takes. Build it and register it like a fresh one."
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   }
                 }
@@ -7389,7 +7536,8 @@
                         "p_real": {
                           "anyOf": [
                             {
-                              "type": "number"
+                              "type": "number",
+                              "description": "Estimate, not a verdict: the chance that it moves, computed from the answers so far."
                             },
                             {
                               "type": "null"
@@ -10128,7 +10276,8 @@
                         "p_real": {
                           "anyOf": [
                             {
-                              "type": "number"
+                              "type": "number",
+                              "description": "Estimate, not a verdict: the chance that it moves, computed from the answers so far."
                             },
                             {
                               "type": "null"

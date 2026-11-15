@@ -39,6 +39,11 @@ export function usePlayback(n: number, opts: { baseMs: number; minMs?: number; a
   }, [blinking])
 
   const stopBlink = useCallback(() => setBlinking(false), [])
+  const startBlink = useCallback(() => {
+    setPhase(false)
+    setBlinking(true)
+  }, [])
+  const cycleSpeed = useCallback(() => setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length] ?? 1), [setSpeed, speed])
 
   const setIndex = useCallback(
     (next: number | ((i: number) => number)) => {
@@ -58,12 +63,9 @@ export function usePlayback(n: number, opts: { baseMs: number; minMs?: number; a
     setPlaying,
     running,
     speed,
-    cycleSpeed: () => setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length] ?? 1),
+    cycleSpeed,
     blinking,
-    startBlink: () => {
-      setPhase(false)
-      setBlinking(true)
-    },
+    startBlink,
     stopBlink,
   }
 }

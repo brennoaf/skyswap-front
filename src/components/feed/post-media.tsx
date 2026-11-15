@@ -7,9 +7,11 @@ import { IconCarousel, IconReel } from '@/components/icons'
 import type { Post } from '@/lib/api/client'
 import { cx, formatShortDate } from '@/lib/format'
 import { frameYear, isLongBaseline, LONG_BASELINE_FPS, PLAYABLE, telescopeOf, yearsSpanned } from '@/lib/long-baseline'
+import { postTitle } from '@/lib/post-text'
 import { useUi } from '@/lib/state/ui'
+import { useBandName } from '@/lib/use-band'
 
-export function Crosshair({ x, y, size = 34, color = 'var(--color-warning)' }: { x: number; y: number; size?: number; color?: string }) {
+export function Crosshair({ x, y, size = 34, color = 'var(--color-crosshair)' }: { x: number; y: number; size?: number; color?: string }) {
   return (
     <svg className="pointer-events-none absolute" style={{ left: `calc(${x * 100}% - ${size / 2}px)`, top: `calc(${y * 100}% - ${size / 2}px)` }} width={size} height={size} viewBox="0 0 34 34" aria-hidden="true">
       <g stroke={color} strokeWidth="2" strokeLinecap="round" fill="none">
@@ -41,6 +43,7 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
   const locale = useLocale()
   const t = useTranslations('post')
   const crosshair = useUi((s) => s.crosshair)
+  const bandName = useBandName()
   const { ref, inView } = useInView<HTMLDivElement>()
   const [frame, setFrame] = useState(0)
   const [slide, setSlide] = useState(0)
@@ -129,14 +132,14 @@ export function PostMedia({ post, priority = false }: { post: Post; priority?: b
         <div className={cx('flex h-full', !offset && 'motion-safe:transition-transform motion-safe:duration-200')} style={{ transform: `translateX(calc(${-slide * 100}% + ${offset}px))` }}>
           {post.frames.map((f, i) => (
             <div key={f.src} className="relative h-full w-full shrink-0">
-              <Image src={f.src} alt={t('frameAlt', { band: f.band, date: formatShortDate(f.t, locale) })} fill sizes="(max-width: 470px) 100vw, 470px" className="pixelated object-contain" priority={priority && i === 0} />
+              <Image src={f.src} alt={t('frameAlt', { band: bandName(f.band), date: formatShortDate(f.t, locale) })} fill sizes="(max-width: 470px) 100vw, 470px" className="pixelated object-contain" priority={priority && i === 0} />
             </div>
           ))}
         </div>
       ) : (
         <Image
           src={isTimelapse && shown ? shown.src : post.cover}
-          alt={isChart ? t('chartAlt', { title: post.title }) : t('frameAlt', { band: shown?.band ?? post.band ?? '', date: formatShortDate(shown?.t ?? post.date_range[0] ?? '', locale) })}
+          alt={isChart ? t('chartAlt', { title: postTitle(post.title, locale) }) : t('frameAlt', { band: bandName(shown?.band ?? post.band), date: formatShortDate(shown?.t ?? post.date_range[0] ?? '', locale) })}
           fill
           sizes="(max-width: 470px) 100vw, 470px"
           className={isChart ? 'object-contain' : 'pixelated object-contain'}

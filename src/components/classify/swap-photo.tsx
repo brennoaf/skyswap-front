@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { useCardGestures } from '@/components/classify/card-gestures'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
-import { IconCheck, IconClose, IconPause, IconPlay, IconQuestion, IconSliders, IconWarning } from '@/components/icons'
+import { IconCheck, IconClose, IconPause, IconPlay, IconQuestion, IconShrink, IconSliders, IconWarning } from '@/components/icons'
 import { PhotoStrip } from '@/components/player/player-bar'
 import type { Playback } from '@/components/player/use-playback'
 import { Skeleton, Switch } from '@/components/ui/primitives'
@@ -124,6 +124,7 @@ export function SwapStage({
   x,
   y,
   canSwipe,
+  doubleTap = true,
   onRelease,
   onCancel,
   onTap,
@@ -141,6 +142,7 @@ export function SwapStage({
   x: MotionValue<number>
   y: MotionValue<number>
   canSwipe: boolean
+  doubleTap?: boolean
   onRelease: (dx: number, dy: number, vx: number, vy: number) => void
   onCancel: () => void
   onTap: (u: number, v: number) => void
@@ -150,6 +152,7 @@ export function SwapStage({
   ring?: keyof typeof FRAME_RING
   leaving?: keyof typeof LEAVE | null
 }) {
+  const t = useTranslations('classify')
   const reduce = useReducedMotion()
   const canvas = useRef<HTMLCanvasElement>(null)
   const inner = useRef<HTMLDivElement>(null)
@@ -170,6 +173,7 @@ export function SwapStage({
     x,
     y,
     canSwipe,
+    doubleTap,
     threshold: SWIPE,
     onRelease,
     onCancel,
@@ -180,10 +184,13 @@ export function SwapStage({
     },
   })
 
+  const zoomed = gestures.zoom.scale > 1
+
   return (
     <div className="relative z-10 flex shrink-0 justify-center pb-1.5" data-testid="swap-photo-slot">
       <CardBehind size="var(--swap-photo)" />
       <motion.div
+        className="relative"
         initial={reduce ? false : { y: 24, scale: 0.96, opacity: 0 }}
         animate={leaving ? LEAVE[leaving] : { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 }}
         transition={{ duration: reduce ? 0 : 0.35, ease: [0.2, 0.8, 0.2, 1] }}
@@ -196,9 +203,10 @@ export function SwapStage({
         data-testid="swap-photo"
         data-tour="swap-photo"
         data-ring={ring}
+        data-zoomed={zoomed || undefined}
       >
-        <div className={cx(photoInset, gestures.zoom.scale > 1 && 'overflow-hidden')}>
-          <div ref={inner} className="relative size-full origin-center" style={gestures.zoom.scale > 1 ? { transform: `translate(${gestures.zoom.x}px, ${gestures.zoom.y}px) scale(${gestures.zoom.scale})` } : undefined}>
+        <div className={cx(photoInset, zoomed && 'overflow-hidden')}>
+          <div ref={inner} className="relative size-full origin-center" style={zoomed ? { transform: `translate(${gestures.zoom.x}px, ${gestures.zoom.y}px) scale(${gestures.zoom.scale})` } : undefined}>
             <canvas ref={canvas} width={tile} height={tile} role="img" aria-label={alt} className="pixelated block size-full bg-reels-bg" data-sprite={sprite} data-frame={panel} />
             {!img && <Skeleton className="absolute inset-0 rounded-none" />}
             {overlay}
@@ -207,6 +215,11 @@ export function SwapStage({
         {hint && <GestureHint x={x} y={y} />}
         <SwapStamps x={x} y={y} />
       </motion.div>
+      {zoomed && !leaving && (
+        <button type="button" aria-label={t('zoom.reset')} onClick={gestures.resetZoom} className="absolute right-3 top-3 z-20 grid size-11 place-items-center rounded-full bg-bg text-text shadow-[0_2px_10px_rgb(0_0_0/0.35)] ring-1 ring-inset ring-divider active:bg-surface-pressed" data-testid="zoom-reset">
+          <IconShrink size={22} />
+        </button>
+      )}
       </motion.div>
     </div>
   )

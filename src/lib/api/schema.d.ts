@@ -661,7 +661,8 @@ export interface paths {
                             dec: number;
                             fov: number;
                             band: string | null;
-                            source: string;
+                            source: "fragment" | "sia" | "none";
+                            incomplete: boolean;
                             cell: number | null;
                             tile_bytes: number | null;
                             total: number;
@@ -1558,7 +1559,20 @@ export interface paths {
                                 t0: string;
                             } | null;
                             sky: boolean;
-                            interesting: boolean;
+                            spot: {
+                                id: string;
+                                ra: number;
+                                dec: number;
+                                fov_deg: number;
+                                band: string;
+                                size_px: number;
+                                frames: {
+                                    key: string;
+                                    mjd: number;
+                                    wl_um: number;
+                                    visit: number;
+                                }[];
+                            } | null;
                         };
                     };
                 };
@@ -3187,6 +3201,20 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        SkySpot: {
+            id: string;
+            ra: number;
+            dec: number;
+            fov_deg: number;
+            band: string;
+            size_px: number;
+            frames: {
+                key: string;
+                mjd: number;
+                wl_um: number;
+                visit: number;
+            }[];
+        };
         FindingSummary: {
             id: string;
             kind: "sky" | "deck";
