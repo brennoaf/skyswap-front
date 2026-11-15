@@ -4952,6 +4952,15 @@
             "in": "query",
             "name": "dec",
             "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "in": "query",
+            "name": "obj",
+            "required": false
           }
         ],
         "responses": {
@@ -4970,7 +4979,9 @@
                     "date_beg",
                     "date_end",
                     "bright",
-                    "channels"
+                    "channels",
+                    "object",
+                    "elsewhere"
                   ],
                   "properties": {
                     "ra": {
@@ -5089,6 +5100,87 @@
                           }
                         }
                       }
+                    },
+                    "object": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "name",
+                            "at",
+                            "shift_arcsec",
+                            "solar_system"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "at": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "shift_arcsec": {
+                              "type": "number"
+                            },
+                            "solar_system": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "elsewhere": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "name",
+                          "offset_arcsec"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "offset_arcsec": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
                     }
                   }
                 }

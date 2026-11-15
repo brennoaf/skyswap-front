@@ -723,6 +723,7 @@ export interface paths {
                 query: {
                     ra: number;
                     dec: number;
+                    obj?: string;
                 };
                 header?: never;
                 path?: never;
@@ -754,6 +755,28 @@ export interface paths {
                                 state: "ok" | "blank" | "empty" | "flagged";
                                 bright: boolean;
                             }[];
+                            object: {
+                                id: string;
+                                name: string;
+                                at: string | null;
+                                shift_arcsec: number;
+                                solar_system: boolean;
+                            } | null;
+                            elsewhere: {
+                                id: string;
+                                name: string;
+                                offset_arcsec: number;
+                            }[];
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
                         };
                     };
                 };

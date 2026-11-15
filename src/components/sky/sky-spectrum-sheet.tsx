@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
+import { useState } from 'react'
 import { PointSpectrumChart } from '@/components/charts/charts'
-import { IconChevronRight, IconFlask, IconLink, IconSaturated } from '@/components/icons'
+import { IconChevronRight, IconFlask, IconLink, IconSaturated, IconWarning } from '@/components/icons'
 import type { SkyParams } from '@/components/sky/sky-viewer'
 import { Button, Notice, Sheet, Skeleton } from '@/components/ui/primitives'
 import { ApiError } from '@/lib/api/client'
@@ -18,11 +19,15 @@ export function SkySpectrumSheet({ open, onClose, params }: { open: boolean; onC
   const tc = useTranslations('common')
   const tv = useTranslations('viewer')
   const locale = useLocale()
-  const spectrum = useSkySpectrum(params.ra, params.dec, open)
+  const [follow, setFollow] = useState<string | null>(null)
+  const obj = follow ?? params.obj
+  const spectrum = useSkySpectrum(params.ra, params.dec, obj, open)
   const sky = useSky(open ? params.ra : null, params.dec, params.fov, params.band)
   const near = sky.data?.nearby.find((o) => (o.separation_deg ?? Infinity) * 3600 <= SAME_OBJECT_ARCSEC)
-  const labId = params.obj ?? near?.id ?? null
+  const labId = obj ?? near?.id ?? null
   const data = spectrum.data
+  const gone = data?.elsewhere[0]
+  const moved = data?.object && data.object.shift_arcsec > data.pixel_arcsec ? data.object : null
   const offline = spectrum.error instanceof ApiError && spectrum.error.status === 503
   const row = 'flex min-h-12 w-full items-center gap-3 border-b-[0.5px] border-divider text-left text-ui active:bg-surface'
   return (
@@ -46,6 +51,24 @@ export function SkySpectrumSheet({ open, onClose, params }: { open: boolean; onC
             <p className="text-note text-text-secondary">{t('loading')}</p>
             <Skeleton className="h-[260px] w-full" />
           </>
+        )}
+        {moved && !moved.solar_system && (
+          <p className="text-note leading-snug text-text-secondary" data-testid="sky-spectrum-moved">
+            {t('movedRead', { name: moved.name, n: Math.round(moved.shift_arcsec) })}
+          </p>
+        )}
+        {data?.object?.solar_system && (
+          <Notice tone="warning" icon={<IconWarning size={20} />}>
+            <p>{t('solarSystem')}</p>
+          </Notice>
+        )}
+        {gone && (
+          <Notice tone="warning" icon={<IconWarning size={20} />}>
+            <p data-testid="sky-spectrum-gone">{t('elsewhere', { name: gone.name, n: Math.round(gone.offset_arcsec) })}</p>
+            <Button className="mt-2 h-11" onClick={() => setFollow(gone.id)}>
+              {t('elsewhereGo', { name: gone.name })}
+            </Button>
+          </Notice>
         )}
         {data?.bright && (
           <Notice tone="warning" icon={<IconSaturated size={20} />}>

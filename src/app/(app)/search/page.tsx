@@ -12,7 +12,10 @@ import { Button, Chip, EmptyState, ObjectAvatar, Skeleton } from '@/components/u
 import type { FeedItem, SearchResult } from '@/lib/api/client'
 import { searchQuery, useFeed, useObject, useObjects, useSearch } from '@/lib/api/hooks'
 import { formatDec, formatRa, formatShortPosition } from '@/lib/format'
-import { directSpot } from '@/lib/search-direct'
+import { directSpot, spotName, spotObject } from '@/lib/search-direct'
+
+const TARGET_ORDER = ['barnards-star', 'eps-indi-b', 'wise-0855-0714', 'rw-aurigae', 'r-draconis']
+const targetRank = (id: string) => (TARGET_ORDER.includes(id) ? TARGET_ORDER.indexOf(id) : TARGET_ORDER.length)
 import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
 
@@ -55,16 +58,16 @@ function ResultRow({ o, onOpen }: { o: Hit; onOpen: () => void }) {
   )
 }
 
-function WatchRow({ spot, onWatch, obj }: { spot: Spot; onWatch: () => void; obj: string | null }) {
+function WatchRow({ spot, name, onWatch, obj }: { spot: Spot; name: string | null; onWatch: () => void; obj: string | null }) {
   const t = useTranslations('search')
   return (
-    <Link href={skyHref({ ra: spot.ra, dec: spot.dec, name: spot.name, obj })} onClick={onWatch} className="flex min-h-[60px] items-center gap-3 px-4 py-2 active:bg-surface">
+    <Link href={skyHref({ ra: spot.ra, dec: spot.dec, name, obj })} onClick={onWatch} className="flex min-h-[60px] items-center gap-3 px-4 py-2 active:bg-surface">
       <span className="flex size-11 shrink-0 items-center justify-center rounded-full border-[0.5px] border-divider">
         <IconTarget size={24} />
       </span>
       <span className="min-w-0 flex-1 leading-tight">
         <span className="block truncate text-body font-semibold">{t('watchTitle')}</span>
-        <span className="block truncate text-body text-text-secondary">{spot.name ?? t('coordinates', { ra: formatRa(spot.ra), dec: formatDec(spot.dec) })}</span>
+        <span className="block truncate text-body text-text-secondary">{name ?? t('coordinates', { ra: formatRa(spot.ra), dec: formatDec(spot.dec) })}</span>
       </span>
       <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
     </Link>
@@ -103,7 +106,10 @@ function TargetRow({ id }: { id: string }) {
 function Targets() {
   const t = useTranslations('search')
   const objects = useObjects()
-  const ids = (objects.data ?? []).filter((o) => o.official_target).map((o) => o.id)
+  const ids = (objects.data ?? [])
+    .filter((o) => o.official_target)
+    .map((o) => o.id)
+    .sort((a, b) => targetRank(a) - targetRank(b))
   if (!ids.length) return null
   return (
     <section className="pb-2" aria-labelledby="targets-title" data-testid="search-targets">
@@ -331,7 +337,7 @@ export default function SearchPage() {
                   </ul>
                 </section>
               )}
-              {data.spot && <WatchRow spot={data.spot} onWatch={remember} obj={data.spot.source === 'kit' ? (data.objects[0]?.id ?? null) : null} />}
+              {data.spot && <WatchRow spot={data.spot} name={spotName(data)} onWatch={remember} obj={spotObject(data)} />}
               {!data.spot && !data.objects.length && <EmptyState title={t('noResults', { q: data.query })} />}
             </>
           )}

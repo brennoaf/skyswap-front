@@ -416,7 +416,7 @@
     "readFlux": "Brilho {value} ± {err} mJy",
     "readMag": "Magnitude {value} ± {err}",
     "readOffset": "{dist} segundos de arco da previsão",
-    "xNear": "luz visível",
+    "xNear": "perto da luz visível",
     "xFar": "calor",
     "brighter": "mais brilho",
     "fainter": "menos brilho",
@@ -689,7 +689,11 @@
       "lab": "Ver este objeto no Lab",
       "irsa": "Medida de verdade na IRSA",
       "credit": "Mapa do céu inteiro: SPHEREx DR1, NASA/JPL-Caltech/IPAC (IRSA).",
-      "more": "Mais sobre este ponto"
+      "more": "Mais sobre este ponto",
+      "movedRead": "Lido onde {name} estava no meio da soma, a {n}″ da posição do catálogo.",
+      "solarSystem": "Este objeto anda rápido demais para o mapa somado. A cor aqui é só do fundo do céu.",
+      "elsewhere": "{name} não está mais neste ponto nesta soma: estava a {n}″ daqui.",
+      "elsewhereGo": "Ver a cor de {name}"
     }
   },
   "classify": {

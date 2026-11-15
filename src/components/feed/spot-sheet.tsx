@@ -7,6 +7,7 @@ import { Button, Notice, Sheet } from '@/components/ui/primitives'
 import { IconWarning } from '@/components/icons'
 import { api, unwrap } from '@/lib/api/client'
 import { formatDec, formatRa } from '@/lib/format'
+import { spotName, spotObject } from '@/lib/search-direct'
 
 export function skyHref(p: { ra: number; dec: number; fov?: number; band?: string | null; name?: string | null; obj?: string | null }) {
   const q = new URLSearchParams({ ra: p.ra.toFixed(5), dec: p.dec.toFixed(5), fov: String(p.fov ?? 0.1) })
@@ -34,9 +35,9 @@ export function SpotSheet({ open, onClose }: { open: boolean; onClose: () => voi
         setError(t('notFound'))
         return
       }
-      const href = skyHref({ ra: r.spot.ra, dec: r.spot.dec, name: r.spot.name, obj: r.spot.source === 'kit' ? (r.objects[0]?.id ?? null) : null })
+      const href = skyHref({ ra: r.spot.ra, dec: r.spot.dec, name: spotName(r), obj: spotObject(r) })
       if (r.spot.stale) {
-        setStale({ href, name: r.spot.name, moved: r.spot.moved_arcsec, ra: r.spot.ra, dec: r.spot.dec })
+        setStale({ href, name: spotName(r), moved: r.spot.moved_arcsec, ra: r.spot.ra, dec: r.spot.dec })
         return
       }
       onClose()
