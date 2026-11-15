@@ -652,9 +652,9 @@
     "guide": {
       "step": "Treino {n} de {total}",
       "look": "Olhe as fotos passando. Viu algum ponto mudar de lugar?",
-      "answer": "Agora responda: toque em Sim, mudou ou deslize a foto para a direita.",
-      "still": "Olhe as fotos passando e responda. Deslizar a foto para a esquerda é Nada mudou.",
-      "glitch": "Olhe o círculo enquanto as fotos passam. Depois, escolha uma resposta.",
+      "answer": "Agora responda: toque em Sim, mudou ou deslize para a direita.",
+      "still": "Olhe as fotos e responda. Deslizar para a esquerda é Nada mudou.",
+      "glitch": "Olhe o círculo nas fotos passando e escolha uma resposta.",
       "saw": "Vi o ponto",
       "show": "Não vi, me mostre",
       "shown": "O ponto salta de um círculo para o outro"
@@ -743,7 +743,7 @@
       "blink": "Segure: 1ª e última",
       "diff": "Ver diferenças",
       "diffNote": "Estrelas paradas também viram par claro e escuro.",
-      "back": "Voltar às respostas"
+      "back": "Voltar"
     },
     "result": {
       "label": "Resultado",
