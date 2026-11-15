@@ -11,7 +11,7 @@ import { TOOLS, type Tool } from '@/components/lab/lab-intro'
 import { ShiftAddPanel } from '@/components/lab/shift-add-panel'
 import { BandTile } from '@/components/ui/band-tile'
 import { CatalogLinks } from '@/components/ui/catalog-links'
-import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
+import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Skeleton, Switch, TopBar } from '@/components/ui/primitives'
 import { useObject, useObjectPosts } from '@/lib/api/hooks'
 import { yearsSpanned } from '@/lib/long-baseline'
 import { BAND_HUE, BANDS, cssColor, cx, formatDate, formatDateTime, formatDec, formatRa, formatShortDate } from '@/lib/format'
@@ -525,11 +525,7 @@ export function LabView({ id }: { id: string }) {
                         </span>
                         <span className="block text-meta leading-snug text-text-secondary">{t(`layerHints.${k}`)}</span>
                       </span>
-                      <input type="checkbox" role="switch" checked={layers[k]} onChange={(e) => setLayers((l) => ({ ...l, [k]: e.target.checked }))} className="peer sr-only" />
-                      <span
-                        aria-hidden="true"
-                        className="relative h-6 w-10 shrink-0 rounded-full bg-surface-pressed transition-colors after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-on-accent after:transition-transform peer-checked:bg-accent peer-checked:after:translate-x-4"
-                      />
+                      <Switch checked={layers[k]} onChange={(e) => setLayers((l) => ({ ...l, [k]: e.target.checked }))} />
                     </label>
                   </li>
                 ))}

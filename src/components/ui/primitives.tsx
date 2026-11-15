@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { IconBack, IconFlask, IconSaturated, IconVerified } from '@/components/icons'
 import { cx } from '@/lib/format'
 
@@ -35,6 +35,15 @@ export function LabChip({ href, label, description, tour }: { href: string; labe
         {label}
       </span>
     </Link>
+  )
+}
+
+export function Switch({ offTone = 'bg-surface-pressed', ...rest }: Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'role' | 'className'> & { offTone?: string }) {
+  return (
+    <>
+      <input type="checkbox" role="switch" {...rest} className="peer sr-only" />
+      <span aria-hidden="true" className={cx('relative h-6 w-10 shrink-0 rounded-full transition-colors after:absolute after:left-0.5 after:top-0.5 after:size-5 after:rounded-full after:bg-on-accent after:transition-transform peer-checked:bg-accent peer-checked:after:translate-x-4', offTone)} />
+    </>
   )
 }
 

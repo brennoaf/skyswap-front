@@ -8,7 +8,7 @@ import { useOffsetLabel } from '@/components/classify/photo-viewer'
 import { IconCheck, IconClose, IconPause, IconPlay, IconQuestion, IconSliders, IconWarning } from '@/components/icons'
 import { PhotoStrip } from '@/components/player/player-bar'
 import type { Playback } from '@/components/player/use-playback'
-import { Skeleton } from '@/components/ui/primitives'
+import { Skeleton, Switch } from '@/components/ui/primitives'
 import { cx } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 
@@ -22,7 +22,6 @@ const SPEED_CHOICES = [
 export const swapButton = {
   big: 'flex h-[60px] min-w-0 flex-1 items-center justify-center rounded-2xl border border-text-muted px-2 text-center text-[18px] font-semibold leading-tight active:bg-surface-pressed disabled:opacity-50',
   mid: 'flex h-12 min-w-0 flex-1 items-center justify-center rounded-2xl border border-text-muted px-2 text-center text-[16px] font-semibold leading-tight active:bg-surface-pressed disabled:opacity-50',
-  toggle: (on: boolean) => cx('flex h-12 min-w-0 flex-1 items-center justify-center rounded-2xl px-2 text-center text-[15px] font-semibold leading-tight', on ? 'bg-accent text-on-accent active:bg-accent-pressed' : 'border border-text-muted active:bg-surface-pressed'),
   primary: 'flex h-[60px] min-w-0 flex-1 items-center justify-center rounded-2xl bg-accent px-2 text-center text-[18px] font-semibold leading-tight text-on-accent active:bg-accent-pressed disabled:opacity-50',
 }
 
@@ -211,13 +210,24 @@ export function PhotoBar({ playback, offsets, onTools }: { playback: Playback; o
   )
 }
 
+function ToolRow({ name, note, checked, onChange }: { name: string; note?: string; checked: boolean; onChange: (on: boolean) => void }) {
+  return (
+    <label className="relative flex min-h-12 shrink-0 items-center gap-3 border-t-[0.5px] border-divider py-1.5" data-testid="tool-row">
+      <span className="min-w-0 flex-1">
+        <span className="block text-title-sm font-semibold leading-tight">{name}</span>
+        {note && <span className="mt-0.5 block text-ui leading-tight text-text-secondary">{note}</span>}
+      </span>
+      <Switch aria-label={name} checked={checked} offTone="bg-text-muted" onChange={(e) => onChange(e.target.checked)} />
+    </label>
+  )
+}
+
 export function ToolsPanel({
   playback,
   sprite,
   offsets,
   row,
   onRow,
-  onBack,
   hints,
 }: {
   playback: Playback
@@ -225,7 +235,6 @@ export function ToolsPanel({
   offsets: number[]
   row: 0 | 1
   onRow: (row: 0 | 1) => void
-  onBack: () => void
   hints?: { on: boolean; onChange: (on: boolean) => void }
 }) {
   const t = useTranslations('classify')
@@ -234,48 +243,20 @@ export function ToolsPanel({
   const n = playback.n
   const thumb = (i: number) => <span className="pixelated mx-auto block aspect-square h-full bg-no-repeat" style={{ backgroundImage: `url(${sprite})`, backgroundSize: `${n * 100}% 200%`, backgroundPosition: `${n > 1 ? (i / (n - 1)) * 100 : 0}% ${row * 100}%` }} />
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-4 pb-2 pt-2">
-      <PhotoStrip playback={playback} seconds={offsets} thumb={thumb} label={tp('strip')} tone="surface" />
-      {row === 0 ? (
-        <div role="group" aria-label={t('tools.speed')} className="flex shrink-0 rounded-[14px] bg-surface p-[3px]">
-          {SPEED_CHOICES.map((s) => (
-            <button key={s.key} type="button" aria-pressed={playback.speed === s.value} onClick={() => setSpeed(s.value)} className={cx('h-11 flex-1 rounded-[11px] text-[15px] font-semibold', playback.speed === s.value ? 'bg-text text-bg' : 'text-text-secondary')}>
-              {t(`tools.${s.key}`)}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <p className="shrink-0 text-ui leading-snug text-text-secondary">{t('tools.diffNote')}</p>
-      )}
-      <div className="flex shrink-0 gap-2">
-        <button
-          type="button"
-          aria-pressed={playback.blinking}
-          onPointerDown={(e) => {
-            e.currentTarget.setPointerCapture(e.pointerId)
-            playback.startBlink()
-          }}
-          onPointerUp={playback.stopBlink}
-          onPointerCancel={playback.stopBlink}
-          onContextMenu={(e) => e.preventDefault()}
-          className={cx(swapButton.toggle(playback.blinking), 'touch-none select-none')}
-        >
-          {t('tools.blink')}
-        </button>
-        <button type="button" aria-pressed={row === 1} onClick={() => onRow(row === 0 ? 1 : 0)} className={swapButton.toggle(row === 1)}>
-          {t('tools.diff')}
-        </button>
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-2" data-testid="tools-panel">
+      <div className="shrink-0" onPointerDownCapture={playback.stopBlink}>
+        <PhotoStrip playback={playback} seconds={offsets} thumb={thumb} label={tp('strip')} tone="surface" />
       </div>
-      <div className="flex shrink-0 gap-2">
-        {hints && (
-          <button type="button" aria-pressed={hints.on} onClick={() => hints.onChange(!hints.on)} className={swapButton.toggle(hints.on)}>
-            {t('flashlight.button')}
+      <div role="group" aria-label={t('tools.speed')} className="mt-1 flex shrink-0 rounded-[14px] bg-surface">
+        {SPEED_CHOICES.map((s) => (
+          <button key={s.key} type="button" aria-pressed={playback.speed === s.value} onClick={() => setSpeed(s.value)} className={cx('h-11 flex-1 rounded-[14px] text-[15px] font-semibold', playback.speed === s.value ? 'bg-text text-bg' : 'text-text-secondary')}>
+            {t(`tools.${s.key}`)}
           </button>
-        )}
-        <button type="button" onClick={onBack} className={swapButton.mid}>
-          {t('tools.back')}
-        </button>
+        ))}
       </div>
+      <ToolRow name={t('tools.blink')} checked={playback.blinking} onChange={(on) => (on ? playback.startBlink() : playback.stopBlink())} />
+      <ToolRow name={t('tools.diff')} note={row === 1 ? t('tools.diffNote') : undefined} checked={row === 1} onChange={(on) => onRow(on ? 1 : 0)} />
+      {hints && <ToolRow name={t('flashlight.button')} checked={hints.on} onChange={hints.onChange} />}
     </div>
   )
 }

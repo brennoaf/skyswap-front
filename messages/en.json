@@ -746,8 +746,8 @@
       "slower": "Slower",
       "normal": "Normal",
       "faster": "Faster",
-      "blink": "Hold: 1st and last",
-      "diff": "See differences",
+      "blink": "Only 1st and last photo",
+      "diff": "Differences",
       "diffNote": "Still stars also become a bright and dark pair.",
       "back": "Back"
     },

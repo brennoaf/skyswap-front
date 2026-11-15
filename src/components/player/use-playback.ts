@@ -38,6 +38,8 @@ export function usePlayback(n: number, opts: { baseMs: number; minMs?: number; a
     return () => clearInterval(timer)
   }, [blinking])
 
+  const stopBlink = useCallback(() => setBlinking(false), [])
+
   const setIndex = useCallback(
     (next: number | ((i: number) => number)) => {
       setRaw((i) => {
@@ -62,7 +64,7 @@ export function usePlayback(n: number, opts: { baseMs: number; minMs?: number; a
       setPhase(false)
       setBlinking(true)
     },
-    stopBlink: () => setBlinking(false),
+    stopBlink,
   }
 }
 

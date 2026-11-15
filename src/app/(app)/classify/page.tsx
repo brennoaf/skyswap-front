@@ -67,7 +67,7 @@ const SWAP_TOUR_TIP = 'swapTour'
 const PAUSE_EVERY = 25
 const NO_MARKS: Mark[] = []
 const BLACK_EDGE_TIP = 'blackEdge'
-const SHELL_STYLE = { '--swap-photo': 'max(200px, min(min(100vw, var(--width-app)), calc(100dvh - 310px - env(safe-area-inset-top) - env(safe-area-inset-bottom))))' } as CSSProperties
+const SHELL_STYLE = { '--swap-photo': 'max(200px, min(min(100vw, var(--width-app)), calc(100dvh - 318px - env(safe-area-inset-top) - env(safe-area-inset-bottom))))' } as CSSProperties
 
 const preloaded = new Map<string, HTMLImageElement>()
 
@@ -107,16 +107,22 @@ function SwapShell({ children }: { children: ReactNode }) {
   )
 }
 
-function SwapHeader({ step, onHelp }: { step?: string | null; onHelp: () => void }) {
+function SwapHeader({ step, onHelp, onToolsBack }: { step?: string | null; onHelp: () => void; onToolsBack?: () => void }) {
   const t = useTranslations('classify')
   return (
     <header className="flex h-14 shrink-0 items-center gap-1 px-1">
-      <Link href="/" aria-label={t('leave')} className="flex size-12 shrink-0 items-center justify-center rounded-full text-text active:bg-surface">
-        <IconClose size={28} />
-      </Link>
+      {onToolsBack ? (
+        <IconButton label={t('tools.back')} onClick={onToolsBack} className="size-12">
+          <IconBack size={28} />
+        </IconButton>
+      ) : (
+        <Link href="/" aria-label={t('leave')} className="flex size-12 shrink-0 items-center justify-center rounded-full text-text active:bg-surface">
+          <IconClose size={28} />
+        </Link>
+      )}
       <div className="min-w-0 flex-1 text-center">
         {step && <p className="truncate text-ui leading-tight text-text-secondary">{step}</p>}
-        <h1 className="truncate text-[18px] font-bold leading-tight">{t('question')}</h1>
+        <h1 className="truncate text-[18px] font-bold leading-tight">{onToolsBack ? t('tools.open') : t('question')}</h1>
       </div>
       <IconButton label={t('help.open')} onClick={onHelp} className="size-12">
         <IconQuestion size={26} />
@@ -433,7 +439,7 @@ function SwapCard({
   const n = Math.max(1, offsets.length)
   const playback = usePlayback(n, { baseMs: FRAME_MS, autoplay: !reduce || !!lesson, frozen })
   const panel = playback.index
-  const { setPlaying } = playback
+  const { setPlaying, stopBlink } = playback
   const hints = sky && hintsOn ? sky.hints : null
   const outside = useOutside(img, n)
   const blackSeen = useUi((s) => s.tipsSeen.includes(BLACK_EDGE_TIP))
@@ -474,6 +480,10 @@ function SwapCard({
     },
     [card.id, onLessonStale, setPlaying, vote],
   )
+
+  useEffect(() => {
+    if (mode !== 'tools') stopBlink()
+  }, [mode, stopBlink])
 
   useEffect(() => {
     if (mode !== 'mark') return
@@ -576,7 +586,7 @@ function SwapCard({
 
   return (
     <SwapShell>
-      <SwapHeader step={step} onHelp={onHelp} />
+      <SwapHeader step={step} onHelp={onHelp} onToolsBack={mode === 'tools' ? () => setMode('look') : undefined} />
       <FrameBars n={n} index={panel} />
       <SwapStage
         img={img}
@@ -638,7 +648,6 @@ function SwapCard({
             offsets={offsets}
             row={row}
             onRow={setRow}
-            onBack={() => setMode('look')}
             hints={
               sky
                 ? {
