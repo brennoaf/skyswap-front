@@ -29,9 +29,14 @@ type Mode = 'look' | 'tools' | 'confirm' | 'marking' | 'sending' | 'failed' | 'r
 const CONFIRM_MS = 3000
 const FRAME_MS = 700
 const TIP_MS = 6000
+const INTRO_FRAME_MS = 800
+const NUDGE_PX = 44
+const NUDGE_S = 0.7
+const NUDGE_WAIT_MS = 700
 const PAUSE_EVERY = 25
 const IDLE_MS = 12_000
 const QUIET_RUN = 10
+const NO_MARKS: Mark[] = []
 const SHELL_STYLE = { '--swap-photo': 'max(200px, min(min(100vw, var(--width-app)), calc(100dvh - 312px - env(safe-area-inset-top) - env(safe-area-inset-bottom))))' } as CSSProperties
 
 const preloaded = new Map<string, HTMLImageElement>()
@@ -111,6 +116,95 @@ function SwapHeader({ step, onHelp }: { step?: string | null; onHelp: () => void
   )
 }
 
+function GuideRing({ mark }: { mark: Mark | undefined }) {
+  if (!mark) return null
+  return (
+    <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" aria-hidden="true" data-testid="guide-ring">
+      <circle cx={mark.u * 100} cy={mark.v * 100} r="8" fill="none" stroke="var(--color-mark-halo)" strokeWidth="2" opacity="0.6" />
+      <circle cx={mark.u * 100} cy={mark.v * 100} r="8" fill="none" stroke="var(--color-on-media)" strokeWidth="1.1" />
+    </svg>
+  )
+}
+
+function Coach({ children }: { children: ReactNode }) {
+  return (
+    <div role="note" className="flex min-h-[60px] shrink-0 items-center gap-2.5 px-4 text-[16px] font-medium leading-snug">
+      <span aria-hidden="true" className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-accent text-[18px] font-bold text-on-accent">
+        !
+      </span>
+      <span>{children}</span>
+    </div>
+  )
+}
+
+function IntroPhoto({ sprite, frames }: { sprite: string; frames: number }) {
+  const canvas = useRef<HTMLCanvasElement>(null)
+  const img = useSprite(sprite)
+  const reduce = useReducedMotion()
+  useEffect(() => {
+    const c = canvas.current
+    const ctx = c?.getContext('2d')
+    if (!c || !ctx || !img) return
+    const tile = Math.round(img.naturalHeight / 2)
+    c.width = tile
+    c.height = tile
+    ctx.imageSmoothingEnabled = false
+    let at = 0
+    const draw = () => {
+      ctx.drawImage(img, at * tile, 0, tile, tile, 0, 0, tile, tile)
+      at = (at + 1) % frames
+    }
+    draw()
+    if (reduce) return
+    const timer = setInterval(draw, INTRO_FRAME_MS)
+    return () => clearInterval(timer)
+  }, [frames, img, reduce])
+  return (
+    <div className="mx-auto mb-5 mt-4 aspect-square w-[min(100%,38dvh)] shrink-0 overflow-hidden rounded-[var(--radius-sheet)] bg-media-bg">
+      <canvas ref={canvas} aria-hidden="true" className="pixelated block size-full" />
+    </div>
+  )
+}
+
+function Welcome({ lesson, count, onStart, onSkip }: { lesson: { card: DeckCard }; count: number; onStart: () => void; onSkip: () => void }) {
+  const t = useTranslations('classify.welcome')
+  return (
+    <SwapShell>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-4" data-testid="swap-welcome">
+        <IntroPhoto sprite={lesson.card.sprite} frames={Math.max(1, lesson.card.offsets_s.length)} />
+        <h1 className="text-[26px] font-bold leading-tight [text-wrap:balance]">{t('title')}</h1>
+        <p className="mt-2.5 text-[17px] leading-snug text-text-secondary">{t('body1')}</p>
+        <p className="mt-2.5 text-[17px] leading-snug text-text-secondary">{t('body2')}</p>
+        <div className="flex-1" />
+        <button type="button" onClick={onStart} className={`${swapButton.primary} mt-3 w-full flex-none`}>
+          {t('start', { n: count })}
+        </button>
+        <button type="button" onClick={onSkip} className="mt-1 min-h-12 shrink-0 text-[16px] font-semibold text-link">
+          {t('skip')}
+        </button>
+      </div>
+    </SwapShell>
+  )
+}
+
+function Trained({ onStart }: { onStart: () => void }) {
+  const t = useTranslations('classify.trained')
+  return (
+    <SwapShell>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-4" data-testid="swap-trained">
+        <div className="flex-1" />
+        <h1 className="text-[26px] font-bold leading-tight">{t('title')}</h1>
+        <p className="mt-2.5 text-[17px] leading-snug text-text-secondary">{t('body1')}</p>
+        <p className="mt-2.5 text-[17px] leading-snug text-text-secondary">{t('body2')}</p>
+        <div className="flex-1" />
+        <button type="button" onClick={onStart} className={`${swapButton.primary} mt-3 w-full flex-none`}>
+          {t('start')}
+        </button>
+      </div>
+    </SwapShell>
+  )
+}
+
 function HintRings({ hints, panel }: { hints: CardHint[]; panel: number }) {
   return (
     <>
@@ -153,6 +247,8 @@ function SwapCard({
   img,
   step,
   lesson,
+  lessonMarks,
+  lastLesson,
   showGestureHint,
   onHelp,
   onVoted,
@@ -163,6 +259,8 @@ function SwapCard({
   img: HTMLImageElement | null
   step: string | null
   lesson: Lesson | null
+  lessonMarks: Mark[]
+  lastLesson: boolean
   showGestureHint: boolean
   onHelp: () => void
   onVoted: (answer: Answer, r: VoteResult) => boolean
@@ -188,6 +286,9 @@ function SwapCard({
   const [understand, setUnderstand] = useState(false)
   const [computerMark, setComputerMark] = useState(false)
   const [tip, setTip] = useState<string | null>(null)
+  const [sawIt, setSawIt] = useState(false)
+  const [shownIt, setShownIt] = useState(false)
+  const [retry, setRetry] = useState(false)
   const tipsSeen = useUi((s) => s.tipsSeen)
   const markTip = useUi((s) => s.markTip)
   const sky = isSkyCard(card) ? card : null
@@ -207,6 +308,13 @@ function SwapCard({
     animate(y, 0, { type: 'spring', stiffness: 500, damping: 32 })
   }, [x, y])
 
+  const nudge = useCallback(
+    (direction: 1 | -1) => {
+      if (!reduce) animate(x, [0, direction * NUDGE_PX, 0], { duration: NUDGE_S, ease: 'easeInOut' })
+    },
+    [reduce, x],
+  )
+
   const undo = useCallback(() => {
     setAnswer(null)
     setSpot(null)
@@ -218,6 +326,7 @@ function SwapCard({
     setMode('sending')
     if (saved) {
       setMode('result')
+      playback.setPlaying(!reduce)
       return
     }
     try {
@@ -274,8 +383,15 @@ function SwapCard({
     [img, settle],
   )
 
+  useEffect(() => {
+    if (lesson !== 'still' || !img) return
+    const timer = setTimeout(() => nudge(-1), NUDGE_WAIT_MS)
+    return () => clearTimeout(timer)
+  }, [img, lesson, nudge])
+
   const looking = mode === 'look' || mode === 'tools'
-  const canSwipe = looking && !!img
+  const mustLookFirst = lesson === 'moves' && !sawIt && !retry
+  const canSwipe = looking && !!img && !mustLookFirst
   const canMark = answer === 'moves' && (mode === 'confirm' || mode === 'marking')
 
   const onRelease = (dx: number, dy: number, vx: number, vy: number) => {
@@ -301,8 +417,10 @@ function SwapCard({
 
   const reveal = saved?.reveal
   const mark = reveal?.marks[panel]
+  const ringOn = mode === 'look' && (lesson === 'glitch' || (lesson === 'moves' && (shownIt || retry)))
   const overlay = (
     <>
+      {ringOn && <GuideRing mark={lessonMarks[panel] ?? lessonMarks[0]} />}
       {hints && <HintRings hints={hints} panel={panel} />}
       {mode === 'result' && !hints && mark && verdict?.mark && <VoiceMark voice="known" u={mark.u} v={mark.v} />}
       {mode === 'result' && !hints && mark && !verdict?.mark && computerMark && <VoiceMark voice="program" u={mark.u} v={mark.v} />}
@@ -336,7 +454,32 @@ function SwapCard({
         overlay={overlay}
       />
       <div className="relative flex min-h-0 flex-1 flex-col" data-testid="swap-lower">
-        {mode === 'look' && (
+        {mode === 'look' && lesson && (
+          <>
+            <Coach>{mustLookFirst ? t('guide.look') : lesson === 'moves' ? t('guide.answer') : t(`guide.${lesson}`)}</Coach>
+            {mustLookFirst ? (
+              <div className="mt-auto flex shrink-0 flex-col gap-2 px-4 pb-4 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSawIt(true)
+                    setShownIt(false)
+                    nudge(1)
+                  }}
+                  className={`${swapButton.primary} flex-none`}
+                >
+                  {t('guide.saw')}
+                </button>
+                <button type="button" disabled={shownIt} onClick={() => setShownIt(true)} className={`${swapButton.mid} flex-none`}>
+                  {shownIt ? t('guide.shown') : t('guide.show')}
+                </button>
+              </div>
+            ) : (
+              <AnswerPanel labels={{ still: t('still'), moves: t('moves'), glitch: t('glitch'), unsure: t('unsure') }} disabled={!img} onChoose={choose} />
+            )}
+          </>
+        )}
+        {mode === 'look' && !lesson && (
           <>
             <PhotoBar playback={playback} offsets={offsets} onTools={() => setMode('tools')} />
             {note && (
@@ -393,11 +536,26 @@ function SwapCard({
             <p className="text-[16px] leading-snug text-text-secondary">{quiet ? t('result.quiet') : t(`result.${verdict.body}`)}</p>
             {gain && <p className="text-[15px] font-semibold leading-snug">{gain}</p>}
             <div className="flex gap-2">
-              <button type="button" onClick={() => setUnderstand(true)} className={swapButton.big}>
-                {t('understand.open')}
-              </button>
+              {verdict.again ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRetry(true)
+                    setAnswer(null)
+                    setSpot(null)
+                    setMode('look')
+                  }}
+                  className={swapButton.big}
+                >
+                  {t('again')}
+                </button>
+              ) : (
+                <button type="button" onClick={() => setUnderstand(true)} className={swapButton.big}>
+                  {t('understand.open')}
+                </button>
+              )}
               <button type="button" onClick={onNext} className={swapButton.primary}>
-                {t('next')}
+                {lastLesson ? t('finish') : t('next')}
               </button>
             </div>
           </SwapPanel>
@@ -547,14 +705,14 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   const tc = useTranslations('common')
   const guideDone = useUi((s) => s.classifyGuideDone)
   const finishGuide = useUi((s) => s.finishClassifyGuide)
-  const [guideActive] = useState(!guideDone)
-  const guideQuery = useGuideCard(guideActive)
-  const [guideOver, setGuideOver] = useState(false)
+  const [phase, setPhase] = useState<'welcome' | 'lessons' | 'trained' | 'cards'>(guideDone ? 'cards' : 'welcome')
+  const guideQuery = useGuideCard(!guideDone || phase !== 'cards')
   const [lessonIndex, setLessonIndex] = useState(0)
   const lessons = guideQuery.data?.lessons ?? []
-  const lesson = guideActive && !guideOver ? lessons[lessonIndex] : undefined
+  const nothingToPractice = guideQuery.isFetched && !lessons.length
+  const lesson = phase === 'lessons' ? lessons[lessonIndex] : undefined
   const guiding = !!lesson
-  const flow = useDeckFlow(!guideActive || guideOver || (guideQuery.isFetched && !lessons.length))
+  const flow = useDeckFlow(phase === 'cards' || nothingToPractice)
   const [pause, setPause] = useState(false)
   const card: PlayCard | null = lesson ? lesson.card : flow.card
   const img = useSprite(card?.sprite)
@@ -572,8 +730,15 @@ function Deck({ onHelp }: { onHelp: () => void }) {
 
   const endGuide = useCallback(() => {
     finishGuide()
-    setGuideOver(true)
+    setPhase('trained')
   }, [finishGuide])
+
+  useEffect(() => {
+    if (phase !== 'cards' && nothingToPractice) {
+      finishGuide()
+      setPhase('cards')
+    }
+  }, [finishGuide, nothingToPractice, phase])
 
   const onVoted = useCallback(
     (answer: Answer, data: VoteResult) => {
@@ -608,8 +773,21 @@ function Deck({ onHelp }: { onHelp: () => void }) {
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{body}</div>
     </SwapShell>
   )
+  if (phase === 'trained') return <Trained onStart={() => setPhase('cards')} />
+  if (phase === 'welcome' && lessons[0])
+    return (
+      <Welcome
+        lesson={lessons[0]}
+        count={lessons.length}
+        onStart={() => setPhase('lessons')}
+        onSkip={() => {
+          finishGuide()
+          setPhase('cards')
+        }}
+      />
+    )
   if (pause) return plain(<div className="px-4 pb-4"><PauseCard looks={sessionLooks} onContinue={loadNext} /></div>)
-  if (guideActive && guideQuery.isLoading) return <DeckSkeleton onHelp={onHelp} />
+  if (phase === 'welcome' && !nothingToPractice) return <DeckSkeleton onHelp={onHelp} />
   if (!guiding && flow.status === 'searching') return <DeckSkeleton onHelp={onHelp} line={t('searching')} />
   if (!guiding && flow.status === 'loading') return <DeckSkeleton onHelp={onHelp} />
   if (!guiding && flow.status === 'error')
@@ -632,6 +810,8 @@ function Deck({ onHelp }: { onHelp: () => void }) {
       img={img}
       step={lesson ? t('guide.step', { n: lessonIndex + 1, total: lessons.length }) : null}
       lesson={lesson?.lesson ?? null}
+      lessonMarks={lesson?.marks ?? NO_MARKS}
+      lastLesson={!!lesson && lessonIndex + 1 === lessons.length}
       showGestureHint={sessionLooks === 0 || idle}
       onHelp={onHelp}
       onVoted={onVoted}

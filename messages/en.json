@@ -653,7 +653,14 @@
       "swipe": "Swipe the photo: right for yes, left for no, up if you are not sure."
     },
     "guide": {
-      "step": "Practice {n} of {total}"
+      "step": "Practice {n} of {total}",
+      "look": "Watch the photos go by. Does any spot change place?",
+      "answer": "Now answer. Swiping the photo to the right works too.",
+      "still": "Your turn. If nothing moved, tap or swipe left.",
+      "glitch": "Last one. Does the spot in the circle show up in every photo?",
+      "saw": "I saw the spot",
+      "show": "I didn't, show me",
+      "shown": "The spot jumps from one circle to the other"
     },
     "outcome": {
       "open": "{n, plural, one {# person} other {# people}} looked so far. Still early, so your look matters.",
@@ -812,6 +819,21 @@
       "whyDefect": "What is real shows up in almost every photo. What shows up only once is usually a defect.",
       "whyStill": "Almost no card has anything new. Saying \"Nothing moved\" helps the research too.",
       "whyOpen": "Nobody has checked this piece of sky yet. That is why people's answers matter."
+    },
+    "again": "See again",
+    "finish": "Finish practice",
+    "welcome": {
+      "title": "Spot what moves in the sky",
+      "body1": "These are real photos of the same piece of sky, taken at different times.",
+      "body2": "Stars stay still. Asteroids and comets change place.",
+      "start": "{n, plural, one {Practice with # card} other {Practice with # cards}}",
+      "skip": "Skip practice"
+    },
+    "trained": {
+      "title": "Practice done",
+      "body1": "Now it counts: your answers add up with other people's and go into the research.",
+      "body2": "Most cards have nothing new, and that is normal. Every look helps.",
+      "start": "Start"
     }
   },
   "reels": {

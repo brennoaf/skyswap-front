@@ -653,7 +653,14 @@
       "swipe": "Deslize a foto: direita para sim, esquerda para não, para cima se não souber."
     },
     "guide": {
-      "step": "Treino {n} de {total}"
+      "step": "Treino {n} de {total}",
+      "look": "Olhe as fotos passando. Algum ponto muda de lugar?",
+      "answer": "Agora responda. Deslizar a foto para a direita também vale.",
+      "still": "Sua vez. Se nada mudou, toque ou deslize para a esquerda.",
+      "glitch": "Último. O ponto no círculo aparece em todas as fotos?",
+      "saw": "Vi o ponto",
+      "show": "Não vi, me mostre",
+      "shown": "O ponto salta de um círculo para o outro"
     },
     "outcome": {
       "open": "{n, plural, one {# pessoa olhou} other {# pessoas olharam}} até agora. Ainda é cedo, então sua olhada importa.",
@@ -812,6 +819,21 @@
       "whyDefect": "O que é real aparece em quase todas as fotos. O que aparece uma vez só costuma ser defeito.",
       "whyStill": "Quase todo cartão não tem novidade. Dizer \"Nada mudou\" também ajuda a pesquisa.",
       "whyOpen": "Ninguém conferiu este pedaço do céu ainda. É por isso que as respostas das pessoas importam."
+    },
+    "again": "Ver de novo",
+    "finish": "Terminar treino",
+    "welcome": {
+      "title": "Ache o que muda de lugar no céu",
+      "body1": "Estas são fotos reais do mesmo pedaço do céu, tiradas em momentos diferentes.",
+      "body2": "As estrelas ficam paradas. Asteroides e cometas mudam de lugar.",
+      "start": "{n, plural, one {Treinar com # cartão} other {Treinar com # cartões}}",
+      "skip": "Pular treino"
+    },
+    "trained": {
+      "title": "Treino concluído",
+      "body1": "Agora é de verdade: suas respostas se somam às de outras pessoas e entram na pesquisa.",
+      "body2": "A maioria dos cartões não tem novidade, e isso é normal. Cada olhada ajuda.",
+      "start": "Começar"
     }
   },
   "reels": {
