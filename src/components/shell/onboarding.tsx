@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { IconCheck } from '@/components/icons'
+import { IconCheck, IconFlask, IconTarget } from '@/components/icons'
 import { Button, useModal } from '@/components/ui/primitives'
 import { defaultLocale, isLocale, type Locale } from '@/i18n/locales'
 import { useStories } from '@/lib/api/hooks'
@@ -194,6 +194,30 @@ function ColourBars() {
         </div>
       ))}
     </div>
+  )
+}
+
+const TOOLS = [
+  { id: 'spot', icon: <IconTarget size={24} /> },
+  { id: 'lab', icon: <IconFlask size={24} /> },
+] as const
+
+function ToolRows() {
+  const t = useTranslations('onboarding.tools')
+  return (
+    <ul className="mt-3 flex flex-col gap-3" data-testid="tour-tools">
+      {TOOLS.map(({ id, icon }) => (
+        <li key={id} className="flex items-start gap-3">
+          <span className="inline-flex size-6 shrink-0 items-center justify-center" aria-hidden="true">
+            {icon}
+          </span>
+          <p className="min-w-0 text-ui leading-snug">
+            <span className="block font-semibold">{t(`${id}.name`)}</span>
+            <span className="block text-text-secondary">{t(`${id}.body`)}</span>
+          </p>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -502,7 +526,16 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
       box && (
         <motion.div key={step.id} {...enter} className={cx(TOUR_CARD, 'p-4')} data-testid="home-tour" data-step={step.id}>
           {dots}
-          <StepText title={t(`${step.id}.title`)} body={t(`${step.id}.body`)} />
+          {step.id === 'tools' ? (
+            <>
+              <h2 id="tour-title" className="font-[family-name:var(--font-display)] text-title-md font-bold leading-tight">
+                {t('tools.title')}
+              </h2>
+              <ToolRows />
+            </>
+          ) : (
+            <StepText title={t(`${step.id}.title`)} body={t(`${step.id}.body`)} />
+          )}
           {step.id === 'colours' && <ColourBars />}
           <TourButtons labels={labels} back onSkip={close} onBack={() => go(-1)} onNext={next} />
         </motion.div>

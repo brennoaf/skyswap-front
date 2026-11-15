@@ -335,7 +335,14 @@
     },
     "tools": {
       "title": "Tools",
-      "body": "My spot: watch any patch of sky. Lab: study any photo up close."
+      "spot": {
+        "name": "My spot",
+        "body": "Save a spot in the sky and see every photo of it."
+      },
+      "lab": {
+        "name": "Lab",
+        "body": "Look at a photo up close and take measurements."
+      }
     },
     "photo": {
       "title": "Real infrared photos",

@@ -335,7 +335,14 @@
     },
     "tools": {
       "title": "Ferramentas",
-      "body": "Meu ponto: acompanhe qualquer pedaço do céu. Lab: estude qualquer foto de perto."
+      "spot": {
+        "name": "Meu ponto",
+        "body": "Guarde um lugar do céu e veja todas as fotos dele."
+      },
+      "lab": {
+        "name": "Lab",
+        "body": "Veja uma foto de perto e faça medidas."
+      }
     },
     "photo": {
       "title": "Fotos reais em infravermelho",
