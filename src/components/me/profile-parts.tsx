@@ -60,24 +60,41 @@ export function BadgeHighlights({ badges, onOpen }: { badges: Me['badges']; onOp
   const t = useTranslations('badges')
   const tm = useTranslations('me')
   const ordered = [...badges].sort((a, b) => Number(!!b.earned_at) - Number(!!a.earned_at))
+  const earned = badges.filter((b) => b.earned_at).length
   return (
-    <section aria-label={tm('badges')} className="pt-1">
-      <ul className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-1">
+    <section aria-label={tm('badges')} className="px-4">
+      <p className="flex items-baseline justify-between gap-3 text-note">
+        <span className="font-semibold">{tm('badges')}</span>
+        <span className="tabular-nums text-text-secondary">{tm('badgesCount', { earned, total: badges.length })}</span>
+      </p>
+      <ul className="mt-1 flex flex-wrap justify-between gap-y-1">
         {ordered.map((b) => (
-          <li key={b.key} className="flex w-[78px] shrink-0 flex-col items-center gap-1">
+          <li key={b.key}>
             <button
               type="button"
               onClick={() => onOpen(b.key)}
               aria-label={`${t(`items.${b.key}.name`)}. ${b.earned_at ? tm('earnedOn', { date: formatShortDate(b.earned_at, locale) }) : t('locked')}`}
-              className={cx('flex size-[64px] items-center justify-center rounded-full border-[0.5px] bg-surface', b.earned_at ? 'border-ring-seen' : 'border-divider')}
+              className="relative flex size-11 items-center justify-center rounded-full active:scale-90"
             >
-              <BadgeArt badge={b.key} size={40} earned={!!b.earned_at} />
+              <BadgeFace badge={b.key} size={40} earned={!!b.earned_at} />
+              {b.earned_at && (
+                <span className="absolute bottom-0 right-0 flex size-4 items-center justify-center rounded-full bg-accent text-on-accent ring-2 ring-bg" aria-hidden="true">
+                  <IconCheck size={10} />
+                </span>
+              )}
             </button>
-            <span className={cx('w-full text-center text-meta leading-tight', !b.earned_at && 'text-text-secondary')}>{t(`items.${b.key}.name`)}</span>
           </li>
         ))}
       </ul>
     </section>
+  )
+}
+
+function BadgeFace({ badge, size, earned }: { badge: string; size: number; earned: boolean }) {
+  return (
+    <span className={cx('inline-flex', !earned && 'opacity-40 saturate-50')}>
+      <BadgeArt badge={badge} size={size} earned />
+    </span>
   )
 }
 
@@ -87,7 +104,7 @@ export function BadgeDetail({ badge, earnedAt }: { badge: string; earnedAt: numb
   const tm = useTranslations('me')
   return (
     <div className="flex flex-col items-center px-6 pb-4 pt-6 text-center">
-      <BadgeArt badge={badge} size={96} earned={!!earnedAt} />
+      <BadgeFace badge={badge} size={96} earned={!!earnedAt} />
       <p className="mt-4 text-title-md font-semibold">{t(`items.${badge}.name`)}</p>
       <p className="mt-1 text-body text-text-secondary">{t(`items.${badge}.how`)}</p>
       <p className={cx('mt-4 inline-flex h-7 items-center rounded-full px-3 text-meta font-semibold', earnedAt ? 'bg-accent/15 text-link' : 'bg-surface text-text-secondary')}>
@@ -128,7 +145,17 @@ export function HistoryList({ items }: { items: Me['history'] }) {
   const t = useTranslations('me')
   const tt = useTranslations('tags.items')
   const ago = useAgo()
-  if (!items.length) return <EmptyState title={t('activity')} body={t('noActivity')} />
+  if (!items.length)
+    return (
+      <EmptyState
+        title={t('noActivity')}
+        action={
+          <Link href="/classify" className="inline-flex h-11 items-center rounded-[var(--radius-button)] bg-accent px-5 text-ui font-semibold text-on-accent active:bg-accent-pressed">
+            {t('startCards')}
+          </Link>
+        }
+      />
+    )
   return (
     <ul className="py-2">
       {items.map((item) => {

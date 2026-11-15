@@ -14,9 +14,21 @@ import { useSwitchLocale } from '@/lib/use-switch-locale'
 
 export type LanguageOption = { locale: Locale; name: string; greeting: string; title: string; body: string; pick: string; action: string }
 
-type Step = { id: 'language' | 'welcome' | 'help'; art?: 'sky' | 'blink' }
+export type TourStep = { id: string; target: string | string[]; text: string; body?: string; icon?: ReactNode }
 
-const STEPS: Step[] = [{ id: 'language' }, { id: 'welcome', art: 'sky' }, { id: 'help', art: 'blink' }]
+type HomeStep = { id: 'language' | 'welcome' | 'stories' | 'spot' | 'photo' | 'cards' | 'lab' | 'finish'; art?: 'sky' | 'blink'; target?: string }
+
+const HOME_STEPS: HomeStep[] = [
+  { id: 'language' },
+  { id: 'welcome', art: 'sky' },
+  { id: 'stories', target: '[data-tour="home-stories"] li:nth-child(2) button' },
+  { id: 'spot', target: '[data-tour="home-stories"] li:first-child button' },
+  { id: 'photo', target: '[data-tour="home-feed"] article a[href^="/p/"] .aspect-square' },
+  { id: 'cards', target: 'nav-classify' },
+  { id: 'lab', target: 'home-lab' },
+  { id: 'finish', art: 'blink' },
+]
+const CROSS_TIP = 'crossFeed'
 
 const STARS = [
   [18, 22, 1.4, 'text'],
@@ -162,35 +174,58 @@ function LanguageStep({ options, reduce, onDone }: { options: LanguageOption[]; 
   )
 }
 
-function findTarget(id: string): HTMLElement | null {
-  return document.querySelector<HTMLElement>(`[data-tour="${id}"]`)
+function findTarget(target: string | string[]): HTMLElement | null {
+  for (const one of typeof target === 'string' ? [target] : target) {
+    const el = document.querySelector<HTMLElement>(/^[\w-]+$/.test(one) ? `[data-tour="${one}"]` : one)
+    if (el) return el
+  }
+  return null
 }
 
-function useTargetBox(target: string | undefined, reduce: boolean, follow = true) {
+const TOUR_CARD = 'pointer-events-auto rounded-2xl bg-sheet shadow-[0_12px_40px_rgb(0_0_0/0.35)] ring-1 ring-divider'
+const TOUR_PAD = 6
+const TOUR_GAP = 10
+const TOUR_EDGE = 12
+const TOUR_TOP = 60
+const TOUR_WAIT_FRAMES = 45
+
+function useTargetBox(target: string | string[] | undefined, reduce: boolean, follow: boolean, reserve: number) {
   const [box, setBox] = useState<Box | null>(null)
   const [missing, setMissing] = useState(false)
+  const key = typeof target === 'string' ? target : target?.join('|')
+  const room = useRef(reserve)
+  useEffect(() => {
+    room.current = reserve
+  }, [reserve])
   useLayoutEffect(() => {
     setBox(null)
     setMissing(false)
-    if (!target) return
+    if (!key) return
+    const wanted = key.split('|')
     let raf = 0
     let tries = 0
     let el: HTMLElement | null = null
     let lastScroll = 0
     const measure = () => {
+      if (el && !el.isConnected) el = findTarget(wanted)
       if (!el) return
       const r = el.getBoundingClientRect()
-      setBox({ top: r.top, left: r.left, width: r.width, height: r.height })
+      setBox((b) => (b && b.top === r.top && b.left === r.left && b.width === r.width && b.height === r.height ? b : { top: r.top, left: r.left, width: r.width, height: r.height }))
     }
     const keepInView = () => {
       if (!follow || !el || el.closest('header, nav')) return
       const r = el.getBoundingClientRect()
-      if (r.top < 64 || r.bottom > window.innerHeight - 220) el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' })
+      const delta = r.top - TOUR_TOP
+      const hidden = r.top < TOUR_TOP - TOUR_PAD * 2 || r.bottom > window.innerHeight - room.current - TOUR_PAD - TOUR_GAP - TOUR_EDGE
+      if (!hidden || Math.abs(delta) < 4) return
+      const end = document.documentElement.scrollHeight - window.innerHeight
+      if ((delta < 0 && window.scrollY <= 0) || (delta > 0 && window.scrollY >= end - 1)) return
+      window.scrollBy({ top: delta, behavior: reduce ? 'auto' : 'smooth' })
     }
     const find = () => {
-      el = findTarget(target)
+      el = findTarget(wanted)
       if (!el) {
-        if (++tries > 90) setMissing(true)
+        if (++tries > TOUR_WAIT_FRAMES) setMissing(true)
         else raf = requestAnimationFrame(find)
         return
       }
@@ -214,40 +249,59 @@ function useTargetBox(target: string | undefined, reduce: boolean, follow = true
       window.removeEventListener('scroll', onScroll, true)
       window.removeEventListener('resize', measure)
     }
-  }, [target, reduce, follow])
+  }, [key, reduce, follow])
   return { box, missing }
-}
-
-const TOUR_CARD = 'pointer-events-auto rounded-2xl bg-sheet p-5 shadow-[0_12px_40px_rgb(0_0_0/0.35)] ring-1 ring-divider'
-const TOUR_PAD = 6
-
-function roomBelow(spot: Box | null) {
-  return spot ? window.innerHeight - (spot.top + spot.height) > spot.top : false
 }
 
 const ignoreEscape = () => undefined
 
-function TourLayer({ spot, below, reduce, reserve, onEscape = ignoreEscape, children }: { spot: Box | null; below: boolean; reduce: boolean; reserve: number; onEscape?: () => void; children: ReactNode }) {
+function TourLayer({ spot, reduce, onEscape = ignoreEscape, onHeight, children }: { spot: Box | null; reduce: boolean; onEscape?: () => void; onHeight?: (h: number) => void; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
+  const card = useRef<HTMLDivElement>(null)
+  const [height, setHeight] = useState(0)
   useModal(ref, true, onEscape)
+  useLayoutEffect(() => {
+    const el = card.current
+    if (!el) return
+    const read = () => {
+      setHeight(el.offsetHeight)
+      if (el.offsetHeight) onHeight?.(el.offsetHeight)
+    }
+    read()
+    const observer = new ResizeObserver(read)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [onHeight])
+  const screen = typeof window === 'undefined' ? { w: 0, h: 0 } : { w: window.innerWidth, h: window.innerHeight }
+  const hole = spot && {
+    top: Math.max(TOUR_PAD / 2, spot.top - TOUR_PAD),
+    bottom: Math.min(screen.h - TOUR_PAD / 2, spot.top + spot.height + TOUR_PAD),
+    left: Math.max(TOUR_PAD / 2, spot.left - TOUR_PAD),
+    right: Math.min(screen.w - TOUR_PAD / 2, spot.left + spot.width + TOUR_PAD),
+  }
+  let top = TOUR_EDGE
+  if (hole) {
+    const below = hole.bottom + TOUR_GAP
+    const above = hole.top - TOUR_GAP - height
+    if (below + height + TOUR_EDGE <= screen.h) top = below
+    else if (above >= TOUR_EDGE) top = above
+    else if (screen.h - hole.bottom > hole.top) top = screen.h - height - TOUR_EDGE
+  }
   return (
     <motion.div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tour-title" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[65] outline-none">
-      {spot ? (
+      {hole ? (
         <motion.div
           aria-hidden="true"
           className="absolute rounded-2xl shadow-[0_0_0_9999px_var(--color-media-scrim)] ring-2 ring-accent"
           initial={false}
-          animate={{ top: spot.top - TOUR_PAD, left: spot.left - TOUR_PAD, width: spot.width + TOUR_PAD * 2, height: spot.height + TOUR_PAD * 2 }}
+          animate={{ top: hole.top, left: hole.left, width: Math.max(0, hole.right - hole.left), height: Math.max(0, hole.bottom - hole.top) }}
           transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 36 }}
         />
       ) : (
         <div aria-hidden="true" className="absolute inset-0 bg-media-scrim" />
       )}
       <div className="pointer-events-none relative mx-auto h-full max-w-[var(--width-app)] px-4">
-        <div
-          className={cx('absolute inset-x-4', !spot && 'top-1/2 -translate-y-1/2')}
-          style={spot ? (below ? { top: Math.max(12, Math.min(spot.top + spot.height + TOUR_PAD + 12, window.innerHeight - reserve)) } : { bottom: Math.min(window.innerHeight - spot.top + TOUR_PAD + 12, window.innerHeight - reserve) }) : undefined}
-        >
+        <div ref={card} aria-live="polite" className={cx('absolute inset-x-4', !hole && 'top-1/2 -translate-y-1/2')} style={hole ? { top } : undefined}>
           {children}
         </div>
       </div>
@@ -255,41 +309,106 @@ function TourLayer({ spot, below, reduce, reserve, onEscape = ignoreEscape, chil
   )
 }
 
-export function ScreenTour({ steps, labels, onClose }: { steps: { id: string; target: string; text: string }[]; labels: { skip: string; back: string; next: string }; onClose: () => void }) {
+function StepDots({ index, total, label }: { index: number; total: number; label: string }) {
+  return (
+    <p className="mb-3 flex items-center gap-1.5" role="img" aria-label={label}>
+      {Array.from({ length: total }, (_, i) => (
+        <span key={i} className={cx('h-1.5 rounded-full transition-all', i === index ? 'w-5 bg-text' : 'w-1.5 bg-divider')} />
+      ))}
+    </p>
+  )
+}
+
+function TourButtons({ labels, back, onSkip, onBack, onNext }: { labels: { skip: string; back: string; next: string }; back: boolean; onSkip: () => void; onBack: () => void; onNext: () => void }) {
+  return (
+    <div className="mt-4 flex items-center gap-2">
+      <button type="button" onClick={onSkip} className="h-11 px-1 text-ui font-semibold text-text-secondary">
+        {labels.skip}
+      </button>
+      <span className="flex-1" />
+      {back && (
+        <Button className="h-11 px-4" onClick={onBack}>
+          {labels.back}
+        </Button>
+      )}
+      <Button variant="primary" className="h-11 px-5" onClick={onNext}>
+        {labels.next}
+      </Button>
+    </div>
+  )
+}
+
+function StepText({ title, body, icon }: { title: string; body?: string; icon?: ReactNode }) {
+  if (!body)
+    return (
+      <p id="tour-title" className="text-title-sm font-semibold leading-snug">
+        {title}
+      </p>
+    )
+  return (
+    <>
+      <h2 id="tour-title" className="flex items-center gap-2 font-[family-name:var(--font-display)] text-title-md font-bold leading-tight">
+        {icon && (
+          <span className="shrink-0" aria-hidden="true">
+            {icon}
+          </span>
+        )}
+        {title}
+      </h2>
+      <p className="mt-1.5 text-ui leading-snug text-text-secondary">{body}</p>
+    </>
+  )
+}
+
+export function ScreenTour({
+  steps,
+  labels,
+  onClose,
+  onStep,
+}: {
+  steps: TourStep[]
+  labels: { skip: string; back: string; next: string; done?: string; step?: (n: number, total: number) => string }
+  onClose: () => void
+  onStep?: (id: string) => void
+}) {
   const reduce = useReducedMotion() ?? false
   const [index, setIndex] = useState(0)
+  const forward = useRef(true)
   const step = steps[index]
-  const { box, missing } = useTargetBox(step?.target, reduce, false)
-  const next = useCallback(() => {
-    if (index + 1 < steps.length) setIndex(index + 1)
-    else onClose()
-  }, [index, onClose, steps.length])
+  const { box, missing } = useTargetBox(step?.target, reduce, false, 0)
+  const move = useCallback(
+    (d: number) => {
+      forward.current = d > 0
+      const to = index + d
+      if (to >= steps.length) onClose()
+      else if (to >= 0) setIndex(to)
+      else {
+        forward.current = true
+        setIndex(index + 1)
+      }
+    },
+    [index, onClose, steps.length],
+  )
   useEffect(() => {
-    if (missing) next()
-  }, [missing, next])
+    if (missing) move(forward.current ? 1 : -1)
+  }, [missing, move])
+  const id = step?.id
+  const enter = useRef(onStep)
+  useEffect(() => {
+    enter.current = onStep
+  }, [onStep])
+  useEffect(() => {
+    if (id) enter.current?.(id)
+  }, [id])
   if (!step) return null
-  const below = roomBelow(box)
+  const last = index === steps.length - 1
   return (
-    <TourLayer spot={box} below={below} reduce={reduce} reserve={170} onEscape={onClose}>
+    <TourLayer spot={box} reduce={reduce} onEscape={onClose}>
       {box && (
-        <motion.div key={step.id} initial={reduce ? false : { opacity: 0, y: below ? -8 : 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className={TOUR_CARD} data-testid="screen-tour" data-step={step.id}>
-          <p id="tour-title" className="text-title-sm font-semibold leading-snug">
-            {step.text}
-          </p>
-          <div className="mt-4 flex items-center gap-2">
-            <button type="button" onClick={onClose} className="h-11 px-1 text-ui font-semibold text-text-secondary">
-              {labels.skip}
-            </button>
-            <span className="flex-1" />
-            {index > 0 && (
-              <Button className="h-11 px-4" onClick={() => setIndex(index - 1)}>
-                {labels.back}
-              </Button>
-            )}
-            <Button variant="primary" className="h-11 px-5" onClick={next}>
-              {labels.next}
-            </Button>
-          </div>
+        <motion.div key={step.id} initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className={cx(TOUR_CARD, step.body ? 'p-4' : 'p-5')} data-testid="screen-tour" data-step={step.id}>
+          {labels.step && <StepDots index={index} total={steps.length} label={labels.step(index + 1, steps.length)} />}
+          <StepText title={step.text} body={step.body} icon={step.icon} />
+          <TourButtons labels={{ ...labels, next: last && labels.done ? labels.done : labels.next }} back={index > 0} onSkip={onClose} onBack={() => move(-1)} onNext={() => move(1)} />
         </motion.div>
       )}
     </TourLayer>
@@ -302,84 +421,94 @@ export function Onboarding({ options }: { options: LanguageOption[] }) {
   const done = useUi((s) => s.onboardingDone)
   const language = useUi((s) => s.languageChosen)
   const finish = useUi((s) => s.finishOnboarding)
+  const markTip = useUi((s) => s.markTip)
   const reduce = useReducedMotion() ?? false
-  const [index, setIndex] = useState(0)
+  const [at, setAt] = useState(0)
   const [tick, setTick] = useState(0)
+  const [reserve, setReserve] = useState(190)
   const [hydrated, setHydrated] = useState(false)
-  useEffect(() => {
-    if (useUi.getState().languageChosen) setIndex(1)
-    setHydrated(true)
-  }, [])
+  const forward = useRef(true)
+  useEffect(() => setHydrated(true), [])
   const visible = hydrated && (!language || (!done && path === '/'))
+  const index = language ? Math.max(1, at) : 0
+  const step = HOME_STEPS[index] ?? HOME_STEPS[0]!
+  const { box, missing } = useTargetBox(visible ? step.target : undefined, reduce, true, reserve)
   useEffect(() => {
-    if (reduce || !visible) return
+    if (reduce || !visible || !step.art) return
     const timer = setInterval(() => setTick((x) => x + 1), 700)
     return () => clearInterval(timer)
-  }, [reduce, visible])
+  }, [reduce, visible, step.art])
 
-  const step = STEPS[index] ?? STEPS[0]!
-  const last = index === STEPS.length - 1
-  const go = useCallback((d: number) => setIndex((i) => Math.max(0, Math.min(STEPS.length - 1, i + d))), [])
+  const go = useCallback(
+    (d: number) => {
+      forward.current = d > 0
+      setAt(Math.max(1, Math.min(HOME_STEPS.length - 1, index + d)))
+    },
+    [index],
+  )
   const next = useCallback(() => go(1), [go])
+  useEffect(() => {
+    if (missing) go(forward.current ? 1 : -1)
+  }, [missing, go])
+  useEffect(() => {
+    if (visible && step.id === 'photo' && box) markTip(CROSS_TIP)
+  }, [visible, step.id, box, markTip])
   const close = () => {
     finish()
-    setIndex(0)
+    setAt(0)
+    window.scrollTo({ top: 0 })
   }
 
-  const card = (
-    <motion.div key={step.id} initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className={TOUR_CARD}>
-      {step.id === 'language' ? (
+  const labels = { skip: t('skip'), back: t('back'), next: t('next') }
+  const dots = <StepDots index={index - 1} total={HOME_STEPS.length - 1} label={t('step', { n: index, total: HOME_STEPS.length - 1 })} />
+  const enter = { initial: reduce ? (false as const) : { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.25 } }
+  const card =
+    step.id === 'language' ? (
+      <motion.div key="language" {...enter} className={cx(TOUR_CARD, 'p-5')}>
         <LanguageStep options={options} reduce={reduce} onDone={next} />
-      ) : (
-        <>
-          {step.art && (
-            <div className="mb-4">
-              <Art kind={step.art} tick={tick} />
-            </div>
-          )}
-          <p className="flex items-center gap-1.5" role="img" aria-label={t('step', { n: index, total: STEPS.length - 1 })}>
-            {STEPS.slice(1).map((s, i) => (
-              <span key={s.id} className={cx('h-1.5 rounded-full transition-all', i + 1 === index ? 'w-5 bg-text' : 'w-1.5 bg-divider')} />
-            ))}
-          </p>
-          <h2 id="tour-title" className="mt-4 font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">
-            {t(`${step.id}.title`)}
-          </h2>
-          <p className="mt-2 text-ui leading-relaxed text-text-secondary">{t(`${step.id}.body`)}</p>
-          {last ? (
-            <div className="mt-5 flex flex-col gap-2">
-              <Link href="/classify" onClick={close} className="inline-flex h-12 items-center justify-center rounded-[var(--radius-button)] bg-accent text-ui font-semibold text-on-accent active:bg-accent-pressed">
-                {t('finish.classify')}
-              </Link>
-              <Button className="h-12" onClick={close}>
-                {t('finish.explore')}
-              </Button>
-            </div>
-          ) : (
-            <div className="mt-5 flex items-center gap-2">
-              <button type="button" onClick={close} className="h-11 px-1 text-ui font-semibold text-text-secondary">
-                {t('skip')}
-              </button>
-              <span className="flex-1" />
-              {index > 0 && (
-                <Button className="h-11 px-4" onClick={() => go(-1)}>
-                  {t('back')}
-                </Button>
-              )}
-              <Button variant="primary" className="h-11 px-5" onClick={next}>
-                {t('next')}
-              </Button>
-            </div>
-          )}
-        </>
-      )}
-    </motion.div>
-  )
+      </motion.div>
+    ) : step.target ? (
+      box && (
+        <motion.div key={step.id} {...enter} className={cx(TOUR_CARD, 'p-4')} data-testid="home-tour" data-step={step.id}>
+          {dots}
+          <StepText title={t(`${step.id}.title`)} body={t(`${step.id}.body`)} />
+          <TourButtons labels={labels} back onSkip={close} onBack={() => go(-1)} onNext={next} />
+        </motion.div>
+      )
+    ) : (
+      <motion.div key={step.id} {...enter} className={cx(TOUR_CARD, 'p-5')} data-testid="home-tour" data-step={step.id}>
+        {step.art && (
+          <div className="mb-4">
+            <Art kind={step.art} tick={tick} />
+          </div>
+        )}
+        {dots}
+        <h2 id="tour-title" className="font-[family-name:var(--font-display)] text-title-lg font-bold leading-tight">
+          {t(`${step.id}.title`)}
+        </h2>
+        <p className="mt-2 text-ui leading-relaxed text-text-secondary">{t(`${step.id}.body`)}</p>
+        {step.id === 'finish' ? (
+          <div className="mt-5 flex flex-col gap-2">
+            <Link href="/classify" onClick={close} className="inline-flex h-12 items-center justify-center rounded-[var(--radius-button)] bg-accent text-ui font-semibold text-on-accent active:bg-accent-pressed">
+              {t('finish.classify')}
+            </Link>
+            <Button className="h-12" onClick={close}>
+              {t('finish.explore')}
+            </Button>
+            <button type="button" onClick={() => go(-1)} className="h-11 text-ui font-semibold text-text-secondary">
+              {t('back')}
+            </button>
+          </div>
+        ) : (
+          <TourButtons labels={labels} back={false} onSkip={close} onBack={() => go(-1)} onNext={next} />
+        )}
+      </motion.div>
+    )
 
   return (
     <AnimatePresence>
       {visible && (
-        <TourLayer spot={null} below={false} reduce={reduce} reserve={300}>
+        <TourLayer spot={step.target ? box : null} reduce={reduce} onHeight={setReserve}>
           {card}
         </TourLayer>
       )}

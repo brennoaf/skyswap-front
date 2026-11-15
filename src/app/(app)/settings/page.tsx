@@ -3,12 +3,11 @@
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState, type ReactNode } from 'react'
-import { IconCheck, IconChevronDownSmall, IconChevronRight, IconFollow, IconLink, IconMap, IconMore, IconNote, IconQuestion, IconSun } from '@/components/icons'
+import { IconChevronDownSmall, IconChevronRight, IconFollow, IconLink, IconMap, IconMore, IconNote, IconQuestion, IconSun } from '@/components/icons'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
-import { LoginForm } from '@/components/shell/login-sheet'
-import { Skeleton, Switch, TopBar } from '@/components/ui/primitives'
+import { Button, Segmented, Sheet, Skeleton, Switch, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
-import { locales } from '@/i18n/locales'
+import { locales, type Locale } from '@/i18n/locales'
 import { useCredit, useHealth, useLogout, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
 import { useUi, type ThemePref } from '@/lib/state/ui'
@@ -17,64 +16,49 @@ import { useSwitchLocale } from '@/lib/use-switch-locale'
 
 const THEMES: ThemePref[] = ['system', 'dark', 'light']
 const API_DOCS_URL = process.env.NEXT_PUBLIC_API_DOCS_URL ?? 'http://localhost:4000/docs'
+const ROW = 'flex min-h-12 w-full items-center gap-3 px-4 text-left'
 
-function Group({ id, title, children }: { id: string; title?: string; children: ReactNode }) {
+function Group({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
-    <section aria-labelledby={title ? id : undefined} className="mt-6 px-4">
-      {title && (
-        <h2 id={id} className="px-1 pb-2 text-meta font-semibold uppercase tracking-wide text-text-secondary">
-          {title}
-        </h2>
-      )}
-      <div className="overflow-hidden rounded-2xl bg-surface ring-[0.5px] ring-divider">{children}</div>
+    <section aria-labelledby={id} className="mt-5">
+      <h2 id={id} className="px-4 pb-1 text-meta font-semibold uppercase tracking-wide text-text-secondary">
+        {title}
+      </h2>
+      {children}
     </section>
   )
 }
 
-function RowHead({ icon, title, hint }: { icon: ReactNode; title: string; hint?: ReactNode }) {
+function RowIcon({ children, label }: { children: ReactNode; label?: string }) {
   return (
-    <span className="flex min-w-0 flex-1 items-center gap-3">
-      <span className="inline-flex size-6 shrink-0 items-center justify-center text-text">{icon}</span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-ui">{title}</span>
-        {hint && <span className="block text-note text-text-secondary">{hint}</span>}
-      </span>
+    <span className="inline-flex size-6 shrink-0 items-center justify-center text-text" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
+      {children}
     </span>
   )
 }
 
-function CreditControl() {
+function Account() {
   const t = useTranslations('settings')
-  const { data: user } = useSession()
-  const { visible, set } = useCredit(!!user)
-  if (!user) return null
+  const { data: user, isLoading } = useSession()
+  const ask = useUi((s) => s.askLogin)
+  if (isLoading) return <Skeleton className="mx-4 h-12" />
+  if (!user)
+    return (
+      <button type="button" onClick={() => ask('me')} className={cx(ROW, 'active:bg-surface')}>
+        <RowIcon>
+          <IconFollow size={24} />
+        </RowIcon>
+        <span className="min-w-0 flex-1 text-ui">{t('loggedOut')}</span>
+        <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
+      </button>
+    )
   return (
-    <>
-      <div className="mx-4 border-t-[0.5px] border-divider" />
-      <label className="flex items-center gap-3 px-4 py-3">
-        <RowHead icon={<IconFollow size={24} />} title={t('credit')} hint={t('creditHint')} />
-        <Switch checked={visible} disabled={set.isPending} onChange={(e) => set.mutate(e.target.checked)} />
-      </label>
-    </>
-  )
-}
-
-function LanguageControl() {
-  const t = useTranslations('settings')
-  const { current, change, pending } = useSwitchLocale()
-  return (
-    <div className="px-4 py-3">
-      <RowHead icon={<IconMap size={24} />} title={t('language')} hint={t('languageHint')} />
-      <div role="radiogroup" aria-label={t('language')} aria-busy={pending} className="mt-2 pl-9">
-        {locales.map((l) => (
-          <button key={l} type="button" role="radio" aria-checked={current === l} lang={l} onClick={() => change(l)} className="flex min-h-11 w-full items-center gap-3 text-left text-ui">
-            <span className="flex-1">{t(`languages.${l}`)}</span>
-            <span className={cx('inline-flex size-5 items-center justify-center rounded-full border-2', current === l ? 'border-accent bg-accent text-on-accent' : 'border-ring-seen')} aria-hidden="true">
-              {current === l && <IconCheck size={14} />}
-            </span>
-          </button>
-        ))}
-      </div>
+    <div className={cx(ROW, 'py-1')}>
+      <UserAvatar nickname={user.nickname} src={user.avatar?.url} size={44} />
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block truncate text-ui font-semibold">{user.nickname}</span>
+        <span className="block text-note text-text-secondary">{t('signedIn')}</span>
+      </span>
     </div>
   )
 }
@@ -86,64 +70,44 @@ function ThemeControl() {
   const [ready, setReady] = useState(false)
   useEffect(() => setReady(true), [])
   return (
-    <div className="px-4 py-3">
-      <RowHead icon={<IconSun size={24} />} title={t('appearance')} />
-      <div role="radiogroup" aria-label={t('appearance')} className="mt-3 flex rounded-[10px] bg-bg p-[3px]">
-      {THEMES.map((k) => {
-        const on = ready && theme === k
-        return (
-          <button
-            key={k}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            onClick={() => setTheme(k)}
-            className={cx('h-10 flex-1 rounded-[8px] text-body font-semibold motion-safe:transition-colors', on ? 'bg-surface-pressed text-text' : 'text-text-secondary')}
-          >
-            {t(`theme.${k}`)}
-          </button>
-        )
-      })}
-      </div>
+    <div className={ROW}>
+      <RowIcon label={t('appearance')}>
+        <IconSun size={24} />
+      </RowIcon>
+      {ready ? <Segmented label={t('appearance')} value={theme} onChange={setTheme} options={THEMES.map((k) => ({ value: k, label: t(`theme.${k}`) }))} className="min-w-0 flex-1" /> : <Skeleton className="h-10 flex-1" />}
     </div>
   )
 }
 
-function Account() {
+function LanguageControl() {
   const t = useTranslations('settings')
-  const { data: user, isLoading } = useSession()
-  if (isLoading) return <Skeleton className="m-4 h-14" />
-  if (!user)
-    return (
-      <div className="pt-3">
-        <p className="px-4 text-body text-text-secondary">{t('loggedOut')}</p>
-        <div className="-mx-2">
-          <LoginForm />
-        </div>
-      </div>
-    )
+  const { current, change, pending } = useSwitchLocale()
   return (
-    <div className="flex items-center gap-3 p-4">
-      <UserAvatar nickname={user.nickname} src={user.avatar?.url} size={56} />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-title-sm font-semibold">{user.nickname}</span>
-        <span className="block text-note text-text-secondary">{t('signedIn')}</span>
-      </span>
+    <div className={ROW} aria-busy={pending}>
+      <RowIcon label={t('language')}>
+        <IconMap size={24} />
+      </RowIcon>
+      <Segmented<Locale> label={t('language')} value={current as Locale} onChange={change} options={locales.map((l) => ({ value: l, label: t(`languages.${l}`) }))} className="min-w-0 flex-1" />
     </div>
   )
 }
 
-function Logout() {
+function CreditControl() {
   const t = useTranslations('settings')
   const { data: user } = useSession()
-  const logout = useLogout()
+  const { visible, set } = useCredit(!!user)
   if (!user) return null
   return (
-    <div className="mt-6 px-4">
-      <button type="button" disabled={logout.isPending} onClick={() => logout.mutate()} className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-surface text-ui font-semibold text-danger active:bg-surface-pressed disabled:opacity-50">
-        {t('logout')}
-      </button>
-    </div>
+    <label className={cx(ROW, 'py-2')}>
+      <RowIcon>
+        <IconFollow size={24} />
+      </RowIcon>
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block text-ui">{t('credit')}</span>
+        <span className="block text-note text-text-secondary">{t('creditHint')}</span>
+      </span>
+      <Switch checked={visible} disabled={set.isPending} onChange={(e) => set.mutate(e.target.checked)} />
+    </label>
   )
 }
 
@@ -151,9 +115,17 @@ function Notes() {
   const t = useTranslations('settings')
   const { notes, reload } = usePrivateNotes()
   return (
-    <div className="px-4 py-3">
-      <RowHead icon={<IconNote size={24} />} title={t('notes')} hint={notes ? `${t('notesHint')} ${t('notesCount', { n: notes.length })}` : t('notesHint')} />
-      <NotesActions notes={notes} onImported={() => void reload()} className="mt-3 flex gap-2 pl-9 [&_button]:h-10 [&_button]:whitespace-nowrap [&_button]:bg-bg" />
+    <div className="px-4 py-2">
+      <div className="flex items-center gap-3">
+        <RowIcon>
+          <IconNote size={24} />
+        </RowIcon>
+        <span className="min-w-0 flex-1 leading-tight">
+          <span className="block text-ui">{t('notes')}</span>
+          <span className="block text-note text-text-secondary">{notes ? `${t('notesHint')} ${t('notesCount', { n: notes.length })}` : t('notesHint')}</span>
+        </span>
+      </div>
+      <NotesActions notes={notes} onImported={() => void reload()} className="mt-2 flex gap-2 pl-9 [&_button]:h-10 [&_button]:whitespace-nowrap" />
     </div>
   )
 }
@@ -165,12 +137,15 @@ function Details() {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <button type="button" aria-expanded={open} aria-controls={open ? 's-details' : undefined} onClick={() => setOpen((v) => !v)} className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-pressed">
-        <RowHead icon={<IconMore size={24} />} title={t('details')} hint={t('detailsHint')} />
+      <button type="button" aria-expanded={open} aria-controls={open ? 's-details' : undefined} onClick={() => setOpen((v) => !v)} className={cx(ROW, 'active:bg-surface')}>
+        <RowIcon>
+          <IconMore size={24} />
+        </RowIcon>
+        <span className="min-w-0 flex-1 text-ui">{t('details')}</span>
         <IconChevronDownSmall size={20} className={cx('shrink-0 text-text-secondary motion-safe:transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
-        <div id="s-details" className="space-y-3 px-4 pb-4 text-note leading-relaxed">
+        <div id="s-details" className="space-y-3 px-4 pb-2 pl-[52px] text-note leading-relaxed">
           <section>
             <h3 className="font-semibold">{t('data')}</h3>
             <div className="mt-1 text-text-secondary">{health.data ? t('dataBody', { version: health.data.version, images: fmt.number(health.data.images_indexed) }) : <Skeleton className="h-10 w-full" />}</div>
@@ -183,6 +158,33 @@ function Details() {
         </div>
       )}
     </>
+  )
+}
+
+function Logout() {
+  const t = useTranslations('settings')
+  const tc = useTranslations('common')
+  const { data: user } = useSession()
+  const logout = useLogout()
+  const [confirm, setConfirm] = useState(false)
+  if (!user) return null
+  return (
+    <div className="mt-8 border-t-[0.5px] border-divider pt-2">
+      <button type="button" onClick={() => setConfirm(true)} className={cx(ROW, 'font-medium text-danger active:bg-surface')}>
+        <span className="text-ui">{t('logout')}</span>
+      </button>
+      <Sheet open={confirm} onClose={() => setConfirm(false)} title={t('logoutTitle', { nickname: user.nickname })}>
+        <div className="space-y-3 px-4 py-4">
+          <p className="text-body leading-snug">{t('logoutBody')}</p>
+          <Button variant="danger" className="h-11 w-full font-semibold" disabled={logout.isPending} onClick={() => logout.mutate(undefined, { onSuccess: () => setConfirm(false) })}>
+            {t('logout')}
+          </Button>
+          <Button variant="ghost" className="h-11 w-full" onClick={() => setConfirm(false)}>
+            {tc('cancel')}
+          </Button>
+        </div>
+      </Sheet>
+    </div>
   )
 }
 
@@ -200,7 +202,6 @@ export default function SettingsPage() {
 
       <Group id="s-preferences" title={t('preferences')}>
         <ThemeControl />
-        <div className="mx-4 border-t-[0.5px] border-divider" />
         <LanguageControl />
         <CreditControl />
       </Group>
@@ -216,12 +217,14 @@ export default function SettingsPage() {
             resetOnboarding()
             router.push('/')
           }}
-          className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left active:bg-surface-pressed"
+          className={cx(ROW, 'active:bg-surface')}
         >
-          <RowHead icon={<IconQuestion size={24} />} title={t('tutorial')} hint={t('tutorialHint')} />
+          <RowIcon>
+            <IconQuestion size={24} />
+          </RowIcon>
+          <span className="min-w-0 flex-1 text-ui">{t('tutorial')}</span>
           <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
         </button>
-        <div className="mx-4 border-t-[0.5px] border-divider" />
         <Details />
       </Group>
 

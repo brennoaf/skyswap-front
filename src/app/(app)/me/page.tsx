@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { IconChevronRight, IconFollow, IconHighlight, IconMap, IconNote, IconQuestion, IconSave, IconSettings } from '@/components/icons'
+import { IconCards, IconChevronRight, IconFollow, IconHighlight, IconMap, IconNote, IconQuestion, IconSave, IconSettings } from '@/components/icons'
 import { MeIntro } from '@/components/me/me-intro'
 import { NotesActions, usePrivateNotes } from '@/components/me/notes-tools'
 import { ExploredSkyCard } from '@/components/me/explored-sky'
@@ -144,12 +144,12 @@ function Profile({ me }: { me: Me }) {
         </div>
 
         <div className="mt-3 text-body leading-snug">
-          <p className="flex items-baseline justify-between gap-3">
-            <span className="min-w-0 truncate font-semibold">{t('level', { n: me.level.level, name: tl(me.level.key) })}</span>
-            <span className="shrink-0 text-note text-text-secondary">{next && me.level.next_min_xp !== null ? t('toNext', { xp: me.level.next_min_xp - me.xp, name: tl(next.key) }) : t('xp', { xp: me.xp })}</span>
+          <p className="font-semibold">{t('level', { n: me.level.level, name: tl(me.level.key) })}</p>
+          <ProgressBar value={me.level.progress} label={t('progress')} className="mt-1.5" />
+          <p className="mt-1.5 flex flex-wrap justify-between gap-x-3 text-note text-text-secondary">
+            <span>{next && me.level.next_min_xp !== null ? t('toNext', { xp: me.level.next_min_xp - me.xp, name: tl(next.key) }) : t('xp', { xp: me.xp })}</span>
+            {me.streak > 1 && <span>{t('streak', { n: me.streak })}</span>}
           </p>
-          <ProgressBar value={me.level.progress} label={t('progress')} className="mt-2" />
-          {me.streak > 1 && <p className="mt-2 text-note text-text-secondary">{t('streak', { n: me.streak })}</p>}
           {me.xp_today >= me.daily_cap * 0.8 && <p className="mt-1 text-note text-text-secondary">{t('today', { xp: me.xp_today, cap: me.daily_cap })}</p>}
         </div>
       </section>
@@ -164,13 +164,13 @@ function Profile({ me }: { me: Me }) {
       <div role="tabpanel" aria-label={tabs.find((x) => x.key === tab)?.label} className="min-h-[60dvh]">
         {tab === 'activity' && (
           <>
-            <Link href="/me/cards" className="flex min-h-14 items-center gap-3 px-4 py-2 active:bg-surface">
-              <span className="min-w-0 flex-1 leading-tight">
-                <span className="block text-body font-medium">{t('allAnswers')}</span>
-                <span className="block text-meta text-text-secondary">{t('allAnswersHint')}</span>
-              </span>
-              <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
-            </Link>
+            {me.counts.votes > 0 && (
+              <Link href="/me/cards" className="flex min-h-12 items-center gap-3 px-4 active:bg-surface">
+                <IconCards size={22} className="shrink-0" />
+                <span className="min-w-0 flex-1 text-body font-medium">{t('allAnswers')}</span>
+                <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
+              </Link>
+            )}
             <HistoryList items={me.history} />
           </>
         )}

@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { IconWarning } from '@/components/icons'
+import { PanelLine } from '@/components/lab/lab-intro'
 import { Button } from '@/components/ui/primitives'
 import { peakSnr, type StackResult } from '@/lib/lab/shift-add'
 import { runShiftAdd } from '@/lib/lab/stack'
@@ -147,51 +149,69 @@ export function ShiftAddPanel({ epochs, parts, refEpoch, catalog }: { epochs: Pa
   )
 
   return (
-    <section className="rounded-2xl bg-surface p-3" aria-labelledby="stack-title">
-      <h3 id="stack-title" className="text-ui font-semibold">
-        {t('title')}
-      </h3>
-      <p className="mt-1 text-note leading-snug text-text-secondary">{t('body')}</p>
-      <div className="mt-3 flex items-start gap-3">
-        <MotionPad motion={motion} reach={reach} north={t('padNorth')} east={t('padEast')} onChange={setMotion} />
-        <div className="min-w-0 flex-1 space-y-2">
-          {field('pmra')}
-          {field('pmdec')}
+    <>
+      <PanelLine
+        title={t('title')}
+        info={
+          <>
+            <p>{t('body')}</p>
+            <p>{t('unit')}</p>
+            <p>{t('reference', { date: fmt.shortDate(refEpoch.iso), n: epochs.length })}</p>
+            <p>{t('sameStretch')}</p>
+          </>
+        }
+      >
+        {t('limit')}
+      </PanelLine>
+      <section className="rounded-2xl bg-surface p-3" aria-label={t('title')}>
+        <div className="flex items-start gap-3">
+          <MotionPad motion={motion} reach={reach} north={t('padNorth')} east={t('padEast')} onChange={setMotion} />
+          <div className="min-w-0 flex-1 space-y-2">
+            {field('pmra')}
+            {field('pmdec')}
+          </div>
         </div>
-      </div>
-      <p className="mt-2 text-meta leading-snug text-text-secondary">{t('unit')}</p>
-      <div className="mt-2 flex gap-2">
-        {catalog && (
-          <Button variant="ghost" className="h-11 flex-1 bg-bg px-2 text-body" onClick={() => setMotion(catalog)}>
-            {t('useCatalog')}
+        <div className="mt-3 flex gap-2">
+          {catalog && (
+            <Button variant="ghost" className="h-11 flex-1 bg-bg px-2 text-body" onClick={() => setMotion(catalog)}>
+              {t('useCatalog')}
+            </Button>
+          )}
+          <Button variant="ghost" className="h-11 flex-1 bg-bg px-2 text-body" onClick={() => setMotion({ pmra: 0, pmdec: 0 })}>
+            {t('zero')}
           </Button>
-        )}
-        <Button variant="ghost" className="h-11 flex-1 bg-bg px-2 text-body" onClick={() => setMotion({ pmra: 0, pmdec: 0 })}>
-          {t('zero')}
-        </Button>
-      </div>
-      <Button variant="primary" className="mt-2 h-11 w-full" onClick={() => void start()} disabled={!parts || run.status === 'running'}>
-        {run.status === 'running' ? t('running') : t('run')}
-      </Button>
-      <p className="mt-2 text-meta leading-snug text-text-secondary">{t('reference', { date: fmt.shortDate(refEpoch.iso), n: epochs.length })}</p>
-      {run.status === 'error' && <p className="mt-2 text-note text-danger">{t('failed')}</p>}
-      {done && (
-        <div className="mt-3 grid grid-cols-2 gap-2" aria-live="polite">
-          {[
-            { r: done.along, name: t('along', { pmra: fmt.fixed(done.motion.pmra, 0), pmdec: fmt.fixed(done.motion.pmdec, 0) }) },
-            { r: done.still, name: t('still') },
-          ].map(({ r, name }) => (
-            <figure key={name} className="min-w-0">
-              <StackCanvas r={r} lo={lo} hi={hi} target={done.ref.target_xy} label={name} />
-              <figcaption className="mt-1 text-meta leading-snug">
-                <span className="block font-semibold">{name}</span>
-                <span className="block text-text-secondary">{t('snr', { v: fmt.fixed(peakSnr(r, done.ref.target_xy[0], done.ref.target_xy[1]), 1), n: r.used })}</span>
-              </figcaption>
-            </figure>
-          ))}
         </div>
+        <Button variant="primary" className="mt-2 h-11 w-full" onClick={() => void start()} disabled={!parts || run.status === 'running'}>
+          {run.status === 'running' ? t('running') : t('run')}
+        </Button>
+        {run.status === 'error' && (
+          <p className="mt-2 text-note text-danger" role="alert">
+            {t('failed')}
+          </p>
+        )}
+      </section>
+      {done && (
+        <section aria-live="polite">
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { r: done.along, name: t('along', { pmra: fmt.fixed(done.motion.pmra, 0), pmdec: fmt.fixed(done.motion.pmdec, 0) }) },
+              { r: done.still, name: t('still') },
+            ].map(({ r, name }) => (
+              <figure key={name} className="min-w-0">
+                <StackCanvas r={r} lo={lo} hi={hi} target={done.ref.target_xy} label={name} />
+                <figcaption className="mt-1 text-meta leading-snug">
+                  <span className="block font-semibold">{name}</span>
+                  <span className="block text-text-secondary">{t('snr', { v: fmt.fixed(peakSnr(r, done.ref.target_xy[0], done.ref.target_xy[1]), 1), n: r.used })}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+          <p className="mt-2 flex items-center gap-2 text-note leading-snug">
+            <IconWarning size={18} className="shrink-0 text-warning" />
+            {t('proof')}
+          </p>
+        </section>
       )}
-      {done && <p className="mt-2 text-meta text-text-secondary">{t('sameStretch')}</p>}
-    </section>
+    </>
   )
 }

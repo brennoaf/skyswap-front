@@ -66,7 +66,9 @@ export default function HomePage() {
           <IconChevronDown className="mb-0.5" />
         </button>
         <div className="flex items-center">
-          <LabChip href="/lab" label={t('lab')} description={t('labOpen')} />
+          <span data-tour="home-lab" className="inline-flex">
+            <LabChip href="/lab" label={t('lab')} description={t('labOpen')} />
+          </span>
           <Link href="/alerts" aria-label={t('alerts')} className="relative inline-flex size-11 items-center justify-center">
             <IconLike />
             {!!alerts?.unread && <span className="absolute right-2 top-2 size-2.5 rounded-full border-2 border-bg bg-danger" aria-label={t('unread', { n: alerts.unread })} />}
@@ -77,7 +79,9 @@ export default function HomePage() {
         </div>
       </header>
 
-      <StoriesRow />
+      <div data-tour="home-stories">
+        <StoriesRow />
+      </div>
       <CommunitySwitch />
       <HomeHint />
 
@@ -117,9 +121,11 @@ export default function HomePage() {
         />
       )}
 
-      {items.map((item, i) => (
-        <PostCard key={item.post.id} item={item} priority={i === 0} />
-      ))}
+      <div data-tour="home-feed">
+        {items.map((item, i) => (
+          <PostCard key={item.post.id} item={item} priority={i === 0} />
+        ))}
+      </div>
 
       <div ref={sentinel} />
       {feed.isFetchingNextPage && <FeedSkeleton />}

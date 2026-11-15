@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { KitChart, QrWarning } from '@/components/charts/charts'
+import { mixesBatches } from '@/components/charts/chart-math'
+import { KitChart } from '@/components/charts/charts'
 import { frameTiles, PostGrid, tilesFromPosts } from '@/components/profile/post-grid'
 import { IconBell, IconChart, IconChevronDownSmall, IconFlask, IconGrid, IconLink, IconMap, IconMore, IconReel, IconSpectrum, IconTarget, IconWarning, IconChevronRight } from '@/components/icons'
 import { Button, Chip, EmptyState, IconButton, IconTabs, isSaturated, isVerified, ObjectAvatar, ObjectBadges, Sheet, SheetRow, Skeleton, TopBar } from '@/components/ui/primitives'
@@ -91,6 +92,7 @@ export function ObjectProfileView({ id }: { id: string }) {
 
   const bandsPresent = useMemo(() => BANDS.filter((b) => posts?.some((p) => p.frames.some((f) => f.band === b))), [posts])
   const timelapse = posts?.find((p) => p.type === 'timelapse')
+  const mixedBatches = useMemo(() => mixesBatches((posts ?? []).flatMap((p) => p.frames.map((f) => f.release))), [posts])
 
   if (isError) return <EmptyState title={t('noPosts')} />
   if (isLoading || !profile) {
@@ -243,31 +245,24 @@ export function ObjectProfileView({ id }: { id: string }) {
       {tab === 'timelapses' && <PostGrid tiles={tilesFromPosts((posts ?? []).filter((p) => p.type === 'long_baseline' || p.type === 'timelapse' || p.type === 'pass_blink'), locale)} />}
 
       {tab === 'spectrum' && (
-        <section className="space-y-3 px-4 py-4">
-          {profile.measurements.spectra ? (
-            <>
-              <h3 className="text-ui font-semibold">{t('tabs.spectrum')}</h3>
-              <KitChart kind="spectrum" url={profile.measurements.spectra} />
-              <QrWarning />
-            </>
-          ) : (
-            <EmptyState title={t('noSpectrum')} />
-          )}
-        </section>
+        <section className="px-4 py-4">{profile.measurements.spectra ? <KitChart kind="spectrum" url={profile.measurements.spectra} titled mixedBatches={mixedBatches} /> : <EmptyState title={t('noSpectrum')} />}</section>
       )}
 
       {tab === 'measurements' && (
-        <section className="space-y-6 px-4 py-4">
+        <section className="space-y-8 px-4 py-4">
           {!profile.measurements.motion && !profile.measurements.lightcurve && <EmptyState title={t('noMeasurements')} />}
-          {profile.measurements.motion && <KitChart kind="motion" url={profile.measurements.motion} />}
-          {timelapse && (
-            <Link href={`/p/${timelapse.id}?mark=1`} className="flex items-center gap-3 rounded-xl bg-surface p-3">
-              <IconTarget size={28} />
-              <span className="flex-1 text-body">{tp('menu.mark')}</span>
-            </Link>
+          {(profile.measurements.motion || timelapse) && (
+            <div>
+              {profile.measurements.motion && <KitChart kind="motion" url={profile.measurements.motion} titled />}
+              {timelapse && (
+                <Link href={`/p/${timelapse.id}?mark=1`} className="hit-44 mt-3 inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-button)] bg-surface px-3 text-body font-medium active:bg-surface-pressed">
+                  <IconTarget size={18} />
+                  {tp('menu.mark')}
+                </Link>
+              )}
+            </div>
           )}
-          {profile.measurements.lightcurve && <KitChart kind="lightcurve" url={profile.measurements.lightcurve} />}
-          <QrWarning />
+          {profile.measurements.lightcurve && <KitChart kind="lightcurve" url={profile.measurements.lightcurve} titled mixedBatches={mixedBatches} />}
         </section>
       )}
 

@@ -28,18 +28,18 @@ function NoteBlock({ cardId, note, editable }: { cardId: string; note: string | 
     setSaving(false)
   }
   return (
-    <div className="border-b-[0.5px] border-divider py-2.5 text-[16px] leading-snug" data-testid="my-note">
+    <div className="border-b-[0.5px] border-divider py-2.5 text-title-sm leading-snug" data-testid="my-note">
       <b className="font-semibold">{t('title')}: </b>
       {draft === null ? (
         <>
           <span className={cx(!note && 'text-text-secondary')}>{note ? `"${note}"` : t('empty')}</span>
           {editable ? (
             <span className="mt-1 flex gap-4">
-              <button type="button" onClick={() => setDraft(note ?? '')} className="min-h-10 text-ui font-semibold text-link">
+              <button type="button" onClick={() => setDraft(note ?? '')} className="min-h-11 text-ui font-semibold text-link">
                 {t('edit')}
               </button>
               {note && (
-                <button type="button" disabled={saving} onClick={() => void save(null)} className="min-h-10 text-ui font-semibold text-danger">
+                <button type="button" disabled={saving} onClick={() => void save(null)} className="min-h-11 text-ui font-semibold text-danger">
                   {t('delete')}
                 </button>
               )}
@@ -62,10 +62,10 @@ function NoteBlock({ cardId, note, editable }: { cardId: string; note: string | 
           />
           <span className={cx('mt-1 block text-ui', invalid ? 'text-danger' : 'text-text-secondary')}>{invalid ? tn('invalid') : tn('help')}</span>
           <span className="mt-1 flex gap-4">
-            <button type="button" disabled={saving || invalid} onClick={() => void save(draft)} className="min-h-10 text-ui font-semibold text-link disabled:opacity-50">
+            <button type="button" disabled={saving || invalid} onClick={() => void save(draft)} className="min-h-11 text-ui font-semibold text-link disabled:opacity-50">
               {t('save')}
             </button>
-            <button type="button" onClick={() => setDraft(null)} className="min-h-10 text-ui font-semibold text-text-secondary">
+            <button type="button" onClick={() => setDraft(null)} className="min-h-11 text-ui font-semibold text-text-secondary">
               {t('cancel')}
             </button>
           </span>
@@ -85,7 +85,7 @@ function CardDetail({ item, onClose }: { item: MyCardItem | null; onClose: () =>
     queryFn: async () => unwrap(await api.GET('/api/me/cards/{id}', { params: { path: { id: item?.card_id ?? '' } } })),
   })
   const reveal = detail.data?.reveal
-  const line = 'border-b-[0.5px] border-divider py-2.5 text-[16px] leading-snug'
+  const line = 'border-b-[0.5px] border-divider py-2.5 text-title-sm leading-snug'
   return (
     <Sheet open={!!item} onClose={onClose} title={t('detail.title')}>
       <div className="px-4 pb-4 pt-1">
@@ -96,7 +96,7 @@ function CardDetail({ item, onClose }: { item: MyCardItem | null; onClose: () =>
             <p className={line}>
               <b className="font-semibold">{t('detail.yours')}: </b>
               {t(`answers.${item.label}`)}
-              <span className="block text-[14px] text-text-secondary">{formatShortDate(item.created_at, locale)}</span>
+              <span className="block text-body text-text-secondary">{formatShortDate(item.created_at, locale)}</span>
             </p>
             {item.label === 'real' && detail.data && (detail.data.note || detail.data.note_editable) && <NoteBlock cardId={item.card_id} note={detail.data.note} editable={detail.data.note_editable} />}
             <p className={line}>
@@ -109,7 +109,7 @@ function CardDetail({ item, onClose }: { item: MyCardItem | null; onClose: () =>
                   <b className="font-semibold">{t('detail.guess')}: </b>
                   {tc(`guesses.${reveal.kind}`)}
                 </p>
-                <p className="mt-1 text-[14px] text-text-secondary">{t('detail.guessNote')}</p>
+                <p className="mt-1 text-body text-text-secondary">{t('detail.guessNote')}</p>
               </div>
             )}
             {reveal.known && (
@@ -119,7 +119,7 @@ function CardDetail({ item, onClose }: { item: MyCardItem | null; onClose: () =>
               </p>
             )}
             <details className="mt-3">
-              <summary className="flex min-h-11 cursor-pointer items-center text-[16px] font-semibold">{tc('understand.technical')}</summary>
+              <summary className="flex min-h-11 cursor-pointer items-center text-title-sm font-semibold">{tc('understand.technical')}</summary>
               <TechnicalData reveal={reveal} />
             </details>
           </>
@@ -138,10 +138,14 @@ function Thumb({ item }: { item: MyCardItem }) {
 
 function Row({ item, onOpen }: { item: MyCardItem; onOpen: () => void }) {
   const t = useTranslations('community.myCards')
+  const locale = useLocale()
   const body = (
     <>
       <Thumb item={item} />
-      <span className="min-w-0 flex-1 text-[16px] leading-tight">{t(`answers.${item.label}`)}</span>
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block text-title-sm">{t(`answers.${item.label}`)}</span>
+        <span className="block text-meta text-text-secondary">{formatShortDate(item.created_at, locale)}</span>
+      </span>
       {item.finding === 'candidate' && <StatePill state={item.finding} />}
       <IconChevronRight size={18} className="shrink-0 text-text-secondary" />
     </>

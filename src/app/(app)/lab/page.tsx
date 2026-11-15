@@ -14,11 +14,11 @@ export default function LabPickerPage() {
   return (
     <main className="pb-6">
       <TopBar title={t('title')} />
-      <div className="mx-4 mb-3 flex gap-3 rounded-xl bg-surface px-3 py-3 text-note leading-snug">
-        <IconFlask size={24} className="shrink-0" />
-        <p>{t('picker.intro')}</p>
-      </div>
-      <h2 className="px-4 pb-1 pt-2 text-meta font-semibold uppercase tracking-wide text-text-secondary">{t('picker.title')}</h2>
+      <h2 className="px-4 pt-1 text-ui font-semibold">{t('picker.title')}</h2>
+      <p className="flex items-center gap-2 px-4 pb-2 pt-0.5 text-note leading-snug text-text-secondary">
+        <IconFlask size={18} className="shrink-0" />
+        {t('picker.intro')}
+      </p>
       {objects.isLoading && (
         <div aria-hidden="true">
           {[0, 1, 2, 3].map((i) => (

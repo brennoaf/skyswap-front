@@ -12,11 +12,13 @@ export function BottomNav() {
   const t = useTranslations('nav')
   const path = usePathname()
   const overlay = path.startsWith('/reels')
+  const hidden = /^\/lab\/[^/]+/.test(path)
   const { data: user } = useSession()
   const { data: alerts } = useAlerts(!!user)
   const personal = alerts?.alerts.some((a) => !a.read && (a.type === 'badge' || a.type === 'level')) ?? false
   const is = (p: string) => (p === '/' ? path === '/' : path.startsWith(p))
   const item = 'flex size-11 items-center justify-center rounded-full text-text transition-transform active:scale-90'
+  if (hidden) return null
   return (
     <nav
       aria-label={t('label')}
@@ -37,7 +39,7 @@ export function BottomNav() {
           </Link>
         </li>
         <li>
-          <Link href="/classify" aria-label={t('classify')} aria-current={is('/classify') ? 'page' : undefined} className={item}>
+          <Link href="/classify" data-tour="nav-classify" aria-label={t('classify')} aria-current={is('/classify') ? 'page' : undefined} className={item}>
             <IconCards filled={is('/classify')} />
           </Link>
         </li>

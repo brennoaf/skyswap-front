@@ -1,82 +1,70 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
-import { IconClose, IconColours, IconCompare, IconCrosshair, IconLayers, IconMore, IconMoves, IconNote, IconSearch, IconSpectrum } from '@/components/icons'
-import { Button, IconButton, Sheet } from '@/components/ui/primitives'
-import { useUi } from '@/lib/state/ui'
+import { useMemo, useState, type ReactNode } from 'react'
+import { IconColours, IconCompare, IconCrosshair, IconInfo, IconLayers, IconMore, IconMoves, IconNote, IconSearch, IconSpectrum } from '@/components/icons'
+import { ScreenTour, type TourStep } from '@/components/shell/onboarding'
+import { IconButton, Sheet } from '@/components/ui/primitives'
 
 export const TOOLS = [
-  { key: 'date', icon: <IconCompare size={26} /> },
-  { key: 'colour', icon: <IconColours size={26} /> },
-  { key: 'zoom', icon: <IconSearch size={26} /> },
-  { key: 'layers', icon: <IconLayers size={26} /> },
-  { key: 'pixel', icon: <IconCrosshair size={26} /> },
-  { key: 'motion', icon: <IconMoves size={26} /> },
-  { key: 'spectrum', icon: <IconSpectrum size={26} /> },
-  { key: 'notes', icon: <IconNote size={26} /> },
-  { key: 'more', icon: <IconMore size={26} /> },
+  { key: 'date', icon: IconCompare },
+  { key: 'colour', icon: IconColours },
+  { key: 'zoom', icon: IconSearch },
+  { key: 'pixel', icon: IconCrosshair },
+  { key: 'layers', icon: IconLayers },
+  { key: 'spectrum', icon: IconSpectrum },
+  { key: 'motion', icon: IconMoves },
+  { key: 'notes', icon: IconNote },
+  { key: 'more', icon: IconMore },
 ] as const
 
 export type Tool = (typeof TOOLS)[number]['key']
 
-const SELF_EXPLAINED: readonly Tool[] = ['pixel', 'motion', 'spectrum', 'more']
+const TOUR_TOOLS: readonly Tool[] = ['colour', 'zoom', 'layers', 'spectrum', 'motion', 'notes', 'more']
+const TOUR_OPENS: Record<string, Tool> = { photo: 'pixel', dates: 'date' }
 
-export function LabIntro() {
-  const t = useTranslations('lab.intro')
-  const path = usePathname()
-  const language = useUi((s) => s.languageChosen)
-  const done = useUi((s) => s.labIntroDone)
-  const finish = useUi((s) => s.finishLabIntro)
-  const [hydrated, setHydrated] = useState(false)
-  useEffect(() => setHydrated(true), [])
-  const open = hydrated && language && !done && (path === '/lab' || path.startsWith('/lab/'))
-  return (
-    <Sheet open={open} onClose={finish} title={t('title')}>
-      <p className="px-4 pt-4 text-ui leading-relaxed">{t('body')}</p>
-      <div className="px-4 pt-5">
-        <Button variant="primary" className="h-12 w-full" onClick={finish}>
-          {t('action')}
-        </Button>
-      </div>
-    </Sheet>
-  )
-}
-
-export function LabToolHint({ tool }: { tool: Tool }) {
-  const t = useTranslations('lab.intro')
-  const tc = useTranslations('common')
-  const key = `lab-${tool}`
-  const seen = useUi((s) => s.tipsSeen.includes(key))
-  const markTip = useUi((s) => s.markTip)
-  if (seen || SELF_EXPLAINED.includes(tool)) return null
-  return (
-    <div role="note" className="flex items-center gap-1 rounded-xl bg-surface pl-3 text-note leading-snug">
-      <p className="min-w-0 flex-1 py-2.5">{t(`tools.${tool}`)}</p>
-      <IconButton label={tc('close')} onClick={() => markTip(key)} className="text-text-secondary">
-        <IconClose size={18} />
-      </IconButton>
-    </div>
-  )
-}
-
-export function LabToolsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const t = useTranslations('lab.intro')
+export function LabTour({ onTool, onClose }: { onTool: (tool: Tool) => void; onClose: () => void }) {
+  const t = useTranslations('lab.tour')
   const tools = useTranslations('lab.tools')
+  const to = useTranslations('onboarding')
+  const tc = useTranslations('common')
+  const steps = useMemo<TourStep[]>(
+    () => [
+      { id: 'photo', target: 'lab-photo', text: t('photo.title'), body: t('photo.body') },
+      { id: 'dates', target: 'lab-dates', text: t('dates.title'), body: t('dates.body') },
+      ...TOUR_TOOLS.map((key) => {
+        const Icon = TOOLS.find((tool) => tool.key === key)?.icon ?? IconMore
+        return { id: key, target: 'lab-tools', text: tools(key), body: t(key), icon: <Icon size={24} /> }
+      }),
+    ],
+    [t, tools],
+  )
   return (
-    <Sheet open={open} onClose={onClose} title={t('again')}>
-      <ul className="px-4 pt-2">
-        {TOOLS.map((tool) => (
-          <li key={tool.key} className="flex items-center gap-3 py-2">
-            <span className="inline-flex size-8 shrink-0 items-center justify-center">{tool.icon}</span>
-            <span className="min-w-0 flex-1 leading-snug">
-              <span className="block text-body font-medium">{tools(tool.key)}</span>
-              <span className="block text-note text-text-secondary">{t(`tools.${tool.key}`)}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-    </Sheet>
+    <ScreenTour
+      steps={steps}
+      labels={{ skip: to('skip'), back: to('back'), next: to('next'), done: tc('done'), step: (n, total) => to('step', { n, total }) }}
+      onStep={(id) => onTool(TOUR_OPENS[id] ?? (id as Tool))}
+      onClose={onClose}
+    />
+  )
+}
+
+export function PanelLine({ title, info, children }: { title: string; info?: ReactNode; children?: ReactNode }) {
+  const t = useTranslations('lab')
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="-my-1 flex min-h-11 items-center gap-2">
+      <p className="min-w-0 flex-1 text-note leading-snug text-text-secondary">{children}</p>
+      {info && (
+        <>
+          <IconButton label={t('about', { tool: title })} onClick={() => setOpen(true)} className="-mr-2 text-text-secondary">
+            <IconInfo size={22} />
+          </IconButton>
+          <Sheet open={open} onClose={() => setOpen(false)} title={title}>
+            <div className="space-y-3 px-4 pt-4 text-ui leading-relaxed">{info}</div>
+          </Sheet>
+        </>
+      )}
+    </div>
   )
 }

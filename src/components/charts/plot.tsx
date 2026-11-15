@@ -1,38 +1,7 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
+import type { Scale } from '@/components/charts/chart-math'
 
-export interface Scale {
-  (v: number): number
-  domain: [number, number]
-  ticks: number[]
-}
-
-export function niceTicks(min: number, max: number, count = 5): number[] {
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return []
-  if (min === max) return [min]
-  const span = max - min
-  const step0 = span / count
-  const mag = 10 ** Math.floor(Math.log10(step0))
-  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= count) ?? mag * 10
-  const out: number[] = []
-  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(Number(v.toPrecision(12)))
-  return out
-}
-
-export function linear(domain: [number, number], range: [number, number], ticks = 5, pad = 0.04): Scale {
-  let [d0, d1] = domain
-  if (d0 === d1) {
-    d0 -= 1
-    d1 += 1
-  }
-  const p = (d1 - d0) * pad
-  d0 -= p
-  d1 += p
-  const [r0, r1] = range
-  const f = ((v: number) => r0 + ((v - d0) / (d1 - d0)) * (r1 - r0)) as Scale
-  f.domain = [d0, d1]
-  f.ticks = niceTicks(d0, d1, ticks)
-  return f
-}
+export { linear, niceTicks, type Scale } from '@/components/charts/chart-math'
 
 export const PLOT = { w: 343, h: 220, l: 44, r: 10, t: 12, b: 34 }
 
@@ -46,6 +15,9 @@ export function Frame({
   children,
   height = PLOT.h,
   title,
+  xEnds,
+  yEnds,
+  onPick,
 }: {
   x: Scale
   y: Scale
@@ -56,9 +28,27 @@ export function Frame({
   children: ReactNode
   height?: number
   title: string
+  xEnds?: [string, string]
+  yEnds?: [string, string]
+  onPick?: (x: number, y: number) => void
 }) {
+  const clip = useId()
+  const midY = (PLOT.t + height - PLOT.b) / 2
   return (
-    <svg viewBox={`0 0 ${PLOT.w} ${height}`} className="w-full text-text" role="img" aria-label={title}>
+    <svg
+      viewBox={`0 0 ${PLOT.w} ${height}`}
+      className="w-full touch-manipulation select-none text-text"
+      role="img"
+      aria-label={title}
+      onClick={
+        onPick
+          ? (e) => {
+              const r = e.currentTarget.getBoundingClientRect()
+              if (r.width && r.height) onPick(((e.clientX - r.left) * PLOT.w) / r.width, ((e.clientY - r.top) * height) / r.height)
+            }
+          : undefined
+      }
+    >
       <g className="text-divider">
         {y.ticks.map((v) => (
           <line key={`y${v}`} x1={PLOT.l} x2={PLOT.w - PLOT.r} y1={y(v)} y2={y(v)} stroke="currentColor" strokeWidth="0.5" />
@@ -78,17 +68,37 @@ export function Frame({
         <text x={(PLOT.l + PLOT.w - PLOT.r) / 2} y={height - 4} textAnchor="middle">
           {xLabel}
         </text>
-        <text x={10} y={(PLOT.t + height - PLOT.b) / 2} textAnchor="middle" transform={`rotate(-90 10 ${(PLOT.t + height - PLOT.b) / 2})`}>
+        {xEnds && (
+          <g fillOpacity="0.75">
+            <text x={PLOT.l} y={height - 4} textAnchor="start">
+              {xEnds[0]}
+            </text>
+            <text x={PLOT.w - PLOT.r} y={height - 4} textAnchor="end">
+              {xEnds[1]}
+            </text>
+          </g>
+        )}
+        <text x={10} y={midY} textAnchor="middle" transform={`rotate(-90 10 ${midY})`}>
           {yLabel}
         </text>
+        {yEnds && (
+          <g fillOpacity="0.75">
+            <text x={10} y={height - PLOT.b} textAnchor="start" transform={`rotate(-90 10 ${height - PLOT.b})`}>
+              {yEnds[0]}
+            </text>
+            <text x={10} y={PLOT.t} textAnchor="end" transform={`rotate(-90 10 ${PLOT.t})`}>
+              {yEnds[1]}
+            </text>
+          </g>
+        )}
       </g>
       <line x1={PLOT.l} x2={PLOT.w - PLOT.r} y1={height - PLOT.b} y2={height - PLOT.b} stroke="currentColor" strokeOpacity="0.4" strokeWidth="0.75" />
       <defs>
-        <clipPath id={`clip-${title.replace(/\W/g, '')}`}>
+        <clipPath id={clip}>
           <rect x={PLOT.l} y={PLOT.t - 4} width={PLOT.w - PLOT.l - PLOT.r} height={height - PLOT.t - PLOT.b + 8} />
         </clipPath>
       </defs>
-      <g clipPath={`url(#clip-${title.replace(/\W/g, '')})`}>{children}</g>
+      <g clipPath={`url(#${clip})`}>{children}</g>
     </svg>
   )
 }

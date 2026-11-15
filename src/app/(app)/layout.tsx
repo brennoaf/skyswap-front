@@ -1,4 +1,3 @@
-import { LabIntro } from '@/components/lab/lab-intro'
 import { BottomNav } from '@/components/shell/bottom-nav'
 import { LoginSheet } from '@/components/shell/login-sheet'
 import { Onboarding, type LanguageOption } from '@/components/shell/onboarding'
@@ -19,7 +18,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <StoryViewer />
       <LoginSheet />
       <Onboarding options={options} />
-      <LabIntro />
       <Toaster />
     </div>
   )

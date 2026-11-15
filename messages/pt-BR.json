@@ -286,13 +286,31 @@
     "step": "{n} de {total}",
     "welcome": {
       "title": "Boas-vindas ao SkySwap",
-      "body": "Uma rede social em que cada perfil é um objeto de verdade no céu, com fotos reais do telescópio SPHEREx, da NASA."
+      "body": "Aqui, cada perfil é um objeto de verdade no céu."
     },
-    "help": {
-      "title": "Você ajuda a achar o que muda de lugar",
-      "body": "Olhe fotos do mesmo ponto e diga se algo mudou de lugar. Suas respostas se somam às de todo mundo e mostram onde vale olhar com mais calma."
+    "stories": {
+      "title": "Fotos novas",
+      "body": "Toque em um círculo para assistir às fotos mais novas daquele objeto."
+    },
+    "spot": {
+      "title": "Qualquer lugar do céu",
+      "body": "Digite um lugar e veja como ele muda com o tempo."
+    },
+    "photo": {
+      "title": "Fotos reais em infravermelho",
+      "body": "A cruz amarela mostra onde os catálogos dizem que o objeto deveria estar."
+    },
+    "cards": {
+      "title": "Ajude a achar o que muda de lugar",
+      "body": "Abra os cartões aqui e diga se algo mudou de lugar."
+    },
+    "lab": {
+      "title": "O Lab",
+      "body": "Ferramentas para estudar qualquer foto de perto."
     },
     "finish": {
+      "title": "Sua vez",
+      "body": "Comece por um cartão ou dê uma olhada primeiro.",
       "classify": "Tentar um primeiro cartão",
       "explore": "Explorar por conta própria"
     }
@@ -352,21 +370,17 @@
   },
   "charts": {
     "wavelength": "Comprimento de onda (µm)",
-    "flux": "Brilho",
+    "flux": "Brilho (mJy)",
     "magnitude": "Magnitude",
-    "date": "Data",
     "pass": "Passagem {n}",
-    "saturated": "Brilhante demais (valor aproximado)",
-    "predicted": "Previsto pelo catálogo",
-    "measured": "Medido pelo SkySwap a partir de imagens do SPHEREx",
+    "saturated": "Brilhante demais, valor aproximado",
+    "predicted": "Previsão",
+    "measured": "Medido",
     "community": "Marcações da comunidade",
     "yours": "Suas marcações",
-    "spectrumTitle": "Espectro infravermelho",
-    "spectrumHint": "Cada ponto é uma medida do SPHEREx, e as barras mostram a incerteza. Pontos vazados: a estrela era brilhante demais para medir bem. O comprimento de onda está em micrômetros (µm) e o brilho em milijanskys (mJy), unidades que astrônomos usam.",
-    "lightcurveTitle": "Curva de luz",
-    "lightcurveHint": "Brilho ao longo do tempo em cada cor do SPHEREx. Magnitude é a escala de brilho dos astrônomos: número menor quer dizer mais brilhante.",
-    "motionTitle": "Movimento pelo céu",
-    "motionHint": "Onde o catálogo prevê o objeto (círculos vazados) e onde o SkySwap o mediu a partir de imagens do SPHEREx (pontos com barras de erro). Os deslocamentos estão em segundos de arco a partir da primeira passagem.",
+    "spectrumTitle": "Brilho em cada cor",
+    "lightcurveTitle": "Brilho ao longo do tempo",
+    "motionTitle": "Posição: medida e prevista",
     "verdict": {
       "consistent": "Cálculo: posições medidas e previstas batem dentro da incerteza",
       "inconsistent": "Cálculo: posições medidas e previstas não batem. Só isso não diz qual das duas está errada.",
@@ -379,9 +393,7 @@
     },
     "path": "Caminho",
     "residuals": "Medido menos previsto",
-    "residualHint": "Quanto cada posição do SPHEREx está longe da previsão no mesmo momento, em segundos de arco. Um pixel do SPHEREx tem 6,15 segundos de arco.",
     "pixel": "1 pixel",
-    "points": "{n, plural, one {# ponto} other {# pontos}}",
     "east": "Leste (segundos de arco)",
     "north": "Norte (segundos de arco)",
     "qrWarning": "A NASA publicou estas fotos em dois lotes, processados de jeitos diferentes. Não compare pequenas mudanças de brilho entre um lote e outro.",
@@ -392,12 +404,40 @@
       "deviates": "A medida ficou a {offset} segundos de arco da previsão, bem fora da margem de {margin}. Só isso não diz qual das duas está errada.",
       "inconsistent": "A medida ficou a {offset} segundos de arco da previsão, bem fora da margem de {margin}. Só isso não diz qual das duas está errada."
     },
-    "marginAssumed": "Parte dessa margem ({floor} segundos de arco) é um valor suposto, não uma medida.",
+    "marginAssumed": "{margin} ({floor} dela é valor suposto, não medido)",
     "variability": {
       "varied": "{band}: o brilho variou {spread} magnitudes, mais do que os erros de medida explicam.",
       "hint": "{band}: o brilho variou {spread} magnitudes, um pouco mais do que os erros preveem. Pode ter mudado, mas isso não basta para afirmar.",
       "indicative": "{band}: o brilho parece variar {spread} magnitudes, mas estas medidas são fracas (brilho demais, poucas fotos ou muito ruído), então pode não ser real.",
-      "none": "Nenhuma mudança além do que os erros de medida permitem."
+      "none": "Nenhuma mudança além do que os erros de medida permitem.",
+      "more": "{n, plural, one {Outra cor mostra} other {Outras # cores mostram}} algo parecido."
+    },
+    "tapHint": "Toque em um ponto para ler",
+    "readFlux": "Brilho {value} ± {err} mJy",
+    "readMag": "Magnitude {value} ± {err}",
+    "readOffset": "{dist} segundos de arco da previsão",
+    "xNear": "luz visível",
+    "xFar": "calor",
+    "brighter": "mais brilho",
+    "fainter": "menos brilho",
+    "margin": "Margem",
+    "pixelScale": "1 pixel = {size} segundos de arco",
+    "outside": "{n, plural, one {# ponto} other {# pontos}} fora deste quadro",
+    "batchNote": "Fotos de dois lotes da NASA: pequenas diferenças de brilho entre um e outro podem não ser reais.",
+    "loadFailed": "Não deu para carregar este gráfico",
+    "info": {
+      "open": "Como ler este gráfico",
+      "spectrumDot": "Cada ponto é uma medida do SPHEREx em uma cor da luz infravermelha. A barra mostra a incerteza da medida.",
+      "hollow": "Ponto vazado quer dizer que o objeto estava brilhante demais ali, então o valor é aproximado.",
+      "spectrumAxes": "Da esquerda para a direita o comprimento de onda aumenta, em micrômetros (µm): a esquerda fica mais perto da luz que a gente vê, a direita mais perto do calor. O brilho está em milijanskys (mJy), uma unidade que astrônomos usam.",
+      "logScale": "A escala de brilho sobe de 10 em 10 vezes.",
+      "lightcurveDot": "Cada ponto é o brilho medido em uma passagem, em uma cor do SPHEREx. A barra mostra a incerteza da medida.",
+      "magnitudeScale": "Magnitude é a escala de brilho dos astrônomos: número menor quer dizer mais brilho, por isso o mais brilhante fica em cima.",
+      "motionMarks": "A cruz é onde o catálogo prevê o objeto. Os pontos são onde o SkySwap mediu o objeto nas fotos do SPHEREx.",
+      "motionRing": "O anel é a margem de erro desta comparação. Uma medida dentro do anel bate com a previsão.",
+      "motionLine": "A linha liga a previsão à medida de que a frase embaixo do gráfico fala.",
+      "arcsec": "As distâncias estão em segundos de arco, um ângulo bem pequeno: um grau dividido em 3.600 partes. Um pixel do SPHEREx tem {size} segundos de arco.",
+      "pathView": "Caminho mostra os dois no céu, contando a partir da primeira posição prevista."
     }
   },
   "viewer": {
@@ -602,14 +642,18 @@
       "copyFailed": "Não foi possível copiar as coordenadas",
       "watch": "Ver este ponto ao longo do tempo",
       "explore": "Explorar fotos reais desta região",
-      "exploreHint": "Abre fotos do céu real em volta dele, com zoom. Usa mais dados.",
+      "exploreHint": "Usa mais dados",
       "loading": "Carregando as fotos",
       "failedTitle": "Estas fotos não estão carregando",
-      "failedBody": "Elas vêm de um arquivo externo, então pode ser temporário. As fotos do SkySwap continuam funcionando.",
+      "failedBody": "Elas vêm de um arquivo de fora. As fotos do SkySwap continuam funcionando.",
       "openExternal": "Abrir em nova aba",
-      "photosHint": "Fotos mais antigas, em luz visível, para dar contexto. Faça pinça ou use os botões para o zoom e arraste para mover. A marca amarela é a posição indicada acima.",
+      "photosHint": "Fotos mais antigas, em luz visível, para dar contexto. A marca amarela é este ponto.",
       "zoomIn": "Aproximar",
-      "zoomOut": "Afastar"
+      "zoomOut": "Afastar",
+      "cues": {
+        "orion": "Três Marias",
+        "crux": "Cruzeiro do Sul"
+      }
     },
     "share": "Compartilhar este ponto",
     "photoOf": "Foto {n} de {total}",
@@ -855,7 +899,7 @@
       "invalid": "Só texto: sem links, e-mails ou @."
     },
     "firstNote": {
-      "title": "Você viu primeiro",
+      "title": "Você marcou primeiro",
       "sub": "Ninguém tinha marcado movimento aqui antes",
       "body": "Conte o que você viu. Se a comunidade confirmar, o recado vai para o post com o seu nome.",
       "placeholder": "Ex.: o ponto sobe um pouco a cada foto",
@@ -910,7 +954,6 @@
     "streak": "{n, plural, one {# dia} other {# dias}} seguidos",
     "today": "{xp, plural, =0 {0 pontos} one {# ponto} other {# pontos}} hoje (limite diário {cap})",
     "badges": "Selos",
-    "activity": "Atividade",
     "notes": "Notas",
     "following": "Seguindo",
     "saved": "Salvos",
@@ -931,7 +974,7 @@
       "artifact": "nada mudou",
       "unsure": "não tenho certeza"
     },
-    "noActivity": "Nada ainda. Responda um cartão, marque ou etiquete para ver sua atividade.",
+    "noActivity": "Nenhuma atividade ainda",
     "noNotes": "Ainda não há notas privadas.",
     "noSaved": "Nada salvo ainda. Toque no marcador de um post.",
     "noFollowing": "Você ainda não segue nenhum objeto.",
@@ -964,7 +1007,6 @@
     },
     "intro": "Como seu perfil funciona",
     "allAnswers": "Todas as minhas respostas",
-    "allAnswersHint": "E o que aconteceu com cada uma",
     "avatar": {
       "open": "Ver minha imagem",
       "pieceOf": "Um pedaço de",
@@ -980,7 +1022,9 @@
       "none": "Agora não há imagens disponíveis. Tente mais tarde.",
       "taken": "Outra pessoa acabou de escolher essa imagem. Escolha outra.",
       "failed": "Algo deu errado. Tente de novo."
-    }
+    },
+    "startCards": "Responder um cartão",
+    "badgesCount": "{earned} de {total}"
   },
   "lab": {
     "title": "Lab",
@@ -989,7 +1033,6 @@
     "epoch": "Foto",
     "fov": "Campo de visão",
     "zoom": "Zoom",
-    "zoomHint": "Arraste a foto para andar por ela.",
     "layers": "Camadas",
     "layerItems": {
       "gaia": "Estrelas do catálogo Gaia",
@@ -1001,11 +1044,10 @@
       "target": "Alvo previsto"
     },
     "pixel": "Pixel",
-    "pixelHint": "Toque na imagem para ler um pixel.",
+    "pixelHint": "Toque na foto para ler um ponto.",
     "pixelWave": "Comprimento de onda",
     "pixelFlags": "Avisos",
     "pixelPos": "{ra}, {dec}",
-    "noFlags": "Nenhum",
     "spectrum": "Espectro",
     "spectrumLive": "Estimativa rápida com estas fotos",
     "spectrumMeasuring": "Medindo {done} de {total}",
@@ -1015,7 +1057,7 @@
     "noteHypothesis": "O que você acha que é?",
     "noteText": "O que você viu?",
     "noteAdd": "Salvar nota",
-    "export": "Exportar",
+    "export": "Baixar",
     "exportCsv": "Tabela do espectro (CSV)",
     "exportJson": "Minhas notas (JSON)",
     "loading": "Carregando as fotos",
@@ -1032,7 +1074,7 @@
     "longBaseline": "Animação de {n} anos: {title}",
     "stack": {
       "title": "Seguir um movimento",
-      "body": "Soma todas as fotos desta cor, deslocadas ao longo de um caminho reto que você escolhe. Serve para estrelas que andam devagar ao longo de meses: uma estrela fraca que se move assim fica mais brilhante. Asteroides rápidos cruzam a foto em horas, então esta ferramenta não os acompanha.",
+      "body": "Soma todas as fotos desta cor, deslocadas ao longo de um caminho reto que você escolhe. Uma estrela fraca que anda nesse caminho fica mais brilhante. Asteroides rápidos cruzam a foto em horas, então esta ferramenta não os acompanha.",
       "pmra": "Leste",
       "pmdec": "Norte",
       "run": "Empilhar ao longo deste movimento",
@@ -1042,12 +1084,14 @@
       "reference": "Começa da foto acima, {date}. {n} fotos nesta cor. Pixels ruins ficam de fora.",
       "along": "Ao longo de {pmra}, {pmdec}",
       "still": "Sem movimento",
-      "snr": "Pico no alvo: {v} vezes o ruído. É um pico, não uma prova. {n} fotos usadas.",
+      "snr": "Pico: {v} vezes o ruído ({n} fotos)",
       "sameStretch": "As duas pilhas usam a mesma escala de brilho. O anel é o alvo na data de referência.",
       "failed": "Não foi possível empilhar estas fotos.",
       "unit": "Em milésimos de segundo de arco por ano, a unidade que os catálogos usam para a velocidade de uma estrela no céu. Arraste no círculo ou digite os números.",
       "padNorth": "N",
-      "padEast": "L"
+      "padEast": "L",
+      "limit": "Para estrelas que andam ao longo de meses, não asteroides rápidos.",
+      "proof": "Um pico não é prova."
     },
     "tools": {
       "label": "Ferramentas do Lab",
@@ -1062,7 +1106,6 @@
       "more": "Mais",
       "prev": "Foto anterior",
       "next": "Próxima foto",
-      "colourHint": "Tudo isso é infravermelho, que nossos olhos não veem, então cada cor é um código para uma faixa dele. Fotos em {band}: {n}. Ao trocar, a data fica o mais próxima possível.",
       "dates": "Datas das fotos",
       "photoSmaller": "Diminuir a foto",
       "photoBigger": "Aumentar a foto",
@@ -1073,14 +1116,18 @@
       "lightValue": "{band}, {lam} µm",
       "bandWave": "{min} a {max} µm",
       "colourShort": "Mais perto da luz visível",
-      "colourLong": "Mais calor de objetos frios"
+      "colourLong": "Mais calor de objetos frios",
+      "time": "Hora exata",
+      "timeHint": "UTC é o relógio de referência do mundo, igual em qualquer lugar.",
+      "colourCount": "Fotos em {band}: {n}",
+      "colourAbout": "Tudo isso é infravermelho, que nossos olhos não veem, então cada cor é um código para uma faixa dele.",
+      "colourSwitch": "Ao trocar de cor, a data fica o mais próxima possível."
     },
     "picker": {
       "title": "Escolha um objeto",
-      "intro": "O modo pro: as mesmas fotos reais, com ferramentas para datas, cores, pixels, movimento e espectro. Nada do que você faz aqui muda os dados."
+      "intro": "As mesmas fotos reais, com ferramentas para estudar cada uma."
     },
-    "pixelBrightness": "Brilho",
-    "pixelUnit": "± {e} MJy/sr",
+    "pixelUnit": "{v} ± {e} MJy/sr",
     "pixelPlace": "Na imagem",
     "pixelXY": "x {x}, y {y}",
     "pixelWaveValue": "{lam} µm",
@@ -1096,30 +1143,9 @@
       "satellite": "O SPHEREx não marca isso, então nada aparece aqui",
       "target": "Onde o objeto deveria estar nesta data"
     },
-    "spectrumHint": "O brilho do objeto em cada cor de luz. Cada ponto é uma medida.",
-    "lightcurveHint": "Como o brilho muda com o tempo.",
     "noteLocal": "As notas ficam só neste navegador. Dá para baixar em Mais.",
     "notePickSpot": "Toque na foto para marcar um ponto",
-    "exportCsvHint": "Os pontos medidos, para uma planilha",
-    "exportJsonHint": "Suas notas sobre este objeto",
     "exportJsonEmpty": "Salve uma nota primeiro",
-    "intro": {
-      "title": "Boas-vindas ao Lab",
-      "body": "As mesmas fotos reais, com as ferramentas que cientistas usam. Mexa à vontade: nada do que você faz aqui muda os dados.",
-      "action": "Começar a explorar",
-      "again": "O que cada ferramenta faz",
-      "tools": {
-        "date": "Passe pelas datas das fotos",
-        "colour": "Veja a foto em cada faixa de luz infravermelha",
-        "zoom": "Chegue mais perto e arraste a foto para olhar em volta",
-        "layers": "Mostre estrelas conhecidas e pixels com problema por cima",
-        "pixel": "Toque na foto para ler o brilho de um ponto",
-        "motion": "Empilhe as fotos num caminho reto para achar estrelas fracas que andam ao longo de meses, não asteroides rápidos",
-        "spectrum": "Veja o brilho por cor e ao longo do tempo",
-        "notes": "Anote o que você viu",
-        "more": "Baixe dados e confira catálogos"
-      }
-    },
     "pixelUnitHint": "Em megajanskys por esterradiano (MJy/sr), a unidade que o SPHEREx usa para dizer quanta luz chega de cada pedacinho do céu.",
     "spectrumFailed": "Não foi possível medir estas fotos. Tente de novo.",
     "flagNames": {
@@ -1148,7 +1174,32 @@
       "SATELLITE_HALO": "Brilho em volta de um rastro de satélite",
       "other": "Outro aviso da câmera"
     },
-    "spectrumLiveNote": "Estimativa rápida feita agora no seu navegador. O espectro de cima é a medida cuidadosa."
+    "spectrumLiveNote": "Estimativa rápida, menos cuidadosa que o gráfico de cima.",
+    "about": "Sobre {tool}",
+    "profile": "Perfil de {name}",
+    "layersLine": "Desenhadas por cima da foto",
+    "pixelBrighter": "Mais brilhante que {n}% desta foto",
+    "pixelDarker": "Mais escuro que {n}% desta foto",
+    "pixelNone": "Sem leitura neste ponto",
+    "batchWarning": "Dois lotes de dados: pequenas diferenças de brilho entre eles podem não ser reais.",
+    "tour": {
+      "photo": {
+        "title": "Toque na foto",
+        "body": "Toque em qualquer ponto para ler o brilho dele."
+      },
+      "dates": {
+        "title": "Mude a data",
+        "body": "Arraste para ver o mesmo lugar em outros dias."
+      },
+      "colour": "Cada cor mostra um tipo diferente de luz infravermelha.",
+      "zoom": "Chegue mais perto e arraste a foto para olhar em volta.",
+      "layers": "Mostre estrelas conhecidas e pixels com problema por cima da foto.",
+      "spectrum": "Veja o brilho em cada cor e ao longo do tempo.",
+      "motion": "Some as fotos para achar estrelas fracas que andam devagar.",
+      "notes": "Guarde notas só suas sobre o que você viu.",
+      "more": "Baixar dados, conferir catálogos e ver este tutorial de novo.",
+      "again": "Ver o tutorial do Lab de novo"
+    }
   },
   "alerts": {
     "title": "Alertas",
@@ -1188,10 +1239,9 @@
       "light": "Claro"
     },
     "language": "Idioma",
-    "languageHint": "O app segue a língua que você escolher aqui.",
     "tutorial": "Ver o tutorial de novo",
     "notes": "Notas privadas",
-    "notesHint": "Suas notas ficam só neste navegador.",
+    "notesHint": "Ficam só neste navegador.",
     "data": "Sobre os dados",
     "dataBody": "O SkySwap mostra imagens reais do SPHEREx, da NASA, dos lotes públicos de dados QR2 e QR3, guardados no arquivo IRSA, da NASA. A luz infravermelha aparece em cinza, e qualquer cor que você vê é cor falsa. O índice do céu lista {images} imagens publicadas, então qualquer ponto pode ser aberto. A primeira olhada num ponto de campo profundo, onde o SPHEREx volta várias e várias vezes perto dos polos da eclíptica, pode levar alguns segundos enquanto essa parte do índice é baixada; depois disso ela fica guardada no navegador. Kit de dados {version}.",
     "about": "O SkySwap é um protótipo de estudo sem fins comerciais para o desafio \"Planet X and SPHEREx\" do NASA Space Apps 2026. Não tem vínculo com a NASA nem com o Instagram.",
@@ -1206,11 +1256,11 @@
     "preferences": "Preferências",
     "yourData": "Seus dados",
     "help": "Ajuda",
-    "tutorialHint": "Mostra de novo as boas-vindas e as dicas de primeiro uso",
     "details": "Detalhes",
-    "detailsHint": "Dados, documentação da API e o projeto",
     "credit": "Mostrar meu apelido nos créditos",
-    "creditHint": "Quando um achado lista quem encontrou ou participou. Se desligar, você conta como anônimo."
+    "creditHint": "Desligado, você aparece como anônimo nos achados.",
+    "logoutTitle": "Sair de {nickname}?",
+    "logoutBody": "Não tem senha, então não dá para voltar a este apelido. Suas respostas continuam valendo e suas notas privadas ficam neste navegador."
   },
   "catalogs": {
     "title": "Consultar catálogos",
