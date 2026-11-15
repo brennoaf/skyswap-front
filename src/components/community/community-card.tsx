@@ -173,9 +173,17 @@ function ActionBar({ item, title, source }: { item: CommunityItem; title: string
       </span>
       {source && (
         <Sheet open={info} onClose={() => setInfo(false)} title={tc('source')}>
-          <p className="px-4 pb-4 text-body leading-snug" data-testid="app-source">
-            {source}
-          </p>
+          <div className="flex gap-2.5 px-4 pb-2 pt-4" data-testid="app-source">
+            <IconInfo size={18} className="mt-px shrink-0 text-text-secondary" />
+            <div className="flex min-w-0 flex-col gap-1 text-note leading-snug text-text-secondary">
+              {source
+                .split(/(?<=\.)\s+/)
+                .map((line) => line.replace(/\.$/, ''))
+                .map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+            </div>
+          </div>
         </Sheet>
       )}
     </div>
