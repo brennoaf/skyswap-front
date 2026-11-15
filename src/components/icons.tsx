@@ -577,3 +577,49 @@ export const IconChevronRight = (p: IconProps) => (
     <path d="M13 8L21 16L13 24" {...LINE} strokeWidth={2.6} />
   </Svg>
 )
+
+export const IconPhone = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="9.5" y="4.5" width="13" height="23" rx="3" {...LINE} />
+    <path d="M14.5 23.5H17.5" {...LINE} />
+  </Svg>
+)
+
+export const IconComputer = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="4.5" y="6.5" width="23" height="15" rx="2.5" {...LINE} />
+    <path d="M12 26.5H20M16 21.5V26.5" {...LINE} />
+  </Svg>
+)
+
+export const IconDevices = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M21.5 11.5V9C21.5 7.6 20.4 6.5 19 6.5H6C4.6 6.5 3.5 7.6 3.5 9V18C3.5 19.4 4.6 20.5 6 20.5H16.5M8 25.5H16.5" {...LINE} />
+    <rect x="19.5" y="13.5" width="9" height="13" rx="2" {...LINE} />
+  </Svg>
+)
+
+export const IconQr = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" {...LINE} />
+    <rect x="18.5" y="5.5" width="8" height="8" rx="1.5" {...LINE} />
+    <rect x="5.5" y="18.5" width="8" height="8" rx="1.5" {...LINE} />
+    <path d="M18.5 18.5H21.5V21.5M26.5 18.5V18.5M18.5 26.5H21.5M24.5 23.5H26.5V26.5" {...LINE} />
+  </Svg>
+)
+
+export const IconShield = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M16 4.5L25.5 8V15.5C25.5 21 21.6 25.6 16 27.5C10.4 25.6 6.5 21 6.5 15.5V8L16 4.5Z" {...LINE} />
+    <path d="M12 16L15 19L20.5 13" {...LINE} />
+  </Svg>
+)
+
+export const IconFingerprint = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M9.5 9.5C11.2 7.6 13.5 6.5 16 6.5C20.7 6.5 24.5 10.3 24.5 15V16.5" {...LINE} />
+    <path d="M7.5 14C7.5 13.4 7.6 12.8 7.7 12.3M7.5 18.5V14" {...LINE} />
+    <path d="M11.5 23.5C12.1 21.6 12 19.2 12 15C12 12.8 13.8 11 16 11C18.2 11 20 12.8 20 15V17C20 20.2 19.4 22.8 18.3 25" {...LINE} />
+    <path d="M16 15.5V18C16 21.3 15.4 24 14.3 26.5M24 21C23.7 22.5 23.2 23.9 22.6 25.2" {...LINE} />
+  </Svg>
+)
