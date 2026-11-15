@@ -83,7 +83,7 @@ function TechnicalData({ reveal }: { reveal: Reveal }) {
   )
 }
 
-export function UnderstandSheet({ open, onClose, reveal, answer, verdict, hintsShown, onShowComputer }: { open: boolean; onClose: () => void; reveal: Reveal; answer: Answer; verdict: Verdict; hintsShown: boolean; onShowComputer: (() => void) | null }) {
+export function UnderstandSheet({ open, onClose, reveal, answer, verdict, hasHints, onShowComputer }: { open: boolean; onClose: () => void; reveal: Reveal; answer: Answer; verdict: Verdict; hasHints: boolean; onShowComputer: (() => void) | null }) {
   const t = useTranslations('classify')
   const others = reveal.votes.real + reveal.votes.artifact + reveal.votes.unsure > 1
   const sky = reveal.kind === 'sky'
@@ -93,7 +93,7 @@ export function UnderstandSheet({ open, onClose, reveal, answer, verdict, hintsS
         <Row voice="you" name={t('understand.you')}>
           {t(answer)}
         </Row>
-        {(!sky || hintsShown) && (
+        {(!sky || hasHints) && (
           <Row
             voice="program"
             name={t('understand.computer')}

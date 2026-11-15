@@ -236,7 +236,7 @@
     "items": {
       "first_vote": {
         "name": "First look",
-        "how": "Answer \"Does anything move?\" for one set of photos."
+        "how": "Answer \"Did anything move?\" for one set of photos."
       },
       "first_motion": {
         "name": "First motion marked",
@@ -317,7 +317,7 @@
       "title": "The bar at the bottom",
       "home": "Home: posts from the sky",
       "search": "Search: objects and any place in the sky",
-      "classify": "Spot what moves: answer \"does anything move?\", the main way to help",
+      "classify": "Spot what moves: answer \"did anything move?\", the main way to help",
       "reels": "Reels: time-lapses on the full screen",
       "me": "Profile: your level, badges and notes"
     },
@@ -635,16 +635,11 @@
   },
   "classify": {
     "title": "Spot what moves",
-    "question": "Does anything move?",
-    "moves": "It moves",
-    "still": "It doesn't move",
+    "question": "Did anything move?",
+    "moves": "Yes, it moved",
+    "still": "Nothing moved",
     "unsure": "Not sure",
-    "photos": "Photos",
-    "changes": "What changed",
-    "view": "What to show",
-    "play": "Play",
-    "timeline": "When each photo was taken",
-    "photoAt": "Photo {n}, {when}",
+    "changes": "See differences",
     "photoAlt": "Sky photo {n} of {total}, {when}",
     "time": {
       "first": "first photo",
@@ -658,33 +653,13 @@
       "swipe": "Swipe the photo: right for yes, left for no, up if you are not sure."
     },
     "guide": {
-      "step": "Practice {n} of {total}.",
-      "moves": "See how it jumps between photos? That is movement. Swipe right.",
-      "still": "Here nothing changes place. Swipe left.",
-      "glitch": "A dot in one photo only is usually a camera glitch. Tap Camera glitch.",
-      "skip": "Skip"
+      "step": "Practice {n} of {total}"
     },
-    "yourVote": "Your vote: {choice}",
-    "known": "It's a known asteroid: {name}.",
-    "checks": {
-      "same": "Same as yours.",
-      "different": "Different from yours. See why."
-    },
-    "nobodyKnows": "Nobody knows yet.",
-    "guess": "thinks it is {guess}.",
     "outcome": {
       "open": "{n, plural, one {# person} other {# people}} looked so far. Still early, so your look matters.",
       "moves": "Most likely a moving object",
-      "still": "Most likely not moving",
+      "still": "Probably nothing moved",
       "undecided": "People see this one differently"
-    },
-    "kinds": {
-      "mover": "It shows up in a different spot in each photo, like an asteroid crossing the sky.",
-      "residual": "When photos taken at different times are compared, bright stars leave rings and smudges that don't move.",
-      "single": "It shows up in only one photo. Usually a tiny particle hitting the camera, not something in the sky.",
-      "trail": "Often a satellite or a camera glitch.",
-      "stationary": "It stays in the same place in every photo.",
-      "orphan": "It has no match in the other photos, so nothing shows it moving."
     },
     "guesses": {
       "mover": "a moving object",
@@ -694,10 +669,9 @@
       "stationary": "nothing moving",
       "orphan": "a spot with no match in the other photos"
     },
-    "glitch": "Camera glitch",
+    "glitch": "Photo defect",
     "tooFast": "That was too fast, so it didn't count.",
     "next": "Next card",
-    "voteFailed": "Couldn't save your answer. Try again.",
     "done": "You've seen all the cards",
     "doneBody": "New photos arrive when NASA releases new data.",
     "loginTitle": "Help spot what moves in the sky",
@@ -717,17 +691,15 @@
     "status": {
       "open": "Still open",
       "real": "Most likely a moving object",
-      "artifact": "Most likely not moving",
+      "artifact": "Probably nothing moved",
       "inconclusive": "People see this one differently",
       "gold": "Practice photos",
       "candidate": "Candidate: several people saw it move"
     },
     "sky": {
-      "label": "Random sky card",
-      "reveal": "This card was drawn at random. If enough people see something move here, it joins a list of candidates. Nobody reviews that list yet."
+      "label": "Random sky card"
     },
     "searching": "Looking for a new card",
-    "pause": "Pause",
     "rest": {
       "title": "You looked at {n} cards",
       "body": "Rest your eyes for a minute. Look at something far away, blink, then come back.",
@@ -739,13 +711,11 @@
       "kinds": {
         "appeared": "Something here wasn't there in the other photos",
         "missing": "Something here disappeared",
-        "flash": "A dot in one photo only. Often a camera glitch."
+        "flash": "A dot in one photo only. Often a camera defect."
       },
       "elsewhere": "Hints are on other photos: step through them",
       "none": "No hints for this card. Trust your eyes."
     },
-    "frameWhen": "{date}, {wavelength}",
-    "pacing": "Most cards have nothing new. That's normal, and every look still counts.",
     "help": {
       "open": "How to look",
       "title": "How to look",
@@ -769,15 +739,6 @@
       "source": "Real SPHEREx data: {name}, {last} minus {first}."
     },
     "practice": "Practice: no points.",
-    "whyLook": "Why does it look like that?",
-    "verdicts": {
-      "mover": "It's a moving object.",
-      "residual": "It's a leftover around a bright star.",
-      "single": "It's a dot that flashes once.",
-      "trail": "It's a streak across the photo.",
-      "stationary": "It's something that stays put.",
-      "orphan": "It's a lone dot."
-    },
     "confirm": {
       "said": "Your answer: {choice}",
       "undo": "Undo",
@@ -789,16 +750,8 @@
       "failed": "Couldn't save your answer.",
       "retry": "Try again"
     },
-    "voices": {
-      "youName": "You",
-      "programName": "The app's program",
-      "knownName": "Known answer",
-      "othersName": "Other people",
-      "others": "{moves} it moves, {still} it does not, {unsure} not sure",
-      "hints": "these are the hints it marked."
-    },
     "newBadge": "New badge: {name}.",
-    "changesShort": "Changes",
+    "changesShort": "Differences",
     "tips": {
       "short": "Drag a little further to answer."
     },
@@ -847,7 +800,7 @@
       "computerHints": "these are the hints it marked",
       "right": "Right answer",
       "others": "Other people",
-      "othersCount": "{moves} saw it move, {still} did not, {unsure} were not sure",
+      "othersCount": "{moves} saw it move, {still} did not, {unsure} {unsure, plural, one {was} other {were}} not sure",
       "showOnPhoto": "Show on photo",
       "why": "Why?",
       "technical": "Technical data",
@@ -904,8 +857,8 @@
       "tag": "You tagged {title}: {tag}"
     },
     "labels": {
-      "real": "it moves",
-      "artifact": "it doesn't move",
+      "real": "yes, it moved",
+      "artifact": "nothing moved",
       "unsure": "not sure"
     },
     "noActivity": "Nothing yet. Answer a card, mark or tag to see your activity.",
@@ -1187,7 +1140,7 @@
     "othersBody": "The average of everyone who marked this post. You only see it after marking.",
     "whyTitle": "Why mark it yourself?",
     "whyBody": "The cross is a calculation and can be wrong. Your mark shows where a person really sees the object. If many people mark far from the cross, that is a sign it is worth checking.",
-    "whyHonest": "For now, marks appear here to compare. They do not yet count toward the answer to \"Does anything move?\".",
+    "whyHonest": "For now, marks appear here to compare. They do not yet count toward the answer to \"Did anything move?\".",
     "markNow": "Mark it myself",
     "resultTitle": "{n, plural, one {# photo marked} other {# photos marked}}",
     "result": {
@@ -1299,8 +1252,8 @@
       "title": "All my answers",
       "lead": "Every card you answered and what happened next. Nothing here expires.",
       "answers": {
-        "real": "You said it moves",
-        "artifact": "You said it doesn't move",
+        "real": "Your answer: Yes, it moved",
+        "artifact": "Your answer: Nothing moved",
         "unsure": "You said you were not sure"
       },
       "status": {
@@ -1353,16 +1306,16 @@
     "locateAsk": "Want to show where? Tap the spot on the image.",
     "locateSkip": "Not now",
     "locateSaved": "Spot saved.",
-    "lookTitle": "Do you see something move between the photos?",
+    "lookTitle": "Did anything move between the photos?",
     "lookNote": "You have already seen this finding, so your answer stays apart and does not change the result.",
     "lookChoices": {
-      "real": "It moves",
-      "artifact": "It doesn't move",
+      "real": "Yes, it moved",
+      "artifact": "Nothing moved",
       "unsure": "Not sure"
     },
     "lookLabels": {
-      "real": "it moves",
-      "artifact": "it doesn't move",
+      "real": "yes, it moved",
+      "artifact": "nothing moved",
       "unsure": "not sure"
     },
     "lookSaved": "Saved apart from the answers that count. You can change it.",
@@ -1394,6 +1347,6 @@
     "pause": "Pause",
     "prev": "Previous photo",
     "next": "Next photo",
-    "outside": "Black area: may be outside the photo"
+    "outside": "Black area: the telescope did not photograph this part."
   }
 }

@@ -197,7 +197,7 @@ function SwapCard({
   const n = Math.max(1, offsets.length)
   const playback = usePlayback(n, { baseMs: FRAME_MS, autoplay: !reduce, frozen: frozen || mode === 'marking' })
   const panel = playback.index
-  const hints = sky && (hintsOn || mode === 'result') ? sky.hints : null
+  const hints = sky && (hintsOn || (mode === 'result' && computerMark)) ? sky.hints : null
   const outside = useOutside(img, n)
   const hintLine = useHintLine(hints, panel)
   const verdict = saved && answer ? verdictOf(saved.reveal, answer, !!lesson) : null
@@ -235,11 +235,16 @@ function SwapCard({
     }
   }, [answer, card.id, heldAt, hintsUsed, onStale, onVoted, playback, reduce, saved, spot, vote])
 
+  const sendNow = useRef(send)
+  useEffect(() => {
+    sendNow.current = send
+  }, [send])
+
   useEffect(() => {
     if (mode !== 'confirm') return
-    const timer = setTimeout(() => void send(), CONFIRM_MS)
+    const timer = setTimeout(() => void sendNow.current(), CONFIRM_MS)
     return () => clearTimeout(timer)
-  }, [mode, send])
+  }, [mode])
 
   useEffect(() => {
     if (mode !== 'confirm' && mode !== 'marking') return
@@ -405,9 +410,9 @@ function SwapCard({
           reveal={saved.reveal}
           answer={answer}
           verdict={verdict}
-          hintsShown={!!hints}
+          hasHints={!!sky?.hints.length}
           onShowComputer={
-            !verdict.mark && saved.reveal.marks.length > 0 && !hints
+            !verdict.mark && !hints && (saved.reveal.marks.length > 0 || !!sky?.hints.length)
               ? () => {
                   setComputerMark(true)
                   setUnderstand(false)
