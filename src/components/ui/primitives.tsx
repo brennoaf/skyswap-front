@@ -266,9 +266,12 @@ export function IconTabs<T extends string>({ tabs, value, onChange, label }: { t
             aria-label={tab.label}
             title={tab.label}
             onClick={() => onChange(tab.key)}
-            className={cx('relative flex h-12 flex-1 items-center justify-center', active ? 'text-text' : 'text-icon-muted')}
+            className={cx('relative flex h-14 min-w-0 flex-1 flex-col items-center justify-center', active ? 'text-text' : 'text-text-secondary')}
           >
-            {tab.icon}
+            <span className="flex h-7 items-center justify-center" aria-hidden="true">
+              {tab.icon}
+            </span>
+            <span className="max-w-full truncate px-1 text-micro font-medium">{tab.label}</span>
             {active && <span className="absolute bottom-0 h-[2px] w-[41px] rounded-full bg-text" />}
           </button>
         )

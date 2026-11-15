@@ -180,7 +180,10 @@
     "menuLabel": "More options",
     "yearsBadge": "{n, plural, one {# year of data} other {# years of data}}",
     "lab": "Lab",
-    "labOpen": "Open {name} in the Lab"
+    "labOpen": "Open {name} in the Lab",
+    "crossNote": "Yellow cross: where catalogues predict the object. It is a calculation, not a measurement.",
+    "crossOk": "Got it",
+    "dataBatch": "NASA batch {release}"
   },
   "tags": {
     "title": "What do you see?",
@@ -619,9 +622,12 @@
       "failedTitle": "These photos aren't loading",
       "failedBody": "They come from an outside archive, so this may be temporary. SkySwap photos keep working.",
       "openExternal": "Open in a new tab",
-      "photosHint": "Older visible-light photos, for context. Pinch or use the buttons to zoom, and drag to move. The yellow mark is the position above."
+      "photosHint": "Older visible-light photos, for context. Pinch or use the buttons to zoom, and drag to move. The yellow mark is the position above.",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out"
     },
-    "share": "Share this spot"
+    "share": "Share this spot",
+    "batch": "Batch {release}"
   },
   "classify": {
     "title": "Spot what moves",

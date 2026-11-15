@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { useState } from 'react'
 import { PostMedia } from '@/components/feed/post-media'
-import { IconCompare, IconFlask, IconLink, IconMore } from '@/components/icons'
+import { IconCompare, IconCrosshair, IconFlask, IconLink, IconMore } from '@/components/icons'
 import { ActionRow } from '@/components/post/action-row'
 import { TagPanel } from '@/components/post/tag-panel'
 import { IconButton, LabChip, ObjectAvatar, Sheet, SheetRow } from '@/components/ui/primitives'
@@ -57,6 +57,10 @@ export function PostMoreSheet({ open, onClose, item }: { open: boolean; onClose:
 }
 
 export function PostCard({ item, priority = false }: { item: FeedItem; priority?: boolean }) {
+  const crosshairOn = useUi((s) => s.crosshair)
+  const crossSeen = useUi((s) => s.tipsSeen.includes('crossFeed'))
+  const markTip = useUi((s) => s.markTip)
+  const crossShown = crosshairOn && !crossSeen && item.post.marks.length > 0
   const locale = useLocale()
   const t = useTranslations('post')
   const [more, setMore] = useState(false)
@@ -72,6 +76,15 @@ export function PostCard({ item, priority = false }: { item: FeedItem; priority?
       <Link href={`/p/${post.id}`} aria-label={t('open', { title: post.title })} data-tour="post-media" className="block">
         <PostMedia post={post} priority={priority} />
       </Link>
+      {priority && crossShown && (
+        <div className="flex items-center gap-2 bg-surface px-3 py-1.5" role="note">
+          <IconCrosshair size={18} className="shrink-0 text-crosshair" />
+          <p className="min-w-0 flex-1 text-note leading-snug">{t('crossNote')}</p>
+          <button type="button" onClick={() => markTip('crossFeed')} className="inline-flex min-h-11 shrink-0 items-center px-1 text-note font-semibold text-link">
+            {t('crossOk')}
+          </button>
+        </div>
+      )}
       <ActionRow
         tag={{ onClick: () => setTagsOpen(true) }}
         mark={{ href: `/p/${post.id}?mark=1` }}
@@ -97,7 +110,7 @@ export function PostCard({ item, priority = false }: { item: FeedItem; priority?
         )}
         <p className="mt-1 text-meta text-text-muted">
           <time dateTime={post.date_range[1]}>{formatDate(post.date_range[1] ?? post.date_range[0] ?? '', locale)}</time>
-          {post.frames[0] && `, ${[...new Set(post.frames.flatMap((f) => f.release.split('+')).map((r) => r.trim().toUpperCase()))].join(' + ')}`}
+          {post.frames[0] && `, ${t('dataBatch', { release: [...new Set(post.frames.flatMap((f) => f.release.split('+')).map((r) => r.trim().toUpperCase()))].join(' + ') })}`}
         </p>
       </div>
       <PostMoreSheet open={more} onClose={() => setMore(false)} item={item} />

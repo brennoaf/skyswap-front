@@ -565,7 +565,7 @@ export function SkyViewer({ params, compact = false, onChange, onLocate, marker 
           <div className="flex shrink-0 gap-1.5" aria-label={t('releases')}>
             {d.releases.map((r) => (
               <span key={r} className="rounded-full bg-surface px-2.5 py-0.5 text-meta font-medium">
-                {r.toUpperCase()}
+                {t('batch', { release: r.toUpperCase() })}
               </span>
             ))}
           </div>

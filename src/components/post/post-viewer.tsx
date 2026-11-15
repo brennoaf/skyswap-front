@@ -272,7 +272,7 @@ export function PostViewer({ id }: { id: string }) {
         )}
         <p className="mt-1 text-meta text-text-muted">
           <time dateTime={post.date_range[1]}>{fmt.date(post.date_range[1] ?? post.date_range[0] ?? '')}</time>, {tp(`types.${post.type}`)}
-          {post.frames[0] && `, ${[...new Set(post.frames.flatMap((f) => f.release.split('+')).map((r) => r.trim().toUpperCase()))].join(' + ')}`}
+          {post.frames[0] && `, ${tp('dataBatch', { release: [...new Set(post.frames.flatMap((f) => f.release.split('+')).map((r) => r.trim().toUpperCase()))].join(' + ') })}`}
         </p>
       </div>
 

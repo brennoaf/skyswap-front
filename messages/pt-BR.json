@@ -98,9 +98,9 @@
     "title": "Objetos com stories",
     "spot": "Meu ponto",
     "spotLabel": "Meu ponto no céu: acompanhe qualquer pedaço do céu",
-    "open": "Ver o time-lapse de {name}",
+    "open": "Ver a sequência de fotos de {name}",
     "new": "Novo",
-    "label": "Time-lapse de {name}",
+    "label": "Sequência de fotos de {name}",
     "play": "Reproduzir",
     "pause": "Pausar",
     "close": "Fechar story",
@@ -136,7 +136,7 @@
       "candidate": "Candidato desconhecido"
     },
     "types": {
-      "timelapse": "Time-lapse",
+      "timelapse": "Sequência de fotos",
       "pass_blink": "Piscar entre passagens",
       "band_compare": "Seis cores",
       "difference": "O que mudou",
@@ -180,7 +180,10 @@
     "menuLabel": "Mais opções",
     "yearsBadge": "{n, plural, one {# ano de dados} other {# anos de dados}}",
     "lab": "Lab",
-    "labOpen": "Abrir {name} no Lab"
+    "labOpen": "Abrir {name} no Lab",
+    "crossNote": "Cruz amarela: onde os catálogos preveem o objeto. É um cálculo, não uma medida.",
+    "crossOk": "Entendi",
+    "dataBatch": "lote {release} da NASA"
   },
   "tags": {
     "title": "O que você vê?",
@@ -233,7 +236,7 @@
       },
       "first_motion": {
         "name": "Primeiro movimento marcado",
-        "how": "Marque um ponto que se move em um time-lapse."
+        "how": "Marque um ponto que se move em uma sequência de fotos."
       },
       "all_colours": {
         "name": "Viu as 6 cores",
@@ -311,7 +314,7 @@
       "home": "Início: posts do céu",
       "search": "Pesquisar: objetos e qualquer lugar do céu",
       "classify": "Ache o que se move: responder \"algo se move?\", o jeito principal de ajudar",
-      "reels": "Reels: time-lapses em tela cheia",
+      "reels": "Reels: sequências de fotos em tela cheia",
       "me": "Perfil: seu nível, selos e notas"
     },
     "finish": {
@@ -345,7 +348,7 @@
       "label": "Seções do perfil",
       "photos": "Fotos",
       "spectrum": "Espectro",
-      "timelapses": "Time-lapses",
+      "timelapses": "Sequências",
       "measurements": "Medições"
     },
     "aliases": "Também conhecido como {names}",
@@ -368,7 +371,7 @@
     "filterAll": "Todos",
     "noPosts": "Ainda não há posts deste tipo",
     "noSpectrum": "Não há espectro deste objeto no kit de dados.",
-    "noTimelapse": "Não há time-lapse deste objeto no kit de dados.",
+    "noTimelapse": "Ainda não há sequência de fotos deste objeto.",
     "noMeasurements": "Não há medições deste objeto no kit de dados.",
     "skyMapTitle": "Mapa do céu",
     "skyMapCredit": "Aladin Lite (CDS), levantamento colorido DSS2 servido pela ESA",
@@ -528,7 +531,7 @@
     "copyEmbed": "Copiar o código para incorporar",
     "copyFailed": "Não deu para copiar automaticamente. Selecione o texto abaixo e copie.",
     "failed": "A pesquisa falhou. Tente de novo daqui a pouco.",
-    "coordinates": "AR {ra}, Dec {dec}",
+    "coordinates": "Posição: {ra}, {dec}",
     "recentSearch": "Pesquisar de novo por {q}",
     "exploreTile": "Abrir o post de {name}"
   },
@@ -546,7 +549,7 @@
     "fovValue": "{arcmin} arcmin",
     "band": "Cor",
     "allBands": "Todas",
-    "start": "Montar o time-lapse",
+    "start": "Montar a sequência",
     "building": "Lendo imagens da NASA: {done} de {total}",
     "built": "{n, plural, one {# foto pronta} other {# fotos prontas}}",
     "failed": "Não foi possível ler as imagens do arquivo da NASA. Verifique sua conexão.",
@@ -572,17 +575,17 @@
     "next": "Próxima foto",
     "frameOf": "Foto {n} de {total}",
     "crosshair": "Mira",
-    "player": "Time-lapse deste ponto",
+    "player": "Sequência deste ponto",
     "frameAlt": "Imagem do SPHEREx deste ponto na banda {band} feita em {date}",
     "cutoutsFailed": "Não foi possível baixar os recortes do IRSA. Tente de novo daqui a pouco.",
     "fetchingCutouts": "Baixando recortes: {done} de {total}",
     "moreImages": "{n, plural, one {mais # imagem} other {mais # imagens}}",
     "rebuild": "Montar de novo",
     "noFrames": "Nenhuma das imagens deste ponto pôde ser lida.",
-    "coordinates": "AR {ra}, Dec {dec}",
+    "coordinates": "Posição: {ra}, {dec}",
     "willRead": "Até {n, plural, one {# imagem será lida} other {# imagens serão lidas}} da NASA quando você montar. Isso pode usar dezenas de MB, então o Wi-Fi é melhor.",
     "bigField": "Campos maiores leem mais dados da NASA ({n, plural, one {# imagem} other {# imagens}}). Pode demorar em conexões lentas.",
-    "downloaded": "{size} baixados da NASA para este time-lapse.",
+    "downloaded": "{size} baixados da NASA para esta sequência.",
     "crosshairMoving": "A mira acompanha o objeto até onde ele estava em cada data (movimento do catálogo).",
     "readingIndex": "Lendo o índice do céu desta área: {loaded} de {total}. Partes movimentadas do céu levam alguns segundos na primeira vez.",
     "readingIndexNoSize": "Lendo o índice do céu desta área: {loaded}",
@@ -619,9 +622,12 @@
       "failedTitle": "Estas fotos não estão carregando",
       "failedBody": "Elas vêm de um arquivo externo, então pode ser temporário. As fotos do SkySwap continuam funcionando.",
       "openExternal": "Abrir em nova aba",
-      "photosHint": "Fotos mais antigas, em luz visível, para dar contexto. Faça pinça ou use os botões para o zoom e arraste para mover. A marca amarela é a posição indicada acima."
+      "photosHint": "Fotos mais antigas, em luz visível, para dar contexto. Faça pinça ou use os botões para o zoom e arraste para mover. A marca amarela é a posição indicada acima.",
+      "zoomIn": "Aproximar",
+      "zoomOut": "Afastar"
     },
-    "share": "Compartilhar este ponto"
+    "share": "Compartilhar este ponto",
+    "batch": "Lote {release}"
   },
   "classify": {
     "title": "Ache o que se move",
@@ -796,15 +802,15 @@
   },
   "reels": {
     "title": "Reels",
-    "label": "Time-lapses",
+    "label": "Sequências de fotos",
     "openPost": "Abrir post",
     "profile": "Perfil",
     "mute": "Movimento pausado",
     "loading": "Carregando reels",
     "play": "Reproduzir",
     "pause": "Pausar",
-    "empty": "Ainda não há time-lapses",
-    "emptyBody": "Os time-lapses aparecem aqui conforme chegam novas passagens do SPHEREx."
+    "empty": "Ainda não há sequências de fotos",
+    "emptyBody": "As sequências aparecem aqui conforme chegam novas passagens do SPHEREx."
   },
   "me": {
     "title": "Meu perfil",

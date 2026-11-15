@@ -11,7 +11,8 @@ import { formatDec, formatRa } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 
 type Status = 'idle' | 'loading' | 'ready' | 'failed'
-type AladinLib = { init: Promise<void>; aladin: (el: HTMLElement, options: Record<string, unknown>) => { destroy?: () => void } }
+type AladinMap = { destroy?: () => void; increaseZoom: () => void; decreaseZoom: () => void }
+type AladinLib = { init: Promise<void>; aladin: (el: HTMLElement, options: Record<string, unknown>) => AladinMap }
 
 const LOAD_MS = 15_000
 const ALADIN_URL = 'https://cdn.jsdelivr.net/npm/aladin-lite@3.6.5/dist/aladin.js'
@@ -28,6 +29,8 @@ const CONTROLS_OFF = {
   showCooLocation: false,
   showFrame: false,
   showContextMenu: false,
+  showZoomControl: false,
+  showFov: false,
 }
 
 function withTimeout<T>(work: Promise<T>): Promise<T> {
@@ -42,7 +45,7 @@ export function SkyMapSheet({ open, onClose, object }: { open: boolean; onClose:
   const [status, setStatus] = useState<Status>('idle')
   const run = useRef(0)
   const box = useRef<HTMLDivElement>(null)
-  const map = useRef<{ destroy?: () => void } | null>(null)
+  const map = useRef<AladinMap | null>(null)
   const { ra, dec, name, id } = object
   const url = `https://sky.esa.int/esasky/?target=${encodeURIComponent(`${ra} ${dec}`)}&hips=DSS2+color&fov=0.25&cooframe=J2000`
   const coords = `${formatRa(ra)} ${formatDec(dec)}`
@@ -66,7 +69,7 @@ export function SkyMapSheet({ open, onClose, object }: { open: boolean; onClose:
       const lib = (await withTimeout(import(/* webpackIgnore: true */ ALADIN_URL))) as { default: AladinLib }
       await withTimeout(lib.default.init)
       if (mine !== run.current || !box.current) return
-      map.current = lib.default.aladin(box.current, { ...CONTROLS_OFF, survey: SURVEY_URL, target: `${ra} ${dec}`, fov: 0.25, showZoomControl: true, reticleColor: '#ffcc00' })
+      map.current = lib.default.aladin(box.current, { ...CONTROLS_OFF, survey: SURVEY_URL, target: `${ra} ${dec}`, fov: 0.25, reticleColor: '#ffcc00' })
       setStatus('ready')
     }
     start().catch(() => {
@@ -104,6 +107,16 @@ export function SkyMapSheet({ open, onClose, object }: { open: boolean; onClose:
                 </div>
               )}
             </div>
+            {status === 'ready' && (
+              <div className="mt-2 flex justify-end gap-2">
+                <Button className="h-10 min-w-11 text-title-sm" aria-label={t('zoomOut')} onClick={() => map.current?.decreaseZoom()}>
+                  -
+                </Button>
+                <Button className="h-10 min-w-11 text-title-sm" aria-label={t('zoomIn')} onClick={() => map.current?.increaseZoom()}>
+                  +
+                </Button>
+              </div>
+            )}
             <p className="mt-2 text-meta leading-snug text-text-secondary">{t('photosHint')}</p>
             <p className="mt-1 text-meta text-text-secondary">{tp('skyMapCredit')}</p>
             <a href={url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex min-h-11 items-center text-note font-medium text-link">
