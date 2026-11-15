@@ -3433,7 +3433,8 @@
                                   "required": [
                                     "kind",
                                     "frames",
-                                    "signal"
+                                    "signal",
+                                    "features"
                                   ],
                                   "properties": {
                                     "kind": {
@@ -3508,6 +3509,24 @@
                                             "type": "null"
                                           }
                                         ]
+                                      }
+                                    },
+                                    "features": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "required": [
+                                          "name_pt",
+                                          "name_en"
+                                        ],
+                                        "properties": {
+                                          "name_pt": {
+                                            "type": "string"
+                                          },
+                                          "name_en": {
+                                            "type": "string"
+                                          }
+                                        }
                                       }
                                     }
                                   }
@@ -3906,6 +3925,12 @@
                           "type": "string"
                         },
                         "spectra": {
+                          "type": "string"
+                        },
+                        "features": {
+                          "type": "string"
+                        },
+                        "halo": {
                           "type": "string"
                         }
                       }

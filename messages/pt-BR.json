@@ -127,7 +127,8 @@
       "differenceLater": "Uma foto menos a outra, em {band}: a mancha escura é onde ele estava, a clara é onde estava depois.",
       "curve": "O brilho medido em {band} mudou cerca de {spread} magnitudes entre {n} passagens.",
       "curveSaturated": "É só um indício: o centro da estrela estoura a câmera.",
-      "colours": "A mesma passagem nas 6 cores do SPHEREx. As barras mostram quanto o SPHEREx mediu no lugar exato do objeto em cada cor: isso é o espectro."
+      "colours": "A mesma passagem nas 6 cores do SPHEREx. As barras mostram quanto o SPHEREx mediu no lugar exato do objeto em cada cor: isso é o espectro.",
+      "coloursFeatures": "Medindo cor por cor, o espectro mostra {names}."
     },
     "end": {
       "motion": "Em {span}, o SPHEREx mediu {measured}″ ± {err}″ de movimento. Os catálogos previam {predicted}″.",
@@ -1664,5 +1665,18 @@
   },
   "bands": {
     "explain": "D1 é a mais perto do vermelho; D6 mostra o calor de objetos frios."
+  },
+  "features": {
+    "title": "O que se destaca no espectro",
+    "dip": "{name}: queda de {pct}% em {um} µm",
+    "bump": "{name}: {amount}, em {um} µm",
+    "bumpWhen": "{name}: {amount}, em {um} µm ({when})",
+    "times": "{n}× mais brilho que ao lado",
+    "percent": "{n}% mais brilho que ao lado",
+    "also": "Pode ser também {names}",
+    "none": "Nada se destaca nesta resolução.",
+    "tooBright": "Brilhante demais para julgar: o centro estoura a câmera.",
+    "tooFaint": "Fraco demais para julgar.",
+    "rule": "Conta só o que passa de 5 vezes a incerteza."
   }
 }

@@ -224,6 +224,10 @@ export interface paths {
                                         } | null;
                                     }[];
                                     signal: (number | null)[];
+                                    features: {
+                                        name_pt: string;
+                                        name_en: string;
+                                    }[];
                                 } | {
                                     kind: "end";
                                     motion: {
@@ -363,6 +367,8 @@ export interface paths {
                                 motion?: string;
                                 lightcurve?: string;
                                 spectra?: string;
+                                features?: string;
+                                halo?: string;
                             };
                             limits: string[];
                             field: {

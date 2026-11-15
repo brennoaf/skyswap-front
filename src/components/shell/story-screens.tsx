@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import type { FindingDetail, Story } from '@/lib/api/client'
+import { featureName } from '@/components/charts/spectrum-features'
 import { cx, formatShortDate } from '@/lib/format'
 
 export type StoryScreen = Story['screens'][number]
@@ -244,7 +245,7 @@ export function ColoursScreen({ screen, name, elapsed }: { screen: Colours; name
           ))}
         </div>
       </div>
-      <Caption>{t('captions.colours')}</Caption>
+      <Caption>{screen.features.length ? t('captions.coloursFeatures', { names: new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' }).format(screen.features.map((f) => featureName(f, locale).toLowerCase())) }) : t('captions.colours')}</Caption>
     </>
   )
 }

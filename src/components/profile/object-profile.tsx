@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { mixesBatches } from '@/components/charts/chart-math'
 import { KitChart } from '@/components/charts/charts'
+import { ProfileSpectrum } from '@/components/charts/spectrum-features'
 import { skyHref } from '@/components/feed/spot-sheet'
 import { frameTiles, PostGrid, tilesFromPosts } from '@/components/profile/post-grid'
 import { IconChart, IconChevronDownSmall, IconFlask, IconGrid, IconReel, IconShare, IconSpectrum, IconTarget, IconWarning, IconChevronRight } from '@/components/icons'
@@ -253,7 +254,7 @@ export function ObjectProfileView({ id }: { id: string }) {
       {tab === 'timelapses' && <PostGrid tiles={tilesFromPosts((posts ?? []).filter((p) => p.type === 'long_baseline' || p.type === 'timelapse' || p.type === 'pass_blink'), locale)} />}
 
       {tab === 'spectrum' && (
-        <section className="px-4 py-4">{profile.measurements.spectra ? <KitChart kind="spectrum" url={profile.measurements.spectra} titled mixedBatches={mixedBatches} /> : <EmptyState title={t('noSpectrum')} />}</section>
+        <section className="px-4 py-4">{profile.measurements.spectra ? <ProfileSpectrum spectra={profile.measurements.spectra} features={profile.measurements.features} mixedBatches={mixedBatches} /> : <EmptyState title={t('noSpectrum')} />}</section>
       )}
 
       {tab === 'measurements' && (

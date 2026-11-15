@@ -133,7 +133,7 @@ function TooBrightKey() {
   )
 }
 
-export function SpectrumChart({ data, title, mixedBatches = false }: { data: SpectraData; title?: string; mixedBatches?: boolean }) {
+export function SpectrumChart({ data, title, mixedBatches = false, highlight = null }: { data: SpectraData; title?: string; mixedBatches?: boolean; highlight?: [number, number] | null }) {
   const locale = useLocale()
   const t = useTranslations('charts')
   const bandName = useBandName()
@@ -203,6 +203,7 @@ export function SpectrumChart({ data, title, mixedBatches = false }: { data: Spe
           setSel(hit ? { pass: hit.pass, i: hit.i } : null)
         }}
       >
+        {highlight && <rect data-testid="spectrum-highlight" x={x(highlight[0])} y={PLOT.t} width={Math.max(2, x(highlight[1]) - x(highlight[0]))} height={PLOT.h - PLOT.b - PLOT.t} fill="var(--color-warning)" fillOpacity="0.22" pointerEvents="none" />}
         {marks.map((m) => (
           <g key={`${m.pass}-${m.i}`}>
             <line x1={m.x} x2={m.x} y1={y(tf(Math.max(m.q.flux_mjy - m.q.err, fmin * 0.5)))} y2={y(tf(m.q.flux_mjy + m.q.err))} stroke={m.color} strokeOpacity="0.6" strokeWidth="1" />
@@ -595,7 +596,7 @@ export function QrWarning() {
 
 const TITLE_KEY = { spectrum: 'spectrumTitle', lightcurve: 'lightcurveTitle', motion: 'motionTitle' } as const
 
-export function KitChart({ kind, url, technical = false, titled = false, mixedBatches = false }: { kind: 'spectrum' | 'lightcurve' | 'motion'; url: string; technical?: boolean; titled?: boolean; mixedBatches?: boolean }) {
+export function KitChart({ kind, url, technical = false, titled = false, mixedBatches = false, highlight = null }: { kind: 'spectrum' | 'lightcurve' | 'motion'; url: string; technical?: boolean; titled?: boolean; mixedBatches?: boolean; highlight?: [number, number] | null }) {
   const t = useTranslations('charts')
   const tc = useTranslations('common')
   const q = useKitJson<SpectraData & LightcurveData & MotionData>(url)
@@ -610,7 +611,7 @@ export function KitChart({ kind, url, technical = false, titled = false, mixedBa
       </div>
     )
   const title = titled ? t(TITLE_KEY[kind]) : undefined
-  if (kind === 'spectrum') return <SpectrumChart data={q.data} title={title} mixedBatches={mixedBatches} />
+  if (kind === 'spectrum') return <SpectrumChart data={q.data} title={title} mixedBatches={mixedBatches} highlight={highlight} />
   if (kind === 'lightcurve') return <LightCurveChart data={q.data} technical={technical} title={title} mixedBatches={mixedBatches} />
   return <MotionChart data={q.data} technical={technical} title={title} />
 }

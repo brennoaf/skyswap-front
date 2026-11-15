@@ -127,7 +127,8 @@
       "differenceLater": "One photo minus another, in {band}: the dark spot is where it was, the light spot is where it was later.",
       "curve": "The brightness measured in {band} changed by about {spread} magnitudes across {n} passes.",
       "curveSaturated": "Only a hint: the centre of the star saturates the camera.",
-      "colours": "The same pass in SPHEREx's 6 colours. The bars show how much SPHEREx measured right at the object's spot in each colour: that is its spectrum."
+      "colours": "The same pass in SPHEREx's 6 colours. The bars show how much SPHEREx measured right at the object's spot in each colour: that is its spectrum.",
+      "coloursFeatures": "Measured colour by colour, the spectrum shows {names}."
     },
     "end": {
       "motion": "In {span}, SPHEREx measured {measured}″ ± {err}″ of motion. Catalogues predicted {predicted}″.",
@@ -1664,5 +1665,18 @@
   },
   "bands": {
     "explain": "D1 is the closest to red; D6 shows the heat of cold objects."
+  },
+  "features": {
+    "title": "What stands out in the spectrum",
+    "dip": "{name}: {pct}% dip at {um} µm",
+    "bump": "{name}: {amount} at {um} µm",
+    "bumpWhen": "{name}: {amount} at {um} µm ({when})",
+    "times": "{n} times brighter than beside it",
+    "percent": "{n}% brighter than beside it",
+    "also": "It could also be {names}",
+    "none": "Nothing stands out at this resolution.",
+    "tooBright": "Too bright to judge: the centre saturates the camera.",
+    "tooFaint": "Too faint to judge.",
+    "rule": "Only what goes past 5 times its uncertainty counts."
   }
 }
