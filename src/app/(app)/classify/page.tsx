@@ -1,12 +1,12 @@
 'use client'
 
-import { animate, motion, useMotionValue, useReducedMotion } from 'framer-motion'
+import { animate, useMotionValue, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
-import { AnswerPanel, FrameBars, PhotoBar, SwapPanel, SwapStage, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
-import { SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
+import { AnswerPanel, FrameBars, PhotoBar, SwapPanel, SwapStage, SwapStrip, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
+import { KnownSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
 import { IconCards, IconClose, IconMoves, IconQuestion } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
@@ -17,25 +17,25 @@ import { useGuideCard, useSession, useVote, type VotePosition } from '@/lib/api/
 import type { CardHint } from '@/lib/explore/flashlight'
 import { exploreQueue, isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
 import { hasOutsideArea } from '@/lib/out-of-field'
-import { verdictOf, type Answer } from '@/lib/swap-verdict'
+import { knownName, verdictOf, type Answer } from '@/lib/swap-verdict'
 import { useUi } from '@/lib/state/ui'
 
 type VoteResult = NonNullable<ReturnType<typeof useVote>['data']>
 type Mark = { u: number; v: number }
 type PlayCard = DeckCard | SkyPlayCard
 type Lesson = 'moves' | 'still' | 'glitch'
-type Mode = 'look' | 'tools' | 'confirm' | 'marking' | 'sending' | 'failed' | 'result'
+type Mode = 'look' | 'tools' | 'mark' | 'sending' | 'failed' | 'result'
+type Pending = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; hints: boolean }
+type Strip = { kind: 'saved'; answer: Answer } | { kind: 'known'; name: string } | { kind: 'badge'; name: string } | { kind: 'failed'; answer: Answer }
 
-const CONFIRM_MS = 3000
+const UNDO_MS = 3000
+const NOTICE_MS = 5000
 const FRAME_MS = 700
-const TIP_MS = 6000
 const INTRO_FRAME_MS = 800
 const NUDGE_PX = 44
 const NUDGE_S = 0.7
 const NUDGE_WAIT_MS = 700
 const PAUSE_EVERY = 25
-const IDLE_MS = 12_000
-const QUIET_RUN = 10
 const NO_MARKS: Mark[] = []
 const SHELL_STYLE = { '--swap-photo': 'max(200px, min(min(100vw, var(--width-app)), calc(100dvh - 312px - env(safe-area-inset-top) - env(safe-area-inset-bottom))))' } as CSSProperties
 
@@ -67,27 +67,6 @@ function useSprite(src: string | undefined) {
     }
   }, [src])
   return img && img.src === src ? img.el : null
-}
-
-function useIdle(key: string, ms = IDLE_MS) {
-  const [idle, setIdle] = useState(false)
-  useEffect(() => {
-    let timer = setTimeout(() => setIdle(true), ms)
-    const wake = () => {
-      setIdle(false)
-      clearTimeout(timer)
-      timer = setTimeout(() => setIdle(true), ms)
-    }
-    window.addEventListener('pointerdown', wake)
-    window.addEventListener('keydown', wake)
-    setIdle(false)
-    return () => {
-      clearTimeout(timer)
-      window.removeEventListener('pointerdown', wake)
-      window.removeEventListener('keydown', wake)
-    }
-  }, [key, ms])
-  return idle
 }
 
 function SwapShell({ children }: { children: ReactNode }) {
@@ -232,16 +211,6 @@ function useOutside(img: HTMLImageElement | null, n: number) {
   return outside
 }
 
-function gainLine(t: ReturnType<typeof useTranslations>, result: VoteResult): string | null {
-  const { xp, counted, guided } = result
-  const gained = xp.xp + xp.streakBonus
-  const parts = [
-    guided ? t('classify.practice') : !counted ? t('classify.tooFast') : gained > 0 ? t('xp.gained', { xp: gained }) : xp.reason === 'daily_cap' || xp.reason === 'diminished' ? t('xp.limit') : null,
-    ...result.new_badges.map((b) => t('classify.newBadge', { name: t(`badges.items.${b}.name`) })),
-  ].filter((part): part is string => !!part)
-  return parts.length ? parts.join(' ') : null
-}
-
 function SwapCard({
   card,
   img,
@@ -249,11 +218,12 @@ function SwapCard({
   lesson,
   lessonMarks,
   lastLesson,
-  showGestureHint,
+  strip,
   onHelp,
-  onVoted,
-  onStale,
-  onNext,
+  onChoosing,
+  onAnswer,
+  onLessonStale,
+  onLessonNext,
 }: {
   card: PlayCard
   img: HTMLImageElement | null
@@ -261,14 +231,14 @@ function SwapCard({
   lesson: Lesson | null
   lessonMarks: Mark[]
   lastLesson: boolean
-  showGestureHint: boolean
+  strip: ReactNode
   onHelp: () => void
-  onVoted: (answer: Answer, r: VoteResult) => boolean
-  onStale: () => void
-  onNext: () => void
+  onChoosing: () => void
+  onAnswer: (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => void
+  onLessonStale: () => void
+  onLessonNext: () => void
 }) {
   const t = useTranslations('classify')
-  const tAll = useTranslations()
   const tp = useTranslations('player')
   const label = useOffsetLabel()
   const reduce = useReducedMotion()
@@ -277,31 +247,27 @@ function SwapCard({
   const y = useMotionValue(0)
   const [mode, setMode] = useState<Mode>('look')
   const [answer, setAnswer] = useState<Answer | null>(null)
-  const [heldAt, setHeldAt] = useState(0)
+  const [markAt, setMarkAt] = useState(0)
   const [spot, setSpot] = useState<VotePosition | null>(null)
   const [saved, setSaved] = useState<VoteResult | null>(null)
-  const [quiet, setQuiet] = useState(false)
   const [frozen, setFrozen] = useState(false)
   const [row, setRow] = useState<0 | 1>(0)
   const [understand, setUnderstand] = useState(false)
-  const [computerMark, setComputerMark] = useState(false)
-  const [tip, setTip] = useState<string | null>(null)
   const [sawIt, setSawIt] = useState(false)
   const [shownIt, setShownIt] = useState(false)
   const [retry, setRetry] = useState(false)
-  const tipsSeen = useUi((s) => s.tipsSeen)
-  const markTip = useUi((s) => s.markTip)
   const sky = isSkyCard(card) ? card : null
   const [hintsOn, setHintsOn] = useState(false)
   const [hintsUsed, setHintsUsed] = useState(false)
   const offsets = card.offsets_s
   const n = Math.max(1, offsets.length)
-  const playback = usePlayback(n, { baseMs: FRAME_MS, autoplay: !reduce, frozen: frozen || mode === 'marking' })
+  const playback = usePlayback(n, { baseMs: FRAME_MS, autoplay: !reduce || !!lesson, frozen })
   const panel = playback.index
-  const hints = sky && (hintsOn || (mode === 'result' && computerMark)) ? sky.hints : null
+  const { setPlaying } = playback
+  const hints = sky && hintsOn ? sky.hints : null
   const outside = useOutside(img, n)
   const hintLine = useHintLine(hints, panel)
-  const verdict = saved && answer ? verdictOf(saved.reveal, answer, !!lesson) : null
+  const verdict = lesson && saved && answer ? verdictOf(saved.reveal, answer, true) : null
 
   const settle = useCallback(() => {
     animate(x, 0, { type: 'spring', stiffness: 500, damping: 32 })
@@ -315,73 +281,40 @@ function SwapCard({
     [reduce, x],
   )
 
-  const undo = useCallback(() => {
+  const undoMark = useCallback(() => {
     setAnswer(null)
     setSpot(null)
     setMode('look')
-  }, [])
+    setPlaying(!reduce)
+  }, [reduce, setPlaying])
 
-  const send = useCallback(async () => {
-    if (!answer) return
-    setMode('sending')
-    if (saved) {
-      setMode('result')
-      playback.setPlaying(!reduce)
-      return
-    }
-    try {
-      const r = await vote.mutateAsync({ card_id: card.id, choice: answer === 'glitch' ? 'still' : answer, ...(answer === 'glitch' ? { glitch: true } : {}), hints: hintsUsed, held_ms: Math.min(600000, Math.round(performance.now() - heldAt)), ...(spot ? { position: spot } : {}) })
-      setSaved(r)
-      setQuiet(onVoted(answer, r))
-      setMode('result')
-      playback.setPlaying(!reduce)
-    } catch (err) {
-      if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) {
-        onStale()
-        return
+  const sendLesson = useCallback(
+    async (a: Answer) => {
+      setMode('sending')
+      try {
+        const r = await vote.mutateAsync({ card_id: card.id, choice: a === 'glitch' ? 'still' : a, ...(a === 'glitch' ? { glitch: true } : {}) })
+        setSaved(r)
+        setMode('result')
+        setPlaying(true)
+      } catch (err) {
+        if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) {
+          onLessonStale()
+          return
+        }
+        setMode('failed')
       }
-      setMode('failed')
-    }
-  }, [answer, card.id, heldAt, hintsUsed, onStale, onVoted, playback, reduce, saved, spot, vote])
-
-  const sendNow = useRef(send)
-  useEffect(() => {
-    sendNow.current = send
-  }, [send])
+    },
+    [card.id, onLessonStale, setPlaying, vote],
+  )
 
   useEffect(() => {
-    if (mode !== 'confirm') return
-    const timer = setTimeout(() => void sendNow.current(), CONFIRM_MS)
-    return () => clearTimeout(timer)
-  }, [mode])
-
-  useEffect(() => {
-    if (mode !== 'confirm' && mode !== 'marking') return
+    if (mode !== 'mark') return
     const onHide = () => {
-      if (document.visibilityState === 'hidden') undo()
+      if (document.visibilityState === 'hidden') undoMark()
     }
     document.addEventListener('visibilitychange', onHide)
     return () => document.removeEventListener('visibilitychange', onHide)
-  }, [mode, undo])
-
-  useEffect(() => {
-    if (!tip) return
-    const timer = setTimeout(() => setTip(null), TIP_MS)
-    return () => clearTimeout(timer)
-  }, [tip])
-
-  const choose = useCallback(
-    (a: Answer) => {
-      if (!img) return
-      settle()
-      setRow(0)
-      setAnswer(a)
-      setHeldAt(performance.now())
-      setSpot(null)
-      setMode('confirm')
-    },
-    [img, settle],
-  )
+  }, [mode, undoMark])
 
   useEffect(() => {
     if (lesson !== 'still' || !img) return
@@ -389,53 +322,62 @@ function SwapCard({
     return () => clearTimeout(timer)
   }, [img, lesson, nudge])
 
+  const choose = (a: Answer) => {
+    if (!img) return
+    settle()
+    setRow(0)
+    setSpot(null)
+    setAnswer(a)
+    if (lesson) {
+      if (saved) {
+        setMode('result')
+        setPlaying(true)
+      } else void sendLesson(a)
+      return
+    }
+    onChoosing()
+    if (a === 'moves') {
+      setMarkAt(performance.now())
+      setMode('mark')
+    } else onAnswer(a, null, performance.now(), hintsUsed)
+  }
+
   const looking = mode === 'look' || mode === 'tools'
   const mustLookFirst = lesson === 'moves' && !sawIt && !retry
   const canSwipe = looking && !!img && !mustLookFirst
-  const canMark = answer === 'moves' && (mode === 'confirm' || mode === 'marking')
 
   const onRelease = (dx: number, dy: number, vx: number, vy: number) => {
     const sideways = Math.abs(dx) >= Math.abs(dy)
     if (sideways && (dx > SWIPE || vx > 700)) choose('moves')
     else if (sideways && (dx < -SWIPE || vx < -700)) choose('still')
     else if (!sideways && (dy < -SWIPE || vy < -700)) choose('unsure')
-    else {
-      settle()
-      if (Math.hypot(dx, dy) > 30 && !tipsSeen.includes('short')) {
-        markTip('short')
-        setTip('short')
-      }
-    }
+    else settle()
   }
 
   const onTap = (u: number, v: number) => {
-    if (canMark) {
+    if (mode === 'mark') {
       setSpot({ frame: panel, x: Math.round(u * 1e4) / 1e4, y: Math.round(v * 1e4) / 1e4 })
-      setMode('marking')
-    } else if (looking || mode === 'result') playback.setPlaying(!playback.playing)
+      setPlaying(false)
+    } else if (looking || mode === 'result') setPlaying(!playback.playing)
   }
 
-  const reveal = saved?.reveal
-  const mark = reveal?.marks[panel]
+  const mark = saved?.reveal.marks[panel]
   const ringOn = mode === 'look' && (lesson === 'glitch' || (lesson === 'moves' && (shownIt || retry)))
   const overlay = (
     <>
       {ringOn && <GuideRing mark={lessonMarks[panel] ?? lessonMarks[0]} />}
       {hints && <HintRings hints={hints} panel={panel} />}
-      {mode === 'result' && !hints && mark && verdict?.mark && <VoiceMark voice="known" u={mark.u} v={mark.v} />}
-      {mode === 'result' && !hints && mark && !verdict?.mark && computerMark && <VoiceMark voice="program" u={mark.u} v={mark.v} />}
+      {mode === 'result' && mark && verdict?.mark && <VoiceMark voice="known" u={mark.u} v={mark.v} />}
       {spot && <VoiceMark voice="you" u={spot.x} v={spot.y} faint={spot.frame !== panel} />}
     </>
   )
 
-  const sending = mode === 'sending'
-  const failed = mode === 'failed'
-  const note = tip ? t(`tips.${tip}`) : hintLine ?? (outside[panel] ? tp('outside') : showGestureHint ? t('hints.swipe') : null)
-  const gain = saved ? gainLine(tAll, saved) : null
+  const labels = { still: t('still'), moves: t('moves'), glitch: t('glitch'), unsure: t('unsure') }
+  const note = hintLine ?? (outside[panel] ? tp('outside') : null)
 
   return (
     <SwapShell>
-      <SwapHeader step={step ?? (sky ? t('sky.label') : null)} onHelp={onHelp} />
+      <SwapHeader step={step} onHelp={onHelp} />
       <FrameBars n={n} index={panel} />
       <SwapStage
         img={img}
@@ -450,11 +392,10 @@ function SwapCard({
         onCancel={settle}
         onTap={onTap}
         onHold={setFrozen}
-        onTouch={canMark ? () => setMode('marking') : undefined}
         overlay={overlay}
       />
       <div className="relative flex min-h-0 flex-1 flex-col" data-testid="swap-lower">
-        {mode === 'look' && lesson && (
+        {lesson && (mode === 'look' || mode === 'sending') && (
           <>
             <Coach>{mustLookFirst ? t('guide.look') : lesson === 'moves' ? t('guide.answer') : t(`guide.${lesson}`)}</Coach>
             {mustLookFirst ? (
@@ -475,19 +416,19 @@ function SwapCard({
                 </button>
               </div>
             ) : (
-              <AnswerPanel labels={{ still: t('still'), moves: t('moves'), glitch: t('glitch'), unsure: t('unsure') }} disabled={!img} onChoose={choose} />
+              <AnswerPanel labels={labels} disabled={!img || mode === 'sending'} onChoose={choose} />
             )}
           </>
         )}
-        {mode === 'look' && !lesson && (
+        {!lesson && mode === 'look' && (
           <>
-            <PhotoBar playback={playback} offsets={offsets} onTools={() => setMode('tools')} />
+            {strip ?? <PhotoBar playback={playback} offsets={offsets} onTools={() => setMode('tools')} />}
             {note && (
               <p role="status" className="my-auto px-6 text-center text-[15px] leading-snug text-text-secondary">
                 {note}
               </p>
             )}
-            <AnswerPanel labels={{ still: t('still'), moves: t('moves'), glitch: t('glitch'), unsure: t('unsure') }} disabled={!img} onChoose={choose} />
+            <AnswerPanel labels={labels} disabled={!img} onChoose={choose} />
           </>
         )}
         {mode === 'tools' && (
@@ -511,21 +452,30 @@ function SwapCard({
             }
           />
         )}
-        {answer && (mode === 'confirm' || mode === 'marking' || sending || failed) && (
+        {mode === 'mark' && (
           <SwapPanel>
-            {mode === 'confirm' && !reduce && <motion.span aria-hidden="true" className="absolute inset-x-4 top-0 h-[3px] origin-left rounded-sm bg-accent" initial={{ scaleX: 1 }} animate={{ scaleX: 0 }} transition={{ duration: CONFIRM_MS / 1000, ease: 'linear' }} />}
             <div role="status" aria-live="polite">
-              <p className="text-[18px] font-bold leading-snug">{t('confirm.said', { choice: t(answer) })}</p>
-              <p className={failed ? 'text-[16px] font-medium leading-snug text-danger' : 'text-[16px] leading-snug text-text-secondary'}>{failed ? t('confirm.failed') : sending ? t('confirm.saving') : spot ? t('confirm.marked') : answer === 'moves' ? t('confirm.tap') : t('confirm.canUndo')}</p>
+              <p className="text-[18px] font-bold leading-snug">{t('mark.said', { choice: t('moves') })}</p>
+              <p className="text-[16px] leading-snug text-text-secondary">{spot ? t('mark.marked') : t('mark.where')}</p>
             </div>
             <div className="flex gap-2">
-              <button type="button" disabled={sending} onClick={undo} className={swapButton.big}>
-                {t('confirm.undo')}
+              <button type="button" onClick={undoMark} className={swapButton.big}>
+                {t('undo')}
               </button>
-              <button type="button" disabled={sending} onClick={() => void send()} className={swapButton.primary}>
-                {failed ? t('confirm.retry') : t('confirm.see')}
+              <button type="button" onClick={() => onAnswer('moves', spot, markAt, hintsUsed)} className={swapButton.primary}>
+                {t('mark.next')}
               </button>
             </div>
+          </SwapPanel>
+        )}
+        {mode === 'failed' && answer && (
+          <SwapPanel>
+            <p role="status" className="text-[16px] font-medium leading-snug text-danger">
+              {t('failed')}
+            </p>
+            <button type="button" onClick={() => void sendLesson(answer)} className={`${swapButton.primary} flex-none`}>
+              {t('retry')}
+            </button>
           </SwapPanel>
         )}
         {mode === 'result' && saved && answer && verdict && (
@@ -533,8 +483,8 @@ function SwapCard({
             <h2 id="reveal-title" className="text-[21px] font-bold leading-tight [text-wrap:balance]">
               {t(`result.${verdict.title}`, { name: verdict.name ?? '' })}
             </h2>
-            <p className="text-[16px] leading-snug text-text-secondary">{quiet ? t('result.quiet') : t(`result.${verdict.body}`)}</p>
-            {gain && <p className="text-[15px] font-semibold leading-snug">{gain}</p>}
+            <p className="text-[16px] leading-snug text-text-secondary">{t(`result.${verdict.body}`)}</p>
+            <p className="text-[15px] font-semibold leading-snug">{t('practice')}</p>
             <div className="flex gap-2">
               {verdict.again ? (
                 <button
@@ -554,36 +504,19 @@ function SwapCard({
                   {t('understand.open')}
                 </button>
               )}
-              <button type="button" onClick={onNext} className={swapButton.primary}>
+              <button type="button" onClick={onLessonNext} className={swapButton.primary}>
                 {lastLesson ? t('finish') : t('next')}
               </button>
             </div>
           </SwapPanel>
         )}
       </div>
-      {saved && answer && verdict && (
-        <UnderstandSheet
-          open={understand}
-          onClose={() => setUnderstand(false)}
-          reveal={saved.reveal}
-          answer={answer}
-          verdict={verdict}
-          hasHints={!!sky?.hints.length}
-          onShowComputer={
-            !verdict.mark && !hints && (saved.reveal.marks.length > 0 || !!sky?.hints.length)
-              ? () => {
-                  setComputerMark(true)
-                  setUnderstand(false)
-                }
-              : null
-          }
-        />
-      )}
+      {saved && answer && verdict && <UnderstandSheet open={understand} onClose={() => setUnderstand(false)} reveal={saved.reveal} answer={answer} verdict={verdict} />}
     </SwapShell>
   )
 }
 
-function DeckSkeleton({ onHelp, line }: { onHelp: () => void; line?: string }) {
+function DeckSkeleton({ onHelp, line, strip }: { onHelp: () => void; line?: string; strip?: ReactNode }) {
   return (
     <SwapShell>
       <SwapHeader onHelp={onHelp} />
@@ -592,6 +525,7 @@ function DeckSkeleton({ onHelp, line }: { onHelp: () => void; line?: string }) {
         <Skeleton className="rounded-none" style={{ width: 'var(--swap-photo)', height: 'var(--swap-photo)' }} />
       </div>
       <div className="flex min-h-0 flex-1 flex-col" aria-live="polite">
+        {strip}
         {line && <p className="my-auto px-6 text-center text-[15px] text-text-secondary">{line}</p>}
       </div>
     </SwapShell>
@@ -601,10 +535,10 @@ function DeckSkeleton({ onHelp, line }: { onHelp: () => void; line?: string }) {
 type DeckState = { status: 'loading' | 'searching' | 'ready' | 'done' | 'error'; card: PlayCard | null }
 
 let sessionLooks = 0
-let quietRun = 0
 
-async function fetchNext(): Promise<DeckState> {
-  const query = new URLSearchParams(window.location.search).has('open') ? { explore: true, open: true } : { explore: true }
+async function fetchNext(not: string[]): Promise<DeckState> {
+  const skip = not.length ? { not: not.join(',') } : {}
+  const query = new URLSearchParams(window.location.search).has('open') ? { explore: true, open: true, ...skip } : { explore: true, ...skip }
   let r = await api
     .GET('/api/classify/next', { params: { query } })
     .then(unwrap)
@@ -619,7 +553,7 @@ async function fetchNext(): Promise<DeckState> {
   if (r.sky) {
     const sky = exploreQueue.take()
     if (sky) return { status: 'ready', card: sky }
-    r = unwrap(await api.GET('/api/classify/next', { params: { query: { explore: true, known: true } } }))
+    r = unwrap(await api.GET('/api/classify/next', { params: { query: { explore: true, known: true, ...skip } } }))
   }
   if (r.card) return { status: 'ready', card: r.card }
   return { status: r.sky ? 'searching' : 'done', card: null }
@@ -627,6 +561,8 @@ async function fetchNext(): Promise<DeckState> {
 
 function useDeckFlow(enabled: boolean) {
   const [state, setState] = useState<DeckState>({ status: 'loading', card: null })
+  const stateNow = useRef(state)
+  stateNow.current = state
   const live = useRef(true)
   const next = useRef<{ work: Promise<DeckState>; done: DeckState | null } | null>(null)
   useEffect(() => {
@@ -636,9 +572,9 @@ function useDeckFlow(enabled: boolean) {
     }
   }, [])
 
-  const prepare = useCallback(() => {
+  const prepare = useCallback((not: string[]) => {
     if (next.current) return
-    const entry: { work: Promise<DeckState>; done: DeckState | null } = { work: fetchNext(), done: null }
+    const entry: { work: Promise<DeckState>; done: DeckState | null } = { work: fetchNext(not), done: null }
     next.current = entry
     entry.work.then(
       (s) => {
@@ -651,7 +587,7 @@ function useDeckFlow(enabled: boolean) {
     )
   }, [])
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (not: string[] = []) => {
     const prepared = next.current
     next.current = null
     if (prepared?.done?.status === 'ready') {
@@ -660,7 +596,7 @@ function useDeckFlow(enabled: boolean) {
     }
     setState({ status: 'loading', card: null })
     try {
-      const s = prepared ? await prepared.work.catch(fetchNext) : await fetchNext()
+      const s = prepared ? await prepared.work.catch(() => fetchNext(not)) : await fetchNext(not)
       if (s.status !== 'searching') {
         if (live.current) setState(s)
         return
@@ -673,11 +609,17 @@ function useDeckFlow(enabled: boolean) {
     }
   }, [])
 
+  const restore = useCallback((card: PlayCard) => {
+    const shown = stateNow.current
+    if (shown.card) next.current = { work: Promise.resolve(shown), done: shown }
+    setState({ status: 'ready', card })
+  }, [])
+
   useEffect(() => {
     if (enabled) void load()
   }, [enabled, load])
 
-  return { ...state, reload: load, prepare }
+  return { ...state, reload: load, prepare, restore }
 }
 
 function PauseCard({ looks, onContinue }: { looks: number; onContinue: () => void }) {
@@ -700,6 +642,42 @@ function PauseCard({ looks, onContinue }: { looks: number; onContinue: () => voi
   )
 }
 
+function useDelayedVotes(onNotice: (strips: Strip[]) => void, onFailed: (answer: Answer) => void) {
+  const vote = useVote()
+  const tb = useTranslations('badges.items')
+  const failed = useRef<Pending[]>([])
+
+  const send = useCallback(
+    async (p: Pending) => {
+      try {
+        const r = await vote.mutateAsync({
+          card_id: p.card.id,
+          choice: p.answer === 'glitch' ? 'still' : p.answer,
+          ...(p.answer === 'glitch' ? { glitch: true } : {}),
+          hints: p.hints,
+          held_ms: Math.min(600000, Math.round(performance.now() - p.at)),
+          ...(p.spot ? { position: p.spot } : {}),
+        })
+        exploreQueue.release(isSkyCard(p.card) ? p.card : null)
+        const known = r.reveal.known
+        const strips: Strip[] = [...(known ? [{ kind: 'known' as const, name: knownName(known.name) }] : []), ...r.new_badges.map((b) => ({ kind: 'badge' as const, name: tb(`${b}.name`) }))]
+        if (strips.length) onNotice(strips)
+      } catch (err) {
+        if (err instanceof ApiError && (err.code === 'already_voted' || err.code === 'card_not_issued')) return
+        failed.current.push(p)
+        onFailed(p.answer)
+      }
+    },
+    [onFailed, onNotice, tb, vote],
+  )
+
+  const retryFailed = useCallback(() => {
+    for (const p of failed.current.splice(0)) void send(p)
+  }, [send])
+
+  return { send, retryFailed }
+}
+
 function Deck({ onHelp }: { onHelp: () => void }) {
   const t = useTranslations('classify')
   const tc = useTranslations('common')
@@ -714,14 +692,83 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   const guiding = !!lesson
   const flow = useDeckFlow(phase === 'cards' || nothingToPractice)
   const [pause, setPause] = useState(false)
+  const [strip, setStrip] = useState<Strip | null>(null)
+  const [knownOpen, setKnownOpen] = useState<string | null>(null)
+  const pending = useRef<Pending | null>(null)
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const notices = useRef<Strip[]>([])
   const card: PlayCard | null = lesson ? lesson.card : flow.card
   const img = useSprite(card?.sprite)
   const cardId = card?.id
-  const idle = useIdle(cardId ?? 'none')
+
+  const pumpNotices = useCallback(() => {
+    if (noticeTimer.current || pending.current) return
+    const notice = notices.current.shift()
+    if (!notice) return
+    setStrip(notice)
+    noticeTimer.current = setTimeout(() => {
+      noticeTimer.current = null
+      setStrip(null)
+      pumpNotices()
+    }, NOTICE_MS)
+  }, [])
+
+  const showNotices = useCallback(
+    (strips: Strip[]) => {
+      notices.current.push(...strips)
+      pumpNotices()
+    },
+    [pumpNotices],
+  )
+
+  const onVoteFailed = useCallback((answer: Answer) => setStrip((now) => (now?.kind === 'saved' ? now : { kind: 'failed', answer })), [])
+  const { send, retryFailed } = useDelayedVotes(showNotices, onVoteFailed)
+
+  const clearUndo = useCallback(() => {
+    if (undoTimer.current) clearTimeout(undoTimer.current)
+    undoTimer.current = null
+  }, [])
+
+  const commitPending = useCallback(() => {
+    clearUndo()
+    const p = pending.current
+    pending.current = null
+    setStrip((now) => (now?.kind === 'saved' ? null : now))
+    if (p) void send(p)
+    pumpNotices()
+  }, [clearUndo, pumpNotices, send])
+
+  const discardPending = useCallback(() => {
+    clearUndo()
+    const p = pending.current
+    pending.current = null
+    setStrip((now) => (now?.kind === 'saved' ? null : now))
+    if (p) exploreQueue.release(isSkyCard(p.card) ? p.card : null)
+    pumpNotices()
+  }, [clearUndo, pumpNotices])
+
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') discardPending()
+    }
+    document.addEventListener('visibilitychange', onHide)
+    return () => {
+      document.removeEventListener('visibilitychange', onHide)
+      clearUndo()
+      if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    }
+  }, [clearUndo, discardPending])
 
   useEffect(() => {
     if (cardId && !lesson) void api.POST('/api/classify/shown', { body: { card_id: cardId } })
   }, [cardId, lesson])
+
+  const { prepare } = flow
+  useEffect(() => {
+    if (!cardId || guiding || (phase !== 'cards' && !nothingToPractice)) return
+    prepare([cardId, ...(pending.current ? [pending.current.card.id] : [])])
+  }, [cardId, guiding, nothingToPractice, phase, prepare])
 
   useEffect(() => {
     exploreQueue.start()
@@ -740,37 +787,72 @@ function Deck({ onHelp }: { onHelp: () => void }) {
     }
   }, [finishGuide, nothingToPractice, phase])
 
-  const onVoted = useCallback(
-    (answer: Answer, data: VoteResult) => {
-      if (guiding) return false
+  const onChoosing = useCallback(() => {
+    commitPending()
+    retryFailed()
+    if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    noticeTimer.current = null
+    setStrip(null)
+  }, [commitPending, retryFailed])
+
+  const onAnswer = useCallback(
+    (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => {
+      if (!card) return
+      pending.current = { card, answer, spot, at, hints }
+      setStrip({ kind: 'saved', answer })
+      undoTimer.current = setTimeout(commitPending, UNDO_MS)
       sessionLooks++
-      flow.prepare()
-      if (data.reveal.control || data.reveal.kind === 'sky') return false
-      quietRun = answer === 'moves' ? 0 : quietRun + 1
-      return quietRun > 0 && quietRun % QUIET_RUN === 0
+      if (sessionLooks % PAUSE_EVERY === 0) {
+        setPause(true)
+        return
+      }
+      void flow.reload([card.id])
     },
-    [flow, guiding],
+    [card, commitPending, flow],
   )
 
-  const loadNext = useCallback(() => {
-    exploreQueue.release(isSkyCard(flow.card) ? flow.card : null)
-    if (guiding) {
-      if (lessonIndex + 1 < lessons.length) setLessonIndex(lessonIndex + 1)
-      else endGuide()
-      return
-    }
-    if (sessionLooks > 0 && sessionLooks % PAUSE_EVERY === 0 && !pause) {
-      setPause(true)
-      return
-    }
+  const undo = useCallback(() => {
+    clearUndo()
+    const p = pending.current
+    pending.current = null
+    setStrip(null)
+    pumpNotices()
+    if (!p) return
+    sessionLooks = Math.max(0, sessionLooks - 1)
     setPause(false)
-    void flow.reload()
-  }, [flow, guiding, pause, lessonIndex, lessons.length, endGuide])
+    flow.restore(p.card)
+  }, [clearUndo, flow, pumpNotices])
+
+  const nextLesson = useCallback(() => {
+    if (lessonIndex + 1 < lessons.length) setLessonIndex(lessonIndex + 1)
+    else endGuide()
+  }, [endGuide, lessonIndex, lessons.length])
+
+  const stripView =
+    strip?.kind === 'saved' ? (
+      <SwapStrip text={t('strip.saved', { answer: t(strip.answer) })} action={t('undo')} onAction={undo} />
+    ) : strip?.kind === 'known' ? (
+      <SwapStrip text={t('strip.known', { name: strip.name })} action={t('strip.see')} onAction={() => setKnownOpen(strip.name)} />
+    ) : strip?.kind === 'badge' ? (
+      <SwapStrip text={t('strip.badge', { name: strip.name })} />
+    ) : strip?.kind === 'failed' ? (
+      <SwapStrip
+        text={t('failed')}
+        action={t('retry')}
+        onAction={() => {
+          setStrip(null)
+          retryFailed()
+        }}
+      />
+    ) : null
+
+  const known = <KnownSheet name={knownOpen} onClose={() => setKnownOpen(null)} />
 
   const plain = (body: ReactNode) => (
     <SwapShell>
       <SwapHeader onHelp={onHelp} />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{body}</div>
+      {known}
     </SwapShell>
   )
   if (phase === 'trained') return <Trained onStart={() => setPhase('cards')} />
@@ -786,10 +868,21 @@ function Deck({ onHelp }: { onHelp: () => void }) {
         }}
       />
     )
-  if (pause) return plain(<div className="px-4 pb-4"><PauseCard looks={sessionLooks} onContinue={loadNext} /></div>)
+  if (pause)
+    return plain(
+      <div className="px-4 pb-4">
+        <PauseCard
+          looks={sessionLooks}
+          onContinue={() => {
+            setPause(false)
+            void flow.reload(pending.current ? [pending.current.card.id] : [])
+          }}
+        />
+      </div>,
+    )
   if (phase === 'welcome' && !nothingToPractice) return <DeckSkeleton onHelp={onHelp} />
-  if (!guiding && flow.status === 'searching') return <DeckSkeleton onHelp={onHelp} line={t('searching')} />
-  if (!guiding && flow.status === 'loading') return <DeckSkeleton onHelp={onHelp} />
+  if (!guiding && flow.status === 'searching') return <DeckSkeleton onHelp={onHelp} line={t('searching')} strip={stripView} />
+  if (!guiding && flow.status === 'loading') return <DeckSkeleton onHelp={onHelp} strip={stripView} />
   if (!guiding && flow.status === 'error')
     return plain(
       <EmptyState
@@ -804,20 +897,24 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   if (!card) return plain(<EmptyState art={<IconCards size={56} className="text-accent" />} title={t('done')} body={t('doneBody')} />)
 
   return (
-    <SwapCard
-      key={card.id}
-      card={card}
-      img={img}
-      step={lesson ? t('guide.step', { n: lessonIndex + 1, total: lessons.length }) : null}
-      lesson={lesson?.lesson ?? null}
-      lessonMarks={lesson?.marks ?? NO_MARKS}
-      lastLesson={!!lesson && lessonIndex + 1 === lessons.length}
-      showGestureHint={sessionLooks === 0 || idle}
-      onHelp={onHelp}
-      onVoted={onVoted}
-      onStale={loadNext}
-      onNext={loadNext}
-    />
+    <>
+      <SwapCard
+        key={card.id}
+        card={card}
+        img={img}
+        step={lesson ? t('guide.step', { n: lessonIndex + 1, total: lessons.length }) : null}
+        lesson={lesson?.lesson ?? null}
+        lessonMarks={lesson?.marks ?? NO_MARKS}
+        lastLesson={!!lesson && lessonIndex + 1 === lessons.length}
+        strip={stripView}
+        onHelp={onHelp}
+        onChoosing={onChoosing}
+        onAnswer={onAnswer}
+        onLessonStale={nextLesson}
+        onLessonNext={nextLesson}
+      />
+      {known}
+    </>
   )
 }
 

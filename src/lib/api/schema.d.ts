@@ -1535,6 +1535,7 @@ export interface paths {
                     explore?: boolean;
                     known?: boolean;
                     open?: boolean;
+                    not?: string;
                 };
                 header?: never;
                 path?: never;
@@ -2733,6 +2734,104 @@ export interface paths {
                     };
                 };
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/cards/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            label: string;
+                            reveal: {
+                                your_choice: "moves" | "still" | "unsure";
+                                looked: number;
+                                outcome: ("open" | "moves" | "still" | "undecided") | null;
+                                kind: string;
+                                band: string;
+                                size_arcmin: number;
+                                tile: number;
+                                size_px: number;
+                                frames: {
+                                    t: string;
+                                    mjd: number;
+                                    n_exp: number;
+                                    wl_min: number;
+                                    wl_max: number;
+                                }[];
+                                known: {
+                                    name: string;
+                                    V: number | null;
+                                    rate_arcsec_h: number | null;
+                                } | null;
+                                rate_arcsec_h: number | null;
+                                ra: number;
+                                dec: number;
+                                marks: {
+                                    u: number;
+                                    v: number;
+                                }[];
+                                control: {
+                                    truth: string;
+                                    correct: boolean | null;
+                                } | null;
+                                p_real: number | null;
+                                votes: {
+                                    real: number;
+                                    artifact: number;
+                                    unsure: number;
+                                };
+                                status: string;
+                            };
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };

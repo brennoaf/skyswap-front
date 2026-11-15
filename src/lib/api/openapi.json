@@ -6264,6 +6264,15 @@
             "in": "query",
             "name": "open",
             "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "in": "query",
+            "name": "not",
+            "required": false
           }
         ],
         "responses": {
@@ -9372,6 +9381,346 @@
             }
           },
           "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/cards/{id}": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "label",
+                    "reveal"
+                  ],
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "reveal": {
+                      "type": "object",
+                      "required": [
+                        "your_choice",
+                        "looked",
+                        "outcome",
+                        "kind",
+                        "band",
+                        "size_arcmin",
+                        "tile",
+                        "size_px",
+                        "frames",
+                        "known",
+                        "rate_arcsec_h",
+                        "ra",
+                        "dec",
+                        "marks",
+                        "control",
+                        "p_real",
+                        "votes",
+                        "status"
+                      ],
+                      "properties": {
+                        "your_choice": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "moves"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "still"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "unsure"
+                              ]
+                            }
+                          ]
+                        },
+                        "looked": {
+                          "type": "integer"
+                        },
+                        "outcome": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "open"
+                                  ]
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "moves"
+                                  ]
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "still"
+                                  ]
+                                },
+                                {
+                                  "type": "string",
+                                  "enum": [
+                                    "undecided"
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "kind": {
+                          "type": "string"
+                        },
+                        "band": {
+                          "type": "string"
+                        },
+                        "size_arcmin": {
+                          "type": "number"
+                        },
+                        "tile": {
+                          "type": "integer"
+                        },
+                        "size_px": {
+                          "type": "integer"
+                        },
+                        "frames": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "t",
+                              "mjd",
+                              "n_exp",
+                              "wl_min",
+                              "wl_max"
+                            ],
+                            "properties": {
+                              "t": {
+                                "type": "string"
+                              },
+                              "mjd": {
+                                "type": "number"
+                              },
+                              "n_exp": {
+                                "type": "integer"
+                              },
+                              "wl_min": {
+                                "type": "number"
+                              },
+                              "wl_max": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        "known": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "required": [
+                                "name",
+                                "V",
+                                "rate_arcsec_h"
+                              ],
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "V": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "rate_arcsec_h": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "rate_arcsec_h": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "ra": {
+                          "type": "number"
+                        },
+                        "dec": {
+                          "type": "number"
+                        },
+                        "marks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "u",
+                              "v"
+                            ],
+                            "properties": {
+                              "u": {
+                                "type": "number"
+                              },
+                              "v": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        "control": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "required": [
+                                "truth",
+                                "correct"
+                              ],
+                              "properties": {
+                                "truth": {
+                                  "type": "string"
+                                },
+                                "correct": {
+                                  "anyOf": [
+                                    {
+                                      "type": "boolean"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "p_real": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "votes": {
+                          "type": "object",
+                          "required": [
+                            "real",
+                            "artifact",
+                            "unsure"
+                          ],
+                          "properties": {
+                            "real": {
+                              "type": "integer"
+                            },
+                            "artifact": {
+                              "type": "integer"
+                            },
+                            "unsure": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
             "description": "Default Response",
             "content": {
               "application/json": {

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { useCardGestures } from '@/components/classify/card-gestures'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
-import { IconPause, IconPlay } from '@/components/icons'
+import { IconDefect, IconMoves, IconPause, IconPlay, IconQuestion, IconSliders, IconStill } from '@/components/icons'
 import { PhotoStrip } from '@/components/player/player-bar'
 import type { Playback } from '@/components/player/use-playback'
 import { Skeleton } from '@/components/ui/primitives'
@@ -22,6 +22,7 @@ const SPEED_CHOICES = [
 export const swapButton = {
   big: 'flex h-[60px] min-w-0 flex-1 items-center justify-center rounded-2xl border border-divider bg-bg-elevated px-2 text-center text-[18px] font-semibold leading-tight active:bg-surface-pressed disabled:opacity-50',
   mid: 'flex h-12 min-w-0 flex-1 items-center justify-center rounded-2xl bg-surface px-2 text-center text-[16px] font-semibold leading-tight active:bg-surface-pressed disabled:opacity-50',
+  toggle: (on: boolean) => cx('flex h-12 min-w-0 flex-1 items-center justify-center rounded-2xl px-2 text-center text-[15px] font-semibold leading-tight', on ? 'bg-accent text-on-accent active:bg-accent-pressed' : 'bg-surface active:bg-surface-pressed'),
   primary: 'flex h-[60px] min-w-0 flex-1 items-center justify-center rounded-2xl bg-accent px-2 text-center text-[18px] font-semibold leading-tight text-on-accent active:bg-accent-pressed disabled:opacity-50',
 }
 
@@ -56,7 +57,6 @@ export function SwapStage({
   onCancel,
   onTap,
   onHold,
-  onTouch,
   overlay,
 }: {
   img: HTMLImageElement | null
@@ -71,7 +71,6 @@ export function SwapStage({
   onCancel: () => void
   onTap: (u: number, v: number) => void
   onHold: (held: boolean) => void
-  onTouch?: () => void
   overlay?: ReactNode
 }) {
   const t = useTranslations('classify')
@@ -112,7 +111,6 @@ export function SwapStage({
     <div className="relative z-10 flex shrink-0 justify-center" data-testid="swap-photo-slot">
       <motion.div
         {...gestures.bind}
-        onPointerDownCapture={onTouch}
         style={{ x, y, rotate, width: 'var(--swap-photo)', height: 'var(--swap-photo)' }}
         className="relative touch-none select-none overflow-hidden bg-media-bg"
         data-testid="swap-photo"
@@ -145,8 +143,8 @@ export function PhotoBar({ playback, offsets, onTools }: { playback: Playback; o
         </p>
         <p className="truncate text-[14px] leading-tight text-text-secondary">{label(offsets[playback.index] ?? 0)}</p>
       </div>
-      <button type="button" onClick={onTools} className="h-11 shrink-0 rounded-full bg-surface px-4 text-[15px] font-semibold active:bg-surface-pressed">
-        {t('tools.open')}
+      <button type="button" aria-label={t('tools.open')} onClick={onTools} className="flex size-12 shrink-0 items-center justify-center rounded-full bg-surface text-text active:bg-surface-pressed">
+        <IconSliders size={26} />
       </button>
     </div>
   )
@@ -199,17 +197,17 @@ export function ToolsPanel({
           onPointerUp={playback.stopBlink}
           onPointerCancel={playback.stopBlink}
           onContextMenu={(e) => e.preventDefault()}
-          className={cx(swapButton.mid, 'touch-none select-none text-[15px]', playback.blinking && 'bg-accent text-on-accent')}
+          className={cx(swapButton.toggle(playback.blinking), 'touch-none select-none')}
         >
           {t('tools.blink')}
         </button>
-        <button type="button" aria-pressed={row === 1} onClick={() => onRow(row === 0 ? 1 : 0)} className={cx(swapButton.mid, 'text-[15px]', row === 1 && 'bg-accent text-on-accent active:bg-accent-pressed')}>
+        <button type="button" aria-pressed={row === 1} onClick={() => onRow(row === 0 ? 1 : 0)} className={swapButton.toggle(row === 1)}>
           {t('tools.diff')}
         </button>
       </div>
       <div className="flex shrink-0 gap-2">
         {hints && (
-          <button type="button" aria-pressed={hints.on} onClick={() => hints.onChange(!hints.on)} className={cx(swapButton.mid, 'text-[15px]', hints.on && 'bg-accent text-on-accent active:bg-accent-pressed')}>
+          <button type="button" aria-pressed={hints.on} onClick={() => hints.onChange(!hints.on)} className={swapButton.toggle(hints.on)}>
             {t('flashlight.button')}
           </button>
         )}
@@ -226,20 +224,37 @@ export function AnswerPanel({ labels, disabled, onChoose }: { labels: { still: s
     <div className="mt-auto flex shrink-0 flex-col gap-2 px-4 pb-4 pt-1">
       <div className="flex gap-2">
         <button type="button" disabled={disabled} onClick={() => onChoose('still')} className={swapButton.big}>
+          <IconStill size={26} className="mr-1 shrink-0" />
           {labels.still}
         </button>
         <button type="button" disabled={disabled} onClick={() => onChoose('moves')} className={swapButton.big}>
+          <IconMoves size={26} className="mr-1 shrink-0" />
           {labels.moves}
         </button>
       </div>
       <div className="flex gap-2">
         <button type="button" disabled={disabled} onClick={() => onChoose('glitch')} className={swapButton.mid}>
+          <IconDefect size={24} className="mr-1 shrink-0" />
           {labels.glitch}
         </button>
         <button type="button" disabled={disabled} onClick={() => onChoose('unsure')} className={swapButton.mid}>
+          <IconQuestion size={24} className="mr-1 shrink-0" />
           {labels.unsure}
         </button>
       </div>
+    </div>
+  )
+}
+
+export function SwapStrip({ text, action, onAction }: { text: string; action?: string; onAction?: () => void }) {
+  return (
+    <div role="status" className="flex h-[60px] shrink-0 items-center gap-2 pl-4 pr-2 text-[16px] font-medium leading-tight" data-testid="swap-strip">
+      <span className="min-w-0 flex-1">{text}</span>
+      {action && (
+        <button type="button" onClick={onAction} className="h-11 shrink-0 rounded-xl px-3 text-[16px] font-semibold text-link active:bg-surface-pressed">
+          {action}
+        </button>
+      )}
     </div>
   )
 }

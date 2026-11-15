@@ -25,7 +25,7 @@ export function SwapHelpSheet({ open, onClose }: { open: boolean; onClose: () =>
             <p className="mt-1 text-[16px] leading-snug text-text-secondary">{t(`${s}Body`)}</p>
           </section>
         ))}
-        <button type="button" onClick={onClose} className={swapButton.mid}>
+        <button type="button" onClick={onClose} className={`${swapButton.mid} flex-none`}>
           {t('ok')}
         </button>
       </div>
@@ -46,7 +46,7 @@ function Row({ voice, name, children, action }: { voice: Voice; name: string; ch
   )
 }
 
-function TechnicalData({ reveal }: { reveal: Reveal }) {
+export function TechnicalData({ reveal }: { reveal: Reveal }) {
   const t = useTranslations('classify.about')
   const fmt = useFmt()
   const label = useOffsetLabel()
@@ -83,41 +83,20 @@ function TechnicalData({ reveal }: { reveal: Reveal }) {
   )
 }
 
-export function UnderstandSheet({ open, onClose, reveal, answer, verdict, hasHints, onShowComputer }: { open: boolean; onClose: () => void; reveal: Reveal; answer: Answer; verdict: Verdict; hasHints: boolean; onShowComputer: (() => void) | null }) {
+export function UnderstandSheet({ open, onClose, reveal, answer, verdict }: { open: boolean; onClose: () => void; reveal: Reveal; answer: Answer; verdict: Verdict }) {
   const t = useTranslations('classify')
-  const others = reveal.votes.real + reveal.votes.artifact + reveal.votes.unsure > 1
-  const sky = reveal.kind === 'sky'
   return (
     <Sheet open={open} onClose={onClose} title={t('understand.title')}>
       <div className="px-4 pb-4 pt-1">
         <Row voice="you" name={t('understand.you')}>
           {t(answer)}
         </Row>
-        {(!sky || hasHints) && (
-          <Row
-            voice="program"
-            name={t('understand.computer')}
-            action={
-              onShowComputer && (
-                <button type="button" onClick={onShowComputer} className="inline-flex min-h-11 shrink-0 items-center text-note font-semibold text-link">
-                  {t('understand.showOnPhoto')}
-                </button>
-              )
-            }
-          >
-            {sky ? t('understand.computerHints') : t('understand.computerFound', { guess: t(`guesses.${reveal.kind}`) })}
-          </Row>
-        )}
-        {verdict.truth && (
-          <Row voice="known" name={t('understand.right')}>
-            {t(`understand.${TRUTH_WORD[verdict.truth]}`)}
-          </Row>
-        )}
-        {!verdict.truth && others && (
-          <Row voice="others" name={t('understand.others')}>
-            {t('understand.othersCount', { moves: reveal.votes.real, still: reveal.votes.artifact, unsure: reveal.votes.unsure })}
-          </Row>
-        )}
+        <Row voice="program" name={t('understand.computer')}>
+          {t('understand.computerFound', { guess: t(`guesses.${reveal.kind}`) })}
+        </Row>
+        <Row voice="known" name={t('understand.right')}>
+          {t(`understand.${TRUTH_WORD[verdict.truth]}`)}
+        </Row>
         <h3 className="mt-4 text-[16px] font-bold">{t('understand.why')}</h3>
         <p className="mt-1 text-[16px] leading-snug text-text-secondary">{t(`understand.${verdict.why}`)}</p>
         <details className="mt-4 border-t-[0.5px] border-divider pt-1">
@@ -125,6 +104,20 @@ export function UnderstandSheet({ open, onClose, reveal, answer, verdict, hasHin
           <TechnicalData reveal={reveal} />
         </details>
         <button type="button" onClick={onClose} className={`${swapButton.mid} mt-3 w-full`}>
+          {t('understand.close')}
+        </button>
+      </div>
+    </Sheet>
+  )
+}
+
+export function KnownSheet({ name, onClose }: { name: string | null; onClose: () => void }) {
+  const t = useTranslations('classify')
+  return (
+    <Sheet open={!!name} onClose={onClose} title={t('strip.knownTitle', { name: name ?? '' })}>
+      <div className="flex flex-col gap-4 px-4 py-4">
+        <p className="text-[16px] leading-snug text-text-secondary">{t('strip.knownBody')}</p>
+        <button type="button" onClick={onClose} className={`${swapButton.mid} flex-none`}>
           {t('understand.close')}
         </button>
       </div>

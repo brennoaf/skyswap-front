@@ -643,30 +643,21 @@
     "photoAlt": "Sky photo {n} of {total}, {when}",
     "time": {
       "first": "first photo",
-      "seconds": "{n} s after the first photo",
-      "minutes": "{n} min after the first photo",
-      "hours": "{h} h after the first photo",
-      "hoursMinutes": "{h} h {m} min after the first photo",
-      "days": "{n, plural, one {# day} other {# days}} after the first photo"
-    },
-    "hints": {
-      "swipe": "Swipe the photo: right for yes, left for no, up if you are not sure."
+      "seconds": "{n} s after the 1st",
+      "minutes": "{n} min after the 1st",
+      "hours": "{h} h after the 1st",
+      "hoursMinutes": "{h} h {m} min after the 1st",
+      "days": "{n, plural, one {# day} other {# days}} after the 1st"
     },
     "guide": {
       "step": "Practice {n} of {total}",
-      "look": "Watch the photos go by. Does any spot change place?",
-      "answer": "Now answer. Swiping the photo to the right works too.",
-      "still": "Your turn. If nothing moved, tap or swipe left.",
-      "glitch": "Last one. Does the spot in the circle show up in every photo?",
+      "look": "Does any spot change place?",
+      "answer": "Tap or swipe the photo to the right.",
+      "still": "If nothing moved, swipe left.",
+      "glitch": "Does the spot in the circle show up in every photo?",
       "saw": "I saw the spot",
       "show": "I didn't, show me",
       "shown": "The spot jumps from one circle to the other"
-    },
-    "outcome": {
-      "open": "{n, plural, one {# person} other {# people}} looked so far. Still early, so your look matters.",
-      "moves": "Most likely a moving object",
-      "still": "Probably nothing moved",
-      "undecided": "People see this one differently"
     },
     "guesses": {
       "mover": "a moving object",
@@ -677,7 +668,6 @@
       "orphan": "a spot with no match in the other photos"
     },
     "glitch": "Photo defect",
-    "tooFast": "That was too fast, so it didn't count.",
     "next": "Next card",
     "done": "You've seen all the cards",
     "doneBody": "New photos arrive when NASA releases new data.",
@@ -686,8 +676,8 @@
     "about": {
       "open": "More about these photos",
       "title": "About these photos",
-      "chance": "Estimated chance it moves: {pct}%",
-      "chanceHint": "Our program's running estimate, which updates as more people answer. It starts low because most dots turn out not to move.",
+      "chance": "The computer's guess: {pct}% chance it moved",
+      "chanceHint": "An estimate that changes as more people answer, and it can be wrong. It starts low because most spots turn out not to move.",
       "photos": "When and in which colour each photo was taken",
       "field": "Each photo shows {size} arcminutes of sky (arcmin, 1/60 of a degree), in colour band {band} (infrared, shown in grey).",
       "where": "Where in the sky",
@@ -716,12 +706,12 @@
     "flashlight": {
       "button": "Hints",
       "kinds": {
-        "appeared": "Something here wasn't there in the other photos",
-        "missing": "Something here disappeared",
-        "flash": "A dot in one photo only. Often a camera defect."
+        "appeared": "Guess: something here was not in the other photos.",
+        "missing": "Guess: something here is gone.",
+        "flash": "Guess: a spot in one photo only. It may be a defect."
       },
-      "elsewhere": "Hints are on other photos: step through them",
-      "none": "No hints for this card. Trust your eyes."
+      "elsewhere": "The guesses are in other photos.",
+      "none": "No guesses for this card."
     },
     "help": {
       "open": "How to look",
@@ -732,29 +722,15 @@
       "answerTitle": "How to answer",
       "answerBody": "Tap a button or swipe the photo: right for \"Yes, it moved\", left for \"Nothing moved\", up for \"Not sure\".",
       "betterTitle": "How to look closer",
-      "betterBody": "Hold the photo to stop it. Let go to continue. Tap twice to zoom in. Settings has the speed and the differences.",
+      "betterBody": "Hold the photo to stop it. Let go to continue. Tap twice to zoom in.",
       "defectTitle": "What a defect is",
       "defectBody": "A spot that shows up in one photo only is usually a camera defect.",
       "emptyTitle": "Finding nothing is normal",
       "emptyBody": "Most cards have nothing new. Saying \"Nothing moved\" helps too."
     },
     "practice": "Practice: no points.",
-    "confirm": {
-      "said": "Your answer: {choice}",
-      "undo": "Undo",
-      "see": "See result",
-      "tap": "See where? Tap the spot on the photo if you like. You can still undo.",
-      "canUndo": "You can still undo.",
-      "marked": "Spot marked. Tap again to change it.",
-      "saving": "Saving",
-      "failed": "Couldn't save your answer.",
-      "retry": "Try again"
-    },
     "newBadge": "New badge: {name}.",
     "changesShort": "Differences",
-    "tips": {
-      "short": "Drag a little further to answer."
-    },
     "leave": "Leave",
     "tools": {
       "open": "Settings",
@@ -778,18 +754,11 @@
       "defectWrong": "It didn't move: it's a photo defect",
       "stillOk": "You got it: nothing moved",
       "stillWrong": "Nothing moved here",
-      "open": "No answer key for this one yet",
-      "likelyMoves": "It looks like it moved",
-      "likelyStill": "It looks like nothing moved",
-      "undecided": "People still disagree",
       "bodyMovesOk": "It shows up somewhere else in each photo. The green diamond shows where.",
       "bodyMovesWrong": "Look again: it shows up somewhere else in each photo.",
       "bodyDefect": "The spot shows up in one photo only. It is usually a particle hitting the camera.",
       "bodyTrail": "It is a line across the photo. It is usually a passing satellite or a camera defect.",
-      "bodyStill": "All the stars stayed where they were. Most cards are like this.",
-      "bodyOpen": "Answer saved. If more people see movement here, it goes on the candidate list.",
-      "bodyLikely": "No answer key yet. This is what the answers say so far.",
-      "quiet": "Most cards have nothing new, and that is normal. Every look helps."
+      "bodyStill": "All the stars stayed where they were. Most cards are like this."
     },
     "understand": {
       "open": "Understand",
@@ -797,11 +766,7 @@
       "you": "You",
       "computer": "Computer",
       "computerFound": "found {guess}",
-      "computerHints": "these are the hints it marked",
       "right": "Right answer",
-      "others": "Other people",
-      "othersCount": "{moves} saw it move, {still} did not, {unsure} {unsure, plural, one {was} other {were}} not sure",
-      "showOnPhoto": "Show on photo",
       "why": "Why?",
       "technical": "Technical data",
       "close": "Close",
@@ -810,8 +775,7 @@
       "truthStill": "Nothing moved",
       "whyMoves": "Stars always stay in the same place. An asteroid is closer to us and travels between one photo and the next.",
       "whyDefect": "What is real shows up in almost every photo. What shows up only once is usually a defect.",
-      "whyStill": "Almost no card has anything new. Saying \"Nothing moved\" helps the research too.",
-      "whyOpen": "Nobody has checked this piece of sky yet. That is why people's answers matter."
+      "whyStill": "Almost no card has anything new. Saying \"Nothing moved\" helps the research too."
     },
     "again": "See again",
     "finish": "Finish practice",
@@ -827,6 +791,23 @@
       "body1": "Now it counts: your answers add up with other people's and go into the research.",
       "body2": "Most cards have nothing new, and that is normal. Every look helps.",
       "start": "Start"
+    },
+    "undo": "Undo",
+    "failed": "Couldn't save your answer.",
+    "retry": "Try again",
+    "mark": {
+      "said": "Your answer: {choice}",
+      "where": "See where? Tap the spot.",
+      "marked": "Spot marked. Tap again to change it.",
+      "next": "Next"
+    },
+    "strip": {
+      "saved": "Saved: {answer}",
+      "known": "That spot is known: asteroid {name}",
+      "see": "See",
+      "badge": "New badge: {name}",
+      "knownTitle": "Asteroid {name}",
+      "knownBody": "This spot matches an asteroid already in the catalogues. Your answer was saved as you gave it."
     }
   },
   "reels": {
@@ -1265,7 +1246,7 @@
     },
     "myCards": {
       "title": "All my answers",
-      "lead": "Every card you answered and what happened next. Nothing here expires.",
+      "lead": "Every card you answered. Tap one to see more.",
       "answers": {
         "real": "Your answer: Yes, it moved",
         "artifact": "Your answer: Nothing moved",
@@ -1273,14 +1254,24 @@
       },
       "status": {
         "practice": "Practice",
-        "open": "Still open",
-        "artifact": "Nothing moving",
-        "inconclusive": "No agreement",
+        "answered": "Answered",
+        "open": "Open",
+        "artifact": "Answers say nothing moved",
+        "inconclusive": "Answers disagree",
         "real": "Candidate",
-        "gold": "Practice"
+        "gold": "Answered"
       },
       "emptyTitle": "You haven't answered any photos yet",
-      "emptyAction": "Answer a card"
+      "emptyAction": "Answer a card",
+      "detail": {
+        "title": "About this card",
+        "others": "Answers so far",
+        "othersCount": "{moves} saw it move, {still} did not, {unsure} {unsure, plural, one {was} other {were}} not sure",
+        "guess": "The computer's guess",
+        "guessNote": "It is only a guess and can be wrong.",
+        "catalog": "In the catalogues",
+        "failed": "Couldn't open it now. Try again."
+      }
     },
     "checksDone": "{done} of {total} checks done",
     "actionsLabel": "What you can do",

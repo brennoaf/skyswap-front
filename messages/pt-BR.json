@@ -649,24 +649,15 @@
       "hoursMinutes": "{h} h {m} min depois da 1ª",
       "days": "{n, plural, one {# dia} other {# dias}} depois da 1ª"
     },
-    "hints": {
-      "swipe": "Deslize a foto: direita para sim, esquerda para não, para cima se não souber."
-    },
     "guide": {
       "step": "Treino {n} de {total}",
-      "look": "Olhe as fotos passando. Algum ponto muda de lugar?",
-      "answer": "Agora responda. Deslizar a foto para a direita também vale.",
-      "still": "Sua vez. Se nada mudou, toque ou deslize para a esquerda.",
-      "glitch": "Último. O ponto no círculo aparece em todas as fotos?",
+      "look": "Algum ponto muda de lugar?",
+      "answer": "Toque ou deslize a foto para a direita.",
+      "still": "Se nada mudou, deslize para a esquerda.",
+      "glitch": "O ponto no círculo aparece em todas as fotos?",
       "saw": "Vi o ponto",
       "show": "Não vi, me mostre",
       "shown": "O ponto salta de um círculo para o outro"
-    },
-    "outcome": {
-      "open": "{n, plural, one {# pessoa olhou} other {# pessoas olharam}} até agora. Ainda é cedo, então sua olhada importa.",
-      "moves": "Provavelmente um objeto em movimento",
-      "still": "Provavelmente nada mudou de lugar",
-      "undecided": "As pessoas veem este de jeitos diferentes"
     },
     "guesses": {
       "mover": "um objeto em movimento",
@@ -677,7 +668,6 @@
       "orphan": "um ponto sem par nas outras fotos"
     },
     "glitch": "Defeito na foto",
-    "tooFast": "Foi rápido demais, por isso não contou.",
     "next": "Próximo cartão",
     "done": "Você já viu todos os cartões",
     "doneBody": "Novas fotos chegam quando a NASA publica dados novos.",
@@ -686,8 +676,8 @@
     "about": {
       "open": "Mais sobre estas fotos",
       "title": "Sobre estas fotos",
-      "chance": "Chance estimada de ter mudado de lugar: {pct}%",
-      "chanceHint": "A estimativa do nosso programa, que muda conforme mais pessoas respondem. Ela começa baixa porque a maioria dos pontos acaba não mudando de lugar.",
+      "chance": "Palpite do computador: {pct}% de chance de ter mudado de lugar",
+      "chanceHint": "É uma estimativa que muda conforme mais pessoas respondem, e pode errar. Ela começa baixa porque a maioria dos pontos acaba não mudando de lugar.",
       "photos": "Quando e em qual cor cada foto foi feita",
       "field": "Cada foto mostra {size} minutos de arco de céu (arcmin, 1/60 de grau), na banda de cor {band} (infravermelho, mostrado em cinza).",
       "where": "Onde no céu",
@@ -716,12 +706,12 @@
     "flashlight": {
       "button": "Dicas",
       "kinds": {
-        "appeared": "Algo aqui não estava nas outras fotos",
-        "missing": "Algo aqui sumiu",
-        "flash": "Um ponto em só uma foto. Muitas vezes é um defeito da câmera."
+        "appeared": "Palpite: algo aqui não estava nas outras fotos.",
+        "missing": "Palpite: algo aqui sumiu.",
+        "flash": "Palpite: um ponto em uma foto só. Pode ser defeito."
       },
-      "elsewhere": "As dicas estão em outras fotos: passe por elas",
-      "none": "Sem dicas para este cartão. Confie nos seus olhos."
+      "elsewhere": "Os palpites estão em outras fotos.",
+      "none": "Sem palpites neste cartão."
     },
     "help": {
       "open": "Como olhar",
@@ -732,29 +722,15 @@
       "answerTitle": "Como responder",
       "answerBody": "Toque em um botão ou deslize a foto: direita para \"Sim, mudou\", esquerda para \"Nada mudou\", para cima para \"Não sei dizer\".",
       "betterTitle": "Como olhar melhor",
-      "betterBody": "Segure a foto para parar. Solte para continuar. Toque duas vezes para aproximar. Em Ajustes você muda a velocidade e vê as diferenças.",
+      "betterBody": "Segure a foto para parar. Solte para continuar. Toque duas vezes para aproximar.",
       "defectTitle": "O que é defeito",
       "defectBody": "Um ponto que aparece em uma foto só costuma ser defeito da câmera.",
       "emptyTitle": "É normal não achar nada",
       "emptyBody": "A maioria dos cartões não tem novidade. Dizer \"Nada mudou\" também ajuda."
     },
     "practice": "Treino: sem pontos.",
-    "confirm": {
-      "said": "Sua resposta: {choice}",
-      "undo": "Desfazer",
-      "see": "Ver resultado",
-      "tap": "Viu onde? Toque no ponto da foto, se quiser. Ainda dá para desfazer.",
-      "canUndo": "Ainda dá para desfazer.",
-      "marked": "Ponto marcado. Toque de novo para mudar.",
-      "saving": "Salvando",
-      "failed": "Não deu para salvar sua resposta.",
-      "retry": "Tentar de novo"
-    },
     "newBadge": "Selo novo: {name}.",
     "changesShort": "Diferenças",
-    "tips": {
-      "short": "Arraste um pouco mais para responder."
-    },
     "leave": "Sair",
     "tools": {
       "open": "Ajustes",
@@ -778,18 +754,11 @@
       "defectWrong": "Não mudou: é um defeito na foto",
       "stillOk": "Acertou: nada mudou de lugar",
       "stillWrong": "Aqui nada mudou de lugar",
-      "open": "Este ainda não tem gabarito",
-      "likelyMoves": "Parece que mudou de lugar",
-      "likelyStill": "Parece que nada mudou",
-      "undecided": "As pessoas ainda discordam",
       "bodyMovesOk": "Ele aparece em outro lugar em cada foto. O losango verde mostra onde.",
       "bodyMovesWrong": "Veja de novo: ele aparece em outro lugar em cada foto.",
       "bodyDefect": "O ponto aparece em uma foto só. Costuma ser uma partícula batendo na câmera.",
       "bodyTrail": "É um risco na foto. Costuma ser um satélite passando ou um defeito da câmera.",
-      "bodyStill": "Todas as estrelas ficaram onde estavam. A maioria dos cartões é assim.",
-      "bodyOpen": "Resposta salva. Se mais gente vir movimento aqui, ele entra na lista de candidatos.",
-      "bodyLikely": "Ainda sem gabarito. É o que as respostas dizem até agora.",
-      "quiet": "A maioria dos cartões não tem novidade, e isso é normal. Cada olhada ajuda."
+      "bodyStill": "Todas as estrelas ficaram onde estavam. A maioria dos cartões é assim."
     },
     "understand": {
       "open": "Entender",
@@ -797,11 +766,7 @@
       "you": "Você",
       "computer": "Computador",
       "computerFound": "achou {guess}",
-      "computerHints": "estas são as dicas que ele marcou",
       "right": "Resposta certa",
-      "others": "Outras pessoas",
-      "othersCount": "{moves, plural, one {# viu} other {# viram}} mudar, {still} não, {unsure, plural, one {# não soube} other {# não souberam}}",
-      "showOnPhoto": "Ver na foto",
       "why": "Por quê?",
       "technical": "Dados técnicos",
       "close": "Fechar",
@@ -810,8 +775,7 @@
       "truthStill": "Nada mudou",
       "whyMoves": "Estrelas ficam sempre no mesmo lugar. Um asteroide está mais perto de nós e anda entre uma foto e outra.",
       "whyDefect": "O que é real aparece em quase todas as fotos. O que aparece uma vez só costuma ser defeito.",
-      "whyStill": "Quase todo cartão não tem novidade. Dizer \"Nada mudou\" também ajuda a pesquisa.",
-      "whyOpen": "Ninguém conferiu este pedaço do céu ainda. É por isso que as respostas das pessoas importam."
+      "whyStill": "Quase todo cartão não tem novidade. Dizer \"Nada mudou\" também ajuda a pesquisa."
     },
     "again": "Ver de novo",
     "finish": "Terminar treino",
@@ -827,6 +791,23 @@
       "body1": "Agora é de verdade: suas respostas se somam às de outras pessoas e entram na pesquisa.",
       "body2": "A maioria dos cartões não tem novidade, e isso é normal. Cada olhada ajuda.",
       "start": "Começar"
+    },
+    "undo": "Desfazer",
+    "failed": "Não deu para salvar sua resposta.",
+    "retry": "Tentar de novo",
+    "mark": {
+      "said": "Sua resposta: {choice}",
+      "where": "Viu onde? Toque no ponto.",
+      "marked": "Ponto marcado. Toque de novo para mudar.",
+      "next": "Próximo"
+    },
+    "strip": {
+      "saved": "Salvo: {answer}",
+      "known": "Aquele ponto é conhecido: asteroide {name}",
+      "see": "Ver",
+      "badge": "Selo novo: {name}",
+      "knownTitle": "Asteroide {name}",
+      "knownBody": "Este ponto bate com um asteroide que já está nos catálogos. Sua resposta foi salva como você respondeu."
     }
   },
   "reels": {
@@ -1265,7 +1246,7 @@
     },
     "myCards": {
       "title": "Todas as minhas respostas",
-      "lead": "Cada cartão que você respondeu e o que aconteceu depois. Nada aqui expira.",
+      "lead": "Cada cartão que você respondeu. Toque em um para ver mais.",
       "answers": {
         "real": "Sua resposta: Sim, mudou",
         "artifact": "Sua resposta: Nada mudou",
@@ -1273,14 +1254,24 @@
       },
       "status": {
         "practice": "Treino",
-        "open": "Ainda em aberto",
-        "artifact": "Nada mudou de lugar",
-        "inconclusive": "Sem acordo",
+        "answered": "Respondido",
+        "open": "Em aberto",
+        "artifact": "As respostas dizem que nada mudou",
+        "inconclusive": "As respostas não concordam",
         "real": "Candidato",
-        "gold": "Treino"
+        "gold": "Respondido"
       },
       "emptyTitle": "Você ainda não respondeu nenhuma foto",
-      "emptyAction": "Responder um cartão"
+      "emptyAction": "Responder um cartão",
+      "detail": {
+        "title": "Sobre este cartão",
+        "others": "Respostas até agora",
+        "othersCount": "{moves, plural, =0 {ninguém viu} one {# viu} other {# viram}} mudar, {still} não, {unsure, plural, =0 {ninguém ficou em dúvida} one {# ficou em dúvida} other {# ficaram em dúvida}}",
+        "guess": "Palpite do computador",
+        "guessNote": "É só um palpite e pode errar.",
+        "catalog": "Nos catálogos",
+        "failed": "Não deu para abrir agora. Tente de novo."
+      }
     },
     "checksDone": "{done} de {total} checagens feitas",
     "actionsLabel": "O que você pode fazer",
