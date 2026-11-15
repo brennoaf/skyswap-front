@@ -5,9 +5,10 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { HomeHint } from '@/components/feed/home-hint'
 import { PostCard } from '@/components/feed/post-card'
+import { SpotSheet } from '@/components/feed/spot-sheet'
 import { CommunitySwitch } from '@/components/community/community-switch'
 import { StoriesRow } from '@/components/feed/stories-row'
-import { IconCheck, IconChevronDown, IconDirect, IconLike } from '@/components/icons'
+import { IconCheck, IconChevronDown, IconDirect, IconLike, IconTarget } from '@/components/icons'
 import { Button, EmptyState, LabChip, Sheet, Skeleton, Wordmark } from '@/components/ui/primitives'
 import { useAlerts, useFeed, useSession, type FeedTab } from '@/lib/api/hooks'
 import { useShare } from '@/lib/share'
@@ -30,6 +31,8 @@ export default function HomePage() {
   const t = useTranslations('home')
   const [tab, setTab] = useState<FeedTab>('for_you')
   const [picker, setPicker] = useState(false)
+  const [spot, setSpot] = useState(false)
+  const ts = useTranslations('spot')
   const { data: user } = useSession()
   const { data: alerts } = useAlerts(!!user)
   const feed = useFeed(tab)
@@ -66,6 +69,9 @@ export default function HomePage() {
           <IconChevronDown className="mb-0.5" />
         </button>
         <div className="flex items-center">
+          <button type="button" aria-label={ts('title')} className="inline-flex size-11 items-center justify-center" onClick={() => setSpot(true)} data-testid="home-spot">
+            <IconTarget />
+          </button>
           <span data-tour="home-lab" className="inline-flex">
             <LabChip href="/lab" label={t('lab')} description={t('labOpen')} />
           </span>
@@ -131,6 +137,7 @@ export default function HomePage() {
       {feed.isFetchingNextPage && <FeedSkeleton />}
       {!feed.hasNextPage && items.length > 0 && <p className="py-8 text-center text-note text-text-secondary">{t('end')}</p>}
 
+      <SpotSheet open={spot} onClose={() => setSpot(false)} />
       <Sheet open={picker} onClose={() => setPicker(false)} title={t('feeds')}>
         <ul className="py-2">
           {TABS.map((k) => (

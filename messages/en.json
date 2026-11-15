@@ -575,7 +575,8 @@
     "failed": "Search failed. Try again in a moment.",
     "coordinates": "Position: {ra}, {dec}",
     "recentSearch": "Search again for {q}",
-    "exploreTile": "Open {name}'s post"
+    "exploreTile": "Open {name}'s post",
+    "targets": "Challenge targets"
   },
   "sky": {
     "title": "Sky spot",

@@ -1,15 +1,18 @@
 'use client'
 
+import { useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { skyHref } from '@/components/feed/spot-sheet'
 import { IconChevronRight, IconClose, IconReel, IconSearch, IconTarget } from '@/components/icons'
 import { Button, Chip, EmptyState, ObjectAvatar, Skeleton } from '@/components/ui/primitives'
 import type { FeedItem, SearchResult } from '@/lib/api/client'
-import { useFeed, useObjects, useSearch } from '@/lib/api/hooks'
-import { formatDec, formatRa } from '@/lib/format'
+import { searchQuery, useFeed, useObject, useObjects, useSearch } from '@/lib/api/hooks'
+import { formatDec, formatRa, formatShortPosition } from '@/lib/format'
+import { directSpot } from '@/lib/search-direct'
 import { useUi } from '@/lib/state/ui'
 import { useFmt } from '@/lib/use-fmt'
 
@@ -80,6 +83,42 @@ function NameChips({ onPick }: { onPick: (name: string) => void }) {
   )
 }
 
+function TargetRow({ id }: { id: string }) {
+  const { data: o } = useObject(id)
+  if (!o) return <RowSkeleton />
+  return (
+    <li>
+      <Link href={skyHref({ ra: o.ra, dec: o.dec, name: o.name, obj: o.id })} className="flex min-h-[60px] items-center gap-3 px-4 py-2 active:bg-surface">
+        <ObjectAvatar src={o.avatar} alt="" size={44} ring={o.has_new_data ? 'new' : 'none'} />
+        <span className="min-w-0 flex-1 leading-tight">
+          <span className="block truncate text-body font-semibold">{o.name}</span>
+          <span className="block truncate text-body tabular-nums text-text-secondary">{formatShortPosition(o.ra, o.dec)}</span>
+        </span>
+        <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
+      </Link>
+    </li>
+  )
+}
+
+function Targets() {
+  const t = useTranslations('search')
+  const objects = useObjects()
+  const ids = (objects.data ?? []).filter((o) => o.official_target).map((o) => o.id)
+  if (!ids.length) return null
+  return (
+    <section className="pb-2" aria-labelledby="targets-title" data-testid="search-targets">
+      <h2 id="targets-title" className="px-4 pb-1 pt-2 text-title-sm font-semibold">
+        {t('targets')}
+      </h2>
+      <ul>
+        {ids.map((id) => (
+          <TargetRow key={id} id={id} />
+        ))}
+      </ul>
+    </section>
+  )
+}
+
 function ExploreGrid() {
   const t = useTranslations('search')
   const objects = useObjects()
@@ -137,6 +176,8 @@ export default function SearchPage() {
   const addRecent = useUi((s) => s.addRecentSearch)
   const clearRecent = useUi((s) => s.clearRecentSearches)
   const search = useSearch(debounced)
+  const queryClient = useQueryClient()
+  const router = useRouter()
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(query.trim()), 350)
@@ -174,6 +215,15 @@ export default function SearchPage() {
           setDebounced(q)
           setSaveFor(q)
           input.current?.blur()
+          void queryClient
+            .fetchQuery(searchQuery(q))
+            .then((r) => {
+              const go = directSpot(r)
+              if (!go || input.current?.value.trim() !== q) return
+              addRecent(r.query)
+              router.push(skyHref(go))
+            })
+            .catch(() => undefined)
         }}
       >
         <label htmlFor="search-q" className="sr-only">
@@ -249,6 +299,7 @@ export default function SearchPage() {
               </ul>
             </section>
           )}
+          <Targets />
           <NameChips onPick={pick} />
           <ExploreGrid />
         </>

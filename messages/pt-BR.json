@@ -575,7 +575,8 @@
     "failed": "A pesquisa falhou. Tente de novo daqui a pouco.",
     "coordinates": "Posição: {ra}, {dec}",
     "recentSearch": "Pesquisar de novo por {q}",
-    "exploreTile": "Abrir o post de {name}"
+    "exploreTile": "Abrir o post de {name}",
+    "targets": "Alvos do desafio"
   },
   "sky": {
     "title": "Ponto do céu",

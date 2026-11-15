@@ -266,13 +266,16 @@ export function useGoals(enabled = true) {
   return useQuery({ queryKey: keys.goals, enabled, queryFn: async () => unwrap(await api.GET('/api/community/goals')).goals, staleTime: 60_000 })
 }
 
-export function useSearch(q: string) {
-  return useQuery({
+export function searchQuery(q: string) {
+  return {
     queryKey: keys.search(q),
-    enabled: q.trim().length > 0,
     queryFn: async () => unwrap(await api.GET('/api/search', { params: { query: { q } } })),
     staleTime: 300_000,
-  })
+  }
+}
+
+export function useSearch(q: string) {
+  return useQuery({ ...searchQuery(q), enabled: q.trim().length > 0 })
 }
 
 export function useSky(ra: number | null, dec: number | null, fov: number, band: string | null) {

@@ -100,3 +100,9 @@ export function monthYear(iso: string | null | undefined, locale: string): strin
   if (Number.isNaN(d.getTime())) return ''
   return d.toLocaleDateString(locale, { month: 'short', year: 'numeric', timeZone: 'UTC' }).replace(/\./g, '').replace(/ de /g, '/')
 }
+
+export function formatShortPosition(ra: number, dec: number): string {
+  const [hh, hm] = sexagesimal((((ra % 360) + 360) % 360) / 15, 0)
+  const [dd, dm] = sexagesimal(Math.abs(dec), 0)
+  return `${String(hh % 24).padStart(2, '0')}h ${String(hm).padStart(2, '0')}m, ${dec < 0 ? '−' : '+'}${String(dd).padStart(2, '0')}° ${String(dm).padStart(2, '0')}′`
+}
