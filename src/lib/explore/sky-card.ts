@@ -4,6 +4,7 @@ import { INDEX_BASE, pointHits, type PointSize } from './lookup'
 
 export const SKY_HOSTS = ['/api/s3/']
 export const SKY_CROP = '/api/crop/'
+const KEEP_CHECK_MS = 250
 export const SKY_FOV_DEG = 0.105
 export const MAX_VISITS = 4
 export const MIN_VISITS = 3
@@ -221,6 +222,8 @@ const rowId = (h: { key: string; mjd: number }) => `${h.key}|${h.mjd}`
 
 async function readExposures(ra: number, dec: number, fovDeg: number, band: string, rows: IndexRow[], visitOf: Map<string, number>, keep?: BuildGuard): Promise<SkyExposure[] | null> {
   const got: SkyExposure[] = []
+  const stop = new AbortController()
+  const watch = keep ? setInterval(() => (keep() ? null : stop.abort()), KEEP_CHECK_MS) : undefined
   await skyMovie({
     ra,
     dec,
@@ -232,12 +235,15 @@ async function readExposures(ra: number, dec: number, fovDeg: number, band: stri
     cropBase: SKY_CROP,
     concurrency: 4,
     hits: rows,
+    signal: stop.signal,
     onFrame: (_i, f) => {
       if (keep && !keep()) throw new Error('stopped')
       const lam = Number.isFinite(f.h.lam) ? f.h.lam : (f.h.lam_min + f.h.lam_max) / 2
       got.push({ key: f.h.key, mjd: f.h.mjd, wl_um: Math.round(lam * 1000) / 1000, visit: visitOf.get(rowId(f.h)) ?? 0, img: f.img, variance: f.variance })
     },
-  }).catch(() => null)
+  })
+    .catch(() => null)
+    .finally(() => clearInterval(watch))
   return keep && !keep() ? null : got
 }
 

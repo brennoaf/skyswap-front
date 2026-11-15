@@ -71,7 +71,13 @@ function getRange(url, start, len, stats, net) {
 
 function getCrop(cropBase, key, offs, box, stats, net, span = null) {
   const rice = !span ? '' : span.desc ? `&desc=${span.desc},${span.heap}` : `&rice=${span.start},${span.len},${span.nrows},${span.skip}`
-  return getBytes(`${cropBase}${key}?off=${offs.join(',')}&x0=${box.x0}&y0=${box.y0}&w=${box.w}&h=${box.h}${rice}`, {}, 200, stats, net)
+  return getBytes(`${cropBase}${key}?off=${offs.join(',')}&x0=${box.x0}&y0=${box.y0}&w=${box.w}&h=${box.h}${rice}&pack=s`, {}, 200, stats, net)
+}
+
+export function unshuffle(u8, plane) {
+  const out = new Uint8Array(u8.length), count = plane / 4
+  for (let o = 0; o + plane <= u8.length; o += plane) for (let i = 0; i < count; i++) for (let k = 0; k < 4; k++) out[o + i * 4 + k] = u8[o + k * count + i]
+  return out
 }
 
 function riceSpan(h, y0, rows) {
@@ -123,7 +129,7 @@ export async function fetchEpoch(h, box, host, stats, net) {
   if (net.cropBase && w <= CROP_MAX_PX && rows <= CROP_MAX_PX) {
     const offs = h.flags_rice ? [h.off_image, h.off_var] : [h.off_image, h.off_var, h.off_flags]
     const span = !h.flags_rice ? null : h.flags_ckpt?.length ? riceSpan(h, y0, rows) : { desc: h.off_flags + y0 * 8, heap: h.off_flags + h.flags_theap }
-    const cut = await getCrop(net.cropBase, h.key, offs, box, stats, net, span)
+    const cut = unshuffle(await getCrop(net.cropBase, h.key, offs, box, stats, net, span), rows * w * 4)
     if (cut.length !== 3 * rows * w * 4) throw new Error('short crop')
     return { img: plane(cut, 0, rows * w, 'f32'), variance: plane(cut, 1, rows * w, 'f32'), flags: plane(cut, 2, rows * w, 'i32') }
   }
@@ -154,9 +160,11 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
   hits = pick ? pick(hits) : pickEpochs(hits, maxEpochs)
   const { n, wcs: grid } = referenceGrid(ra, dec, fovDeg)
   const frames = new Array(hits.length)
-  let next = 0, firstFrame = null, failed = 0
+  let next = 0, firstFrame = null, failed = 0, opened = null
+  const gate = new Promise(r => { opened = r })
   const worker = async (wi) => {
-    while (next < hits.length && !halt.signal.aborted) {
+    if (wi > 0) await gate
+    try { while (next < hits.length && !halt.signal.aborted) {
       const i = next++, h = hits[i]
       const box = boxFor(h, grid, n)
       if (!box) continue
@@ -166,7 +174,7 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
         if (halt.signal.aborted) throw e
         failed++
         continue
-      }
+      } finally { opened() }
       const bad = new Uint8Array(raw.img.length)
       for (let k = 0; k < bad.length; k++) bad[k] = ((raw.flags[k] & MASK_VALUE) !== 0 || !Number.isFinite(raw.img[k]) || !Number.isFinite(raw.variance[k])) ? 1 : 0
       const bkg = background(raw.img, bad, box.w, box.h)
@@ -187,7 +195,7 @@ export async function skyMovie({ ra, dec, target = null, fovDeg = 0.1, indexBase
       frames[i] = { h, img: a, variance: v, raw, box, wv }
       if (firstFrame === null) { firstFrame = performance.now() - T0; tm.first_frame_ms = firstFrame }
       onFrame?.(i, frames[i])
-    }
+    } } finally { opened() }
   }
   try {
     await Promise.all(Array.from({ length: concurrency }, (_, wi) => worker(wi)))
