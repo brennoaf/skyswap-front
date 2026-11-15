@@ -692,7 +692,7 @@
     "guide": {
       "step": "Practice {n} of {total}",
       "look": "Watch the photos go by.",
-      "answer": "Now answer: tap Yes or swipe to the right.",
+      "answer": "Now answer: tap Yes.",
       "still": "Watch the photos and answer. Swiping left means No.",
       "glitch": "Watch the circle as the photos go by and choose an answer.",
       "saw": "I saw the spot",
@@ -861,7 +861,7 @@
       "photo": "Photos of the same sky go by here.",
       "play": "Pause to look calmly.",
       "tools": "Change the speed and compare the photos.",
-      "answers": "Tap to answer or swipe the photo."
+      "answers": "Tap to answer."
     },
     "trained": {
       "title": "Practice done",
@@ -919,11 +919,11 @@
       "already": "You already answered this card."
     },
     "strip": {
-      "known": "That spot is known: asteroid {name}",
+      "known": "An automatic check says it may be asteroid {name}",
       "see": "See",
       "badge": "New badge: {name}",
-      "knownTitle": "Asteroid {name}",
-      "knownBody": "This spot matches an asteroid already in the catalogues. Your answer was saved as you gave it.",
+      "knownTitle": "Maybe asteroid {name}",
+      "knownBody": "An automatic catalogue check found asteroid {name} near this spot. It is a machine guess, not a confirmation. Your answer was saved as you gave it.",
       "fast": "Very quick answers do not count. Take your time."
     },
     "state": {
@@ -1249,7 +1249,7 @@
     "notes": "Private notes",
     "notesHint": "Kept only in this browser.",
     "data": "About the data",
-    "dataBody": "SkySwap shows real NASA SPHEREx images from the public data batches QR2 and QR3, kept in NASA's IRSA archive. Infrared light is shown in grey, and any colour you see is false colour. The sky index lists {images} published images, so any spot can be opened. The first look at a deep-field spot, where SPHEREx returns again and again near the ecliptic poles, can take a few seconds while that part of the index downloads; after that it is kept in the browser. Data kit {version}.",
+    "dataBody": "SkySwap shows real images from NASA's SPHEREx telescope, kept in a public NASA archive. Infrared light is shown in grey, and any colour you see is false colour. The sky index lists {images} published images, so any spot can be opened. Spots with many photos can take a few seconds the first time; after that they are kept in the browser. Data kit {version}.",
     "about": "SkySwap is a non-commercial study prototype for the NASA Space Apps 2026 challenge \"Planet X and SPHEREx\". It is not affiliated with NASA or Instagram.",
     "api": "API docs",
     "notesCount": "{n, plural, =0 {No notes saved} one {# note saved} other {# notes saved}}",
@@ -1264,7 +1264,8 @@
     "help": "Help",
     "details": "Details",
     "credit": "Show my nickname in credits",
-    "creditHint": "If off, findings list you as anonymous.",
+    "creditOn": "On: your nickname shows on findings.",
+    "creditOff": "Off: you show as anonymous on findings.",
     "logoutTitle": "Log out of {nickname}?",
     "logoutBody": "There is no password, so you can't come back to this nickname. Your answers stay counted, and your private notes stay in this browser."
   },

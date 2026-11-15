@@ -104,7 +104,7 @@ function CreditControl() {
       </RowIcon>
       <span className="min-w-0 flex-1 leading-tight">
         <span className="block text-ui">{t('credit')}</span>
-        <span className="block text-note text-text-secondary">{t('creditHint')}</span>
+        <span className="block text-note text-text-secondary">{visible ? t('creditOn') : t('creditOff')}</span>
       </span>
       <Switch checked={visible} disabled={set.isPending} onChange={(e) => set.mutate(e.target.checked)} />
     </label>

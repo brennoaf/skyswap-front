@@ -149,15 +149,14 @@ export function LoginForm({ onDone }: { onDone?: () => void }) {
             aria-describedby="nickname-help"
             className="h-full min-w-0 flex-1 bg-transparent pl-0.5 pr-2 text-ui outline-none placeholder:text-text-secondary"
           />
-          {valid && !error ? (
-            <span className="mr-2.5 inline-flex size-6 items-center justify-center rounded-full bg-success text-bg" aria-hidden="true">
+          {valid && !error && (
+            <span className="mr-1 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-success text-bg" aria-hidden="true">
               <IconCheck size={18} />
             </span>
-          ) : (
-            <button type="button" aria-label={t('suggest')} onClick={() => change(suggestNickname(nick))} className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-text-secondary active:bg-surface-pressed">
-              <IconDice size={24} />
-            </button>
           )}
+          <button type="button" aria-label={t('suggest')} onClick={() => change(suggestNickname(nick))} className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-text-secondary active:bg-surface-pressed">
+            <IconDice size={24} />
+          </button>
         </div>
         <p id="nickname-help" aria-live="polite" className={cx('min-h-4 px-4 text-meta', error ? 'text-danger' : 'text-text-secondary')}>
           {error ? t(`errors.${errorKey}`) : nick.length > 0 && nick.length < 3 ? t('tooShort') : ''}

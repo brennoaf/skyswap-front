@@ -146,7 +146,7 @@ export function KnownSheet({ name, onClose }: { name: string | null; onClose: ()
   return (
     <Sheet open={!!name} onClose={onClose} title={t('strip.knownTitle', { name: name ?? '' })}>
       <div className="flex flex-col gap-4 px-4 py-4">
-        <p className="text-[16px] leading-snug text-text-secondary">{t('strip.knownBody')}</p>
+        <p className="text-[16px] leading-snug text-text-secondary">{t('strip.knownBody', { name: name ?? '' })}</p>
         <button type="button" onClick={onClose} className={`${swapButton.mid} flex-none`}>
           {t('understand.close')}
         </button>

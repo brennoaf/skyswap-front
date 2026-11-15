@@ -39,9 +39,7 @@ export default function LabPickerPage() {
                 <ObjectAvatar src={o.avatar} alt="" size={44} />
                 <span className="min-w-0 flex-1 leading-tight">
                   <span className="block truncate text-body font-semibold">{o.name}</span>
-                  <span className="block truncate text-body text-text-secondary">
-                    {o.handle}, {tp.has(kindKey) ? tp(kindKey) : o.kind}
-                  </span>
+                  <span className="block truncate text-body text-text-secondary">{tp.has(kindKey) ? tp(kindKey) : o.kind}</span>
                 </span>
                 <IconChevronRight size={20} className="shrink-0 text-text-secondary" />
               </Link>

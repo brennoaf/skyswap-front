@@ -73,7 +73,7 @@ export function Deck({ userId, onHelp }: { userId: string; onHelp: () => void })
 
   const onSaved = useCallback(
     (r: VoteResult, late: boolean) => {
-      const known = r.reveal.known
+      const known = r.reveal.control ? null : r.reveal.known
       const strips: Strip[] = [...(known ? [{ kind: 'known' as const, name: knownName(known.name) }] : []), ...r.new_badges.map((b) => ({ kind: 'badge' as const, name: tb(`${b}.name`) }))]
       if (r.xp.reason === 'too_fast' && !late && !fastWarned) {
         fastWarned = true

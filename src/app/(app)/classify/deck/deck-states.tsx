@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Button, EmptyState, Skeleton } from '@/components/ui/primitives'
 import { SwapHeader, SwapShell } from '../shell'
 
@@ -42,9 +42,25 @@ export function PauseCard({ looks, onContinue }: { looks: number; onContinue: ()
   )
 }
 
+function useOnline() {
+  const [online, setOnline] = useState(true)
+  useEffect(() => {
+    const sync = () => setOnline(navigator.onLine)
+    sync()
+    window.addEventListener('online', sync)
+    window.addEventListener('offline', sync)
+    return () => {
+      window.removeEventListener('online', sync)
+      window.removeEventListener('offline', sync)
+    }
+  }, [])
+  return online
+}
+
 export function StateScreen({ kind, busy = false, onRetry, onHelp }: { kind: 'failed' | 'slow'; busy?: boolean; onRetry: () => void; onHelp: () => void }) {
   const t = useTranslations('classify')
-  const offline = kind === 'failed' && typeof navigator !== 'undefined' && navigator.onLine === false
+  const online = useOnline()
+  const offline = kind === 'failed' && !online
   return (
     <SwapShell>
       <SwapHeader onHelp={onHelp} />

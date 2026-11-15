@@ -692,7 +692,7 @@
     "guide": {
       "step": "Treino {n} de {total}",
       "look": "Olhe as fotos passando.",
-      "answer": "Agora responda: toque em Sim ou deslize para a direita.",
+      "answer": "Agora responda: toque em Sim.",
       "still": "Olhe as fotos e responda. Deslizar para a esquerda é Não.",
       "glitch": "Olhe o círculo nas fotos passando e escolha uma resposta.",
       "saw": "Vi o ponto",
@@ -861,7 +861,7 @@
       "photo": "As fotos do mesmo céu passam aqui.",
       "play": "Pause para olhar com calma.",
       "tools": "Mude a velocidade e compare as fotos.",
-      "answers": "Toque para responder ou arraste a foto."
+      "answers": "Toque para responder."
     },
     "trained": {
       "title": "Treino concluído",
@@ -919,11 +919,11 @@
       "already": "Você já respondeu este cartão."
     },
     "strip": {
-      "known": "Aquele ponto é conhecido: asteroide {name}",
+      "known": "Segundo uma checagem automática, pode ser o asteroide {name}",
       "see": "Ver",
       "badge": "Selo novo: {name}",
-      "knownTitle": "Asteroide {name}",
-      "knownBody": "Este ponto bate com um asteroide que já está nos catálogos. Sua resposta foi salva como você respondeu.",
+      "knownTitle": "Talvez o asteroide {name}",
+      "knownBody": "Uma checagem automática nos catálogos achou o asteroide {name} perto deste ponto. É um palpite da máquina, não uma confirmação. Sua resposta foi salva como você respondeu.",
       "fast": "Respostas muito rápidas não contam. Olhe com calma."
     },
     "state": {
@@ -1249,7 +1249,7 @@
     "notes": "Notas privadas",
     "notesHint": "Ficam só neste navegador.",
     "data": "Sobre os dados",
-    "dataBody": "O SkySwap mostra imagens reais do SPHEREx, da NASA, dos lotes públicos de dados QR2 e QR3, guardados no arquivo IRSA, da NASA. A luz infravermelha aparece em cinza, e qualquer cor que você vê é cor falsa. O índice do céu lista {images} imagens publicadas, então qualquer ponto pode ser aberto. A primeira olhada num ponto de campo profundo, onde o SPHEREx volta várias e várias vezes perto dos polos da eclíptica, pode levar alguns segundos enquanto essa parte do índice é baixada; depois disso ela fica guardada no navegador. Kit de dados {version}.",
+    "dataBody": "O SkySwap mostra imagens reais do telescópio SPHEREx, da NASA, guardadas num arquivo público da NASA. A luz infravermelha aparece em cinza, e qualquer cor que você vê é cor falsa. O índice do céu lista {images} imagens publicadas, então qualquer ponto pode ser aberto. Pontos muito fotografados podem levar alguns segundos na primeira vez; depois disso ficam guardados no navegador. Kit de dados {version}.",
     "about": "O SkySwap é um protótipo de estudo sem fins comerciais para o desafio \"Planet X and SPHEREx\" do NASA Space Apps 2026. Não tem vínculo com a NASA nem com o Instagram.",
     "api": "Documentação da API",
     "notesCount": "{n, plural, =0 {Nenhuma nota salva} one {# nota salva} other {# notas salvas}}",
@@ -1264,7 +1264,8 @@
     "help": "Ajuda",
     "details": "Detalhes",
     "credit": "Mostrar meu apelido nos créditos",
-    "creditHint": "Desligado, você aparece como anônimo nos achados.",
+    "creditOn": "Ligado: seu apelido aparece nos achados.",
+    "creditOff": "Desligado: você aparece como anônimo nos achados.",
     "logoutTitle": "Sair de {nickname}?",
     "logoutBody": "Não tem senha, então não dá para voltar a este apelido. Suas respostas continuam valendo e suas notas privadas ficam neste navegador."
   },
