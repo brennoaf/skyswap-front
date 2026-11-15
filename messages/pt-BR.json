@@ -551,8 +551,6 @@
     "compareB": "Depois",
     "mark": "Marcar",
     "markTitle": "Marque o ponto que muda de lugar",
-    "markHint": "Toque no ponto que você vê em cada foto",
-    "markProgress": "Foto {n} de {total}, {marked} marcadas",
     "markSaving": "Salvando",
     "markDone": "Pronto",
     "markCompare": "{people, plural, one {# pessoa marcou} other {# pessoas marcaram}} este post. Amarelo = previsto, azul = você, rosa = média da comunidade.",
@@ -605,7 +603,18 @@
     },
     "predictionRow": "Cruz amarela: a previsão. Por que marcar?",
     "markHintBright": "Centro brilhante demais: toque no meio do brilho",
-    "markFailed": "Não deu para salvar suas marcações. Tente de novo."
+    "markFailed": "Não deu para salvar suas marcações. Tente de novo.",
+    "markTap": "Toque em {name}",
+    "markMoves": "Muda um pouco de lugar a cada foto",
+    "markCount": "{n} de {total}",
+    "markUndo": "Desfazer",
+    "markClose": "Parar de marcar",
+    "markPad": "Foto: toque onde está {name}. No teclado, mova com as setas e aperte Enter.",
+    "markAll": "Marcar todas as {total}",
+    "markPeople": "{people, plural, one {# pessoa marcou} other {# pessoas marcaram}}",
+    "pathTitle": "Seu caminho",
+    "pathMine": "Azul: as suas marcas.",
+    "pathPredicted": "Amarelo tracejado: a previsão, que é um cálculo."
   },
   "search": {
     "title": "Pesquisar",
@@ -985,17 +994,18 @@
     "retry": "Tentar de novo",
     "trace": {
       "cancel": "Cancelar a marcação",
-      "photo": "Foto {n} de {total}",
       "reviewTitle": "Confira o caminho",
       "reviewSub": "Toque numa marca para refazer",
-      "first": "Toque no ponto que se move.",
-      "next": "Agora toque nele nesta foto.",
       "missing": "Não aparece nesta foto",
-      "count": "{n} de {total} fotos marcadas.",
+      "count": "{n} de {total}",
       "needTwo": "Marque o ponto em pelo menos 2 fotos.",
       "redoOne": "Refazer a marca da foto {n}",
       "redo": "Refazer",
-      "confirm": "Confirmar"
+      "confirm": "Confirmar",
+      "reviewCount": "{n} de {total} fotos marcadas.",
+      "tap": "Toque onde mudou",
+      "undo": "Desfazer",
+      "pad": "Foto {n}: toque onde mudou. No teclado, mova com as setas e aperte Enter."
     },
     "confirm": {
       "still": "Nada mudou",
@@ -1422,15 +1432,7 @@
     "whyTitle": "Por que marcar você mesmo?",
     "whyBody": "A cruz é um cálculo e pode errar. Sua marca mostra onde uma pessoa realmente vê o objeto. Se muita gente marca longe da cruz, é sinal de que vale conferir.",
     "whyHonest": "Por enquanto, as marcações aparecem aqui para comparar. Ainda não entram na resposta de \"Algo mudou de lugar?\".",
-    "markNow": "Marcar eu mesmo",
-    "resultTitle": "{n, plural, one {# foto marcada} other {# fotos marcadas}}",
-    "result": {
-      "close": "Bem perto da previsão",
-      "near": "Perto da previsão",
-      "far": "Longe da previsão"
-    },
-    "resultGap": "Em geral a {pct}% da largura da foto em relação à cruz amarela. Estrelas brilhantes são largas e o dedo é grande, então pequenas diferenças são normais.",
-    "gotIt": "Entendi"
+    "markNow": "Marcar eu mesmo"
   },
   "meIntro": {
     "title": "Como seu perfil funciona",

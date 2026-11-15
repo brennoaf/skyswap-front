@@ -13,7 +13,7 @@ import { useBandName } from '@/lib/use-band'
 
 export function Crosshair({ x, y, size = 34, color = 'var(--color-crosshair)' }: { x: number; y: number; size?: number; color?: string }) {
   return (
-    <svg className="pointer-events-none absolute" style={{ left: `calc(${x * 100}% - ${size / 2}px)`, top: `calc(${y * 100}% - ${size / 2}px)` }} width={size} height={size} viewBox="0 0 34 34" aria-hidden="true">
+    <svg className="pointer-events-none absolute" style={{ left: `calc(${x * 100}% - ${size / 2}px)`, top: `calc(${y * 100}% - ${size / 2}px)` }} width={size} height={size} viewBox="0 0 34 34" aria-hidden="true" data-testid="prediction-cross">
       <g stroke={color} strokeWidth="2" strokeLinecap="round" fill="none">
         <path d="M17 1V9M17 25V33M1 17H9M25 17H33" />
         <circle cx="17" cy="17" r="5" strokeOpacity="0.55" />

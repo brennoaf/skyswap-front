@@ -130,6 +130,7 @@ export function SwapStage({
   onTap,
   onHold,
   overlay,
+  banner,
   hint,
   ring = 'rest',
   leaving,
@@ -148,6 +149,7 @@ export function SwapStage({
   onTap: (u: number, v: number) => void
   onHold: (held: boolean) => void
   overlay?: ReactNode
+  banner?: ReactNode
   hint?: boolean
   ring?: keyof typeof FRAME_RING
   leaving?: keyof typeof LEAVE | null
@@ -212,6 +214,7 @@ export function SwapStage({
             {overlay}
           </div>
         </div>
+        {banner}
         {hint && <GestureHint x={x} y={y} />}
         <SwapStamps x={x} y={y} />
       </motion.div>

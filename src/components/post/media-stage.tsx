@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
+import { MarkPad, MarkRing } from '@/components/ui/mark-pad'
 import { usePlayback } from '@/components/player/use-playback'
 import type { Frame } from '@/lib/api/client'
 import { cx, formatWavelength } from '@/lib/format'
@@ -14,7 +15,8 @@ import { useUi } from '@/lib/state/ui'
 import { useBandName } from '@/lib/use-band'
 
 export type Point = { frame: number; x: number; y: number }
-export type StageMode = 'play' | 'mark' | 'compare'
+export type StageMode = 'play' | 'mark' | 'compare' | 'path'
+export type Trail = { mine: { x: number; y: number }[]; predicted: { x: number; y: number }[] }
 
 const PRELOAD_AHEAD = 7
 export const STAGE_BOX =
@@ -39,6 +41,21 @@ function Dot({ x, y, tone }: { x: number; y: number; tone: 'mine' | 'community' 
   )
 }
 
+function TrailLines({ trail }: { trail: Trail }) {
+  const line = (pts: { x: number; y: number }[]) => pts.map((p) => `${p.x * 100},${p.y * 100}`).join(' ')
+  return (
+    <svg className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" data-testid="mark-trail">
+      {trail.predicted.length > 1 && <polyline points={line(trail.predicted)} fill="none" stroke="var(--color-crosshair)" strokeWidth="1.5" strokeDasharray="3 2.5" vectorEffect="non-scaling-stroke" data-testid="trail-predicted" />}
+      {trail.mine.length > 1 && (
+        <>
+          <polyline points={line(trail.mine)} fill="none" stroke="var(--color-mark-halo)" strokeWidth="4" opacity="0.5" vectorEffect="non-scaling-stroke" />
+          <polyline points={line(trail.mine)} fill="none" stroke="var(--color-mark-mine)" strokeWidth="2" vectorEffect="non-scaling-stroke" data-testid="trail-mine" />
+        </>
+      )}
+    </svg>
+  )
+}
+
 export function MediaStage({
   frames,
   index,
@@ -46,10 +63,12 @@ export function MediaStage({
   onPlaying,
   onIndex,
   predicted,
-  revealPrediction = false,
   mode,
   myMarks,
-  draftMarks,
+  flash = null,
+  banner = null,
+  markLabel = '',
+  trail = null,
   community,
   onMark,
   compareFrames,
@@ -64,10 +83,12 @@ export function MediaStage({
   onPlaying: (on: boolean) => void
   onIndex: (i: number) => void
   predicted: Map<number, { x: number; y: number }>
-  revealPrediction?: boolean
   mode: StageMode
   myMarks: Point[]
-  draftMarks: Point[]
+  flash?: Point | null
+  banner?: ReactNode
+  markLabel?: string
+  trail?: Trail | null
   community: { frame: number; x: number; y: number }[] | null
   onMark: (p: Point) => void
   compareFrames: [Frame, Frame] | null
@@ -99,17 +120,18 @@ export function MediaStage({
   }, [frames, index])
 
   const pred = predicted.get(index)
-  const mine = draftMarks.find((m) => m.frame === index) ?? myMarks.find((m) => m.frame === index)
+  const mine = myMarks.find((m) => m.frame === index)
+  const marking = mode === 'mark'
+  const after = mode === 'play' || mode === 'path'
   const avg = community?.find((c) => c.frame === index)
 
   if (!frame) return <div className={cx('w-full bg-media-bg', STAGE_BOX)} />
 
   return (
     <div className={cx('relative flex w-full select-none flex-col overflow-hidden bg-media-bg', STAGE_BOX)}>
+      {!marking && (
       <div className="pointer-events-none flex h-8 shrink-0 items-center justify-between gap-2 px-2">
-        {mode === 'mark' ? (
-          <Pill className="mx-auto">{saturated ? t('markHintBright') : t('markHint')}</Pill>
-        ) : mode === 'compare' && compareFrames ? (
+        {mode === 'compare' && compareFrames ? (
           <>
             <Pill>
               {t('compareA')}, {fmt.shortDate(compareFrames[0].t)}
@@ -134,10 +156,11 @@ export function MediaStage({
           </>
         )}
       </div>
+      )}
 
       <div className="flex min-h-0 flex-1 items-center justify-center [container-type:size]">
         <div
-          className={cx('relative touch-pan-y', mode === 'mark' && 'cursor-crosshair')}
+          className={cx('relative', !marking && 'touch-pan-y')}
           style={{ width: `min(100cqw, calc(100cqh * ${aspect}))`, aspectRatio: String(aspect) }}
           onPointerDown={(e) => {
             swipe.current = { x: e.clientX, y: e.clientY }
@@ -154,17 +177,14 @@ export function MediaStage({
               return
             }
             if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > 12) return
-            if (mode === 'mark') {
-              const r = e.currentTarget.getBoundingClientRect()
-              onMark({ frame: index, x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) })
-              return
-            }
+            if (marking) return
             onPlaying(!playing)
           }}
-          role="button"
-          tabIndex={0}
-          aria-label={mode === 'mark' ? t('markHint') : playing ? t('pause') : t('play')}
+          role={marking ? undefined : 'button'}
+          tabIndex={marking ? undefined : 0}
+          aria-label={marking ? undefined : playing ? t('pause') : t('play')}
           onKeyDown={(e) => {
+            if (marking) return
             if (e.key === ' ' || e.key === 'Enter') {
               e.preventDefault()
               if (mode === 'play') onPlaying(!playing)
@@ -212,9 +232,13 @@ export function MediaStage({
               ))}
             </svg>
           )}
-          {mode === 'play' && (crosshair || path || revealPrediction) && pred && <Crosshair x={pred.x} y={pred.y} />}
-          {mode === 'play' && avg && <Dot x={avg.x} y={avg.y} tone="community" />}
-          {mode !== 'compare' && mine && <Dot x={mine.x} y={mine.y} tone="mine" />}
+          {mode === 'path' && trail && <TrailLines trail={trail} />}
+          {((mode === 'play' && (crosshair || path)) || mode === 'path') && pred && <Crosshair x={pred.x} y={pred.y} />}
+          {after && avg && <Dot x={avg.x} y={avg.y} tone="community" />}
+          {after && mine && <Dot x={mine.x} y={mine.y} tone="mine" />}
+          {marking && flash && flash.frame === index && <MarkRing u={flash.x} v={flash.y} />}
+          {marking && banner}
+          {marking && <MarkPad key={index} source={{ src: frame.src }} label={markLabel} onPick={(u, v) => onMark({ frame: index, x: u, y: v })} />}
         </div>
       </div>
     </div>
