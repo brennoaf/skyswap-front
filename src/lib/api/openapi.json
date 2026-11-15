@@ -3432,6 +3432,7 @@
                                   "type": "object",
                                   "required": [
                                     "kind",
+                                    "reading",
                                     "frames",
                                     "signal",
                                     "features"
@@ -3441,6 +3442,28 @@
                                       "type": "string",
                                       "enum": [
                                         "colours"
+                                      ]
+                                    },
+                                    "reading": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "measured"
+                                          ]
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "saturated"
+                                          ]
+                                        },
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "none"
+                                          ]
+                                        }
                                       ]
                                     },
                                     "frames": {

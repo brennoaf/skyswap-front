@@ -84,13 +84,20 @@ export function SpectrumFeatures({ data, highlight, onHighlight }: { data: Featu
   )
 }
 
-export function ProfileSpectrum({ spectra, features, mixedBatches }: { spectra: string; features: string | undefined; mixedBatches: boolean }) {
+export function ProfileSpectrum({ spectra, features, mixedBatches, saturated }: { spectra: string; features: string | undefined; mixedBatches: boolean; saturated: boolean }) {
+  const t = useTranslations('features')
   const [highlight, setHighlight] = useState<Highlight>(null)
   const found = useKitJson<FeaturesData>(features)
+  const blind = saturated || (found.data?.judged === false && found.data.reason === 'too_bright')
   return (
     <>
+      {blind && (
+        <p className="mb-3 rounded-xl bg-surface px-3 py-2 text-note leading-snug" data-testid="spectrum-saturated">
+          {t('saturatedChart')}
+        </p>
+      )}
       <KitChart kind="spectrum" url={spectra} titled mixedBatches={mixedBatches} highlight={highlight} />
-      {found.data && <SpectrumFeatures data={found.data} highlight={highlight} onHighlight={setHighlight} />}
+      {found.data && !blind && <SpectrumFeatures data={found.data} highlight={highlight} onHighlight={setHighlight} />}
     </>
   )
 }

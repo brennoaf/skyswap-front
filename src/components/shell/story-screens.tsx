@@ -232,7 +232,8 @@ export function ColoursScreen({ screen, name, elapsed }: { screen: Colours; name
           </div>
         ))}
       </div>
-      <div className="story-chrome px-3.5 pt-2.5" data-testid="story-signal">
+      {screen.reading === 'measured' && (
+        <div className="story-chrome px-3.5 pt-2.5" data-testid="story-signal">
         <p className="mb-1 text-micro text-on-media-muted">{t('measured')}</p>
         <div className="grid grid-cols-6 gap-1.5">
           {screen.signal.map((v, i) => (
@@ -245,7 +246,8 @@ export function ColoursScreen({ screen, name, elapsed }: { screen: Colours; name
           ))}
         </div>
       </div>
-      <Caption>{screen.features.length ? t('captions.coloursFeatures', { names: new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' }).format(screen.features.map((f) => featureName(f, locale).toLowerCase())) }) : t('captions.colours')}</Caption>
+      )}
+      <Caption>{screen.reading === 'saturated' ? t('captions.coloursSaturated') : screen.reading === 'none' ? t('captions.coloursNone') : screen.features.length ? t('captions.coloursFeatures', { names: new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' }).format(screen.features.map((f) => featureName(f, locale).toLowerCase())) }) : t('captions.colours')}</Caption>
     </>
   )
 }

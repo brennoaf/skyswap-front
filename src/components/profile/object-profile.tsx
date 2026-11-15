@@ -254,7 +254,7 @@ export function ObjectProfileView({ id }: { id: string }) {
       {tab === 'timelapses' && <PostGrid tiles={tilesFromPosts((posts ?? []).filter((p) => p.type === 'long_baseline' || p.type === 'timelapse' || p.type === 'pass_blink'), locale)} />}
 
       {tab === 'spectrum' && (
-        <section className="px-4 py-4">{profile.measurements.spectra ? <ProfileSpectrum spectra={profile.measurements.spectra} features={profile.measurements.features} mixedBatches={mixedBatches} /> : <EmptyState title={t('noSpectrum')} />}</section>
+        <section className="px-4 py-4">{profile.measurements.spectra ? <ProfileSpectrum spectra={profile.measurements.spectra} features={profile.measurements.features} mixedBatches={mixedBatches} saturated={profile.saturation === 'heavy'} /> : <EmptyState title={t('noSpectrum')} />}</section>
       )}
 
       {tab === 'measurements' && (

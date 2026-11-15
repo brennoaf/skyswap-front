@@ -214,6 +214,7 @@ export interface paths {
                                     }[];
                                 } | {
                                     kind: "colours";
+                                    reading: "measured" | "saturated" | "none";
                                     frames: {
                                         band: string;
                                         src: string;

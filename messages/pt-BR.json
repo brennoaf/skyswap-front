@@ -128,7 +128,9 @@
       "curve": "O brilho medido em {band} mudou cerca de {spread} magnitudes entre {n} passagens.",
       "curveSaturated": "É só um indício: o centro da estrela estoura a câmera.",
       "colours": "A mesma passagem nas 6 cores do SPHEREx. As barras mostram quanto o SPHEREx mediu no lugar exato do objeto em cada cor: isso é o espectro.",
-      "coloursFeatures": "Medindo cor por cor, o espectro mostra {names}."
+      "coloursFeatures": "Medindo cor por cor, o espectro mostra {names}.",
+      "coloursSaturated": "Esta estrela é tão brilhante que o meio dela fica preto em algumas cores: a câmera estoura. Por isso aqui não dá para ler o espectro.",
+      "coloursNone": "A mesma passagem nas 6 cores do SPHEREx. Para este objeto não há espectro medido, então aqui não há barras."
     },
     "end": {
       "motion": "Em {span}, o SPHEREx mediu {measured}″ ± {err}″ de movimento. Os catálogos previam {predicted}″.",
@@ -1686,7 +1688,8 @@
     "none": "Nada se destaca nesta resolução.",
     "tooBright": "Brilhante demais para julgar: o centro estoura a câmera.",
     "tooFaint": "Fraco demais para julgar.",
-    "rule": "Conta só o que passa de 5 vezes a incerteza."
+    "rule": "Conta só o que passa de 5 vezes a incerteza.",
+    "saturatedChart": "O meio desta estrela estoura a câmera em muitas fotos, então estes pontos não são o espectro dela de verdade."
   },
   "halo": {
     "title": "Indício pelo halo",
