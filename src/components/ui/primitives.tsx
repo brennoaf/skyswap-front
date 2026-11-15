@@ -55,13 +55,13 @@ export function IconButton({ label, className, children, ...rest }: ButtonHTMLAt
   )
 }
 
-export function TopBar({ title, back = true, actions, className, titleClassName }: { title?: ReactNode; back?: boolean; actions?: ReactNode; className?: string; titleClassName?: string }) {
+export function TopBar({ title, back = true, onBack, actions, className, titleClassName }: { title?: ReactNode; back?: boolean; onBack?: () => void; actions?: ReactNode; className?: string; titleClassName?: string }) {
   const router = useRouter()
   const t = useTranslations('common')
   return (
     <header className={cx('sticky top-0 z-30 flex h-[var(--height-topbar)] items-center gap-1 bg-bg px-1', className)}>
       {back && (
-        <IconButton label={t('back')} onClick={() => (history.length > 1 ? router.back() : router.push('/'))}>
+        <IconButton label={t('back')} onClick={onBack ?? (() => (history.length > 1 ? router.back() : router.push('/')))}>
           <IconBack />
         </IconButton>
       )}

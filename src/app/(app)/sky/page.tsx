@@ -35,20 +35,26 @@ function SkyScreen() {
 
   return (
     <main>
-      <TopBar
-        title={
-          <span className="block leading-tight">
-            <span className="block truncate">{skyTitle(params)}</span>
-            <span className="block truncate font-sans text-meta font-normal tabular-nums text-text-secondary">{t('coordinates', { ra: formatRa(params.ra), dec: formatDec(params.dec) })}</span>
-          </span>
-        }
-        actions={
-          <IconButton label={t('share')} onClick={() => setShare(true)}>
-            <IconDirect />
-          </IconButton>
-        }
+      <SkyViewer
+        params={params}
+        onChange={onChange}
+        header={(onBack) => (
+          <TopBar
+            onBack={onBack}
+            title={
+              <span className="block leading-tight">
+                <span className="block truncate">{skyTitle(params)}</span>
+                <span className="block truncate font-sans text-meta font-normal tabular-nums text-text-secondary">{t('coordinates', { ra: formatRa(params.ra), dec: formatDec(params.dec) })}</span>
+              </span>
+            }
+            actions={
+              <IconButton label={t('share')} onClick={() => setShare(true)}>
+                <IconDirect />
+              </IconButton>
+            }
+          />
+        )}
       />
-      <SkyViewer params={params} onChange={onChange} />
       <SkyShareSheet open={share} onClose={() => setShare(false)} params={params} />
     </main>
   )

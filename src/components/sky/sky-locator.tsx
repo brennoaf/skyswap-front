@@ -50,7 +50,7 @@ function grid(): string {
   return [...parallels, ...meridians].join('')
 }
 
-export function SkyLocator({ ra, dec, name, className }: { ra: number; dec: number; name: string; className?: string }) {
+export function SkyLocator({ ra, dec, name, className, bare = false }: { ra: number; dec: number; name: string; className?: string; bare?: boolean }) {
   const t = useTranslations('sky.map')
   const lines = useMemo(() => ({ grid: grid(), milky: milkyWay() }), [])
   const [x, y] = project(ra, dec)
@@ -61,25 +61,31 @@ export function SkyLocator({ ra, dec, name, className }: { ra: number; dec: numb
         <ellipse cx={W / 2} cy={H / 2} rx={W / 2 - 2} ry={H / 2 - 2} fill="var(--color-reels-bg)" stroke="var(--color-spot-star)" strokeOpacity="0.35" />
         <path d={lines.grid} fill="none" stroke="var(--color-spot-star)" strokeOpacity="0.14" strokeWidth="0.6" />
         <path d={lines.milky} fill="none" stroke="var(--color-spot-star)" strokeOpacity="0.22" strokeWidth="9" />
-        <text x={W / 2} y={14} textAnchor="middle" fontSize="9" fill="var(--color-spot-star)" fillOpacity="0.75">
-          {t('north')}
-        </text>
-        <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="9" fill="var(--color-spot-star)" fillOpacity="0.75">
-          {t('south')}
-        </text>
-        <circle cx={x} cy={y} r="9" fill="none" stroke="var(--color-crosshair)" strokeWidth="1.5" className="origin-center [transform-box:fill-box] motion-safe:animate-ping" />
-        <circle cx={x} cy={y} r="4.5" fill="var(--color-crosshair)" stroke="var(--color-reels-bg)" strokeWidth="1.2" />
+        {!bare && (
+          <>
+            <text x={W / 2} y={14} textAnchor="middle" fontSize="9" fill="var(--color-spot-star)" fillOpacity="0.75">
+              {t('north')}
+            </text>
+            <text x={W / 2} y={H - 8} textAnchor="middle" fontSize="9" fill="var(--color-spot-star)" fillOpacity="0.75">
+              {t('south')}
+            </text>
+          </>
+        )}
+        <circle cx={x} cy={y} r={bare ? 22 : 9} fill="none" stroke="var(--color-crosshair)" strokeWidth={bare ? 4 : 1.5} className="origin-center [transform-box:fill-box] motion-safe:animate-ping" />
+        <circle cx={x} cy={y} r={bare ? 12 : 4.5} fill="var(--color-crosshair)" stroke="var(--color-reels-bg)" strokeWidth={bare ? 3 : 1.2} />
       </svg>
-      <figcaption className="mt-1.5 flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 text-meta opacity-80">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-crosshair" aria-hidden="true" />
-          {name}
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-1.5 w-4 rounded-full bg-text-secondary opacity-50" aria-hidden="true" />
-          {t('milkyWay')}
-        </span>
-      </figcaption>
+      {!bare && (
+        <figcaption className="mt-1.5 flex flex-wrap items-center justify-center gap-x-4 gap-y-0.5 text-meta opacity-80">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-2.5 rounded-full bg-crosshair" aria-hidden="true" />
+            {name}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-1.5 w-4 rounded-full bg-text-secondary opacity-50" aria-hidden="true" />
+            {t('milkyWay')}
+          </span>
+        </figcaption>
+      )}
     </figure>
   )
 }
