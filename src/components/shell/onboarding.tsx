@@ -179,20 +179,27 @@ function LanguageStep({ options, reduce, onDone }: { options: LanguageOption[]; 
 const COLD_EXAMPLE = 'wise-0855-0714'
 
 function ColourBars() {
+  const t = useTranslations('onboarding.colours')
   const { data } = useStories()
   const screen = data?.stories.find((s) => s.object.id === COLD_EXAMPLE)?.screens.find((s) => s.kind === 'colours')
   if (screen?.kind !== 'colours') return null
   const max = Math.max(1, ...screen.signal.map((v) => v ?? 0))
   return (
-    <div className="mt-3 grid grid-cols-6 gap-1.5" data-testid="tour-colours">
-      {screen.signal.map((v, i) => (
-        <div key={i} className="flex flex-col items-center gap-0.5 text-micro text-text-secondary">
-          <span className="flex h-9 w-full items-end overflow-hidden rounded-md bg-surface">
-            <span className="block w-full rounded-t-md bg-warning" style={{ height: `${Math.max(v ? 4 : 0, ((v ?? 0) / max) * 100)}%` }} />
-          </span>
-          {`D${i + 1}`}
-        </div>
-      ))}
+    <div className="mt-3" data-testid="tour-colours">
+      <div className="grid grid-cols-6 gap-1.5">
+        {screen.signal.map((v, i) => (
+          <div key={i} className="flex flex-col items-center gap-0.5 text-micro text-text-secondary">
+            <span className="flex h-9 w-full items-end overflow-hidden rounded-md bg-surface">
+              <span className="block w-full rounded-t-md bg-warning" style={{ height: `${Math.max(v ? 4 : 0, ((v ?? 0) / max) * 100)}%` }} />
+            </span>
+            {`D${i + 1}`}
+          </div>
+        ))}
+      </div>
+      <p className="mt-0.5 flex justify-between text-micro text-text-secondary">
+        <span>{t('near')}</span>
+        <span>{t('far')}</span>
+      </p>
     </div>
   )
 }

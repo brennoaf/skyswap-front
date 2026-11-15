@@ -330,8 +330,10 @@
       "body": "Tap a circle to see in a few seconds what the photos show about that object. A coloured ring means there are photos you have not seen yet."
     },
     "colours": {
-      "title": "Every colour tells a story",
-      "body": "SPHEREx photographs the sky in 6 infrared colours. Measuring the brightness in each colour gives the spectrum. A cold brown dwarf, for example, only shines in the last ones:"
+      "title": "Light your eyes can't see",
+      "body": "The telescope photographs each place in 6 colours of invisible light, D1 to D6. Things shine more in some colours than others, and that tells what they're made of.",
+      "near": "near red",
+      "far": "heat"
     },
     "tools": {
       "title": "Tools",
@@ -346,7 +348,7 @@
     },
     "photo": {
       "title": "Real infrared photos",
-      "body": "SPHEREx photographs the sky in 6 infrared bands, D1 to D6. The yellow cross is where catalogues say the object should be."
+      "body": "Real photos from the telescope. The yellow cross marks where catalogues say the object should be."
     },
     "cards": {
       "title": "Help find what moves",
