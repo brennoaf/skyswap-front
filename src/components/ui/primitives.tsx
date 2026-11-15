@@ -92,7 +92,7 @@ export function ObjectAvatar({ src, alt, size, ring = 'none', className }: { src
         />
       )}
       <span className="flex items-center justify-center overflow-hidden rounded-full bg-media-bg ring-[0.5px] ring-divider" style={{ width: inner, height: inner }}>
-        <Image src={src} alt={alt} width={Math.round(inner / Math.SQRT2)} height={Math.round(inner / Math.SQRT2)} className="pixelated object-contain" style={{ width: inner / Math.SQRT2, height: inner / Math.SQRT2 }} />
+        <Image src={src} alt={alt} width={Math.round(inner)} height={Math.round(inner)} className="pixelated size-full object-cover object-center" data-testid="object-avatar-img" />
       </span>
     </span>
   )
