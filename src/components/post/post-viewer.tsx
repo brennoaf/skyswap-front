@@ -36,6 +36,7 @@ function groupsOf(type: string, frames: Frame[]): number[] {
 }
 
 export function PostViewer({ id }: { id: string }) {
+  const locale = useLocale()
   const t = useTranslations('viewer')
   const tp = useTranslations('post')
   const tc = useTranslations('common')
@@ -152,7 +153,6 @@ export function PostViewer({ id }: { id: string }) {
     setMode(mode === 'mark' ? 'play' : 'mark')
   }
   const pickGroup = (i: number) => player.setIndex(groups[Math.max(0, Math.min(groups.length - 1, i))] ?? 0)
-  const locale = useLocale()
   const shareIt = () => void share({ title: post.title, path: `/p/${post.id}` })
 
   const finishMarking = () => {
