@@ -9,7 +9,7 @@ const webUrl = `http://localhost:${webPort}`
 process.env.SKYSWAP_E2E_DB ??= join(tmpdir(), `skyswap-e2e-${Date.now()}.sqlite`)
 
 export default defineConfig({
-  testDir: 'e2e',
+  testDir: 'tests/e2e',
   timeout: 120_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,

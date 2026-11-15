@@ -8,3 +8,10 @@ next-env.d.ts
 playwright-report
 test-results
 .next-build
+
+# tests and docs stay local
+tests/
+docs/
+*.md
+*.test.*
+*.spec.*
