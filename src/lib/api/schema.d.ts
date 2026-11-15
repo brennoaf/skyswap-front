@@ -1581,6 +1581,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/classify/shared/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            card: {
+                                id: string;
+                                sprite: string;
+                                n_frames: number;
+                                offsets_s: number[];
+                            };
+                            answered: ("moves" | "still" | "glitch" | "unsure") | null;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/classify/sky": {
         parameters: {
             query?: never;
@@ -2336,6 +2400,7 @@ export interface paths {
                     content: {
                         "application/json": {
                             open_cards: number;
+                            close_votes: number;
                             highlight: {
                                 id: string;
                                 kind: "sky" | "deck";

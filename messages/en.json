@@ -852,6 +852,21 @@
       "source": "SPHEREx, NASA / {date} / {ra}° {dec}°",
       "sourceShort": "SPHEREx, NASA"
     },
+    "open": {
+      "title": "Open cards",
+      "body": "Patches of sky that still need more looks. When {n} careful answers agree, the card closes.",
+      "left": "{n, plural, one {# left for you} other {# left for you}}",
+      "start": "Start",
+      "line": "{n, plural, one {Community, # left} other {Community, # left}}",
+      "doneTitle": "You looked at every open card",
+      "more": "Keep exploring",
+      "back": "Back to Community"
+    },
+    "share": {
+      "label": "Share card",
+      "title": "Did something move? Help me look at this piece of sky.",
+      "already": "You already answered this card."
+    },
     "strip": {
       "known": "That spot is known: asteroid {name}",
       "see": "See",

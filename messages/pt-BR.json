@@ -852,6 +852,21 @@
       "source": "SPHEREx, NASA / {date} / {ra}° {dec}°",
       "sourceShort": "SPHEREx, NASA"
     },
+    "open": {
+      "title": "Cartões em aberto",
+      "body": "Pedaços do céu que ainda precisam de mais olhares. Quando {n} respostas cuidadosas concordam, o cartão fecha.",
+      "left": "{n, plural, one {Falta # para você} other {Faltam # para você}}",
+      "start": "Começar",
+      "line": "{n, plural, one {Comunidade, falta #} other {Comunidade, faltam #}}",
+      "doneTitle": "Você olhou todos os cartões em aberto",
+      "more": "Continuar explorando",
+      "back": "Voltar à Comunidade"
+    },
+    "share": {
+      "label": "Compartilhar cartão",
+      "title": "Algo mudou de lugar? Me ajude a olhar este pedaço do céu.",
+      "already": "Você já respondeu este cartão."
+    },
     "strip": {
       "known": "Aquele ponto é conhecido: asteroide {name}",
       "see": "Ver",

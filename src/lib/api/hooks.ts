@@ -203,8 +203,8 @@ export function useFinding(id: string) {
   })
 }
 
-export function useCommunityOverview() {
-  return useQuery({ queryKey: ['community', 'overview'], queryFn: async () => unwrap(await api.GET('/api/community/overview')) })
+export function useCommunityOverview(enabled = true) {
+  return useQuery({ queryKey: ['community', 'overview'], enabled, queryFn: async () => unwrap(await api.GET('/api/community/overview')) })
 }
 
 export function useFindingPeople(id: string, enabled: boolean) {
@@ -294,6 +294,7 @@ export function useVote() {
       qc.invalidateQueries({ queryKey: keys.alerts })
       qc.invalidateQueries({ queryKey: keys.goals })
       qc.invalidateQueries({ queryKey: keys.exploreMap })
+      qc.invalidateQueries({ queryKey: ['community', 'overview'] })
     },
   })
 }

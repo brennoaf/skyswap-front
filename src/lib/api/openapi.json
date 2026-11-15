@@ -6368,6 +6368,139 @@
         }
       }
     },
+    "/api/classify/shared/{id}": {
+      "get": {
+        "tags": [
+          "classify"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "card",
+                    "answered"
+                  ],
+                  "properties": {
+                    "card": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "sprite",
+                        "n_frames",
+                        "offsets_s"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "sprite": {
+                          "type": "string"
+                        },
+                        "n_frames": {
+                          "type": "integer"
+                        },
+                        "offsets_s": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    },
+                    "answered": {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "moves"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "still"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "glitch"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "unsure"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/classify/sky": {
       "post": {
         "tags": [
@@ -8372,11 +8505,15 @@
                   "type": "object",
                   "required": [
                     "open_cards",
+                    "close_votes",
                     "highlight",
                     "has_popular"
                   ],
                   "properties": {
                     "open_cards": {
+                      "type": "integer"
+                    },
+                    "close_votes": {
                       "type": "integer"
                     },
                     "highlight": {

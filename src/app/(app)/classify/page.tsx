@@ -8,26 +8,27 @@ import { useOffsetLabel } from '@/components/classify/photo-viewer'
 import { ANSWER_ICONS, AnswerFace, AnswerPanel, CardBehind, FrameBars, GestureHint, PhotoBar, photoFrame, photoInset, SwapPanel, SwapStage, SwapStamps, SwapStrip, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
 import { KnownSheet, PhotoSourceSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
-import { IconArrowRight, IconBack, IconCards, IconClose, IconMoves, IconQuestion, IconWarning } from '@/components/icons'
+import { IconArrowRight, IconBack, IconCards, IconClose, IconDirect, IconMoves, IconQuestion, IconWarning } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { ScreenTour } from '@/components/shell/onboarding'
-import { Button, EmptyState, IconButton, Skeleton, TopBar } from '@/components/ui/primitives'
+import { Button, EmptyState, IconButton, Sheet, Skeleton, TopBar } from '@/components/ui/primitives'
 import { api, ApiError, unwrap, type DeckCard } from '@/lib/api/client'
 import { cx, formatDate } from '@/lib/format'
-import { useGuideCard, useSession, useVote, type VotePosition } from '@/lib/api/hooks'
+import { useCommunityOverview, useGoals, useGuideCard, useSession, useVote, type VotePosition } from '@/lib/api/hooks'
 import type { CardHint } from '@/lib/explore/flashlight'
 import { exploreQueue, isSkyCard, type SkyPlayCard } from '@/lib/explore/queue'
 import { hasOutsideArea } from '@/lib/out-of-field'
 import { knownName, verdictOf, type Answer } from '@/lib/swap-verdict'
 import { useUi } from '@/lib/state/ui'
+import { useShare } from '@/lib/share'
 import { useFmt } from '@/lib/use-fmt'
 
 type VoteResult = NonNullable<ReturnType<typeof useVote>['data']>
 type Mark = { u: number; v: number }
 type PlayCard = DeckCard | SkyPlayCard
 type Lesson = 'moves' | 'still' | 'glitch'
-type Mode = 'look' | 'tools' | 'confirm' | 'sending' | 'sent' | 'failed' | 'result'
+type Mode = 'look' | 'tools' | 'confirm' | 'sending' | 'sent' | 'past' | 'failed' | 'result'
 type Pending = { card: PlayCard; answer: Answer; spot: VotePosition | null; at: number; hints: boolean }
 type GuideData = NonNullable<ReturnType<typeof useGuideCard>['data']>
 type WelcomeExample = GuideData['examples'][number]
@@ -108,7 +109,7 @@ function SwapShell({ children }: { children: ReactNode }) {
   )
 }
 
-function SwapHeader({ step, onHelp, onToolsBack }: { step?: string | null; onHelp: () => void; onToolsBack?: () => void }) {
+function SwapHeader({ step, top, leave = '/', onHelp, onToolsBack }: { step?: string | null; top?: ReactNode; leave?: string; onHelp: () => void; onToolsBack?: () => void }) {
   const t = useTranslations('classify')
   return (
     <header className="flex h-14 shrink-0 items-center gap-1 px-1">
@@ -117,12 +118,12 @@ function SwapHeader({ step, onHelp, onToolsBack }: { step?: string | null; onHel
           <IconBack size={28} />
         </IconButton>
       ) : (
-        <Link href="/" aria-label={t('leave')} className="flex size-12 shrink-0 items-center justify-center rounded-full text-text active:bg-surface">
+        <Link href={leave} aria-label={t('leave')} className="flex size-12 shrink-0 items-center justify-center rounded-full text-text active:bg-surface">
           <IconClose size={28} />
         </Link>
       )}
       <div className="min-w-0 flex-1 text-center">
-        {step && <p className="truncate text-ui leading-tight text-text-secondary">{step}</p>}
+        {onToolsBack ? null : (top ?? (step && <p className="truncate text-ui leading-tight text-text-secondary">{step}</p>))}
         <h1 className="truncate text-[18px] font-bold leading-tight">{onToolsBack ? t('tools.open') : t('question')}</h1>
       </div>
       <IconButton label={t('help.open')} onClick={onHelp} className="size-12">
@@ -384,7 +385,7 @@ function useOutside(img: HTMLImageElement | null, n: number) {
   return outside
 }
 
-function ConfirmSheet({ card, answer, spot, busy, onUndo, onConfirm, onAbout }: { card: PlayCard; answer: Answer; spot: VotePosition | null | undefined; busy: boolean; onUndo: () => void; onConfirm: () => void; onAbout: () => void }) {
+function ConfirmSheet({ card, answer, spot, busy, past, onUndo, onConfirm, onAbout, onShare, onSkip }: { card: PlayCard; answer: Answer; spot: VotePosition | null | undefined; busy: boolean; past: boolean; onUndo: () => void; onConfirm: () => void; onAbout: () => void; onShare?: () => void; onSkip: () => void }) {
   const t = useTranslations('classify')
   const fmt = useFmt()
   const reduce = useReducedMotion()
@@ -396,13 +397,23 @@ function ConfirmSheet({ card, answer, spot, busy, onUndo, onConfirm, onAbout }: 
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       aria-labelledby="confirm-title"
-      className="mx-2 mt-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto rounded-[var(--radius-sheet)] bg-surface px-4 pb-1.5 pt-2"
+      className="relative mx-2 mt-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto rounded-[var(--radius-sheet)] bg-surface px-4 pb-1.5 pt-2"
       data-testid="swap-confirm"
     >
-      <h2 id="confirm-title" className="flex shrink-0 items-center gap-2 text-title-md font-bold leading-tight">
+      <h2 id="confirm-title" className={cx('flex shrink-0 items-center gap-2 text-title-md font-bold leading-tight', onShare && 'pr-10')}>
         <Icon size={24} className="shrink-0" />
         {t(`confirm.${answer}`)}
       </h2>
+      {onShare && (
+        <IconButton label={t('share.label')} onClick={onShare} className="absolute right-1 top-0 size-11" data-testid="share-card">
+          <IconDirect size={24} />
+        </IconButton>
+      )}
+      {past && (
+        <p role="status" className="shrink-0 text-ui font-semibold leading-snug">
+          {t('share.already')}
+        </p>
+      )}
       {spot !== undefined && (
         <p role="status" aria-live="polite" className="shrink-0 text-ui font-semibold leading-snug">
           {spot ? t('mark.marked') : t('mark.where')}
@@ -412,12 +423,20 @@ function ConfirmSheet({ card, answer, spot, busy, onUndo, onConfirm, onAbout }: 
         {sky ? t('confirm.source', { date: formatDate(sky.t0, fmt.locale, { day: '2-digit', month: '2-digit', year: '2-digit', timeZone: 'UTC' }), ra: fmt.fixed(sky.ra, 2), dec: `${sky.dec >= 0 ? '+' : ''}${fmt.fixed(sky.dec, 2)}` }) : t('confirm.sourceShort')}
       </button>
       <div className="mt-auto flex shrink-0 gap-2">
-        <button type="button" disabled={busy} onClick={onUndo} className={swapButton.big}>
-          {t('undo')}
-        </button>
-        <button type="button" disabled={busy} aria-busy={busy} onClick={onConfirm} className={swapButton.primary}>
-          {t('confirm.confirm')}
-        </button>
+        {past ? (
+          <button type="button" onClick={onSkip} className={swapButton.primary}>
+            {t('next')}
+          </button>
+        ) : (
+          <>
+            <button type="button" disabled={busy} onClick={onUndo} className={swapButton.big}>
+              {t('undo')}
+            </button>
+            <button type="button" disabled={busy} aria-busy={busy} onClick={onConfirm} className={swapButton.primary}>
+              {t('confirm.confirm')}
+            </button>
+          </>
+        )}
       </div>
     </motion.section>
   )
@@ -432,8 +451,13 @@ function SwapCard({
   lastLesson,
   firstLesson,
   notice,
+  top,
+  leave,
+  past,
   onHelp,
   onAnswer,
+  onShare,
+  onSkip,
   onLessonStale,
   onLessonNext,
 }: {
@@ -445,7 +469,12 @@ function SwapCard({
   lastLesson: boolean
   firstLesson: boolean
   notice: ReactNode
+  top?: ReactNode
+  leave?: string
+  past?: Answer | null
   onHelp: () => void
+  onShare?: () => void
+  onSkip?: () => void
   onAnswer: (answer: Answer, spot: VotePosition | null, at: number, hints: boolean) => void
   onLessonStale: () => void
   onLessonNext: () => void
@@ -458,8 +487,8 @@ function SwapCard({
   const vote = useVote()
   const x = useMotionValue(0)
   const y = useMotionValue(0)
-  const [mode, setMode] = useState<Mode>('look')
-  const [answer, setAnswer] = useState<Answer | null>(null)
+  const [mode, setMode] = useState<Mode>(past ? 'past' : 'look')
+  const [answer, setAnswer] = useState<Answer | null>(past ?? null)
   const [chosenAt, setChosenAt] = useState(0)
   const [aboutOpen, setAboutOpen] = useState(false)
   const sentOnce = useRef(false)
@@ -527,7 +556,7 @@ function SwapCard({
   }, [mode, stopBlink])
 
   const choose = (a: Answer) => {
-    if (!img || mode === 'sending' || mode === 'sent') return
+    if (!img || mode === 'sending' || mode === 'sent' || mode === 'past') return
     settle()
     setRow(0)
     setSpot(null)
@@ -623,12 +652,12 @@ function SwapCard({
   const labels = { still: t('still'), moves: t('moves'), glitch: t('glitch'), unsure: t('unsure') }
   const note = hintLine ?? (blackNote && outside[panel] ? tp('outside') : null)
 
-  const deciding = !!answer && (mode === 'confirm' || mode === 'sending' || mode === 'sent')
+  const deciding = !!answer && (mode === 'confirm' || mode === 'sending' || mode === 'sent' || mode === 'past')
 
   return (
     <SwapShell>
       {deciding && <div aria-hidden="true" className={SPOTLIGHT_TOP} data-testid="spotlight-top" />}
-      <SwapHeader step={step} onHelp={onHelp} onToolsBack={mode === 'tools' ? () => setMode('look') : undefined} />
+      <SwapHeader step={step} top={top} leave={leave} onHelp={onHelp} onToolsBack={mode === 'tools' ? () => setMode('look') : undefined} />
       <FrameBars n={n} index={panel} />
       <SwapStage
         img={img}
@@ -710,7 +739,7 @@ function SwapCard({
         )}
         {deciding && answer && (
           <>
-            <ConfirmSheet card={card} answer={answer} spot={marking ? spot : undefined} busy={mode !== 'confirm'} onUndo={undoChoice} onConfirm={confirm} onAbout={() => setAboutOpen(true)} />
+            <ConfirmSheet card={card} answer={answer} spot={marking ? spot : undefined} busy={mode !== 'confirm'} past={mode === 'past'} onUndo={undoChoice} onConfirm={confirm} onAbout={() => setAboutOpen(true)} onShare={onShare} onSkip={() => onSkip?.()} />
             <AnswerPanel labels={labels} disabled={mode !== 'confirm'} x={x} y={y} chosen={answer} onChoose={choose} />
           </>
         )}
@@ -791,7 +820,35 @@ function DeckSkeleton({ onHelp, line, notice }: { onHelp: () => void; line?: str
   )
 }
 
-type DeckState = { status: 'loading' | 'searching' | 'ready' | 'done' | 'error'; card: PlayCard | null }
+type DeckState = { status: 'loading' | 'searching' | 'ready' | 'done' | 'error'; card: PlayCard | null; past?: Answer | null }
+
+function takeSharedCard(): string | null {
+  const url = new URL(window.location.href)
+  const id = url.searchParams.get('card')
+  if (!id) return null
+  url.searchParams.delete('card')
+  window.history.replaceState(window.history.state, '', url)
+  return id
+}
+
+let sharedTask: Promise<DeckState | null> | null = null
+
+function sharedCard(): Promise<DeckState | null> | null {
+  const id = takeSharedCard()
+  if (id) {
+    const task = fetchShared(id)
+    sharedTask = task
+    void task.finally(() => {
+      if (sharedTask === task) sharedTask = null
+    })
+  }
+  return sharedTask
+}
+
+async function fetchShared(id: string): Promise<DeckState | null> {
+  const r = await api.GET('/api/classify/shared/{id}', { params: { path: { id } } }).catch(() => null)
+  return r?.data ? { status: 'ready', card: r.data.card, past: r.data.answered } : null
+}
 
 let sessionLooks = 0
 let fastWarned = false
@@ -846,6 +903,12 @@ function useDeckFlow(enabled: boolean) {
   }, [])
 
   const load = useCallback(async (not: string[] = []) => {
+    const sharedLoad = sharedCard()
+    const shared = sharedLoad ? await sharedLoad : null
+    if (shared) {
+      if (live.current) setState(shared)
+      return
+    }
     const prepared = next.current
     next.current = null
     if (prepared?.done?.status === 'ready') {
@@ -955,6 +1018,16 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   const [strip, setStrip] = useState<Strip | null>(null)
   const [knownOpen, setKnownOpen] = useState<string | null>(null)
   const [shown, setShown] = useState<{ card: PlayCard; img: HTMLImageElement } | null>(null)
+  const [openMode, setOpenMode] = useState(false)
+  const [introSeen, setIntroSeen] = useState(false)
+  const overview = useCommunityOverview(openMode)
+  const goals = useGoals()
+  const share = useShare()
+  const reduce = useReducedMotion()
+  const tcom = useTranslations('community')
+  useEffect(() => {
+    setOpenMode(new URLSearchParams(window.location.search).has('open'))
+  }, [])
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const notices = useRef<Strip[]>([])
   const card: PlayCard | null = lesson ? lesson.card : flow.card
@@ -1123,6 +1196,46 @@ function Deck({ onHelp }: { onHelp: () => void }) {
   if (!card && !holding) return plain(<EmptyState art={<IconCards size={56} className="text-accent" />} title={t('done')} body={t('doneBody')} />)
   const view = holding && shown ? shown : card ? { card, img } : null
   if (!view) return null
+  const left = openMode ? overview.data?.open_cards : undefined
+  const goal = goals.data?.find((g) => g.key === 'classifications')
+  if (openMode && !lesson && left === 0)
+    return (
+      <SwapShell>
+        <div className="flex min-h-0 flex-1 flex-col" data-testid="open-done">
+          <div className="flex min-h-0 flex-1 overflow-y-auto px-5 py-6">
+            <div className="m-auto w-full text-center">
+              <h1 className={`${STEP_TITLE} text-display`}>{t('open.doneTitle')}</h1>
+              {goal && <p className={`${STEP_BODY} mt-3`}>{tcom('goalLine', { count: goal.count, target: goal.target })}</p>}
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-col gap-2 px-5 pb-4">
+            <button
+              type="button"
+              onClick={() => {
+                window.history.replaceState(window.history.state, '', '/classify')
+                setOpenMode(false)
+              }}
+              className={`${swapButton.primary} w-full flex-none`}
+            >
+              {t('open.more')}
+            </button>
+            <Link href="/community" className={`${swapButton.big} w-full flex-none`}>
+              {t('open.back')}
+            </Link>
+          </div>
+        </div>
+      </SwapShell>
+    )
+  const openTop =
+    openMode && !lesson && left !== undefined ? (
+      <p className="flex items-center justify-center gap-1 truncate text-ui font-semibold leading-tight text-accent" data-testid="open-line">
+        <IconCards size={16} className="shrink-0" />
+        <motion.span key={left} initial={reduce ? false : { opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+          {t('open.line', { n: left })}
+        </motion.span>
+      </p>
+    ) : null
+  const shareCard = !lesson && !isSkyCard(view.card) ? () => void share({ title: t('share.title'), path: `/classify?card=${view.card.id}` }) : undefined
 
   return (
     <>
@@ -1136,12 +1249,31 @@ function Deck({ onHelp }: { onHelp: () => void }) {
         lastLesson={!!lesson && lessonIndex + 1 === lessons.length}
         firstLesson={!!lesson && lessonIndex === 0}
         notice={noticeView}
+        top={openTop}
+        leave={openMode ? '/community' : '/'}
+        past={!lesson && view.card === flow.card ? flow.past : null}
         onHelp={onHelp}
         onAnswer={onAnswer}
+        onShare={shareCard}
+        onSkip={() => void flow.reload([view.card.id])}
         onLessonStale={nextLesson}
         onLessonNext={nextLesson}
       />
       {known}
+      {openMode && !lesson && !introSeen && !!left && (
+        <Sheet open onClose={() => setIntroSeen(true)} title={t('open.title')}>
+          <div className="flex flex-col gap-3 px-4 pb-4 pt-1" data-testid="open-intro">
+            <p className="text-title-sm leading-[1.4] text-text-secondary">{t('open.body', { n: overview.data?.close_votes ?? 0 })}</p>
+            <p className="flex items-center gap-2 text-title-sm font-semibold text-accent">
+              <IconCards size={20} className="shrink-0" />
+              {t('open.left', { n: left })}
+            </p>
+            <button type="button" onClick={() => setIntroSeen(true)} className={`${swapButton.primary} mt-1 w-full flex-none`}>
+              {t('open.start')}
+            </button>
+          </div>
+        </Sheet>
+      )}
     </>
   )
 }
