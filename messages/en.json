@@ -636,9 +636,15 @@
   "classify": {
     "title": "Spot what moves",
     "question": "Did anything move?",
-    "moves": "Yes, it moved",
-    "still": "Nothing moved",
+    "moves": "Yes",
+    "still": "No",
     "unsure": "Not sure",
+    "answered": {
+      "moves": "Moved",
+      "still": "Nothing moved",
+      "glitch": "Photo defect",
+      "unsure": "Not sure"
+    },
     "changes": "See differences",
     "photoAlt": "Sky photo {n} of {total}, {when}",
     "time": {
@@ -652,12 +658,12 @@
     "guide": {
       "step": "Practice {n} of {total}",
       "look": "Watch the photos go by. Did you see a spot change place?",
-      "answer": "Now answer: tap Yes, it moved or swipe to the right.",
-      "still": "Watch the photos and answer. Swiping left means Nothing moved.",
+      "answer": "Now answer: tap Yes or swipe to the right.",
+      "still": "Watch the photos and answer. Swiping left means No.",
       "glitch": "Watch the circle as the photos go by and choose an answer.",
       "saw": "I saw the spot",
       "show": "I didn't, show me",
-      "shown": "The spot jumps from one circle to the other"
+      "shown": "The spot jumps between circles"
     },
     "guesses": {
       "mover": "a moving object",
@@ -667,7 +673,7 @@
       "stationary": "nothing moving",
       "orphan": "a spot with no match in the other photos"
     },
-    "glitch": "Photo defect",
+    "glitch": "Defect",
     "next": "Next card",
     "done": "You've seen all the cards",
     "doneBody": "New photos arrive when NASA releases new data.",
@@ -720,13 +726,13 @@
       "lookTitle": "What to look for",
       "lookBody": "A spot that shows up somewhere else in each photo. Stars stay still.",
       "answerTitle": "How to answer",
-      "answerBody": "Tap a button or swipe the photo: right for \"Yes, it moved\", left for \"Nothing moved\", up for \"Not sure\".",
+      "answerBody": "Tap a button or swipe the photo: right is Yes, left is No, up is Not sure.",
       "betterTitle": "How to look closer",
       "betterBody": "Hold the photo to stop it. Let go to continue. Tap twice to zoom in.",
       "defectTitle": "What a defect is",
       "defectBody": "A spot that shows up in one photo only is usually a camera defect.",
       "emptyTitle": "Finding nothing is normal",
-      "emptyBody": "Most cards have nothing new. Saying \"Nothing moved\" helps too.",
+      "emptyBody": "Most cards have nothing new. Answering that nothing moved helps too.",
       "blackTitle": "Black areas",
       "blackBody": "Black along the edge: the telescope did not photograph this part. A star with a black center: it is too bright for the camera. This is normal."
     },
@@ -777,7 +783,7 @@
       "truthStill": "Nothing moved",
       "whyMoves": "Stars always stay in the same place. An asteroid is closer to us and travels between one photo and the next.",
       "whyDefect": "What is real shows up in almost every photo. What shows up only once is usually a defect.",
-      "whyStill": "Almost no card has anything new. Saying \"Nothing moved\" helps the research too."
+      "whyStill": "Almost no card has anything new. Answering that nothing moved helps the research too."
     },
     "again": "See again",
     "finish": "Finish practice",
@@ -785,6 +791,16 @@
       "title": "Spot what moves in the sky",
       "body1": "These are real photos of the same piece of sky, taken at different times.",
       "body2": "Stars stay still. Asteroids and comets change place.",
+      "swipe": {
+        "right": "It moved",
+        "left": "Nothing moved",
+        "up": "Not sure"
+      },
+      "swipeRead": {
+        "right": "Swipe right: it moved",
+        "left": "Swipe left: nothing moved",
+        "up": "Swipe up: not sure"
+      },
       "start": "{n, plural, one {Practice with # card} other {Practice with # cards}}",
       "skip": "Skip practice"
     },
@@ -798,7 +814,6 @@
     "failed": "Couldn't save your answer.",
     "retry": "Try again",
     "mark": {
-      "said": "Your answer: {choice}",
       "where": "See where? Tap the spot.",
       "marked": "Spot marked. Tap again to change it.",
       "next": "Next"
@@ -856,7 +871,7 @@
       "tag": "You tagged {title}: {tag}"
     },
     "labels": {
-      "real": "yes, it moved",
+      "real": "moved",
       "artifact": "nothing moved",
       "unsure": "not sure"
     },
@@ -1250,7 +1265,7 @@
     "myCards": {
       "title": "All my answers",
       "answers": {
-        "real": "Yes, it moved",
+        "real": "Moved",
         "artifact": "Nothing moved",
         "unsure": "Not sure"
       },
@@ -1309,12 +1324,12 @@
     "lookTitle": "Did anything move between the photos?",
     "lookNote": "You have already seen this finding, so your answer stays apart and does not change the result.",
     "lookChoices": {
-      "real": "Yes, it moved",
-      "artifact": "Nothing moved",
+      "real": "Yes",
+      "artifact": "No",
       "unsure": "Not sure"
     },
     "lookLabels": {
-      "real": "yes, it moved",
+      "real": "moved",
       "artifact": "nothing moved",
       "unsure": "not sure"
     },

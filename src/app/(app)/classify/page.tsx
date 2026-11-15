@@ -1,6 +1,6 @@
 'use client'
 
-import { animate, useMotionValue, useReducedMotion } from 'framer-motion'
+import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
@@ -8,7 +8,7 @@ import { useOffsetLabel } from '@/components/classify/photo-viewer'
 import { AnswerPanel, FrameBars, PhotoBar, SwapPanel, SwapStage, SwapStrip, SWIPE, swapButton, ToolsPanel } from '@/components/classify/swap-photo'
 import { KnownSheet, SwapHelpSheet, UnderstandSheet } from '@/components/classify/swap-sheets'
 import { VoiceMark } from '@/components/classify/voices'
-import { IconCards, IconClose, IconMoves, IconQuestion } from '@/components/icons'
+import { IconArrowRight, IconCards, IconClose, IconMoves, IconQuestion } from '@/components/icons'
 import { usePlayback } from '@/components/player/use-playback'
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Button, EmptyState, IconButton, Skeleton, TopBar } from '@/components/ui/primitives'
@@ -32,6 +32,15 @@ const UNDO_MS = 3000
 const NOTICE_MS = 5000
 const FRAME_MS = 700
 const INTRO_FRAME_MS = 800
+const DEMO_S = 1.5
+const DEMO_PAUSE_MS = 500
+const DEMO_UP_PX = 70
+const DEMO = [
+  { dir: 'right', x: SWIPE, y: 0 },
+  { dir: 'left', x: -SWIPE, y: 0 },
+  { dir: 'up', x: 0, y: -DEMO_UP_PX },
+] as const
+const DEMO_ARROW = { right: '', left: 'rotate-180', up: '-rotate-90' }
 const NUDGE_PX = 44
 const NUDGE_S = 0.7
 const NUDGE_WAIT_MS = 700
@@ -117,10 +126,28 @@ function Coach({ children }: { children: ReactNode }) {
   )
 }
 
-function IntroPhoto({ sprite, frames }: { sprite: string; frames: number }) {
+function SwipeDemo({ sprite, frames }: { sprite: string; frames: number }) {
+  const t = useTranslations('classify.welcome')
   const canvas = useRef<HTMLCanvasElement>(null)
   const img = useSprite(sprite)
   const reduce = useReducedMotion()
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const rotate = useTransform(x, [-240, 240], [-6, 6])
+  const [step, setStep] = useState(0)
+  useEffect(() => {
+    if (reduce) return
+    const move = DEMO[step]
+    const options = { duration: DEMO_S, times: [0, 0.35, 0.65, 1], ease: 'easeInOut' as const }
+    const moves = [animate(x, [0, move.x, move.x, 0], options), animate(y, [0, move.y, move.y, 0], options)]
+    const timer = setTimeout(() => setStep((step + 1) % DEMO.length), DEMO_S * 1000 + DEMO_PAUSE_MS)
+    return () => {
+      clearTimeout(timer)
+      moves.forEach((m) => m.stop())
+      x.set(0)
+      y.set(0)
+    }
+  }, [reduce, step, x, y])
   useEffect(() => {
     const c = canvas.current
     const ctx = c?.getContext('2d')
@@ -139,10 +166,37 @@ function IntroPhoto({ sprite, frames }: { sprite: string; frames: number }) {
     const timer = setInterval(draw, INTRO_FRAME_MS)
     return () => clearInterval(timer)
   }, [frames, img, reduce])
+  const dir = DEMO[step].dir
   return (
-    <div className="mx-auto mb-5 mt-4 aspect-square w-[min(100%,38dvh)] shrink-0 overflow-hidden rounded-[var(--radius-sheet)] bg-media-bg">
-      <canvas ref={canvas} aria-hidden="true" className="pixelated block size-full" />
-    </div>
+    <>
+      <div className="relative -mx-5 mt-4 min-h-[140px] shrink basis-[min(38dvh,calc(100vw-40px))] overflow-x-clip" aria-hidden="true" data-testid="swipe-demo-slot">
+        <div className="absolute inset-0 flex justify-center">
+          <motion.div style={{ x, y, rotate }} className="aspect-square h-full overflow-hidden rounded-[var(--radius-sheet)] bg-media-bg" data-testid="swipe-demo">
+            <canvas ref={canvas} className="pixelated block size-full" />
+          </motion.div>
+        </div>
+      </div>
+      {reduce ? (
+        <div aria-hidden="true" className="my-3 grid shrink-0 grid-cols-3 gap-2" data-testid="swipe-demo-still">
+          {DEMO.map((d) => (
+            <div key={d.dir} className="flex flex-col items-center gap-1 text-center text-[16px] font-semibold leading-tight">
+              <IconArrowRight size={30} className={DEMO_ARROW[d.dir]} />
+              {t(`swipe.${d.dir}`)}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div aria-hidden="true" className="my-2 flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap text-[26px] font-bold leading-none" data-testid="swipe-demo-line" data-dir={dir}>
+          <IconArrowRight size={30} className={`shrink-0 ${DEMO_ARROW[dir]}`} />
+          {t(`swipe.${dir}`)}
+        </div>
+      )}
+      <ul className="sr-only">
+        {DEMO.map((d) => (
+          <li key={d.dir}>{t(`swipeRead.${d.dir}`)}</li>
+        ))}
+      </ul>
+    </>
   )
 }
 
@@ -150,8 +204,8 @@ function Welcome({ lesson, count, onStart, onSkip }: { lesson: { card: DeckCard 
   const t = useTranslations('classify.welcome')
   return (
     <SwapShell>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-4" data-testid="swap-welcome">
-        <IntroPhoto sprite={lesson.card.sprite} frames={Math.max(1, lesson.card.offsets_s.length)} />
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-5 pb-4" data-testid="swap-welcome">
+        <SwipeDemo sprite={lesson.card.sprite} frames={Math.max(1, lesson.card.offsets_s.length)} />
         <h1 className="text-[26px] font-bold leading-tight [text-wrap:balance]">{t('title')}</h1>
         <p className="mt-2.5 text-[17px] leading-snug text-text-secondary">{t('body1')}</p>
         <p className="mt-2.5 text-[17px] leading-snug text-text-secondary">{t('body2')}</p>
@@ -465,10 +519,9 @@ function SwapCard({
         )}
         {mode === 'mark' && (
           <SwapPanel>
-            <div role="status" aria-live="polite">
-              <p className="text-[18px] font-bold leading-snug">{t('mark.said', { choice: t('moves') })}</p>
-              <p className="text-[16px] leading-snug text-text-secondary">{spot ? t('mark.marked') : t('mark.where')}</p>
-            </div>
+            <p role="status" aria-live="polite" className="text-[18px] font-bold leading-snug">
+              {spot ? t('mark.marked') : t('mark.where')}
+            </p>
             <div className="flex gap-2">
               <button type="button" onClick={undoMark} className={swapButton.big}>
                 {t('undo')}
@@ -858,7 +911,7 @@ function Deck({ onHelp }: { onHelp: () => void }) {
 
   const stripView =
     strip?.kind === 'saved' ? (
-      <SwapStrip text={t('strip.saved', { answer: t(strip.answer) })} action={t('undo')} onAction={undo} />
+      <SwapStrip text={t('strip.saved', { answer: t(`answered.${strip.answer}`) })} action={t('undo')} onAction={undo} />
     ) : strip?.kind === 'known' ? (
       <SwapStrip text={t('strip.known', { name: strip.name })} action={t('strip.see')} onAction={() => setKnownOpen(strip.name)} />
     ) : strip?.kind === 'badge' ? (

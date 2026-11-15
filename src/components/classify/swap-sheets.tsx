@@ -89,7 +89,7 @@ export function UnderstandSheet({ open, onClose, reveal, answer, verdict }: { op
     <Sheet open={open} onClose={onClose} title={t('understand.title')}>
       <div className="px-4 pb-4 pt-1">
         <Row voice="you" name={t('understand.you')}>
-          {t(answer)}
+          {t(`answered.${answer}`)}
         </Row>
         <Row voice="program" name={t('understand.computer')}>
           {t('understand.computerFound', { guess: t(`guesses.${reveal.kind}`) })}

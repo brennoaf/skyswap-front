@@ -636,9 +636,15 @@
   "classify": {
     "title": "Ache o que muda de lugar",
     "question": "Algo mudou de lugar?",
-    "moves": "Sim, mudou",
-    "still": "Nada mudou",
-    "unsure": "Não sei dizer",
+    "moves": "Sim",
+    "still": "Não",
+    "unsure": "Não sei",
+    "answered": {
+      "moves": "Mudou",
+      "still": "Nada mudou",
+      "glitch": "Defeito na foto",
+      "unsure": "Não sei dizer"
+    },
     "changes": "Ver diferenças",
     "photoAlt": "Foto do céu {n} de {total}, {when}",
     "time": {
@@ -652,8 +658,8 @@
     "guide": {
       "step": "Treino {n} de {total}",
       "look": "Olhe as fotos passando. Viu algum ponto mudar de lugar?",
-      "answer": "Agora responda: toque em Sim, mudou ou deslize para a direita.",
-      "still": "Olhe as fotos e responda. Deslizar para a esquerda é Nada mudou.",
+      "answer": "Agora responda: toque em Sim ou deslize para a direita.",
+      "still": "Olhe as fotos e responda. Deslizar para a esquerda é Não.",
       "glitch": "Olhe o círculo nas fotos passando e escolha uma resposta.",
       "saw": "Vi o ponto",
       "show": "Não vi, me mostre",
@@ -667,7 +673,7 @@
       "stationary": "nada se movendo",
       "orphan": "um ponto sem par nas outras fotos"
     },
-    "glitch": "Defeito na foto",
+    "glitch": "Defeito",
     "next": "Próximo cartão",
     "done": "Você já viu todos os cartões",
     "doneBody": "Novas fotos chegam quando a NASA publica dados novos.",
@@ -720,13 +726,13 @@
       "lookTitle": "O que procurar",
       "lookBody": "Um ponto que aparece em outro lugar em cada foto. As estrelas ficam paradas.",
       "answerTitle": "Como responder",
-      "answerBody": "Toque em um botão ou deslize a foto: direita para \"Sim, mudou\", esquerda para \"Nada mudou\", para cima para \"Não sei dizer\".",
+      "answerBody": "Toque em um botão ou deslize a foto: direita é Sim, esquerda é Não, para cima é Não sei.",
       "betterTitle": "Como olhar melhor",
       "betterBody": "Segure a foto para parar. Solte para continuar. Toque duas vezes para aproximar.",
       "defectTitle": "O que é defeito",
       "defectBody": "Um ponto que aparece em uma foto só costuma ser defeito da câmera.",
       "emptyTitle": "É normal não achar nada",
-      "emptyBody": "A maioria dos cartões não tem novidade. Dizer \"Nada mudou\" também ajuda.",
+      "emptyBody": "A maioria dos cartões não tem novidade. Responder que nada mudou também ajuda.",
       "blackTitle": "Partes pretas",
       "blackBody": "Parte preta na borda: o telescópio não fotografou essa área. Estrela com centro preto: ela é forte demais para a câmera. É normal."
     },
@@ -777,7 +783,7 @@
       "truthStill": "Nada mudou",
       "whyMoves": "Estrelas ficam sempre no mesmo lugar. Um asteroide está mais perto de nós e anda entre uma foto e outra.",
       "whyDefect": "O que é real aparece em quase todas as fotos. O que aparece uma vez só costuma ser defeito.",
-      "whyStill": "Quase todo cartão não tem novidade. Dizer \"Nada mudou\" também ajuda a pesquisa."
+      "whyStill": "Quase todo cartão não tem novidade. Responder que nada mudou também ajuda a pesquisa."
     },
     "again": "Ver de novo",
     "finish": "Terminar treino",
@@ -785,6 +791,16 @@
       "title": "Ache o que muda de lugar no céu",
       "body1": "Estas são fotos reais do mesmo pedaço do céu, tiradas em momentos diferentes.",
       "body2": "As estrelas ficam paradas. Asteroides e cometas mudam de lugar.",
+      "swipe": {
+        "right": "Mudou de lugar",
+        "left": "Nada mudou",
+        "up": "Não sei"
+      },
+      "swipeRead": {
+        "right": "Deslizar para a direita: mudou de lugar",
+        "left": "Deslizar para a esquerda: nada mudou",
+        "up": "Deslizar para cima: não sei"
+      },
       "start": "{n, plural, one {Treinar com # cartão} other {Treinar com # cartões}}",
       "skip": "Pular treino"
     },
@@ -798,7 +814,6 @@
     "failed": "Não deu para salvar sua resposta.",
     "retry": "Tentar de novo",
     "mark": {
-      "said": "Sua resposta: {choice}",
       "where": "Viu onde? Toque no ponto.",
       "marked": "Ponto marcado. Toque de novo para mudar.",
       "next": "Próximo"
@@ -856,7 +871,7 @@
       "tag": "Você etiquetou {title}: {tag}"
     },
     "labels": {
-      "real": "sim, mudou",
+      "real": "mudou",
       "artifact": "nada mudou",
       "unsure": "não tenho certeza"
     },
@@ -1250,7 +1265,7 @@
     "myCards": {
       "title": "Todas as minhas respostas",
       "answers": {
-        "real": "Sim, mudou",
+        "real": "Mudou",
         "artifact": "Nada mudou",
         "unsure": "Não sei dizer"
       },
@@ -1309,12 +1324,12 @@
     "lookTitle": "Algo mudou de lugar entre as fotos?",
     "lookNote": "Você já viu este achado, então sua resposta fica à parte e não muda o resultado.",
     "lookChoices": {
-      "real": "Sim, mudou",
-      "artifact": "Nada mudou",
+      "real": "Sim",
+      "artifact": "Não",
       "unsure": "Não sei"
     },
     "lookLabels": {
-      "real": "sim, mudou",
+      "real": "mudou",
       "artifact": "nada mudou",
       "unsure": "não sei"
     },

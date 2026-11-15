@@ -520,6 +520,12 @@ export const IconChevronLeft = (p: IconProps) => (
   </Svg>
 )
 
+export const IconArrowRight = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6 16H26M18 8L26 16L18 24" {...LINE} strokeWidth={2.8} />
+  </Svg>
+)
+
 export const IconChevronRight = (p: IconProps) => (
   <Svg {...p}>
     <path d="M13 8L21 16L13 24" {...LINE} strokeWidth={2.6} />
