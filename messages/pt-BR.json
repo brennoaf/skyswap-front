@@ -738,13 +738,6 @@
       "emptyTitle": "É normal não achar nada",
       "emptyBody": "A maioria dos cartões não tem novidade. Dizer \"Nada mudou\" também ajuda."
     },
-    "dipole": {
-      "whole": "O que mudou, foto inteira",
-      "zoom": "Zoom no quadrado",
-      "wholeAlt": "Diferença entre duas fotos do SPHEREx com um ano de intervalo, campo inteiro",
-      "zoomAlt": "Detalhe: uma mancha escura onde o objeto estava, encostada numa mancha clara onde ele está agora",
-      "source": "Dados reais do SPHEREx: {name}, {last} menos {first}."
-    },
     "practice": "Treino: sem pontos.",
     "confirm": {
       "said": "Sua resposta: {choice}",

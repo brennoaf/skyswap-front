@@ -738,13 +738,6 @@
       "emptyTitle": "Finding nothing is normal",
       "emptyBody": "Most cards have nothing new. Saying \"Nothing moved\" helps too."
     },
-    "dipole": {
-      "whole": "What changed, whole photo",
-      "zoom": "Zoomed in on the box",
-      "wholeAlt": "Difference between two SPHEREx photos a year apart, whole field",
-      "zoomAlt": "Close-up: a dark spot where the object was, touching a bright spot where it is now",
-      "source": "Real SPHEREx data: {name}, {last} minus {first}."
-    },
     "practice": "Practice: no points.",
     "confirm": {
       "said": "Your answer: {choice}",
