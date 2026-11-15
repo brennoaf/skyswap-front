@@ -305,12 +305,12 @@ export function SwapCard({
       ) : mode === 'tools' ? (
         <div className="flex min-h-0 flex-1 flex-col" data-testid="swap-lower">
           <PhotoBar playback={playback} offsets={offsets} open strip={<ToolsStrip playback={playback} sprite={card.sprite} offsets={offsets} row={row} />} onTools={() => dispatch({ type: 'tools', open: false })} />
-          <ToolsPanel playback={playback} row={row} onRow={(next) => dispatch({ type: 'row', row: next })} hints={sky ? { on: state.hintsOn, onChange: (on) => dispatch({ type: 'hints', on }) } : undefined} />
+          <ToolsPanel playback={playback} row={row} onRow={(next) => dispatch({ type: 'row', row: next })} />
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden" data-testid="swap-lower">
           <div className={dim} inert={sheetOpen || undefined}>
-            <PhotoBar playback={playback} offsets={offsets} onTools={() => dispatch({ type: 'tools', open: true })} />
+            <PhotoBar playback={playback} offsets={offsets} onTools={() => dispatch({ type: 'tools', open: true })} hints={sky && !lesson ? { on: state.hintsOn, onChange: (on) => dispatch({ type: 'hints', on }) } : undefined} />
           </div>
           <div className="min-h-0 flex-1" />
           <div className={cx('shrink-0 px-4 transition-[transform,opacity] duration-300', lesson ? 'pb-4' : 'pb-5', sheetOpen && 'pointer-events-none translate-y-6 opacity-0')} inert={sheetOpen || undefined} data-testid="swap-ask">

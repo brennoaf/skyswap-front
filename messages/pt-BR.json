@@ -50,13 +50,13 @@
       "for_you": "Para você",
       "following": "Seguindo",
       "new": "Novos da semana",
-      "targets": "Alvos do desafio"
+      "targets": "Recomendados"
     },
     "tabHints": {
       "for_you": "Uma mistura de todos os objetos do SkySwap",
       "following": "Só os objetos que você segue",
       "new": "Passagens do SPHEREx dos últimos 7 dias",
-      "targets": "Os 5 alvos de teste oficiais do NASA Space Apps"
+      "targets": "5 objetos para começar"
     },
     "backToForYou": "Voltar para Para você",
     "notices": {
@@ -77,8 +77,8 @@
         "body": "Nenhum dado novo do SPHEREx nesta semana."
       },
       "targets": {
-        "title": "Nenhum alvo",
-        "body": "Os alvos do desafio não estão disponíveis agora."
+        "title": "Nenhum recomendado",
+        "body": "Os recomendados não estão disponíveis agora."
       }
     },
     "explore": "Explorar objetos",
@@ -599,7 +599,7 @@
     "coordinates": "Posição: {ra}, {dec}",
     "recentSearch": "Pesquisar de novo por {q}",
     "exploreTile": "Abrir o post de {name}",
-    "targets": "Alvos do desafio"
+    "targets": "Recomendados"
   },
   "sky": {
     "title": "Ponto do céu",
@@ -796,8 +796,9 @@
       "map": "Ver o céu que exploramos juntos"
     },
     "flashlight": {
-      "button": "Dicas",
+      "button": "Palpites da máquina",
       "kinds": {
+        "moved": "Palpite: pontos em linha entre as fotos. Pode ter se movido.",
         "appeared": "Palpite: algo aqui não estava nas outras fotos.",
         "missing": "Palpite: algo aqui sumiu.",
         "flash": "Palpite: um ponto em uma foto só. Pode ser defeito."

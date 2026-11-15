@@ -476,7 +476,18 @@ export const IconDice = (p: IconProps) => (
   </Svg>
 )
 
-export const IconCrosshair = (p: IconProps) => (
+export const IconRobot = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M16 5.5V9.5" {...LINE} />
+    <circle cx="16" cy="4.6" r="1.6" fill="currentColor" />
+    <rect x="7" y="9.5" width="18" height="15" rx="4.5" {...LINE} />
+    <path d="M4 15.5V19.5M28 15.5V19.5M13 20.5H19" {...LINE} />
+    <circle cx="12.4" cy="15.6" r="1.6" fill="currentColor" />
+    <circle cx="19.6" cy="15.6" r="1.6" fill="currentColor" />
+  </Svg>
+)
+
+export const IconCrosshair =(p: IconProps) => (
   <Svg {...p}>
     <path d="M16 4.5V11M16 21V27.5M4.5 16H11M21 16H27.5" {...LINE} />
     <circle cx="16" cy="16" r="1.5" fill="currentColor" />

@@ -50,13 +50,13 @@
       "for_you": "For you",
       "following": "Following",
       "new": "New this week",
-      "targets": "Challenge targets"
+      "targets": "Recommended"
     },
     "tabHints": {
       "for_you": "A mix of every object in SkySwap",
       "following": "Only objects you follow",
       "new": "SPHEREx passes from the last 7 days",
-      "targets": "The 5 official NASA Space Apps test targets"
+      "targets": "5 objects to start with"
     },
     "backToForYou": "Back to For you",
     "notices": {
@@ -77,8 +77,8 @@
         "body": "No new SPHEREx data this week."
       },
       "targets": {
-        "title": "No targets",
-        "body": "The challenge targets aren't available right now."
+        "title": "Nothing recommended",
+        "body": "The recommended objects aren't available right now."
       }
     },
     "explore": "Explore objects",
@@ -599,7 +599,7 @@
     "coordinates": "Position: {ra}, {dec}",
     "recentSearch": "Search again for {q}",
     "exploreTile": "Open {name}'s post",
-    "targets": "Challenge targets"
+    "targets": "Recommended"
   },
   "sky": {
     "title": "Sky spot",
@@ -796,8 +796,9 @@
       "map": "See the sky we've explored together"
     },
     "flashlight": {
-      "button": "Hints",
+      "button": "Machine guesses",
       "kinds": {
+        "moved": "Guess: dots in a line across the photos. It may have moved.",
         "appeared": "Guess: something here was not in the other photos.",
         "missing": "Guess: something here is gone.",
         "flash": "Guess: a spot in one photo only. It may be a defect."

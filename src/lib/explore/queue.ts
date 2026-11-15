@@ -108,6 +108,7 @@ async function finish(draft: SkyCardDraft, reg: SkyRegistration, thumb: string |
       draft.exposures.map((e) => e.img),
       draft.exposures.map((e) => e.variance),
       draft.exposures.map((e) => e.visit),
+      draft.exposures.map((e) => e.mjd),
       draft.size_px,
     ),
   ])

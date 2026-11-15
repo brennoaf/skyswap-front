@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { useCardGestures } from '@/components/classify/card-gestures'
 import { useOffsetLabel } from '@/components/classify/photo-viewer'
-import { IconCheck, IconClose, IconPause, IconPlay, IconQuestion, IconShrink, IconSliders, IconWarning } from '@/components/icons'
+import { IconCheck, IconClose, IconPause, IconPlay, IconQuestion, IconRobot, IconShrink, IconSliders, IconWarning } from '@/components/icons'
 import { PhotoStrip } from '@/components/player/player-bar'
 import type { Playback } from '@/components/player/use-playback'
 import { Skeleton, Switch } from '@/components/ui/primitives'
@@ -225,7 +225,21 @@ export function SwapStage({
   )
 }
 
-export function PhotoBar({ playback, offsets, onTools, open = false, strip }: { playback: Playback; offsets: number[]; onTools: () => void; open?: boolean; strip?: ReactNode }) {
+export function PhotoBar({
+  playback,
+  offsets,
+  onTools,
+  open = false,
+  strip,
+  hints,
+}: {
+  playback: Playback
+  offsets: number[]
+  onTools: () => void
+  open?: boolean
+  strip?: ReactNode
+  hints?: { on: boolean; onChange: (on: boolean) => void }
+}) {
   const t = useTranslations('classify')
   const tp = useTranslations('player')
   const label = useOffsetLabel()
@@ -249,6 +263,18 @@ export function PhotoBar({ playback, offsets, onTools, open = false, strip }: { 
           </div>
         )}
       </div>
+      {hints && !open && (
+        <button
+          type="button"
+          aria-label={t('flashlight.button')}
+          aria-pressed={hints.on}
+          onClick={() => hints.onChange(!hints.on)}
+          className={cx(answerCircle, 'size-11 shrink-0 transition-colors duration-150', hints.on ? 'bg-text text-bg ring-text' : 'text-text active:bg-surface-pressed')}
+          data-testid="hints-toggle"
+        >
+          <IconRobot size={24} />
+        </button>
+      )}
       <button
         type="button"
         aria-label={open ? t('tools.close') : t('tools.open')}
@@ -298,12 +324,10 @@ export function ToolsPanel({
   playback,
   row,
   onRow,
-  hints,
 }: {
   playback: Playback
   row: 0 | 1
   onRow: (row: 0 | 1) => void
-  hints?: { on: boolean; onChange: (on: boolean) => void }
 }) {
   const t = useTranslations('classify')
   const setSpeed = useUi((s) => s.setSpeed)
@@ -317,9 +341,7 @@ export function ToolsPanel({
         ))}
       </div>
       <ToolRow name={t('tools.blink')} checked={playback.blinking} onChange={(on) => (on ? playback.startBlink() : playback.stopBlink())} />
-      <ToolRow name={t('tools.diff')} note={row === 1 ? t('tools.diffNote') : undefined} checked={row === 1} onChange={(on) => onRow(on ? 1 : 0)} />
-      {hints && <ToolRow name={t('flashlight.button')} checked={hints.on} onChange={hints.onChange} />}
-    </div>
+      <ToolRow name={t('tools.diff')} note={row === 1 ? t('tools.diffNote') : undefined} checked={row === 1} onChange={(on) => onRow(on ? 1 : 0)} />    </div>
   )
 }
 
