@@ -2538,6 +2538,7 @@ export interface paths {
                                         persistence: number;
                                     };
                                 };
+                                anim: string | null;
                                 thread: {
                                     votes: number;
                                     my_vote: number;
@@ -3150,6 +3151,7 @@ export interface paths {
                                     persistence: number;
                                 };
                             };
+                            anim: string | null;
                             thread: {
                                 votes: number;
                                 my_vote: number;
@@ -3301,6 +3303,7 @@ export interface paths {
                                         persistence: number;
                                     };
                                 };
+                                anim: string | null;
                                 thread: {
                                     votes: number;
                                     my_vote: number;
@@ -5616,6 +5619,7 @@ export interface components {
                         persistence: number;
                     };
                 };
+                anim: string | null;
                 thread: {
                     votes: number;
                     my_vote: number;
@@ -5714,6 +5718,7 @@ export interface components {
                     persistence: number;
                 };
             };
+            anim: string | null;
             thread: {
                 votes: number;
                 my_vote: number;

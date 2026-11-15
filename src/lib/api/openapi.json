@@ -2589,6 +2589,7 @@
                     "source",
                     "object",
                     "post",
+                    "anim",
                     "thread",
                     "social"
                   ],
@@ -2931,6 +2932,16 @@
                         }
                       }
                     },
+                    "anim": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "thread": {
                       "type": "object",
                       "required": [
@@ -3081,6 +3092,7 @@
           "source",
           "object",
           "post",
+          "anim",
           "thread",
           "social"
         ],
@@ -3422,6 +3434,16 @@
                 }
               }
             }
+          },
+          "anim": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "thread": {
             "type": "object",
@@ -10927,6 +10949,7 @@
                               "source",
                               "object",
                               "post",
+                              "anim",
                               "thread",
                               "social"
                             ],
@@ -11268,6 +11291,16 @@
                                     }
                                   }
                                 }
+                              },
+                              "anim": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
                               },
                               "thread": {
                                 "type": "object",
@@ -12292,6 +12325,7 @@
                     "source",
                     "object",
                     "post",
+                    "anim",
                     "thread",
                     "social"
                   ],
@@ -12634,6 +12668,16 @@
                         }
                       }
                     },
+                    "anim": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
                     "thread": {
                       "type": "object",
                       "required": [
@@ -12861,6 +12905,7 @@
                           "source",
                           "object",
                           "post",
+                          "anim",
                           "thread",
                           "social"
                         ],
@@ -13202,6 +13247,16 @@
                                 }
                               }
                             }
+                          },
+                          "anim": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           },
                           "thread": {
                             "type": "object",

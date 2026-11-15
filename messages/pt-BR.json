@@ -1710,7 +1710,8 @@
       "known": "já conhecido",
       "source": "Fonte",
       "years": "{from} a {to}",
-      "spectrum": "Espectro"
+      "spectrum": "Espectro",
+      "colours": "{n} cores"
     }
   },
   "player": {

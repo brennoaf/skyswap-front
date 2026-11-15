@@ -47,7 +47,7 @@ function useInView<T extends Element>() {
   return { ref, inView }
 }
 
-function useCycle(n: number) {
+function useCycle(n: number, animated = false) {
   const { ref, inView } = useInView<HTMLButtonElement>()
   const [paused, setPaused] = useState(false)
   const [still, setStill] = useState(false)
@@ -55,18 +55,19 @@ function useCycle(n: number) {
   useEffect(() => {
     setStill(matchMedia('(prefers-reduced-motion: reduce)').matches)
   }, [])
-  const running = n > 1 && inView && !paused && !still
+  const canPlay = animated ? !still : n > 1
+  const running = canPlay && inView && !paused
   useEffect(() => {
-    if (!running) return
+    if (!running || animated) return
     const timer = setInterval(() => setI((v) => (v + 1) % n), FRAME_MS)
     return () => clearInterval(timer)
-  }, [running, n])
-  return { ref, i, playing: running, toggle: () => (still ? setI((v) => (v + 1) % n) : setPaused((p) => !p)), canPlay: n > 1 }
+  }, [running, n, animated])
+  return { ref, i, playing: running, toggle: () => (still ? setI((v) => (v + 1) % n) : setPaused((p) => !p)), canPlay }
 }
 
-function MediaBox({ count, label, caption, mention, children }: { count: number; label: string; caption: string | null; mention: ReactNode; children: (i: number, playing: boolean) => ReactNode }) {
+function MediaBox({ count, animated = false, label, caption, mention, children }: { count: number; animated?: boolean; label: string; caption: string | null; mention: ReactNode; children: (i: number, playing: boolean) => ReactNode }) {
   const t = useTranslations('community.card')
-  const cycle = useCycle(count)
+  const cycle = useCycle(count, animated)
   return (
     <div className="relative aspect-square w-full overflow-hidden bg-media-bg" data-testid="card-media">
       <button
@@ -203,6 +204,7 @@ function useCaption() {
     const last = post.frames[post.frames.length - 1]
     if (isLongBaseline(post) && first && last) return t('years', { from: frameYear(first), to: frameYear(last) })
     if (!post.frames.length) return t('spectrum')
+    if (post.type === 'band_compare') return t('colours', { n: post.frames.length })
     return tp(`types.${post.type}`)
   }
 }
@@ -216,6 +218,7 @@ export function AppCard({ item, full = false }: { item: AppPostItem; full?: bool
   const { title, body } = splitHeadline(pt ? item.text.pt : item.text.en)
   const frames = item.post.frames.map((f) => f.src)
   const shots = frames.length ? frames : [item.post.cover]
+  const anim = full ? null : item.anim
   return (
     <Shell
       id={item.id}
@@ -241,11 +244,18 @@ export function AppCard({ item, full = false }: { item: AppPostItem; full?: bool
         </>
       }
       media={
-        <MediaBox count={shots.length} label={title} caption={caption(item.post)} mention={<ObjectMention object={item.object} known />}>
+        <MediaBox count={anim ? 1 : shots.length} animated={!!anim} label={title} caption={caption(item.post)} mention={<ObjectMention object={item.object} known />}>
           {(i, playing) =>
-            [i, ...(playing ? [(i + 1) % shots.length] : [])].map((k) => (
-              <Image key={shots[k]} src={shots[k] as string} alt="" fill sizes="(max-width: 470px) 100vw, 470px" className={cx('object-contain', frames.length > 0 && 'pixelated', k === i ? 'opacity-100' : 'opacity-0')} priority={k === 0 && full} unoptimized />
-            ))
+            anim ? (
+              <>
+                <Image src={shots[0] as string} alt="" fill sizes="(max-width: 470px) 100vw, 470px" className={cx('object-contain', frames.length > 0 && 'pixelated')} unoptimized data-testid="card-still" />
+                {playing && <Image src={anim} alt="" fill sizes="(max-width: 470px) 100vw, 470px" className={cx('object-contain', frames.length > 0 && 'pixelated')} unoptimized data-testid="card-anim" />}
+              </>
+            ) : (
+              [i, ...(playing ? [(i + 1) % shots.length] : [])].map((k) => (
+                <Image key={shots[k]} src={shots[k] as string} alt="" fill sizes="(max-width: 470px) 100vw, 470px" className={cx('object-contain', frames.length > 0 && 'pixelated', k === i ? 'opacity-100' : 'opacity-0')} priority={k === 0 && full} unoptimized />
+              ))
+            )
           }
         </MediaBox>
       }

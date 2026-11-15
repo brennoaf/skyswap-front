@@ -1710,7 +1710,8 @@
       "known": "already known",
       "source": "Source",
       "years": "{from} to {to}",
-      "spectrum": "Spectrum"
+      "spectrum": "Spectrum",
+      "colours": "{n} colours"
     }
   },
   "player": {
