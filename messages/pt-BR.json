@@ -657,7 +657,7 @@
     },
     "guide": {
       "step": "Treino {n} de {total}",
-      "look": "Olhe as fotos passando. Viu algum ponto mudar de lugar?",
+      "look": "Olhe as fotos passando.",
       "answer": "Agora responda: toque em Sim ou deslize para a direita.",
       "still": "Olhe as fotos e responda. Deslizar para a esquerda é Não.",
       "glitch": "Olhe o círculo nas fotos passando e escolha uma resposta.",

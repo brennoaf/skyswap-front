@@ -657,7 +657,7 @@
     },
     "guide": {
       "step": "Practice {n} of {total}",
-      "look": "Watch the photos go by. Did you see a spot change place?",
+      "look": "Watch the photos go by.",
       "answer": "Now answer: tap Yes or swipe to the right.",
       "still": "Watch the photos and answer. Swiping left means No.",
       "glitch": "Watch the circle as the photos go by and choose an answer.",

@@ -1186,24 +1186,26 @@ function Deck({ onHelp }: { onHelp: () => void }) {
                 },
               }
             : null
-  const noticeView = pill && (
-    <motion.div
-      key={pill.key}
-      role="status"
-      initial={reduce ? false : { y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 420, damping: 22 }}
-      className="fixed left-1/2 top-[calc(env(safe-area-inset-top)+28px)] z-[46] flex min-h-10 max-w-[calc(min(100vw,var(--width-app))-24px)] -translate-x-1/2 items-center gap-2 rounded-full bg-text py-1.5 pl-4 pr-1.5 text-ui font-semibold leading-tight text-bg shadow-[0_8px_24px_rgb(0_0_0/0.25)]"
-      data-testid={pill.saved ? 'saved-pill' : 'swap-strip'}
-    >
-      {pill.saved && <IconCheck size={18} className="shrink-0" />}
-      <span className={cx('min-w-0', !pill.action && 'pr-2.5')}>{pill.text}</span>
-      {pill.action && (
-        <button type="button" onClick={pill.onAction} className="h-8 shrink-0 rounded-full bg-bg px-3 text-ui font-semibold text-text">
-          {pill.action}
-        </button>
-      )}
-    </motion.div>
+  const noticeView = pill && !openMode && (
+    <div className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top)+28px)] z-[46] mx-auto flex max-w-[var(--width-app)] justify-center px-3">
+      <motion.div
+        key={pill.key}
+        role="status"
+        initial={reduce ? false : { y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 420, damping: 22 }}
+        className="pointer-events-auto flex min-h-10 items-center gap-2 rounded-full bg-text py-1.5 pl-4 pr-1.5 text-ui font-semibold leading-tight text-bg shadow-[0_8px_24px_rgb(0_0_0/0.25)]"
+        data-testid={pill.saved ? 'saved-pill' : 'swap-strip'}
+      >
+        {pill.saved && <IconCheck size={18} className="shrink-0" />}
+        <span className={cx('min-w-0', !pill.action && 'pr-2.5')}>{pill.text}</span>
+        {pill.action && (
+          <button type="button" onClick={pill.onAction} className="h-8 shrink-0 rounded-full bg-bg px-3 text-ui font-semibold text-text">
+            {pill.action}
+          </button>
+        )}
+      </motion.div>
+    </div>
   )
 
   const known = <KnownSheet name={knownOpen} onClose={() => setKnownOpen(null)} />
@@ -1291,11 +1293,16 @@ function Deck({ onHelp }: { onHelp: () => void }) {
     )
   const openTop =
     openMode && !lesson && left !== undefined ? (
-      <p className="flex items-center justify-center gap-1 truncate text-ui font-semibold leading-tight text-accent" data-testid="open-line">
-        <IconCards size={16} className="shrink-0" />
-        <motion.span key={left} initial={reduce ? false : { opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
-          {t('open.line', { n: left })}
+      <p role="status" className="flex items-center justify-center gap-1 text-ui font-semibold leading-tight text-accent" data-testid="open-line">
+        {pill?.saved ? <IconCheck size={16} className="shrink-0" /> : <IconCards size={16} className="shrink-0" />}
+        <motion.span key={pill?.key ?? left} initial={reduce ? false : { opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="min-w-0 truncate">
+          {pill ? pill.text : t('open.line', { n: left })}
         </motion.span>
+        {pill?.action && (
+          <button type="button" onClick={pill.onAction} className="pointer-events-auto shrink-0 underline underline-offset-2">
+            {pill.action}
+          </button>
+        )}
       </p>
     ) : null
   const shareCard = !lesson && !isSkyCard(view.card) ? () => void share({ title: t('share.title'), path: `/classify?card=${view.card.id}` }) : undefined
@@ -1324,14 +1331,19 @@ function Deck({ onHelp }: { onHelp: () => void }) {
       {known}
       {noticeView}
       {openMode && !lesson && !introSeen && !!left && (
-        <Sheet open onClose={() => setIntroSeen(true)} title={t('open.title')}>
-          <div className="flex flex-col gap-3 px-4 pb-4 pt-1" data-testid="open-intro">
-            <p className="text-title-sm leading-[1.4] text-text-secondary">{t('open.body', { n: overview.data?.close_votes ?? 0 })}</p>
-            <p className="flex items-center gap-2 text-title-sm font-semibold text-accent">
-              <IconCards size={20} className="shrink-0" />
-              {t('open.left', { n: left })}
-            </p>
-            <button type="button" onClick={() => setIntroSeen(true)} className={`${swapButton.primary} mt-1 w-full flex-none`}>
+        <Sheet open onClose={() => setIntroSeen(true)} labelledBy="open-intro-title">
+          <div className="flex flex-col px-4 pb-1 pt-2" data-testid="open-intro">
+            <div className="flex items-center gap-3.5">
+              <span className="grid size-[52px] shrink-0 place-items-center rounded-full bg-accent text-on-accent">
+                <IconCards size={28} />
+              </span>
+              <h2 id="open-intro-title" className="min-w-0 text-title-lg font-bold leading-tight tracking-[-0.01em]">
+                {t('open.title')}
+              </h2>
+            </div>
+            <p className="mt-3.5 text-title-sm leading-[1.4] text-text-secondary">{t('open.body', { n: overview.data?.close_votes ?? 0 })}</p>
+            <p className="mt-3 text-title-sm font-semibold leading-snug text-accent">{t('open.left', { n: left })}</p>
+            <button type="button" onClick={() => setIntroSeen(true)} className="mt-4 flex h-[54px] w-full items-center justify-center rounded-2xl bg-accent text-[17px] font-semibold text-on-accent active:bg-accent-pressed">
               {t('open.start')}
             </button>
           </div>
