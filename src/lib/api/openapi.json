@@ -1787,7 +1787,8 @@
         "required": [
           "id",
           "nickname",
-          "created_at"
+          "created_at",
+          "avatar"
         ],
         "properties": {
           "id": {
@@ -1798,6 +1799,51 @@
           },
           "created_at": {
             "type": "number"
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "id",
+                  "url",
+                  "title",
+                  "date",
+                  "credit",
+                  "image_url"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "credit": {
+                    "type": "string"
+                  },
+                  "image_url": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       },
@@ -4578,7 +4624,8 @@
                           "required": [
                             "id",
                             "nickname",
-                            "created_at"
+                            "created_at",
+                            "avatar"
                           ],
                           "properties": {
                             "id": {
@@ -4589,6 +4636,51 @@
                             },
                             "created_at": {
                               "type": "number"
+                            },
+                            "avatar": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "id",
+                                    "url",
+                                    "title",
+                                    "date",
+                                    "credit",
+                                    "image_url"
+                                  ],
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "url": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string"
+                                    },
+                                    "date": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "credit": {
+                                      "type": "string"
+                                    },
+                                    "image_url": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
                             }
                           }
                         },
@@ -4623,6 +4715,10 @@
                     "minLength": 3,
                     "maxLength": 24,
                     "pattern": "^[A-Za-z0-9_.]+$"
+                  },
+                  "avatar_id": {
+                    "type": "string",
+                    "maxLength": 40
                   }
                 }
               }
@@ -4647,7 +4743,8 @@
                           "required": [
                             "id",
                             "nickname",
-                            "created_at"
+                            "created_at",
+                            "avatar"
                           ],
                           "properties": {
                             "id": {
@@ -4658,6 +4755,51 @@
                             },
                             "created_at": {
                               "type": "number"
+                            },
+                            "avatar": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "id",
+                                    "url",
+                                    "title",
+                                    "date",
+                                    "credit",
+                                    "image_url"
+                                  ],
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "url": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string"
+                                    },
+                                    "date": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "credit": {
+                                      "type": "string"
+                                    },
+                                    "image_url": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
                             }
                           }
                         },
@@ -4713,7 +4855,8 @@
                           "required": [
                             "id",
                             "nickname",
-                            "created_at"
+                            "created_at",
+                            "avatar"
                           ],
                           "properties": {
                             "id": {
@@ -4724,6 +4867,51 @@
                             },
                             "created_at": {
                               "type": "number"
+                            },
+                            "avatar": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "id",
+                                    "url",
+                                    "title",
+                                    "date",
+                                    "credit",
+                                    "image_url"
+                                  ],
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "url": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string"
+                                    },
+                                    "date": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "credit": {
+                                      "type": "string"
+                                    },
+                                    "image_url": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
                             }
                           }
                         },
@@ -4731,6 +4919,233 @@
                           "type": "null"
                         }
                       ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/avatars/offer": {
+      "get": {
+        "tags": [
+          "session"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 1200
+            },
+            "in": "query",
+            "name": "not",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "avatars"
+                  ],
+                  "properties": {
+                    "avatars": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "url",
+                          "title",
+                          "date",
+                          "credit",
+                          "image_url"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "date": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "credit": {
+                            "type": "string"
+                          },
+                          "image_url": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/avatar": {
+      "put": {
+        "tags": [
+          "me"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "avatar_id"
+                ],
+                "properties": {
+                  "avatar_id": {
+                    "type": "string",
+                    "maxLength": 40
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "user"
+                  ],
+                  "properties": {
+                    "user": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "nickname",
+                            "created_at",
+                            "avatar"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "nickname": {
+                              "type": "string"
+                            },
+                            "created_at": {
+                              "type": "number"
+                            },
+                            "avatar": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "required": [
+                                    "id",
+                                    "url",
+                                    "title",
+                                    "date",
+                                    "credit",
+                                    "image_url"
+                                  ],
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "url": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string"
+                                    },
+                                    "date": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "credit": {
+                                      "type": "string"
+                                    },
+                                    "image_url": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
                     }
                   }
                 }
@@ -5251,7 +5666,8 @@
                       "required": [
                         "id",
                         "nickname",
-                        "created_at"
+                        "created_at",
+                        "avatar"
                       ],
                       "properties": {
                         "id": {
@@ -5262,6 +5678,51 @@
                         },
                         "created_at": {
                           "type": "number"
+                        },
+                        "avatar": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "required": [
+                                "id",
+                                "url",
+                                "title",
+                                "date",
+                                "credit",
+                                "image_url"
+                              ],
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "url": {
+                                  "type": "string"
+                                },
+                                "title": {
+                                  "type": "string"
+                                },
+                                "date": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "credit": {
+                                  "type": "string"
+                                },
+                                "image_url": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       }
                     },

@@ -1,6 +1,7 @@
 'use client'
 
-import { useId } from 'react'
+import Image from 'next/image'
+import { useId, useState } from 'react'
 import { cx } from '@/lib/format'
 
 function hash(s: string): number {
@@ -63,17 +64,22 @@ function Silhouette() {
   )
 }
 
-export function UserAvatar({ nickname, size = 32, active = false, className }: { nickname: string | null; size?: number; active?: boolean; className?: string }) {
+export function UserAvatar({ nickname, src, size = 32, active = false, className }: { nickname: string | null; src?: string | null; size?: number; active?: boolean; className?: string }) {
   const id = useId().replace(/:/g, '')
+  const [failed, setFailed] = useState<string | null>(null)
   return (
     <span
       className={cx('inline-flex shrink-0 overflow-hidden rounded-full', active && 'ring-[1.5px] ring-text ring-offset-[1.5px] ring-offset-bg', className)}
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <svg viewBox="0 0 32 32" width={size} height={size}>
-        {nickname ? <SkyPatch nickname={nickname} id={id} /> : <Silhouette />}
-      </svg>
+      {src && failed !== src ? (
+        <Image src={src} alt="" width={size} height={size} unoptimized onError={() => setFailed(src)} className="size-full object-cover" />
+      ) : (
+        <svg viewBox="0 0 32 32" width={size} height={size}>
+          {nickname ? <SkyPatch nickname={nickname} id={id} /> : <Silhouette />}
+        </svg>
+      )}
     </span>
   )
 }

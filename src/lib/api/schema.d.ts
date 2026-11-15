@@ -821,6 +821,14 @@ export interface paths {
                                 id: string;
                                 nickname: string;
                                 created_at: number;
+                                avatar: {
+                                    id: string;
+                                    url: string;
+                                    title: string;
+                                    date: string | null;
+                                    credit: string;
+                                    image_url: string;
+                                } | null;
                             } | null;
                         };
                     };
@@ -839,6 +847,7 @@ export interface paths {
                 content: {
                     "application/json": {
                         nickname: string;
+                        avatar_id?: string;
                     };
                 };
             };
@@ -853,6 +862,14 @@ export interface paths {
                                 id: string;
                                 nickname: string;
                                 created_at: number;
+                                avatar: {
+                                    id: string;
+                                    url: string;
+                                    title: string;
+                                    date: string | null;
+                                    credit: string;
+                                    image_url: string;
+                                } | null;
                             } | null;
                         };
                     };
@@ -888,12 +905,139 @@ export interface paths {
                                 id: string;
                                 nickname: string;
                                 created_at: number;
+                                avatar: {
+                                    id: string;
+                                    url: string;
+                                    title: string;
+                                    date: string | null;
+                                    credit: string;
+                                    image_url: string;
+                                } | null;
                             } | null;
                         };
                     };
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/avatars/offer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    not?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            avatars: {
+                                id: string;
+                                url: string;
+                                title: string;
+                                date: string | null;
+                                credit: string;
+                                image_url: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        avatar_id: string;
+                    };
+                };
+            };
+            responses: {
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            user: {
+                                id: string;
+                                nickname: string;
+                                created_at: number;
+                                avatar: {
+                                    id: string;
+                                    url: string;
+                                    title: string;
+                                    date: string | null;
+                                    credit: string;
+                                    image_url: string;
+                                } | null;
+                            } | null;
+                        };
+                    };
+                };
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1144,6 +1288,14 @@ export interface paths {
                                 id: string;
                                 nickname: string;
                                 created_at: number;
+                                avatar: {
+                                    id: string;
+                                    url: string;
+                                    title: string;
+                                    date: string | null;
+                                    credit: string;
+                                    image_url: string;
+                                } | null;
                             };
                             xp: number;
                             xp_today: number;
@@ -3013,6 +3165,14 @@ export interface components {
             id: string;
             nickname: string;
             created_at: number;
+            avatar: {
+                id: string;
+                url: string;
+                title: string;
+                date: string | null;
+                credit: string;
+                image_url: string;
+            } | null;
         };
         Reveal: {
             your_choice: "moves" | "still" | "unsure";

@@ -34,7 +34,15 @@ export function useSession() {
 export function useLogin() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (nickname: string) => unwrap(await api.POST('/api/session', { body: { nickname } })).user,
+    mutationFn: async ({ nickname, avatarId }: { nickname: string; avatarId?: string }) => unwrap(await api.POST('/api/session', { body: { nickname, avatar_id: avatarId } })).user,
+    onSuccess: () => qc.invalidateQueries(),
+  })
+}
+
+export function useSetAvatar() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (avatarId: string) => unwrap(await api.PUT('/api/me/avatar', { body: { avatar_id: avatarId } })).user,
     onSuccess: () => qc.invalidateQueries(),
   })
 }

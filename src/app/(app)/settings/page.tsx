@@ -125,7 +125,7 @@ function Account() {
     )
   return (
     <div className="flex items-center gap-3 p-4">
-      <UserAvatar nickname={user.nickname} size={56} />
+      <UserAvatar nickname={user.nickname} src={user.avatar?.url} size={56} />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-title-sm font-semibold">{user.nickname}</span>
         <span className="block text-note text-text-secondary">{t('signedIn')}</span>

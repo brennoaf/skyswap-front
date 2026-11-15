@@ -22,7 +22,7 @@ export function useAgo() {
   }
 }
 
-export function LevelRing({ nickname, level, progress, size = 102 }: { nickname: string; level: number; progress: number; size?: number }) {
+export function LevelRing({ nickname, avatar, level, progress, size = 102 }: { nickname: string; avatar?: string | null; level: number; progress: number; size?: number }) {
   const t = useTranslations('me')
   const stroke = 3
   const r = (size - stroke) / 2
@@ -37,7 +37,7 @@ export function LevelRing({ nickname, level, progress, size = 102 }: { nickname:
         )}
       </svg>
       <span className="absolute" style={{ inset: (size - inner) / 2 }}>
-        <UserAvatar nickname={nickname} size={inner} />
+        <UserAvatar nickname={nickname} src={avatar} size={inner} />
       </span>
       <span className="absolute -bottom-0.5 -right-0.5 inline-flex rounded-full bg-bg p-[3px]">
         <LevelArt level={level} size={30} />

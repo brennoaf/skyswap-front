@@ -204,11 +204,12 @@
     "nicknameHelp": "3 to 24 letters, numbers, dots or underscores. No email, no password.",
     "join": "Join",
     "joining": "Joining",
-    "privacy": "Your nickname is the only thing we store. Notes stay in your browser.",
+    "privacy": "Your nickname and chosen picture are all we keep. Notes stay in your browser.",
     "errors": {
       "taken": "That nickname is taken. Try another.",
       "invalid": "Use 3 to 24 letters, numbers, dots or underscores.",
-      "generic": "Something went wrong. Try again."
+      "generic": "Something went wrong. Try again.",
+      "pictureTaken": "Someone just chose that picture. Choose another."
     },
     "reasons": {
       "tag": "Pick a nickname to tag posts.",
@@ -218,7 +219,10 @@
       "me": "Pick a nickname to keep your progress.",
       "alerts": "Pick a nickname to get alerts.",
       "community": "Pick a nickname to join in on findings."
-    }
+    },
+    "pictureLabel": "Your picture: a piece of a NASA photo",
+    "pictureOption": "Picture {n}",
+    "redraw": "Draw others"
   },
   "xp": {
     "gained": "+{xp, plural, one {# point} other {# points}}",
@@ -881,7 +885,23 @@
     },
     "intro": "How your profile works",
     "allAnswers": "All my answers",
-    "allAnswersHint": "And what happened with each one"
+    "allAnswersHint": "And what happened with each one",
+    "avatar": {
+      "open": "See my picture",
+      "pieceOf": "A piece of",
+      "originalTitle": "Original title",
+      "date": "Date",
+      "credit": "Credit",
+      "whole": "See the whole image",
+      "note": "The crop was rotated and is only decoration. It is not scientific data.",
+      "swap": "Change picture",
+      "chooseTitle": "Choose your picture",
+      "use": "Use this picture",
+      "cancel": "Cancel",
+      "none": "No pictures are available right now. Try again later.",
+      "taken": "Someone just chose that picture. Choose another.",
+      "failed": "Something went wrong. Try again."
+    }
   },
   "lab": {
     "title": "Lab",

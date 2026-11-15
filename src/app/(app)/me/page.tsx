@@ -11,6 +11,7 @@ import { BadgeDetail, BadgeHighlights, FollowingList, GoalsCard, HistoryList, Le
 import { LoginForm } from '@/components/shell/login-sheet'
 import { Button, EmptyState, IconButton, IconTabs, Notice, Sheet, Skeleton, Stat, TopBar } from '@/components/ui/primitives'
 import { UserAvatar } from '@/components/ui/user-avatar'
+import { AvatarSheet } from '@/components/me/avatar-parts'
 import { ApiError, type Me } from '@/lib/api/client'
 import { useMe, useSession } from '@/lib/api/hooks'
 import { formatNumber } from '@/lib/format'
@@ -106,6 +107,7 @@ function Profile({ me }: { me: Me }) {
   const showIntro = useUi((s) => s.showMeIntro)
   const [tab, setTab] = useState<Tab>('activity')
   const [badge, setBadge] = useState<string | null>(null)
+  const [avatarOpen, setAvatarOpen] = useState(false)
   const next = me.levels.find((l) => l.level === me.level.level + 1)
   const open = me.badges.find((b) => b.key === badge)
 
@@ -134,7 +136,9 @@ function Profile({ me }: { me: Me }) {
 
       <section className="px-4 pt-1" aria-label={tn('me')}>
         <div className="flex items-center gap-5">
-          <LevelRing nickname={me.user.nickname} level={me.level.level} progress={me.level.progress} />
+          <button type="button" onClick={() => setAvatarOpen(true)} aria-label={t('avatar.open')} className="shrink-0 rounded-full">
+            <LevelRing nickname={me.user.nickname} avatar={me.user.avatar?.url} level={me.level.level} progress={me.level.progress} />
+          </button>
           <div className="flex min-w-0 flex-1 justify-between gap-2 pr-2">
             <Stat value={formatNumber(me.counts.votes, locale)} label={t('answers', { n: me.counts.votes })} />
             <Stat value={formatNumber(me.counts.marks, locale)} label={t('marks', { n: me.counts.marks })} />
@@ -194,6 +198,7 @@ function Profile({ me }: { me: Me }) {
         {tab === 'following' && <FollowingList objects={me.following} />}
       </div>
 
+      <AvatarSheet avatar={me.user.avatar} open={avatarOpen} onClose={() => setAvatarOpen(false)} />
       <Sheet open={!!open} onClose={() => setBadge(null)}>
         {open && <BadgeDetail badge={open.key} earnedAt={open.earned_at} />}
       </Sheet>
