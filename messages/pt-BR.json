@@ -1913,5 +1913,23 @@
       }
     },
     "logoutProtected": "Para voltar depois, use sua chave de acesso, outro aparelho conectado ou o código de recuperação."
+  },
+  "seq": {
+    "modes": "Modo de ver",
+    "info": "Como ler esta vista",
+    "counter": "{n}/{total}",
+    "track": "Linha do tempo, por passagem",
+    "trackValue": "Foto {n} de {total}, {date}",
+    "sequence": "Sequência",
+    "changes": "O que mudou",
+    "ends": "1ª e última",
+    "before": "Antes do SPHEREx",
+    "path": "Mostrar caminho",
+    "blink": "Piscar",
+    "palette": "Foto colorida",
+    "cover": "{n, plural, one {# foto cobre} other {# fotos cobrem}} este ponto",
+    "masked": "Quadradinhos cinza-escuros são pixels que a NASA marcou como ruins naquela foto, por exemplo um raio cósmico ou um defeito do sensor. Eles ficam sem valor. Não é falha do app.",
+    "beforeInfo": "Antes do SPHEREx alterna a foto com uma imagem antiga do mesmo ponto, feita por outro telescópio.",
+    "blinkInfo": "Piscar alterna a primeira e a última foto. O que se mexe salta aos olhos."
   }
 }

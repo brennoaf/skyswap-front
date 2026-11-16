@@ -5,13 +5,13 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
 import { skyHref } from '@/components/feed/spot-sheet'
-import { IconChevronRight, IconCrosshair, IconFlask, IconMap, IconPause, IconPlay, IconSearch, IconSliders, IconStepBack, IconStepForward, IconWarning } from '@/components/icons'
-import { dotPositions, FrameTimeline } from '@/components/classify/photo-viewer'
+import { IconChevronRight, IconColours, IconCrosshair, IconFlask, IconMap, IconPause, IconPlay, IconSearch, IconSliders, IconWarning } from '@/components/icons'
+import { MediaPill, MediaPillButton, MediaPills, ModeRow, PillPair, pillDate, PlaybackBar, Track } from '@/components/player/sequence'
 import { SkyLocator, skyRegion } from '@/components/sky/sky-locator'
 import { SkyMapSheet } from '@/components/sky/sky-map-sheet'
 import { BandTile } from '@/components/ui/band-tile'
 import { CatalogLinks } from '@/components/ui/catalog-links'
-import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Segmented, Sheet, Skeleton, useLoopRestart } from '@/components/ui/primitives'
+import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Sheet, Skeleton } from '@/components/ui/primitives'
 import { QrWarning } from '@/components/charts/charts'
 import type { SkyResult } from '@/lib/api/client'
 import { useObject, useSky } from '@/lib/api/hooks'
@@ -27,6 +27,8 @@ import { isControl, isTyping, ownsArrows, plainKey } from '@/lib/keys'
 import { modalCount } from '@/lib/modal-history'
 import { useUi } from '@/lib/state/ui'
 import { useBandName } from '@/lib/use-band'
+import { passLayout } from '@/lib/passes'
+import { mixesBatches } from '@/components/charts/chart-math'
 
 export const FOVS = [0.05, 0.1, 0.25, 0.5] as const
 export const INDEX_BASE = '/kit/index/'
@@ -35,6 +37,7 @@ const BASE_FPS = 4
 const PIXEL_ARCSEC = 6.15
 const ROW_BYTES = 2040 * 4
 const READ_FACTOR = 2.4
+const MASKED = 58
 
 type ViewFrame = { key: string; img: Float32Array; w: number; h: number; mjd: number; band: string; release: string; lo: number; hi: number }
 type Colormap = 'grey' | 'band'
@@ -94,11 +97,13 @@ function FrameCanvas({ frame, colormap, label, diff }: { frame: ViewFrame; color
     const [r, g, b] = colormap === 'band' && !diff ? hexRgb(cssColor(`--color-band-${frame.band.toLowerCase()}`)) : [255, 255, 255]
     for (let y = 0; y < frame.h; y++) {
       for (let x = 0; x < frame.w; x++) {
-        const v = grey[(frame.h - 1 - y) * frame.w + x] ?? 0
+        const src = (frame.h - 1 - y) * frame.w + x
+        const v = grey[src] ?? 0
         const o = (y * frame.w + x) * 4
-        out.data[o] = (v * r) / 255
-        out.data[o + 1] = (v * g) / 255
-        out.data[o + 2] = (v * b) / 255
+        const masked = !diff && !Number.isFinite(frame.img[src] ?? NaN)
+        out.data[o] = masked ? MASKED : (v * r) / 255
+        out.data[o + 1] = masked ? MASKED : (v * g) / 255
+        out.data[o + 2] = masked ? MASKED : (v * b) / 255
         out.data[o + 3] = 255
       }
     }
@@ -251,6 +256,8 @@ function useBuilder(sky: SkyResult, p: SkyParams, target: SkyTarget | null) {
   return { frames, status, errorKey, done, total, latest, ms, bytes, tile, scanning, firstMs, start }
 }
 
+type Mode = 'seq' | 'changes' | 'ends' | 'before'
+
 function Player({
   sky,
   params,
@@ -272,6 +279,7 @@ function Player({
 }) {
   const locale = useLocale()
   const t = useTranslations('sky')
+  const ts = useTranslations('seq')
   const tc = useTranslations('common')
   const crosshair = useUi((s) => s.crosshair)
   const setCrosshair = useUi((s) => s.setCrosshair)
@@ -283,9 +291,11 @@ function Player({
   const [cur, setCur] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [colormap, setColormap] = useState<Colormap>('grey')
-  const [view, setView] = useState<View>('photos')
-  const [ends, setEnds] = useState(false)
-  const [before, setBefore] = useState(false)
+  const [mode, setMode] = useState<Mode>('seq')
+  const [info, setInfo] = useState(false)
+  const view: View = mode === 'changes' ? 'changes' : 'photos'
+  const ends = mode === 'ends'
+  const before = mode === 'before'
   const [oldPhase, setOldPhase] = useState(false)
   const asked = useRef<SharedView>(compact || typeof window === 'undefined' ? { at: null, band: null, tool: null } : readView(window.location.search))
   const shown = useMemo(() => (ends && b.frames.length > 2 ? [b.frames[0], b.frames[b.frames.length - 1]].filter((f): f is ViewFrame => !!f) : b.frames), [ends, b.frames])
@@ -301,7 +311,6 @@ function Player({
     diffCache.current.set(shown, made)
     return made
   }, [view, sameGrid, b.status, shown])
-  const restart = useLoopRestart(cur, playing)
   const kicked = useRef(false)
   const start = b.start
 
@@ -328,7 +337,7 @@ function Player({
     if (b.status !== 'ready') return
     const want = asked.current
     asked.current = { at: null, band: null, tool: null }
-    if (want.tool === 'changes') setView('changes')
+    if (want.tool === 'changes') setMode('changes')
     if (want.tool === 'colour') setColormap('band')
     if (want.at !== null) {
       setCur(nearestFrame(b.frames, want.at, want.band))
@@ -373,6 +382,7 @@ function Player({
     setCur((c) => (c + d + n) % n)
   }
   const ready = b.status === 'ready' && n > 0
+  const layout = useMemo(() => passLayout(shown.map((f) => f.mjd)), [shown])
 
   useEffect(() => {
     if (!ready) return
@@ -393,6 +403,26 @@ function Player({
   const date = frame ? formatShortDate(mjdToMs(frame.mjd), locale) : ''
   const frameLabel = frame ? t('frameDate', { date, band: bandName(frame.band) }) : ''
   const canBuild = canBuildFrom(sky)
+  const pickMode = (next: Mode) => {
+    setMode(next)
+    if (next === 'before') setPlaying(false)
+    if (next === 'ends' || mode === 'ends') setCur(0)
+  }
+  const modes: { key: Mode; label: string }[] = [
+    { key: 'seq', label: ts('sequence') },
+    ...(b.frames.length > 1 && sameGrid ? [{ key: 'changes' as const, label: ts('changes') }] : []),
+    ...(b.frames.length > 2 ? [{ key: 'ends' as const, label: ts('ends') }] : []),
+    { key: 'before', label: ts('before') },
+  ]
+  const pillText = !frame
+    ? ''
+    : before && old.state === 'ready' && old.survey
+      ? oldPhase
+        ? t('beforeChip', { telescope: old.survey.telescope, year: String(old.survey.year) })
+        : t('beforeChip', { telescope: 'SPHEREx', year: String(new Date(mjdToMs(frame.mjd)).getUTCFullYear()) })
+      : before
+        ? t(old.state === 'failed' ? 'beforeFailed' : 'beforeLoading')
+        : <PillPair a={pillDate(mjdToMs(frame.mjd), locale)} b={frame.band} />
 
   const media = (
     <div
@@ -418,13 +448,32 @@ function Player({
       ) : (
         frame && shownFrame && <FrameCanvas frame={shownFrame} colormap={colormap} diff={diff} label={diff ? t('changesAlt', { date }) : t('frameAlt', { band: bandName(frame.band), date })} />
       )}
-      {before && frame && (
-        <span className="pointer-events-none absolute left-2 top-2 rounded-full bg-media-scrim px-2.5 py-1 text-meta font-semibold text-on-media" data-testid="sky-before-chip">
-          {old.state === 'ready' && old.survey ? (oldPhase ? t('beforeChip', { telescope: old.survey.telescope, year: String(old.survey.year) }) : t('beforeChip', { telescope: 'SPHEREx', year: String(new Date(mjdToMs(frame.mjd)).getUTCFullYear()) })) : t(old.state === 'failed' ? 'beforeFailed' : 'beforeLoading')}
-        </span>
-      )}
       {frame && crosshair && <TargetCrosshair frame={frame} target={target} grid={grid} />}
       {marker}
+      {!compact && frame && (
+        <MediaPills
+          left={
+            <MediaPill testId={before ? 'sky-before-chip' : 'sky-date-pill'}>
+              {pillText}
+            </MediaPill>
+          }
+          right={
+            ready && (
+              <>
+                {n > 1 && <MediaPill testId="sky-counter">{ts('counter', { n: Math.min(cur, n - 1) + 1, total: n })}</MediaPill>}
+                {!diff && !before && (
+                  <MediaPillButton label={ts('palette')} pressed={colormap === 'band'} onClick={() => setColormap(colormap === 'band' ? 'grey' : 'band')} testId="sky-palette">
+                    <IconColours size={18} />
+                  </MediaPillButton>
+                )}
+                <MediaPillButton label={t('crosshair')} pressed={crosshair} onClick={() => setCrosshair(!crosshair)}>
+                  <IconCrosshair size={18} />
+                </MediaPillButton>
+              </>
+            )
+          }
+        />
+      )}
       {b.status === 'idle' && compact && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-reels-bg px-6 text-center text-spot-star">
           <SkyLocator ra={params.ra} dec={params.dec} name={params.name ?? t('thisSpot')} className="w-full" />
@@ -471,18 +520,14 @@ function Player({
     </div>
   )
 
-  const playButton = (
-    <IconButton label={playing ? t('pause') : t('play')} onClick={() => setPlaying((v) => !v)} disabled={!ready || n < 2}>
-      {playing ? <IconPause size={28} /> : <IconPlay size={28} />}
-    </IconButton>
-  )
-
   if (compact) {
     return (
       <div>
         {media}
         <div className="flex items-center gap-1 px-1 py-1">
-          {playButton}
+          <IconButton label={playing ? t('pause') : t('play')} onClick={() => setPlaying((v) => !v)} disabled={!ready || n < 2}>
+            {playing ? <IconPause size={28} /> : <IconPlay size={28} />}
+          </IconButton>
           <p className="min-w-0 flex-1 truncate text-note" aria-live="off">
             {frame ? frameLabel : t('images', { n: sky.total })}
           </p>
@@ -494,101 +539,46 @@ function Player({
     )
   }
 
+  const infoLines = [target ? t('crosshairMoving') : t('crosshairCentre'), ...(mode === 'changes' ? [t('changesHint')] : []), ...(before ? [ts('beforeInfo')] : []), ts('masked')]
+
   return (
     <div>
       {choices}
       {media}
       {ready && frame && (
-        <>
-          <div className="flex items-center gap-0.5 px-1 pt-2" data-testid="sky-player-bar">
-            <IconButton label={t('prev')} onClick={() => step(-1)} disabled={n < 2}>
-              <IconStepBack size={28} />
-            </IconButton>
-            {playButton}
-            <IconButton label={t('next')} onClick={() => step(1)} disabled={n < 2}>
-              <IconStepForward size={28} />
-            </IconButton>
-            <div className="min-w-0 flex-1 px-1 leading-tight">
-              <p className="truncate text-body font-semibold">{frameLabel}</p>
-              <p className="truncate text-meta text-text-secondary">{t('photoOf', { n: Math.min(cur, n - 1) + 1, total: n })}</p>
-            </div>
-            <IconButton label={t('crosshair')} aria-pressed={crosshair} onClick={() => setCrosshair(!crosshair)} className={crosshair ? 'text-warning' : 'text-icon-muted'}>
-              <IconCrosshair size={26} />
-            </IconButton>
-          </div>
-        </>
-      )}
-      {ready && n > 1 && (
-        <div className="px-4 pt-1">
-          <FrameTimeline
-            positions={dotPositions(shown.map((f) => (f.mjd - (shown[0]?.mjd ?? f.mjd)) * 86400))}
-            current={Math.min(cur, n - 1)}
-            restart={restart}
-            label={t('timeline')}
-            dotLabel={(i) => t('timelineDot', { n: i + 1, date: formatShortDate(mjdToMs(shown[i]?.mjd ?? 0), locale) })}
-            onPick={(i) => {
-              setPlaying(false)
-              setCur(i)
-            }}
-          />
-        </div>
-      )}
-      {b.status === 'ready' && b.frames.length > 1 && (
-        <div className="flex flex-wrap items-center gap-2 px-4 pt-2">
-          <Segmented
-            label={t('view')}
-            value={view}
-            onChange={setView}
-            options={[
-              { value: 'photos', label: t('viewPhotos') },
-              { value: 'changes', label: t('viewChanges'), disabled: !sameGrid },
-            ]}
-          />
-          {b.frames.length > 2 && (
-            <Chip
-              active={ends}
-              onClick={() => {
-                setEnds((v) => !v)
-                setCur(0)
-              }}
-            >
-              {t('firstLast')}
-            </Chip>
-          )}
-          <Chip
-            active={before}
-            onClick={() => {
-              setBefore((v) => !v)
-              setPlaying(false)
-              setView('photos')
-            }}
-          >
-            {t('before')}
-          </Chip>
-        </div>
-      )}
-      {view === 'changes' && diff && <p className="px-4 pt-2 text-meta text-text-secondary">{ends ? t('changesEnds') : t('changesHint')}</p>}
-      {crosshair && ready && <p className="px-4 pt-2 text-meta text-text-secondary">{target ? t('crosshairMoving') : t('crosshairCentre')}</p>}
-      {ready && (
-        <section className="mx-4 mt-4 space-y-2 border-t-[0.5px] border-divider pt-3" aria-label={t('viewSettings')} data-testid="sky-view-settings">
-          {view === 'photos' && (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-note text-text-secondary">{t('colormap')}</span>
-              <Chip active={colormap === 'grey'} onClick={() => setColormap('grey')}>
-                {t('grey')}
-              </Chip>
-              <Chip active={colormap === 'band'} onClick={() => setColormap('band')}>
-                {t('bandHue')}
-              </Chip>
-            </div>
-          )}
-          <p className="text-meta text-text-secondary">
-            {t('images', { n: sky.total })}
-            {b.bytes !== null && <span className="block">{t('downloaded', { size: formatBytes(b.bytes) })}</span>}
+        <div className="pt-1.5" data-testid="sky-player-bar">
+          <PlaybackBar playing={playing} onToggle={() => setPlaying((v) => !v)} onStep={step} disabled={n < 2}>
+            {n > 1 && (
+              <Track
+                layout={layout}
+                current={Math.min(cur, n - 1)}
+                label={ts('track')}
+                valueText={ts('trackValue', { n: Math.min(cur, n - 1) + 1, total: n, date: frameLabel })}
+                onPick={(i) => {
+                  setPlaying(false)
+                  setCur(i)
+                }}
+              />
+            )}
+          </PlaybackBar>
+          <ModeRow items={modes} value={mode} onChange={pickMode} onInfo={() => setInfo(true)} />
+          <p className="px-4 pt-2.5 text-meta text-text-secondary" data-testid="sky-cover">
+            {ts('cover', { n: sky.total })}
           </p>
-          {new Set(b.frames.map((f) => f.release)).size > 1 && <QrWarning />}
-        </section>
+          {mixesBatches(b.frames.map((f) => f.release)) && (
+            <div className="px-4 pt-2">
+              <QrWarning />
+            </div>
+          )}
+        </div>
       )}
+      <Sheet open={info} onClose={() => setInfo(false)} title={ts('info')}>
+        <ul className="space-y-3 px-4 py-4 text-body leading-snug" data-testid="sky-info">
+          {infoLines.map((l) => (
+            <li key={l}>{l}</li>
+          ))}
+        </ul>
+      </Sheet>
       {b.status === 'ready' && <p className="sr-only" role="status">{t('built', { n })}</p>}
     </div>
   )

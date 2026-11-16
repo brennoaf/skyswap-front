@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { KitChart, SpectrumChart, useKitJson, type SpectraData } from '@/components/charts/charts'
+import { mixesBatches } from '@/components/charts/chart-math'
 import { IconChevronLeft, IconChevronRight, IconClock, IconCrosshair, IconDownload, IconExpand, IconEye, IconEyeOff, IconLink, IconQuestion, IconShrink, IconStepBack, IconStepForward, IconWarning } from '@/components/icons'
 import { LabTour, PanelLine, TOOLS, type Tool } from '@/components/lab/lab-intro'
 import { ShiftAddPanel } from '@/components/lab/shift-add-panel'
@@ -303,7 +304,7 @@ export function LabView({ id }: { id: string }) {
     setDecoded(null)
   }
   const wcs = useMemo(() => (ep ? makeWcs({ wcs: ep.wcs, sip: ep.sip }) : null), [ep])
-  const mixed = useMemo(() => new Set((pack.data?.epochs ?? []).map((e) => e.release)).size > 1, [pack.data])
+  const mixed = useMemo(() => mixesBatches((pack.data?.epochs ?? []).map((e) => e.release)), [pack.data])
 
   useEffect(() => {
     if (!pack.data || (band && pack.data.bands[band])) return

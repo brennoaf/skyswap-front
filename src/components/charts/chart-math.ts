@@ -145,6 +145,6 @@ export function skyOffset(ra: number, dec: number, ra0: number, dec0: number): [
 
 export function mixesBatches(releases: readonly (string | null | undefined)[]): boolean {
   const seen = new Set<string>()
-  for (const r of releases) for (const part of (r ?? '').toLowerCase().split('+')) if (/^qr\d+$/.test(part)) seen.add(part)
-  return seen.size > 1
+  for (const r of releases) for (const part of (r ?? '').toLowerCase().split('+')) if (/^(dr|qr)\d+$/.test(part.trim())) seen.add(part.trim())
+  return seen.has('qr2') && seen.size > 1
 }

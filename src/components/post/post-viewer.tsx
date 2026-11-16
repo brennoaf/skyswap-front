@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject, type ReactNode } from 'react'
 import { KitChart, QrWarning } from '@/components/charts/charts'
+import { mixesBatches } from '@/components/charts/chart-math'
 import { PostHeader } from '@/components/feed/post-card'
 import { IconClose, IconCrosshair, IconUndo } from '@/components/icons'
 import { PlayerBar } from '@/components/player/player-bar'
@@ -368,7 +369,7 @@ export function PostViewer({ id }: { id: string }) {
   const blink = (objectPosts ?? []).find((p) => p.type === 'pass_blink')
   const pairSource = blink && blink.frames.length > 1 ? blink.frames : post.frames
   const compareFrames: [Frame, Frame] | null = pairSource.length > 1 ? [pairSource[0] as Frame, pairSource[pairSource.length - 1] as Frame] : null
-  const mixedReleases = !!compareFrames && compareFrames[0].release !== compareFrames[1].release && compareFrames.every((f) => f.release.startsWith('qr'))
+  const mixedReleases = !!compareFrames && mixesBatches(compareFrames.map((f) => f.release))
   const totalTags = data.tags.counts ? Object.values(data.tags.counts).reduce((a, b) => a + b, 0) : 0
   const original = filter === 'original'
   const predicted = seq?.predicted ?? NO_PREDICTION
