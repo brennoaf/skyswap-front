@@ -113,7 +113,17 @@
   --color-spot-reticle: #7fe0ff;
   --gradient-bands: linear-gradient(90deg, var(--color-band-d1), var(--color-band-d2), var(--color-band-d3), var(--color-band-d4), var(--color-band-d5), var(--color-band-d6));
   --shadow-sheet: 0 -8px 30px rgb(0 0 0 / 0.25);
-  --gradient-story: linear-gradient(225deg, #ff00d7 0%, #ff0000 51.5%, #ffc800 93%);
+  --brand-night-1: #00062a;
+  --brand-night-2: #01184f;
+  --brand-1: #0043b7;
+  --brand-2: #0078fe;
+  --brand-3: #21e9fc;
+  --brand-star: #f0f8fc;
+  --brand-finds-1: #007a6e;
+  --brand-finds-2: #00c9a7;
+  --brand-finds-3: #8ff7d8;
+  --gradient-story: linear-gradient(45deg, var(--brand-1) 0%, var(--brand-2) 40%, var(--brand-3) 85%);
+  --gradient-finds: linear-gradient(45deg, var(--brand-finds-1) 0%, var(--brand-finds-2) 40%, var(--brand-finds-3) 85%);
   --font-sans: var(--font-inter), -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-display: 'Helvetica Neue', Helvetica, var(--font-inter), Arial, sans-serif;
   --font-wordmark: var(--font-wordmark-face), cursive;
@@ -256,6 +266,10 @@ body {
 
 .story-ring {
   background: var(--gradient-story);
+}
+
+.story-ring-finds {
+  background: var(--gradient-finds);
 }
 
 .story-chrome {

@@ -59,7 +59,7 @@ export function StoriesRow() {
           ))}
         {data && data.finds.some((id) => !seenFinds.includes(id)) && (
           <li className="flex w-[91px] shrink-0 flex-col items-center gap-1">
-            <button type="button" onClick={() => open(FINDS_STORY)} aria-label={t('openFinds')} className="story-ring relative grid size-[91px] place-items-center rounded-full p-[3.5px]">
+            <button type="button" onClick={() => open(FINDS_STORY)} aria-label={t('openFinds')} className="story-ring-finds relative grid size-[91px] place-items-center rounded-full p-[3.5px]">
               <span className="grid size-full place-items-center rounded-full border-4 border-bg bg-media-bg text-accent">
                 <IconMoves size={36} />
               </span>

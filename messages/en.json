@@ -37,7 +37,7 @@
     "home": "Home",
     "search": "Search",
     "classify": "Spot what moves",
-    "reels": "Reels",
+    "reels": "Sequences",
     "me": "My profile"
   },
   "home": {
@@ -1077,12 +1077,12 @@
     }
   },
   "reels": {
-    "title": "Reels",
+    "title": "Sequences",
     "label": "Time-lapses",
     "openPost": "Open post",
     "profile": "Profile",
     "mute": "Motion paused",
-    "loading": "Loading reels",
+    "loading": "Loading sequences",
     "play": "Play",
     "pause": "Pause",
     "empty": "No time-lapses yet",
