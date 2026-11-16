@@ -13,7 +13,8 @@ import { ShiftAddPanel } from '@/components/lab/shift-add-panel'
 import { BandTile } from '@/components/ui/band-tile'
 import { CatalogLinks } from '@/components/ui/catalog-links'
 import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Sheet, Skeleton, Switch, TopBar } from '@/components/ui/primitives'
-import { useObject, useObjectPosts } from '@/lib/api/hooks'
+import { useObject, useObjectPosts, useSky } from '@/lib/api/hooks'
+import { buildLightPack, LIGHT_FOV_DEG, LIGHT_MAX_PHOTOS } from '@/lib/lab/coord-pack'
 import { yearsSpanned } from '@/lib/long-baseline'
 import { BAND_HUE, BANDS, cssColor, cx, formatDate, formatDateTime, formatDec, formatRa, formatShortDate } from '@/lib/format'
 import { download, labNotes, saveLabNote, type LabNote } from '@/lib/notes'
@@ -65,6 +66,26 @@ function useBand(pack: Pack | undefined, dir: string | null, band: string) {
       return unpack(await r.arrayBuffer())
     },
   })
+}
+
+export type LabPoint = { ra: number; dec: number; band: string | null }
+
+function useLightPack(point: LabPoint | undefined, band: string, name: string) {
+  const sky = useSky(point ? point.ra : null, point ? point.dec : null, LIGHT_FOV_DEG, null)
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
+  const counts = sky.data?.bands
+  const pointBytes = sky.data?.point_bytes ?? null
+  const q = useQuery({
+    queryKey: ['light-pack', point?.ra, point?.dec, band],
+    enabled: !!point && !!band && !!counts && (counts[band] ?? 0) > 0,
+    staleTime: Infinity,
+    retry: false,
+    queryFn: ({ signal }) => {
+      setProgress(null)
+      return buildLightPack({ ra: (point as LabPoint).ra, dec: (point as LabPoint).dec, band, name, bandCounts: counts ?? {}, pointBytes, signal, onProgress: (done, total) => setProgress({ done, total }) })
+    },
+  })
+  return { sky, q, progress }
 }
 
 const FLAG_KEYS = ['saturation', 'cosmic', 'persistence', 'satellite'] as const
@@ -229,7 +250,7 @@ function EpochGrid({ epochs, value, onChange }: { epochs: PackEpoch[]; value: nu
   )
 }
 
-export function LabView({ id }: { id: string }) {
+export function LabView({ id, point }: { id: string; point?: LabPoint }) {
   const locale = useLocale()
   const num = (v: number, digits: number) => v.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits })
   const t = useTranslations('lab')
@@ -246,16 +267,24 @@ export function LabView({ id }: { id: string }) {
   const [catalogs, setCatalogs] = useState(false)
   useEffect(() => setHydrated(true), [])
   const touring = hydrated && language && (replay || !introDone)
-  const { data: profile } = useObject(id)
-  const { data: objectPosts } = useObjectPosts(id)
+  const { data: profile } = useObject(point ? '' : id)
+  const { data: objectPosts } = useObjectPosts(point ? undefined : id)
   const flipbook = objectPosts?.find((p) => p.type === 'long_baseline')
-  const pack = useKitJson<Pack>(profile?.pack)
+  const kitPack = useKitJson<Pack>(point ? undefined : profile?.pack)
+  const pointName = point ? `${formatRa(point.ra)} ${formatDec(point.dec)}` : ''
   const gaia = useKitJson<GaiaStar[]>(profile?.overlays.gaia)
   const wise = useKitJson<WiseSource[]>(profile?.overlays.wise)
   const spectra = useKitJson<SpectraData>(profile?.measurements.spectra)
   const dir = profile?.pack ? profile.pack.replace(/pack\.json$/, '') : null
 
-  const [band, setBand] = useState<string>('')
+  const [band, setBand] = useState<string>(point?.band ?? '')
+  const light = useLightPack(point, band, pointName)
+  const pack = point ? { data: light.q.data?.pack, isLoading: light.sky.isLoading || light.q.isLoading } : kitPack
+  const subject = point
+    ? { name: pointName, ra: point.ra, dec: point.dec, hasPack: true }
+    : profile
+      ? { name: profile.name, ra: profile.ra, dec: profile.dec, hasPack: !!profile.pack }
+      : null
   const [epochIdx, setEpochIdx] = useState(0)
   const [photo, setPhoto] = useState<PhotoSize>('large')
   const [decoded, setDecoded] = useState<Decoded | null>(null)
@@ -283,7 +312,8 @@ export function LabView({ id }: { id: string }) {
 
   const epochs = useMemo(() => (pack.data?.epochs ?? []).filter((e) => e.band === band).sort((a, b) => a.mjd - b.mjd), [pack.data, band])
   const ep: PackEpoch | undefined = epochs[Math.min(epochIdx, epochs.length - 1)]
-  const parts = useBand(pack.data, dir, band)
+  const kitParts = useBand(point ? undefined : pack.data, dir, band)
+  const parts = point ? { data: light.q.data?.parts } : kitParts
   const bandInfo = useMemo(() => {
     const out: Record<string, { min: number; max: number; n: number }> = {}
     for (const e of pack.data?.epochs ?? []) {
@@ -306,11 +336,18 @@ export function LabView({ id }: { id: string }) {
   const wcs = useMemo(() => (ep ? makeWcs({ wcs: ep.wcs, sip: ep.sip }) : null), [ep])
   const mixed = useMemo(() => mixesBatches((pack.data?.epochs ?? []).map((e) => e.release)), [pack.data])
 
+  const skyBands = light.sky.data?.bands
   useEffect(() => {
-    if (!pack.data || (band && pack.data.bands[band])) return
+    if (!point || band || !skyBands) return
+    const most = Object.entries(skyBands).sort((a, b) => b[1] - a[1])[0]
+    if (most && most[1] > 0) setBand(most[0])
+  }, [point, band, skyBands])
+
+  useEffect(() => {
+    if (point || !pack.data || (band && pack.data.bands[band])) return
     const best = profile?.best_bands.find((b) => pack.data?.bands[b])
     setBand(best ?? BANDS.find((b) => pack.data?.bands[b]) ?? 'D1')
-  }, [pack.data, band, profile])
+  }, [point, pack.data, band, profile])
 
   useEffect(() => {
     let alive = true
@@ -405,7 +442,7 @@ export function LabView({ id }: { id: string }) {
   }, [pixel, decoded, ep, wcs])
 
   const measureLive = async () => {
-    if (!pack.data || !dir) return
+    if (!pack.data || (!dir && !point)) return
     const list = pack.data.epochs.filter((e) => e.inside)
     const points: LivePoint[] = []
     setLive({ done: 0, total: list.length, points, failed: false })
@@ -415,6 +452,7 @@ export function LabView({ id }: { id: string }) {
       for (const e of list) {
         if (!alive.current) return
         let p = cache.get(e.band)
+        if (!p && point) p = parts.data
         if (!p) {
           const info = pack.data.bands[e.band]
           if (!info) continue
@@ -451,7 +489,7 @@ export function LabView({ id }: { id: string }) {
     download(`${id}-spectrum.csv`, rows.join('\n'), 'text/csv')
   }
 
-  if (!profile) {
+  if (!subject) {
     return (
       <main>
         <TopBar title={t('title')} />
@@ -460,7 +498,7 @@ export function LabView({ id }: { id: string }) {
     )
   }
 
-  const long = profile.name.length > LONG_NAME
+  const long = subject.name.length > LONG_NAME
   const startTour = () => {
     setPhoto('large')
     setReplay(true)
@@ -477,10 +515,10 @@ export function LabView({ id }: { id: string }) {
     <main className="fixed inset-0 z-40 mx-auto flex w-full max-w-[var(--width-app)] flex-col overflow-hidden overscroll-none bg-bg pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       <TopBar
         className="shrink-0"
-        title={<span className={long ? 'line-clamp-2 whitespace-normal break-words text-title-sm leading-[1.15]' : 'block truncate'}>{profile.name}</span>}
+        title={<span className={long ? 'line-clamp-2 whitespace-normal break-words text-title-sm leading-[1.15]' : 'block truncate'}>{subject.name}</span>}
         actions={
           <>
-            {profile.pack && (
+            {subject.hasPack && (
               <>
                 <PhotoButton label={photo === 'large' ? t('tools.photoSmaller') : t('tools.photoBigger')} onClick={() => setPhoto(photo === 'large' ? 'small' : 'large')}>
                   {photo === 'large' ? <IconShrink size={22} /> : <IconExpand size={22} />}
@@ -490,17 +528,27 @@ export function LabView({ id }: { id: string }) {
                 </PhotoButton>
               </>
             )}
-            <Link href={`/o/${profile.id}`} aria-label={t('profile', { name: profile.name })} className="inline-flex size-11 items-center justify-center">
-              <ObjectAvatar src={profile.avatar} alt="" size={32} />
-            </Link>
+            {profile && (
+              <Link href={`/o/${profile.id}`} aria-label={t('profile', { name: profile.name })} className="inline-flex size-11 items-center justify-center">
+                <ObjectAvatar src={profile.avatar} alt="" size={32} />
+              </Link>
+            )}
           </>
         }
       />
 
-      {!profile.pack ? (
+      {!subject.hasPack ? (
         <EmptyState title={t('noPack')} />
+      ) : point && light.sky.data && !Object.values(light.sky.data.bands).some((n) => n > 0) ? (
+        <EmptyState title={t('light.none')} />
+      ) : point && (light.q.isError || light.sky.isError) ? (
+        <EmptyState title={t('light.failed')} action={<Button onClick={() => void (light.sky.isError ? light.sky.refetch() : light.q.refetch())}>{tcom('retry')}</Button>} />
       ) : pack.isLoading ? (
-        <p className="px-4 text-text-secondary">{t('loading')}</p>
+        <p className="px-4 text-text-secondary" role="status" data-testid="lab-light-progress">
+          {point && light.progress ? t('light.building', { done: light.progress.done, total: light.progress.total }) : t('loading')}
+        </p>
+      ) : pack.data && pack.data.epochs.length === 0 ? (
+        <EmptyState title={t('light.none')} />
       ) : pack.data ? (
         <>
           <div
@@ -578,6 +626,11 @@ export function LabView({ id }: { id: string }) {
             <span className="min-w-0 truncate text-note font-medium text-text">{ep ? formatDate(ep.iso, locale) : ''}</span>
             <span className="shrink-0">{tcom('falseColour')}</span>
           </p>
+          {point && (
+            <p className="shrink-0 px-3 text-meta text-text-secondary" data-testid="lab-light-note">
+              {t('light.note', { n: LIGHT_MAX_PHOTOS })}
+            </p>
+          )}
           {ep && (
             <div data-tour="lab-dates" className="flex shrink-0 items-center gap-1 px-2">
               <IconButton label={t('tools.prev')} onClick={() => setEpochIdx((i) => Math.max(0, i - 1))} disabled={epochIdx <= 0}>
@@ -750,7 +803,7 @@ export function LabView({ id }: { id: string }) {
                   epochs={epochs}
                   parts={parts.data}
                   refEpoch={ep}
-                  catalog={profile.pm_ra_cosdec !== null && profile.pm_dec !== null ? { pmra: profile.pm_ra_cosdec, pmdec: profile.pm_dec } : null}
+                  catalog={profile && profile.pm_ra_cosdec !== null && profile.pm_dec !== null ? { pmra: profile.pm_ra_cosdec, pmdec: profile.pm_dec } : null}
                 />
               )}
 
@@ -783,13 +836,13 @@ export function LabView({ id }: { id: string }) {
                       <div className="mt-2">
                         <p className="flex items-center gap-2 pb-1 text-note leading-snug">
                           <IconWarning size={18} className="shrink-0 text-warning" />
-                          {t('spectrumLiveNote')}
+                          {point ? t('light.spectrumNote') : t('spectrumLiveNote')}
                         </p>
                         <SpectrumChart data={{ passes: [{ pass: 0, t: live.points[0]?.iso ?? '', points: live.points.map((p) => ({ wavelength_um: p.lam, flux_mjy: p.flux, err: p.err, saturated: false })) }] }} />
                       </div>
                     )}
                   </section>
-                  {profile.measurements.lightcurve && (
+                  {profile?.measurements.lightcurve && (
                     <section className="rounded-2xl bg-surface p-3">
                       <h3 className="text-ui font-semibold">{t('lightcurve')}</h3>
                       <KitChart kind="lightcurve" url={profile.measurements.lightcurve} technical />
@@ -896,7 +949,7 @@ export function LabView({ id }: { id: string }) {
                   </section>
                   <p className="px-1 text-meta leading-snug text-text-secondary">{t('sources')}</p>
                   <Sheet open={catalogs} onClose={() => setCatalogs(false)} labelledBy="catalogs-title">
-                    <CatalogLinks ra={profile.ra} dec={profile.dec} className="px-4 pt-2" />
+                    <CatalogLinks ra={subject.ra} dec={subject.dec} className="px-4 pt-2" />
                   </Sheet>
                 </>
               )}

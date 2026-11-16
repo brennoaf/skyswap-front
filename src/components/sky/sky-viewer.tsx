@@ -30,6 +30,7 @@ import { useUi } from '@/lib/state/ui'
 import { useBandName } from '@/lib/use-band'
 import { passLayout } from '@/lib/passes'
 import { mixesBatches } from '@/components/charts/chart-math'
+import { pointLabHref } from '@/lib/coords'
 
 export const FOVS = [0.05, 0.1, 0.25, 0.5] as const
 export const INDEX_BASE = '/kit/index/'
@@ -822,13 +823,11 @@ function Tail({ sky, params }: { sky: SkyResult; params: SkyParams }) {
       )}
       {typed && !here && <p className="px-4 pt-3 text-center text-note text-text-secondary">{t('typedFixed')}</p>}
       <nav className="mx-4 mt-7 border-t-[0.5px] border-divider" aria-label={t('more')}>
-        {params.obj && (
-          <Link href={`/lab/${params.obj}`} className={row} data-testid="sky-lab">
-            <IconFlask size={22} className="shrink-0 text-text-secondary" />
-            <span className="min-w-0 flex-1">{t('openLab')}</span>
-            <IconChevronRight size={18} className="shrink-0 text-icon-muted" />
-          </Link>
-        )}
+        <Link href={params.obj ? `/lab/${params.obj}` : pointLabHref(params.ra, params.dec, params.band)} className={row} data-testid="sky-lab">
+          <IconFlask size={22} className="shrink-0 text-text-secondary" />
+          <span className="min-w-0 flex-1">{t('openLab')}</span>
+          <IconChevronRight size={18} className="shrink-0 text-icon-muted" />
+        </Link>
         {others.map((o) => (
           <Link key={o.id} href={`/o/${o.id}`} className={row} aria-label={`${t('openProfile')}: ${o.name}`}>
             <ObjectAvatar src={o.avatar} alt="" size={32} ring={o.has_new_data ? 'new' : 'none'} />

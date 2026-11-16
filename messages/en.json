@@ -1341,6 +1341,19 @@
       "notes": "Keep private notes about what you saw.",
       "more": "Downloads, catalogues and this tutorial again.",
       "again": "Replay the Lab tutorial"
+    },
+    "light": {
+      "note": "Light version: one colour at a time, up to {n} photos",
+      "none": "No SPHEREx photo covers this spot.",
+      "failed": "Could not set up the Lab for this spot.",
+      "building": "Setting up the Lab for this spot: {done} of {total} photos",
+      "spectrumNote": "Quick estimate, made on your device with this colour's photos only. It is a calculation, not a checked measurement."
+    },
+    "coord": {
+      "label": "Coordinate",
+      "placeholder": "150.1, 2.2 or 10h00m24s +02°12'00\"",
+      "open": "Open",
+      "invalid": "Not recognised. Use degrees (150.1, 2.2) or hours and degrees (10h00m24s +02°12'00\")."
     }
   },
   "alerts": {
