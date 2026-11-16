@@ -4,12 +4,13 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Crosshair } from '@/components/feed/post-media'
+import { MediaPill, MediaPills, PillPair, pillDate } from '@/components/player/sequence'
 import { MarkPad, MarkRing } from '@/components/ui/mark-pad'
 import { usePlayback } from '@/components/player/use-playback'
 import type { Frame } from '@/lib/api/client'
 import { cx, formatWavelength } from '@/lib/format'
 import { useFmt } from '@/lib/use-fmt'
-import { frameYear, telescopeOf, TIMELAPSE_FPS } from '@/lib/long-baseline'
+import { telescopeOf, TIMELAPSE_FPS } from '@/lib/long-baseline'
 import { hasOutsideArea } from '@/lib/out-of-field'
 import { useUi } from '@/lib/state/ui'
 import { useBandName } from '@/lib/use-band'
@@ -128,36 +129,7 @@ export function MediaStage({
   if (!frame) return <div className={cx('w-full bg-media-bg', STAGE_BOX)} />
 
   return (
-    <div className={cx('relative flex w-full select-none flex-col overflow-hidden bg-media-bg', STAGE_BOX)}>
-      {!marking && (
-      <div className="pointer-events-none flex h-8 shrink-0 items-center justify-between gap-2 px-2">
-        {mode === 'compare' && compareFrames ? (
-          <>
-            <Pill>
-              {t('compareA')}, {fmt.shortDate(compareFrames[0].t)}
-            </Pill>
-            <Pill>
-              {t('compareB')}, {fmt.shortDate(compareFrames[1].t)}
-            </Pill>
-          </>
-        ) : (
-          <>
-            {frame.telescope || frame.release === 'wise' || frame.release === 'neowise' ? (
-              <Pill className="text-note">{t('longBaseline.pill', { year: frameYear(frame), telescope: telescopeOf(frame) })}</Pill>
-            ) : frame.t ? (
-              <Pill>{fmt.shortDate(frame.t)}</Pill>
-            ) : null}
-            {(saturated || (length > 1 && !playing)) && (
-              <span className="ml-auto flex items-center gap-1.5">
-                {saturated && <Pill className="bg-warning text-on-warning">{t('saturatedPill')}</Pill>}
-                {length > 1 && !playing && <Pill>{`${index + 1}/${length}`}</Pill>}
-              </span>
-            )}
-          </>
-        )}
-      </div>
-      )}
-
+    <div className={cx('relative flex w-full select-none flex-col overflow-hidden bg-media-bg', STAGE_BOX)} style={mode === 'compare' ? undefined : { aspectRatio: String(aspect) }} data-testid="post-stage">
       <div className="flex min-h-0 flex-1 items-center justify-center [container-type:size]">
         <div
           className={cx('relative', !marking && 'touch-pan-y')}
@@ -238,6 +210,29 @@ export function MediaStage({
           {after && mine && <Dot x={mine.x} y={mine.y} tone="mine" />}
           {marking && flash && flash.frame === index && <MarkRing u={flash.x} v={flash.y} />}
           {marking && banner}
+          {!marking && (
+            <MediaPills
+              left={
+                mode === 'compare' && compareFrames ? (
+                  <MediaPill>{`${t('compareA')}, ${fmt.shortDate(compareFrames[0].t)}`}</MediaPill>
+                ) : frame.t ? (
+                  <MediaPill testId="post-date-pill">
+                    <PillPair a={pillDate(Date.parse(frame.t), fmt.locale)} b={frame.telescope || frame.release === 'wise' || frame.release === 'neowise' ? telescopeOf(frame) : frame.band} />
+                  </MediaPill>
+                ) : null
+              }
+              right={
+                mode === 'compare' && compareFrames ? (
+                  <MediaPill>{`${t('compareB')}, ${fmt.shortDate(compareFrames[1].t)}`}</MediaPill>
+                ) : (
+                  <>
+                    {saturated && <Pill className="bg-warning text-on-warning">{t('saturatedPill')}</Pill>}
+                    {length > 1 && <MediaPill testId="post-counter">{`${index + 1}/${length}`}</MediaPill>}
+                  </>
+                )
+              }
+            />
+          )}
           {marking && <MarkPad key={index} source={{ src: frame.src }} label={markLabel} onPick={(u, v) => onMark({ frame: index, x: u, y: v })} />}
         </div>
       </div>

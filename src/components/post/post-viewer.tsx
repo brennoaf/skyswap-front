@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
@@ -8,11 +7,10 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObjec
 import { KitChart, QrWarning } from '@/components/charts/charts'
 import { mixesBatches } from '@/components/charts/chart-math'
 import { PostHeader } from '@/components/feed/post-card'
-import { IconClose, IconCrosshair, IconUndo } from '@/components/icons'
-import { PlayerBar } from '@/components/player/player-bar'
+import { IconClose, IconUndo } from '@/components/icons'
+import { ModeRow, PlaybackBar, Track } from '@/components/player/sequence'
 import { usePlaybackKeys } from '@/components/player/use-playback'
 import { ActionRow } from '@/components/post/action-row'
-import { EraTimeline } from '@/components/post/era-timeline'
 import { PredictionHelp } from '@/components/post/marking-help'
 import { markPlan, passStarts } from '@/components/post/mark-plan'
 import { MediaStage, STAGE_BOX, usePlayer, type Point, type StageMode, type Trail } from '@/components/post/media-stage'
@@ -23,7 +21,8 @@ import type { Frame } from '@/lib/api/client'
 import { useCelebrate, useLearn, useObject, useObjectPosts, usePost, useSaveMarks, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
 import { isTyping, plainKey } from '@/lib/keys'
-import { hasWise, LONG_BASELINE_FPS } from '@/lib/long-baseline'
+import { eraLayout, hasWise, LONG_BASELINE_FPS } from '@/lib/long-baseline'
+import { passLayout, type TrackLayout } from '@/lib/passes'
 import { modalCount } from '@/lib/modal-history'
 import { postCaption, postTitle } from '@/lib/post-text'
 import { useShare } from '@/lib/share'
@@ -35,7 +34,14 @@ const FLASH_MS = 300
 const NO_PREDICTION = new Map<number, { x: number; y: number }>()
 
 type SheetKey = 'more' | 'about' | 'tags' | 'colours' | 'notes' | null
-type Dots = { count: number; active: number; onPick: (i: number) => void }
+type Look = 'seq' | 'path' | 'blink'
+const DAY_MS = 86400000
+
+function trackOf(frames: Frame[], longBaseline: boolean): TrackLayout {
+  if (!longBaseline) return passLayout(frames.map((f) => Date.parse(f.t) / DAY_MS))
+  const { positions, segments } = eraLayout(frames)
+  return { positions, segments: segments.map((s) => ({ from: s.from, to: s.to, kind: s.kind === 'gap' ? 'faint' : s.kind === 'spherex' ? 'accent' : 'solid' })) }
+}
 
 function groupsOf(type: string, frames: Frame[]): number[] {
   if (frames.length < 2) return [0]
@@ -67,6 +73,7 @@ function PostStage({
   finalPanel,
   onMark,
   onBand,
+  onInfo,
   actions,
 }: {
   frames: Frame[]
@@ -92,19 +99,38 @@ function PostStage({
   finalPanel: ReactNode
   onMark: (p: Point) => void
   onBand: (band: string) => void
-  actions: (dots: Dots | null) => ReactNode
+  onInfo?: () => void
+  actions: ReactNode
 }) {
   const watching = mode === 'play' || mode === 'path'
   const player = usePlayer(frames.length, watching, longBaseline ? LONG_BASELINE_FPS : undefined, longBaseline ? LONG_BASELINE_FPS : undefined)
-  const { index, setIndex, setPlaying, playing } = player
+  const { index, setIndex, setPlaying, playing, blinking, startBlink, stopBlink } = player
   usePlaybackKeys(player, watching)
-  const [path, setPath] = useState(false)
+  const t = useTranslations('seq')
+  const tp = useTranslations('player')
+  const fmt = useFmt()
+  const [look, setLook] = useState<Look>('seq')
+  const path = look === 'path'
   const [outside, setOutside] = useState<Record<string, boolean>>({})
   const current = frames[index]
   const groups = useMemo(() => groupsOf(groupType, frames), [groupType, frames])
   const activeGroup = Math.max(0, groups.findLastIndex((g) => g <= index))
-  const seconds = useMemo(() => frames.map((f) => (Date.parse(f.t) - Date.parse(frames[0]?.t ?? f.t)) / 1000), [frames])
-  const dates = useMemo(() => frames.map((f) => f.t), [frames])
+  const layout = useMemo(() => trackOf(frames, longBaseline), [frames, longBaseline])
+
+  useEffect(() => {
+    if (look === 'blink' && !blinking) setLook('seq')
+  }, [look, blinking])
+
+  const pickLook = (next: Look) => {
+    if (next === 'blink') startBlink()
+    else stopBlink()
+    setLook(next)
+  }
+  const looks: { key: Look; label: string }[] = [
+    { key: 'seq', label: t('sequence') },
+    ...(longBaseline ? [{ key: 'path' as const, label: t('path') }] : []),
+    ...(frames.length > 1 ? [{ key: 'blink' as const, label: t('blink') }] : []),
+  ]
 
   useEffect(() => {
     frameRef.current = current
@@ -133,13 +159,6 @@ function PostStage({
 
   const pickGroup = useCallback((i: number) => setIndex(groups[Math.max(0, Math.min(groups.length - 1, i))] ?? 0), [groups, setIndex])
   const noteOutside = useCallback((src: string, out: boolean) => setOutside((o) => (o[src] === out ? o : { ...o, [src]: out })), [])
-  const thumb = useCallback(
-    (i: number) => {
-      const f = frames[i]
-      return f ? <Image src={f.src} alt="" fill sizes="56px" className="pixelated object-contain" unoptimized /> : null
-    },
-    [frames],
-  )
   return (
     <>
       <MediaStage
@@ -164,7 +183,38 @@ function PostStage({
         onMark={onMark}
       />
 
-      {mode === 'mark' ? markBar : mode === 'path' ? finalPanel : actions(!longBaseline && groups.length > 1 ? { count: groups.length, active: activeGroup, onPick: pickGroup } : null)}
+      {mode === 'mark' ? markBar : mode === 'path' ? finalPanel : null}
+
+      {watching && frames.length > 1 && (
+        <div className="pt-1.5" data-testid="post-player">
+          <PlaybackBar
+            playing={player.running}
+            onToggle={() => {
+              stopBlink()
+              setPlaying(!playing)
+            }}
+            onStep={(d) => {
+              stopBlink()
+              setPlaying(false)
+              setIndex((i) => i + d)
+            }}
+          >
+            <Track
+              layout={layout}
+              current={index}
+              label={t('track')}
+              valueText={t('trackValue', { n: index + 1, total: frames.length, date: current ? fmt.shortDate(current.t) : '' })}
+              onPick={(i) => {
+                stopBlink()
+                setPlaying(false)
+                setIndex(i)
+              }}
+            />
+          </PlaybackBar>
+          {mode === 'play' && <ModeRow items={looks} value={look} onChange={pickLook} onInfo={onInfo} />}
+          {current && outside[current.src] && <p className="px-4 pt-1.5 text-meta text-text-secondary">{tp('outside')}</p>}
+        </div>
+      )}
 
       {mode === 'compare' && mixedReleases && (
         <div className="px-3 pb-2">
@@ -172,13 +222,7 @@ function PostStage({
         </div>
       )}
 
-      {watching && frames.length > 1 && (
-        <div className="px-3 pb-2">
-          <PlayerBar dense={mode === 'play'} compact={mode === 'path'} quiet={mode === 'path'} playback={player} seconds={seconds} dates={dates} outside={!!(current && outside[current.src])} thumb={thumb} />
-        </div>
-      )}
-
-      {longBaseline && mode !== 'mark' && <EraTimeline frames={frames} index={index} onPick={setIndex} path={path} onPath={setPath} />}
+      {mode !== 'mark' && mode !== 'path' && <div className="pt-1">{actions}</div>}
     </>
   )
 }
@@ -443,7 +487,7 @@ export function PostViewer({ id }: { id: string }) {
     setStep(back)
   }
 
-  const actions = (dots: Dots | null) => (
+  const actions = (
     <ActionRow
       tag={{ onClick: () => setSheet('tags') }}
       mark={{ onClick: () => startMark(), active: marking }}
@@ -451,7 +495,6 @@ export function PostViewer({ id }: { id: string }) {
       save={{ onClick: () => toggleSaved(post.id) }}
       saved={saved}
       tagCount={data.tags.counts ? totalTags : null}
-      dots={isChart ? null : dots}
     />
   )
 
@@ -465,7 +508,7 @@ export function PostViewer({ id }: { id: string }) {
           <div className={cx('w-full overflow-y-auto bg-bg px-3 py-2', STAGE_BOX)}>
             <KitChart kind={CHART_KIND[post.type as keyof typeof CHART_KIND]} url={post.chart as string} />
           </div>
-          {actions(null)}
+          {actions}
         </>
       ) : (
         <PostStage
@@ -501,18 +544,13 @@ export function PostViewer({ id }: { id: string }) {
           }
           onMark={pick}
           onBand={onBand}
+          onInfo={(seq?.predicted.size ?? 0) > 0 ? () => setPrediction(true) : undefined}
           actions={actions}
         />
       )}
 
       {(mode === 'play' || mode === 'compare') && (
       <div className="px-3">
-        {!isChart && (seq?.predicted.size ?? 0) > 0 && (
-          <button type="button" onClick={() => setPrediction(true)} className="hit-44 mb-1 inline-flex min-h-9 items-center gap-1.5 text-note text-text-secondary">
-            <IconCrosshair size={16} className="shrink-0 text-crosshair" />
-            {t('predictionRow')}
-          </button>
-        )}
         <p className="text-body">
           {data.tags.counts ? (
             <button type="button" className="font-semibold" onClick={() => setSheet('tags')}>

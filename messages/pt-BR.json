@@ -600,17 +600,11 @@
     },
     "longBaseline": {
       "pill": "{year}, {telescope}",
-      "timeline": "Quando cada foto foi feita, de 2010 até hoje",
-      "frame": "{year}, {telescope}",
-      "asleep": "WISE desligado",
-      "now": "{year}, {telescope}, foto {n} de {total}",
-      "path": "Mostrar caminho",
       "telescope": "Telescópio",
       "exposures": "Fotos combinadas",
       "honest": "Os pixels do WISE cobrem 2,75 segundos de arco e os do SPHEREx 6,15, então as fotos do SPHEREx parecem mais borradas. O brilho é ajustado por telescópio: compare posições, não brilho. Cantos vazios nas fotos do SPHEREx significam que não há dados ali.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
     },
-    "predictionRow": "Cruz amarela: a previsão. Por que marcar?",
     "markHintBright": "Centro brilhante demais: toque no meio do brilho",
     "markFailed": "Não deu para salvar suas marcações. Tente de novo.",
     "markTap": "Toque em {name}",

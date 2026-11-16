@@ -600,17 +600,11 @@
     },
     "longBaseline": {
       "pill": "{year}, {telescope}",
-      "timeline": "When each photo was taken, 2010 to today",
-      "frame": "{year}, {telescope}",
-      "asleep": "WISE asleep",
-      "now": "{year}, {telescope}, photo {n} of {total}",
-      "path": "Show path",
       "telescope": "Telescope",
       "exposures": "Photos combined",
       "honest": "WISE pixels cover 2.75 arcseconds and SPHEREx pixels 6.15, so SPHEREx photos look blurrier. Brightness is scaled per telescope: compare positions, not brightness. Empty corners on SPHEREx photos mean no data there.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
     },
-    "predictionRow": "Yellow cross: the prediction. Why mark it?",
     "markHintBright": "Centre too bright: tap the middle of the glow",
     "markFailed": "Couldn't save your marks. Try again.",
     "markTap": "Tap {name}",
