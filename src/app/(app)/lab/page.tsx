@@ -1,10 +1,61 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import { IconChevronRight, IconFlask } from '@/components/icons'
 import { Button, EmptyState, ObjectAvatar, Skeleton, TopBar } from '@/components/ui/primitives'
 import { useObjects } from '@/lib/api/hooks'
+import { parseCoordinates, pointLabHref } from '@/lib/coords'
+
+function CoordField() {
+  const t = useTranslations('lab.coord')
+  const router = useRouter()
+  const [text, setText] = useState('')
+  const [bad, setBad] = useState(false)
+  return (
+    <form
+      className="px-4 pb-3 pt-2"
+      onSubmit={(e) => {
+        e.preventDefault()
+        const at = parseCoordinates(text)
+        if (!at) return setBad(true)
+        router.push(pointLabHref(at.ra, at.dec))
+      }}
+      data-testid="lab-coord"
+    >
+      <label htmlFor="lab-coord" className="text-note font-semibold">
+        {t('label')}
+      </label>
+      <div className="mt-1.5 flex gap-2">
+        <input
+          id="lab-coord"
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value)
+            setBad(false)
+          }}
+          inputMode="text"
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={t('placeholder')}
+          aria-invalid={bad}
+          aria-describedby={bad ? 'lab-coord-error' : undefined}
+          className="h-11 min-w-0 flex-1 rounded-[var(--radius-input)] border-[0.5px] border-divider bg-surface px-3 text-body tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        />
+        <Button type="submit" variant="primary" className="h-11 shrink-0 px-4" disabled={!text.trim()}>
+          {t('open')}
+        </Button>
+      </div>
+      {bad && (
+        <p id="lab-coord-error" role="alert" className="pt-1.5 text-note text-danger">
+          {t('invalid')}
+        </p>
+      )}
+    </form>
+  )
+}
 
 export default function LabPickerPage() {
   const t = useTranslations('lab')
@@ -14,6 +65,7 @@ export default function LabPickerPage() {
   return (
     <main className="pb-6">
       <TopBar title={t('title')} />
+      <CoordField />
       <h2 className="px-4 pt-1 text-ui font-semibold">{t('picker.title')}</h2>
       <p className="flex items-center gap-2 px-4 pb-2 pt-0.5 text-note leading-snug text-text-secondary">
         <IconFlask size={18} className="shrink-0" />

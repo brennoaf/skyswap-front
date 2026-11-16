@@ -15,7 +15,7 @@ export function Glass({ tone = 'surface', className, children, ...rest }: HTMLAt
   )
 }
 
-export function GlassTabs<K extends string>({ items, value, onChange, label }: { items: { key: K; label: string }[]; value: K; onChange: (k: K) => void; label: string }) {
+export function GlassTabs<K extends string>({ items, value, onChange, label, dense = false }: { items: { key: K; label: string }[]; value: K; onChange: (k: K) => void; label: string; dense?: boolean }) {
   const index = Math.max(0, items.findIndex((i) => i.key === value))
   const [moving, setMoving] = useState(false)
   const refs = useRef<(HTMLButtonElement | null)[]>([])
@@ -56,7 +56,7 @@ export function GlassTabs<K extends string>({ items, value, onChange, label }: {
           aria-selected={i === index}
           tabIndex={i === index ? 0 : -1}
           onClick={() => pick(i)}
-          className={cx('hit-44 relative z-10 h-9 rounded-full text-note font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent', i === index ? 'text-text' : 'text-text-secondary')}
+          className={cx('hit-44 relative z-10 rounded-full font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent', dense ? 'min-h-9 px-1 py-1 text-meta leading-tight [text-wrap:balance]' : 'h-9 text-note', i === index ? 'text-text' : 'text-text-secondary')}
         >
           {item.label}
         </button>

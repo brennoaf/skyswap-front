@@ -600,17 +600,11 @@
     },
     "longBaseline": {
       "pill": "{year}, {telescope}",
-      "timeline": "Quando cada foto foi feita, de 2010 até hoje",
-      "frame": "{year}, {telescope}",
-      "asleep": "WISE desligado",
-      "now": "{year}, {telescope}, foto {n} de {total}",
-      "path": "Mostrar caminho",
       "telescope": "Telescópio",
       "exposures": "Fotos combinadas",
       "honest": "Os pixels do WISE cobrem 2,75 segundos de arco e os do SPHEREx 6,15, então as fotos do SPHEREx parecem mais borradas. O brilho é ajustado por telescópio: compare posições, não brilho. Cantos vazios nas fotos do SPHEREx significam que não há dados ali.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
     },
-    "predictionRow": "Cruz amarela: a previsão. Por que marcar?",
     "markHintBright": "Centro brilhante demais: toque no meio do brilho",
     "markFailed": "Não deu para salvar suas marcações. Tente de novo.",
     "markTap": "Toque em {name}",
@@ -871,7 +865,10 @@
       "elsewhere": "Os palpites estão em outras fotos.",
       "none": "Sem palpites neste cartão.",
       "ruler": "Comparou {n} fotos de {from} a {to}. As estrelas paradas variam {arcsec}″ entre visitas; só conta o que passa de 5 vezes isso.",
-      "rulerDay": "Comparou {n} fotos de {date}. As estrelas paradas variam {arcsec}″ entre visitas; só conta o que passa de 5 vezes isso."
+      "rulerDay": "Comparou {n} fotos de {date}. As estrelas paradas variam {arcsec}″ entre visitas; só conta o que passa de 5 vezes isso.",
+      "firstTitle": "Palpites da máquina",
+      "firstBody": "Mostram onde vale olhar. Podem errar: quem decide é você.",
+      "firstOk": "Entendi"
     },
     "help": {
       "open": "Como olhar",
@@ -890,7 +887,9 @@
       "blackTitle": "Partes pretas",
       "blackBody": "Parte preta na borda: o telescópio não fotografou essa área. Estrela com centro preto: ela é forte demais para a câmera. É normal.",
       "robotTitle": "Os palpites da máquina",
-      "robotBody": "O robô compara as fotos e marca os pontos que podem ter mudado. Num teste em 20 pedaços do céu sorteados, ele acusou movimento em 2: um era o asteroide conhecido (2913) Horta, o outro não bateu com nada conhecido. Use os palpites para saber onde olhar, nunca como resposta."
+      "robotBody": "O robô compara as fotos e marca os pontos que podem ter mudado. Use os palpites para saber onde olhar, nunca como resposta.",
+      "robotMore": "Num teste em 20 pedaços do céu sorteados, ele acusou movimento em 2: um era o asteroide conhecido (2913) Horta, o outro não bateu com nada conhecido.",
+      "more": "Saiba mais"
     },
     "practice": "Treino: sem pontos.",
     "newBadge": "Selo novo: {name}.",
@@ -1347,6 +1346,19 @@
       "notes": "Guarde notas só suas sobre o que você viu.",
       "more": "Baixar dados, conferir catálogos e ver este tutorial de novo.",
       "again": "Ver o tutorial do Lab de novo"
+    },
+    "light": {
+      "note": "Versão leve: uma cor por vez, até {n} fotos",
+      "none": "Nenhuma foto do SPHEREx cobre este ponto.",
+      "failed": "Não foi possível montar o Lab deste ponto.",
+      "building": "Montando o Lab deste ponto: {done} de {total} fotos",
+      "spectrumNote": "Estimativa rápida, feita no seu aparelho só com as fotos desta cor. É um cálculo, não uma medida conferida."
+    },
+    "coord": {
+      "label": "Coordenada",
+      "placeholder": "150.1, 2.2 ou 10h00m24s +02°12'00\"",
+      "open": "Abrir",
+      "invalid": "Não reconheci. Use graus (150.1, 2.2) ou horas e graus (10h00m24s +02°12'00\")."
     }
   },
   "alerts": {
@@ -1913,5 +1925,24 @@
       }
     },
     "logoutProtected": "Para voltar depois, use sua chave de acesso, outro aparelho conectado ou o código de recuperação."
+  },
+  "seq": {
+    "modes": "Modo de ver",
+    "info": "Como ler esta vista",
+    "counter": "{n}/{total}",
+    "track": "Linha do tempo, por passagem",
+    "trackValue": "Foto {n} de {total}, {date}",
+    "sequence": "Sequência",
+    "changes": "O que mudou",
+    "ends": "1ª e última",
+    "before": "Antes do SPHEREx",
+    "path": "Mostrar caminho",
+    "blink": "Piscar",
+    "palette": "Foto colorida",
+    "cover": "{n, plural, one {# foto cobre} other {# fotos cobrem}} este ponto",
+    "masked": "Quadradinhos cinza-escuros são pixels que a NASA marcou como ruins naquela foto, por exemplo um raio cósmico ou um defeito do sensor. Eles ficam sem valor. Não é falha do app.",
+    "beforeInfo": "Antes do SPHEREx alterna a foto com uma imagem antiga do mesmo ponto, feita por outro telescópio.",
+    "blinkInfo": "Piscar alterna a primeira e a última foto. O que se mexe salta aos olhos.",
+    "share": "Compartilhar"
   }
 }

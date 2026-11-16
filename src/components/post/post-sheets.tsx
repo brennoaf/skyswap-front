@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { QrWarning } from '@/components/charts/charts'
+import { mixesBatches } from '@/components/charts/chart-math'
 import { IconCompare, IconCrosshair, IconDirect, IconFlask, IconLink, IconNote, IconWarning } from '@/components/icons'
 import { SPEEDS } from '@/components/player/use-playback'
 import { NotesPanel } from '@/components/post/notes-panel'
@@ -239,7 +240,7 @@ export function AboutSheet({ open, onClose, data, profile, frame, wise }: { open
             <p>{t('longBaseline.honest')}</p>
           </Notice>
         )}
-        {releases.filter((r) => r.startsWith('QR')).length > 1 && <QrWarning />}
+        {mixesBatches(releases) && <QrWarning />}
         {profile && profile.sources.length > 0 && (
           <section aria-labelledby="sources-title">
             <h3 id="sources-title" className="mb-2 text-ui font-semibold">

@@ -600,17 +600,11 @@
     },
     "longBaseline": {
       "pill": "{year}, {telescope}",
-      "timeline": "When each photo was taken, 2010 to today",
-      "frame": "{year}, {telescope}",
-      "asleep": "WISE asleep",
-      "now": "{year}, {telescope}, photo {n} of {total}",
-      "path": "Show path",
       "telescope": "Telescope",
       "exposures": "Photos combined",
       "honest": "WISE pixels cover 2.75 arcseconds and SPHEREx pixels 6.15, so SPHEREx photos look blurrier. Brightness is scaled per telescope: compare positions, not brightness. Empty corners on SPHEREx photos mean no data there.",
       "credit": "WISE/NEOWISE: NASA/JPL-Caltech/IPAC (IRSA)."
     },
-    "predictionRow": "Yellow cross: the prediction. Why mark it?",
     "markHintBright": "Centre too bright: tap the middle of the glow",
     "markFailed": "Couldn't save your marks. Try again.",
     "markTap": "Tap {name}",
@@ -871,7 +865,10 @@
       "elsewhere": "The guesses are in other photos.",
       "none": "No guesses for this card.",
       "ruler": "Compared {n} photos from {from} to {to}. Still stars vary by {arcsec}″ between visits; only what passes 5 times that counts.",
-      "rulerDay": "Compared {n} photos from {date}. Still stars vary by {arcsec}″ between visits; only what passes 5 times that counts."
+      "rulerDay": "Compared {n} photos from {date}. Still stars vary by {arcsec}″ between visits; only what passes 5 times that counts.",
+      "firstTitle": "Machine guesses",
+      "firstBody": "They show where to look. They can be wrong: you decide.",
+      "firstOk": "Got it"
     },
     "help": {
       "open": "How to look",
@@ -890,7 +887,9 @@
       "blackTitle": "Black areas",
       "blackBody": "Black along the edge: the telescope did not photograph this part. A star with a black center: it is too bright for the camera. This is normal.",
       "robotTitle": "The machine guesses",
-      "robotBody": "The robot compares the photos and marks spots that may have changed. In a test on 20 random patches of sky, it pointed to movement in 2: one was the known asteroid (2913) Horta, the other matched nothing known. Use its guesses to know where to look, never as the answer."
+      "robotBody": "The robot compares the photos and marks spots that may have changed. Use its guesses to know where to look, never as the answer.",
+      "robotMore": "In a test on 20 random patches of sky, it pointed to movement in 2: one was the known asteroid (2913) Horta, the other matched nothing known.",
+      "more": "Learn more"
     },
     "practice": "Practice: no points.",
     "newBadge": "New badge: {name}.",
@@ -1347,6 +1346,19 @@
       "notes": "Keep private notes about what you saw.",
       "more": "Downloads, catalogues and this tutorial again.",
       "again": "Replay the Lab tutorial"
+    },
+    "light": {
+      "note": "Light version: one colour at a time, up to {n} photos",
+      "none": "No SPHEREx photo covers this spot.",
+      "failed": "Could not set up the Lab for this spot.",
+      "building": "Setting up the Lab for this spot: {done} of {total} photos",
+      "spectrumNote": "Quick estimate, made on your device with this colour's photos only. It is a calculation, not a checked measurement."
+    },
+    "coord": {
+      "label": "Coordinate",
+      "placeholder": "150.1, 2.2 or 10h00m24s +02°12'00\"",
+      "open": "Open",
+      "invalid": "Not recognised. Use degrees (150.1, 2.2) or hours and degrees (10h00m24s +02°12'00\")."
     }
   },
   "alerts": {
@@ -1913,5 +1925,24 @@
       }
     },
     "logoutProtected": "To come back later, use your passkey, another connected device or the recovery code."
+  },
+  "seq": {
+    "modes": "View mode",
+    "info": "How to read this view",
+    "counter": "{n}/{total}",
+    "track": "Timeline, by pass",
+    "trackValue": "Photo {n} of {total}, {date}",
+    "sequence": "Sequence",
+    "changes": "What changed",
+    "ends": "First & last",
+    "before": "Before SPHEREx",
+    "path": "Show path",
+    "blink": "Blink",
+    "palette": "Colour photo",
+    "cover": "{n, plural, one {# photo covers} other {# photos cover}} this spot",
+    "masked": "Dark grey squares are pixels NASA flagged as bad in that photo, for example a cosmic ray or a sensor defect. They carry no value. It is not an app fault.",
+    "beforeInfo": "Before SPHEREx swaps the photo with an older picture of the same spot, taken by another telescope.",
+    "blinkInfo": "Blink swaps the first and last photo. Whatever moves jumps out.",
+    "share": "Share"
   }
 }
