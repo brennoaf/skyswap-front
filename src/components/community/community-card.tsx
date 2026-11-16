@@ -243,7 +243,7 @@ export function AppCard({ item, full = false }: { item: AppPostItem; full?: bool
             {item.account.name}
           </Link>
           <span title={t('appAccount')} aria-label={t('appAccount')} role="img" className="inline-flex shrink-0" data-testid="app-badge">
-            <Image src="/icon.svg" alt="" width={14} height={14} className="size-3.5 rounded-[4px]" unoptimized />
+            <Image src="/icon-rounded-256.png" alt="" width={14} height={14} className="size-3.5" unoptimized />
           </span>
           <span className="flex shrink-0 items-center gap-1.5 text-meta text-text-secondary">
             <Dot />
