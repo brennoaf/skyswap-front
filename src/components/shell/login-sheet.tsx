@@ -7,8 +7,10 @@ import { IconCheck, IconClose, IconDice, IconLock } from '@/components/icons'
 import { AvatarCarousel, useAvatarChoice } from '@/components/me/avatar-parts'
 import { Button, IconButton, Sheet, Wordmark } from '@/components/ui/primitives'
 import { ApiError } from '@/lib/api/client'
+import { usePasskeySupport } from '@/lib/api/account'
 import { useLogin } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
+import { useAccountUi } from '@/lib/state/account'
 import { useUi } from '@/lib/state/ui'
 
 const SKY_NAMES = ['vega', 'orion', 'lyra', 'sirius', 'rigel', 'altair', 'antares', 'polaris', 'andromeda', 'perseus', 'draco', 'aquila', 'cygnus', 'phoenix', 'hydra', 'carina', 'nebula', 'quasar', 'pulsar', 'nova', 'aurora', 'zenith']
@@ -31,6 +33,8 @@ export function LoginForm({ onDone }: { onDone?: () => void }) {
   const [nick, setNick] = useState('')
   const login = useLogin()
   const choice = useAvatarChoice()
+  const passkeys = usePasskeySupport()
+  const offerProtection = useAccountUi((s) => s.offerProtection)
   const valid = /^[A-Za-z0-9_.]{3,24}$/.test(nick)
   const error = login.error instanceof ApiError ? login.error.code : login.error ? 'request_failed' : null
   const errorKey = error === 'nickname_taken' ? 'taken' : error === 'avatar_taken' ? 'pictureTaken' : error === 'invalid_request' || error === 'invalid_nickname' ? 'invalid' : 'generic'
@@ -44,13 +48,13 @@ export function LoginForm({ onDone }: { onDone?: () => void }) {
       onSubmit={(e) => {
         e.preventDefault()
         if (!valid) return
-        login.mutate(
-          { nickname: nick, avatarId: choice.selected?.id },
-          {
-            onSuccess: () => onDone?.(),
-            onError: (err) => {
-              if (err instanceof ApiError && err.code === 'avatar_taken') choice.redraw()
-            },
+        login.mutateAsync({ nickname: nick, avatarId: choice.selected?.id }).then(
+          () => {
+            onDone?.()
+            if (passkeys) offerProtection()
+          },
+          (err) => {
+            if (err instanceof ApiError && err.code === 'avatar_taken') choice.redraw()
           },
         )
       }}

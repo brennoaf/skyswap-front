@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl'
 import { useState, type ReactNode } from 'react'
-import { IconFingerprint, IconShield } from '@/components/icons'
-import { Button, Sheet } from '@/components/ui/primitives'
+import { IconClose, IconFingerprint, IconShield } from '@/components/icons'
+import { Button, IconButton, Sheet } from '@/components/ui/primitives'
 import { isProtected, useAccount, useCreatePasskey, useNewRecoveryCode, usePasskeySupport } from '@/lib/api/account'
 import { useUi } from '@/lib/state/ui'
 import { RecoveryCodeView } from './recovery-code'
@@ -22,7 +22,7 @@ function Hero({ icon, title, body, id }: { icon: ReactNode; title: string; body:
   )
 }
 
-export function ProtectFlow({ onDone }: { onDone: () => void }) {
+export function ProtectFlow({ onDone, onSkip }: { onDone: () => void; onSkip?: () => void }) {
   const t = useTranslations('account.protect')
   const toast = useUi((s) => s.toast)
   const supported = usePasskeySupport()
@@ -65,15 +65,24 @@ export function ProtectFlow({ onDone }: { onDone: () => void }) {
             {t('codeOnly')}
           </Button>
         )}
+        {onSkip && (
+          <Button variant="ghost" full disabled={busy} onClick={onSkip} className="h-11" data-testid="protect-skip">
+            {t('dismiss')}
+          </Button>
+        )}
       </div>
     </div>
   )
 }
 
-export function ProtectSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function ProtectSheet({ open, onClose, skip = false }: { open: boolean; onClose: () => void; skip?: boolean }) {
+  const tc = useTranslations('common')
   return (
     <Sheet open={open} onClose={onClose} labelledBy="protect-title">
-      {open && <ProtectFlow onDone={onClose} />}
+      <IconButton label={tc('close')} onClick={onClose} className="absolute right-1 top-1 z-20" data-testid="protect-close">
+        <IconClose size={24} />
+      </IconButton>
+      {open && <ProtectFlow onDone={onClose} onSkip={skip ? onClose : undefined} />}
     </Sheet>
   )
 }

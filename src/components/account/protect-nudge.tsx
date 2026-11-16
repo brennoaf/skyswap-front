@@ -18,13 +18,15 @@ export function ProtectNudge() {
   const { data: user } = useSession()
   const dismissed = useAccountUi((s) => s.nudgeDismissed)
   const dismiss = useAccountUi((s) => s.dismissNudge)
+  const offer = useAccountUi((s) => s.offer)
+  const clearOffer = useAccountUi((s) => s.clearOffer)
   const quiet = QUIET.some((p) => pathname.startsWith(p))
   const { account, needed } = useNeedsProtection(!!user && !dismissed && !quiet)
   const [open, setOpen] = useState(false)
   const show = !!user && !dismissed && !quiet && needed && (account.data?.answers ?? 0) >= PROTECT_AFTER_ANSWERS
   return (
     <>
-      {show && !open && (
+      {show && !open && !offer && (
         <aside
           aria-labelledby="protect-nudge"
           className="fixed inset-x-0 bottom-[calc(var(--height-bottomnav)+env(safe-area-inset-bottom)+8px)] z-40 mx-auto w-full max-w-[var(--width-app)] px-3"
@@ -46,7 +48,14 @@ export function ProtectNudge() {
           </div>
         </aside>
       )}
-      <ProtectSheet open={open} onClose={() => setOpen(false)} />
+      <ProtectSheet
+        open={open || offer}
+        skip={offer && !open}
+        onClose={() => {
+          setOpen(false)
+          clearOffer()
+        }}
+      />
     </>
   )
 }
