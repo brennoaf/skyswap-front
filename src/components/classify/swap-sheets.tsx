@@ -24,6 +24,12 @@ export function SwapHelpSheet({ open, onClose }: { open: boolean; onClose: () =>
           <section key={s}>
             <h3 className="text-[16px] font-bold">{t(`${s}Title`)}</h3>
             <p className="mt-1 text-[16px] leading-snug text-text-secondary">{t(`${s}Body`)}</p>
+            {s === 'robot' && (
+              <details className="mt-1 text-[16px] leading-snug text-text-secondary" data-testid="robot-more">
+                <summary className="inline-flex min-h-11 cursor-pointer items-center font-semibold text-link">{t('more')}</summary>
+                <p>{t('robotMore')}</p>
+              </details>
+            )}
           </section>
         ))}
         <button type="button" onClick={onClose} className={`${swapButton.mid} flex-none`}>

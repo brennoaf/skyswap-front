@@ -8,7 +8,7 @@ import { useOffsetLabel } from '@/components/classify/photo-viewer'
 import { IconCheck, IconClose, IconPause, IconPlay, IconQuestion, IconRobot, IconShrink, IconSliders, IconWarning } from '@/components/icons'
 import { PhotoStrip } from '@/components/player/player-bar'
 import type { Playback } from '@/components/player/use-playback'
-import { Skeleton, Switch } from '@/components/ui/primitives'
+import { Sheet, Skeleton, Switch } from '@/components/ui/primitives'
 import { cx } from '@/lib/format'
 import { useUi } from '@/lib/state/ui'
 
@@ -228,6 +228,8 @@ export function SwapStage({
   )
 }
 
+const ROBOT_TIP = 'robotFirst'
+
 export function PhotoBar({
   playback,
   offsets,
@@ -247,6 +249,14 @@ export function PhotoBar({
   const tp = useTranslations('player')
   const label = useOffsetLabel()
   const reduce = useReducedMotion()
+  const robotSeen = useUi((s) => s.tipsSeen.includes(ROBOT_TIP))
+  const markTip = useUi((s) => s.markTip)
+  const [robotNote, setRobotNote] = useState(false)
+  const closeRobotNote = () => {
+    markTip(ROBOT_TIP)
+    setRobotNote(false)
+    hints?.onChange(true)
+  }
   return (
     <div className="flex items-center gap-3 px-4 pt-3.5" data-testid="player-bar">
       <div className="flex min-w-0 flex-1 items-center gap-3" data-tour="swap-play">
@@ -271,7 +281,7 @@ export function PhotoBar({
           type="button"
           aria-label={t('flashlight.button')}
           aria-pressed={hints.on}
-          onClick={() => hints.onChange(!hints.on)}
+          onClick={() => (!hints.on && !robotSeen ? setRobotNote(true) : hints.onChange(!hints.on))}
           className={cx(answerCircle, 'size-11 shrink-0 transition-colors duration-150', hints.on ? 'bg-text text-bg ring-text' : 'text-text active:bg-surface-pressed')}
           data-testid="hints-toggle"
         >
@@ -300,6 +310,16 @@ export function PhotoBar({
           </motion.span>
         </AnimatePresence>
       </button>
+      {hints && (
+        <Sheet open={robotNote} onClose={closeRobotNote} title={t('flashlight.firstTitle')}>
+          <div className="flex flex-col gap-4 px-4 pb-4 pt-2" data-testid="robot-first">
+            <p className="text-[16px] leading-snug text-text-secondary">{t('flashlight.firstBody')}</p>
+            <button type="button" onClick={closeRobotNote} className={`${swapButton.mid} flex-none`}>
+              {t('flashlight.firstOk')}
+            </button>
+          </div>
+        </Sheet>
+      )}
     </div>
   )
 }
