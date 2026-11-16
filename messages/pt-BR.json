@@ -37,7 +37,7 @@
     "home": "Início",
     "search": "Pesquisar",
     "classify": "Ache o que muda de lugar",
-    "reels": "Reels",
+    "reels": "Sequências",
     "me": "Meu perfil"
   },
   "home": {
@@ -1077,12 +1077,12 @@
     }
   },
   "reels": {
-    "title": "Reels",
+    "title": "Sequências",
     "label": "Sequências de fotos",
     "openPost": "Abrir post",
     "profile": "Perfil",
     "mute": "Movimento pausado",
-    "loading": "Carregando reels",
+    "loading": "Carregando sequências",
     "play": "Reproduzir",
     "pause": "Pausar",
     "empty": "Ainda não há sequências de fotos",
