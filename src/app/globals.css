@@ -36,6 +36,10 @@
   --glass-edge: rgb(255 255 255 / 0.14);
   --glass-shine: rgb(255 255 255 / 0.2);
   --glass-solid: #161b20;
+  --glass-surface: rgb(255 255 255 / 0.11);
+  --glass-surface-pressed: rgb(255 255 255 / 0.16);
+  --glass-surface-edge: rgb(255 255 255 / 0.12);
+  --glass-surface-shine: rgb(255 255 255 / 0.16);
   color-scheme: dark;
 }
 
@@ -72,6 +76,10 @@
   --glass-edge: rgb(10 16 20 / 0.1);
   --glass-shine: rgb(255 255 255 / 0.85);
   --glass-solid: #ffffff;
+  --glass-surface: rgb(20 60 90 / 0.05);
+  --glass-surface-pressed: rgb(20 60 90 / 0.09);
+  --glass-surface-edge: rgb(10 16 20 / 0.08);
+  --glass-surface-shine: rgb(255 255 255 / 0.9);
   color-scheme: light;
 }
 
@@ -111,6 +119,8 @@
   --color-spot-sky-bottom: #05080b;
   --color-spot-star: #ffffff;
   --color-spot-reticle: #7fe0ff;
+  --surface-solid: var(--color-surface);
+  --surface-solid-pressed: var(--color-surface-pressed);
   --gradient-bands: linear-gradient(90deg, var(--color-band-d1), var(--color-band-d2), var(--color-band-d3), var(--color-band-d4), var(--color-band-d5), var(--color-band-d6));
   --shadow-sheet: 0 -8px 30px rgb(0 0 0 / 0.25);
   --brand-night-1: #00062a;
@@ -397,6 +407,41 @@ body {
   0% { scale: 1 1; }
   45% { scale: 1.22 0.9; }
   100% { scale: 1 1; }
+}
+
+@layer components {
+  @supports (-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)) {
+    .bg-surface,
+    .bg-surface-pressed,
+    .active\:bg-surface,
+    .active\:bg-surface-pressed,
+    .group-active\:bg-surface-pressed {
+      --color-surface: var(--glass-surface);
+      --color-surface-pressed: var(--glass-surface-pressed);
+    }
+
+    .bg-surface,
+    .bg-surface-pressed {
+      -webkit-backdrop-filter: blur(var(--glass-surface-blur, 12px)) saturate(1.6);
+      backdrop-filter: blur(var(--glass-surface-blur, 12px)) saturate(1.6);
+      box-shadow:
+        inset 0 0 0 0.5px var(--glass-surface-edge),
+        inset 0 1px 0 var(--glass-surface-shine);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .bg-surface,
+    .bg-surface-pressed,
+    .active\:bg-surface,
+    .active\:bg-surface-pressed,
+    .group-active\:bg-surface-pressed {
+      --color-surface: var(--surface-solid);
+      --color-surface-pressed: var(--surface-solid-pressed);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
 }
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
