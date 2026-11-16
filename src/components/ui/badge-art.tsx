@@ -5,8 +5,8 @@ const BADGE_STYLE: Record<string, { from: string; to: string; glyph: React.React
     glyph: <path d="M11 20.5L15.5 25L25 14" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />,
   },
   first_motion: {
-    from: '#ff00d7',
-    to: '#ffc800',
+    from: 'var(--brand-1)',
+    to: 'var(--brand-3)',
     glyph: (
       <g fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round">
         <circle cx="18" cy="18" r="6.5" />
@@ -52,8 +52,8 @@ const BADGE_STYLE: Record<string, { from: string; to: string; glyph: React.React
     ),
   },
   week_streak: {
-    from: '#ff0000',
-    to: '#ffc800',
+    from: 'var(--brand-night-2)',
+    to: 'var(--brand-2)',
     glyph: <path d="M18 9C18 13 23.5 14.5 23.5 20.5C23.5 24 21 27 18 27C15 27 12.5 24.5 12.5 21.5C12.5 18.5 14.5 17.5 15 15C16.5 16 17 17.5 17 19C18.5 17 18.5 12 18 9Z" fill="#fff" />,
   },
 }
@@ -66,8 +66,8 @@ export function BadgeArt({ badge, size = 56, earned }: { badge: string; size?: n
     <svg width={size} height={size} viewBox="0 0 36 36" aria-hidden="true" style={{ filter: earned ? undefined : 'grayscale(1)', opacity: earned ? 1 : 0.35 }}>
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={s.from} />
-          <stop offset="100%" stopColor={s.to} />
+          <stop offset="0%" style={{ stopColor: s.from }} />
+          <stop offset="100%" style={{ stopColor: s.to }} />
         </linearGradient>
       </defs>
       <path d="M18 1.5L32.3 9.75V26.25L18 34.5L3.7 26.25V9.75L18 1.5Z" fill={`url(#${id})`} />
