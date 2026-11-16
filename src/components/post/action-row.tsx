@@ -29,6 +29,7 @@ export function ActionRow({
   saved,
   tagCount,
   dots,
+  extra,
 }: {
   tag: Action
   mark: Action
@@ -37,6 +38,7 @@ export function ActionRow({
   saved: boolean
   tagCount?: number | null
   dots?: { count: number; active: number; onPick?: (i: number) => void } | null
+  extra?: ReactNode
 }) {
   const t = useTranslations('post.actions')
   return (
@@ -62,7 +64,8 @@ export function ActionRow({
           </span>
         </div>
       )}
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-1">
+        {extra}
         <ActionButton label={saved ? t('unsave') : t('save')} action={save}>
           <IconSave filled={saved} />
         </ActionButton>

@@ -17,6 +17,7 @@ import { MediaStage, STAGE_BOX, usePlayer, type Point, type StageMode, type Trai
 import { AboutSheet, ColoursSheet, MoreSheet, NotesSheet, TagSheet } from '@/components/post/post-sheets'
 import { buildSequences, centre, framePool, nearestByWavelength, type FilterKey, type Sequence } from '@/components/post/sequences'
 import { Button, EmptyState, IconButton, Skeleton, TopBar } from '@/components/ui/primitives'
+import { ShareButton } from '@/components/ui/share-button'
 import type { Frame } from '@/lib/api/client'
 import { useCelebrate, useLearn, useObject, useObjectPosts, usePost, useSaveMarks, useSession } from '@/lib/api/hooks'
 import { cx } from '@/lib/format'
@@ -495,6 +496,7 @@ export function PostViewer({ id }: { id: string }) {
       save={{ onClick: () => toggleSaved(post.id) }}
       saved={saved}
       tagCount={data.tags.counts ? totalTags : null}
+      extra={<ShareButton title={title} path={() => `/p/${post.id}`} />}
     />
   )
 

@@ -11,6 +11,7 @@ import { SkyLocator, skyRegion } from '@/components/sky/sky-locator'
 import { SkyMapSheet } from '@/components/sky/sky-map-sheet'
 import { BandTile } from '@/components/ui/band-tile'
 import { CatalogLinks } from '@/components/ui/catalog-links'
+import { ShareButton } from '@/components/ui/share-button'
 import { Button, Chip, EmptyState, IconButton, ObjectAvatar, Sheet, Skeleton } from '@/components/ui/primitives'
 import { QrWarning } from '@/components/charts/charts'
 import type { SkyResult } from '@/lib/api/client'
@@ -562,9 +563,12 @@ function Player({
             )}
           </PlaybackBar>
           <ModeRow items={modes} value={mode} onChange={pickMode} onInfo={() => setInfo(true)} />
-          <p className="px-4 pt-2.5 text-meta text-text-secondary" data-testid="sky-cover">
-            {ts('cover', { n: sky.total })}
-          </p>
+          <div className="flex items-center gap-3 pl-4 pr-3 pt-2.5">
+            <p className="min-w-0 flex-1 text-meta text-text-secondary" data-testid="sky-cover">
+              {ts('cover', { n: sky.total })}
+            </p>
+            <ShareButton title={params.name ?? t('title')} path={() => withView(skyHref(params), readView(window.location.search))} />
+          </div>
           {mixesBatches(b.frames.map((f) => f.release)) && (
             <div className="px-4 pt-2">
               <QrWarning />

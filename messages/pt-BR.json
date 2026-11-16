@@ -1924,6 +1924,7 @@
     "cover": "{n, plural, one {# foto cobre} other {# fotos cobrem}} este ponto",
     "masked": "Quadradinhos cinza-escuros são pixels que a NASA marcou como ruins naquela foto, por exemplo um raio cósmico ou um defeito do sensor. Eles ficam sem valor. Não é falha do app.",
     "beforeInfo": "Antes do SPHEREx alterna a foto com uma imagem antiga do mesmo ponto, feita por outro telescópio.",
-    "blinkInfo": "Piscar alterna a primeira e a última foto. O que se mexe salta aos olhos."
+    "blinkInfo": "Piscar alterna a primeira e a última foto. O que se mexe salta aos olhos.",
+    "share": "Compartilhar"
   }
 }

@@ -1924,6 +1924,7 @@
     "cover": "{n, plural, one {# photo covers} other {# photos cover}} this spot",
     "masked": "Dark grey squares are pixels NASA flagged as bad in that photo, for example a cosmic ray or a sensor defect. They carry no value. It is not an app fault.",
     "beforeInfo": "Before SPHEREx swaps the photo with an older picture of the same spot, taken by another telescope.",
-    "blinkInfo": "Blink swaps the first and last photo. Whatever moves jumps out."
+    "blinkInfo": "Blink swaps the first and last photo. Whatever moves jumps out.",
+    "share": "Share"
   }
 }
